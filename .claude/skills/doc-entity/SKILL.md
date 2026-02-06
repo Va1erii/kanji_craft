@@ -57,11 +57,11 @@ Two to three sentences explaining what this entity group represents in the real 
 
 ### 3. Entities
 
-List each entity and value object in the group. For each one, include:
+List each entity and value object in the group. Order them by dependency — define a type before any entity that references it. The reader should never encounter a forward reference. For each one, include:
 
 #### a. Name and Classification
 
-State whether it is an **entity** (has identity) or a **value object** (defined by its data).
+State whether it is an **entity** (has identity), a **value object** (defined by its data), or an **enum** (fixed set of constants).
 
 ```markdown
 ### KanjiReading (Entity)
@@ -75,24 +75,41 @@ One sentence on what it represents and why it's a separate class.
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | `String` | Unique identifier (UUID) |
+| `id` | `int` | Unique identifier |
 | `character` | `String` | The kanji character, e.g. "人" |
 
 Rules for the field table:
 - List fields in logical order: identifiers first, then core data, then metadata (timestamps, sort orders).
+- Use snake_case for field names (e.g. `master_symbol`, `min_jlpt_level`).
 - Use Dart types.
 - Descriptions should be concrete — include an example value where helpful.
 - Mark nullable fields with `?` in the type column.
+- Keep descriptions domain-focused. Do not mention storage details (primary keys, database engines, etc.).
 
 #### d. Design Decisions
 
 Explain non-obvious choices using a **"Why...?"** format. Only include these when there's something worth explaining — don't force them.
 
 ```markdown
-**Why is `jlptLevel` nullable?**
+**Why is `jlpt_level` nullable?**
 
 Not all kanji are classified under JLPT. Rare or advanced kanji outside
 the ~2,200 commonly tested ones have no JLPT assignment.
+```
+
+#### e. Enum Table (enums only)
+
+For enums, use a value table instead of a field table. List each constant with its description. If the enum carries fields (e.g. a `description` property), add a separate field table below.
+
+```markdown
+| Value | Description |
+|---|---|
+| `hen` | Left side (e.g. 亻 in 休) |
+| `tsukuri` | Right side (e.g. 力 in 助) |
+
+| Field | Type | Description |
+|---|---|---|
+| `description` | `String` | Human-readable label, e.g. "Left Side" |
 ```
 
 ### 4. Relationships
@@ -143,6 +160,7 @@ Not every section will be equally relevant for every entity group. Use this as a
 | Overview | Always | — |
 | Entities | Always | Include every class in the group |
 | → Field Table | Always | For every entity and value object |
+| → Enum Table | For enums | Value table + optional field table for enum properties |
 | → Design Decisions | When applicable | Skip if all fields are self-explanatory |
 | Relationships | Always | Even if it's just "none" |
 | Business Rules | Always | Even simple groups have at least one rule |

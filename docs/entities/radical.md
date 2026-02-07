@@ -20,6 +20,7 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `min_grade` | `int` | The earliest Japanese school grade this appears in (1–6) |
 | `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
+| `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
 
 **Why `master_symbol` instead of storing every shape?**
 
@@ -85,6 +86,7 @@ A specific visual form a radical takes when placed in a particular position insi
 | `is_locked` | `bool` | If `true`, this shape never moves to another position (e.g. 氵 is always left) |
 | `svg_file_name` | `String` | Local asset filename for the variant SVG, e.g. "06c35.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
+| `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
 
 **Why `is_locked`?**
 

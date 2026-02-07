@@ -104,3 +104,5 @@ A radical must be stable (>= 7.0 days) before kanji containing it unlock. All ka
 | **SVG** | Scalable Vector Graphics |
 | **FK** | Foreign Key |
 | **UTC** | Coordinated Universal Time |
+| **RLS** | Row Level Security (Supabase/Postgres access control) |
+| **JWT** | JSON Web Token (auth token from Supabase) |

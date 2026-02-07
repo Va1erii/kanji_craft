@@ -40,8 +40,8 @@ Radicals, kanji, vocabulary, readings, I18n, components, sentences.
 
 - **Written by:** content pipeline (admin-only on Supabase)
 - **Direction:** remote → local only. Users never modify content.
-- **Trigger:** first launch, manual refresh, or content version bump
-- **Strategy:** full replace or incremental pull based on a content version number
+- **Trigger:** app launch, manual refresh, or push notification from content pipeline
+- **Strategy:** incremental pull — query rows where `updated_at > last_content_sync_at`
 
 ### User Tables (Bidirectional)
 
@@ -85,18 +85,24 @@ Runs on app launch, new device login, and periodically when online.
 3. Update last_sync_timestamp
 ```
 
-### Content Sync
+### Content Sync (Remote → Local)
 
-Content tables use a simpler model — no per-row tracking.
+Content tables are admin-managed and one-directional — no `sync_status` or push logic needed. Each content row on Supabase has an `updated_at` timestamp set by the content pipeline. The app stores a `last_content_sync_at` timestamp locally (one global value).
 
 ```
-1. Check remote content_version against local content_version
-2. If remote is newer:
-   a. Pull all changed content tables (delta or full, based on version gap)
-   b. Replace local content rows
-   c. Update local content_version
-3. If equal: no-op
+1. Query each content table for rows where updated_at > last_content_sync_at
+2. For each row:
+   a. UPSERT into Drift (insert or overwrite)
+   b. If the row has svg_hash and it differs from the local copy:
+      invalidate the cached SVG and re-download from svg_file_url
+3. Update last_content_sync_at to the max updated_at seen
 ```
+
+**Triggers:** app launch (when online), manual pull-to-refresh, push notification from content pipeline.
+
+**Deletions:** content rows are never deleted — only added or updated. If a radical or kanji must be removed, it is handled as a manual migration, not part of the regular sync flow.
+
+**First launch:** the app ships with a bundled SQLite database covering at least N5 content. `last_content_sync_at` starts at the bundle's build timestamp so the first sync only pulls rows added or changed after that.
 
 ## Conflict Resolution
 

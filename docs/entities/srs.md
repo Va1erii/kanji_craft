@@ -77,7 +77,7 @@ Enables undo (restore previous state) and parameter optimization (FSRS can retra
 ## Relationships
 
 ```
-User       ──1:N──→ SrsCard        (one user, many cards across all item types)
+User       ──1:N──→ SrsCard        (one user, many cards across all item types; see user.md)
 SrsCard    ──1:N──→ ReviewLog      (one card, many review events)
 SrsCard    ──N:1──→ Radical        (when item_type = radical; see radical.md)
 SrsCard    ──N:1──→ Kanji          (when item_type = kanji; see kanji.md)

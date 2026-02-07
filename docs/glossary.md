@@ -41,6 +41,8 @@ Traditional names for where a radical sits inside a kanji character (see radical
 | **impact score** | 1–10 rating of how many kanji use a radical. Higher = more valuable to learn early. On `Radical` |
 | **vocabulary** | A Japanese word or compound using one or more kanji (e.g. 日本). Final stage of the SRS progression. Modeled as `Vocabulary` (see vocabulary.md) |
 | **frequency rank** | Integer rank of usage frequency (1 = most common). On both `Kanji` (newspaper corpus) and `Vocabulary` |
+| **study path** | The curriculum path a user follows: JLPT-based (N5 → N1) or grade-based (1 → 6). Stored in `UserSettings` (see user.md) |
+| **daily lesson limit** | Max new items the app presents per day. User-configurable in `UserSettings`. Default: 10 |
 | **unlock gate** | A radical must reach stability >= 7.0 days before kanji containing it enter the lesson queue. See srs.md rule #7 |
 | **lesson queue** | The queue of new items waiting for their first review. Items enter after prerequisites are met |
 | **leech** | A card with many lapses (e.g. >= 8) indicating the user keeps forgetting it. The app suggests revisiting the mnemonic |

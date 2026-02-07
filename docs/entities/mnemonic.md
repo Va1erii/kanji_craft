@@ -31,7 +31,7 @@ System mnemonics are content-pipeline data — written by translators, shipped w
 ## Relationships
 
 ```
-User          ──1:N──→ UserMnemonic    (one user, many custom mnemonics)
+User          ──1:N──→ UserMnemonic    (one user, many custom mnemonics; see user.md)
 UserMnemonic  ──N:1──→ Radical         (when item_type = radical; see radical.md)
 UserMnemonic  ──N:1──→ Kanji           (when item_type = kanji; see kanji.md)
 ```

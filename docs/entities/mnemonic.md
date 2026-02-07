@@ -14,7 +14,7 @@ The three core learning item categories in the SRS system. Items are unlocked an
 |---|---|
 | `radical` | A radical — the smallest meaningful building block of a kanji (see radical.md) |
 | `kanji` | A kanji character composed of one or more radicals (see kanji.md) |
-| `vocabulary` | A word or compound built from kanji (see vocabulary.md) |
+| `vocabulary` | A word or compound built from kanji |
 
 ### UserMnemonic (Entity)
 

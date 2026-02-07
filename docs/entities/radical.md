@@ -106,11 +106,11 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 2. Every radical must have at least one `RadicalVariant`.
 3. `RadicalI18n` must exist for the default language ("en") at minimum.
 4. `position` + `radical_id` should be unique in `RadicalVariant` — a radical doesn't have two different shapes for the same position.
-6. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
-7. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
-8. `impact_score` must be in the range 1–10.
-9. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–6.
-10. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
+5. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
+6. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
+7. `impact_score` must be in the range 1–10.
+8. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–6.
+9. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
 
 ## Edge Cases
 

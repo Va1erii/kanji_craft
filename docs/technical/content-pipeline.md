@@ -257,8 +257,8 @@ The parser uses a Python virtual environment. On a fresh checkout:
 
 ```bash
 cd tools/parser
-make setup      # creates .venv, installs dependencies
-make download   # fetches latest KanjiVG data
+make setup          # creates .venv, installs dependencies
+make download-all   # fetches all data sources (KanjiVG, KANJIDIC2)
 ```
 
 `make setup` creates `.venv/` from `requirements.txt`. All `make` targets activate the venv automatically — no manual `source .venv/bin/activate` needed.
@@ -277,7 +277,12 @@ tools/parser/data/
 │       ├── kanjivg.xml               ← stable name for parser
 │       └── kanjivg/
 │           └── *.svg
-├── kanjidic2/           ← future
+├── kanjidic2/
+│   ├── kanjidic2-20260207.xml.gz    ← date-stamped archive (tracked in git)
+│   ├── .version                      ← database_version string (tracked in git)
+│   ├── .last-modified                ← HTTP Last-Modified header (tracked in git)
+│   └── .unpacked/                    ← gitignored
+│       └── kanjidic2.xml             ← stable name for parser
 └── jmdict/              ← future
 ```
 
@@ -288,12 +293,26 @@ Each source has a download script that:
 - Removes old version archives when a new version is downloaded
 - Tracks the installed version in `.version` for quick lookup
 
-**KanjiVG download:**
+**KanjiVG download:** Uses GitHub Releases API to detect new versions. Archives are named by release tag.
 
 ```bash
-make download          # download latest if not current
-make download-force    # re-download even if current
-make version           # print installed KanjiVG version
+make download-kanjivg          # download latest if not current
+make download-kanjivg-force    # re-download even if current
+make version-kanjivg           # print installed KanjiVG version
+```
+
+**KANJIDIC2 download:** The file is updated in-place at a fixed URL (no releases). New-version detection uses the HTTP `Last-Modified` header compared against a stored value. The archive is date-stamped using `<date_of_creation>` from the XML header; the version is the `<database_version>` value (e.g., `2026-038`).
+
+```bash
+make download-kanjidic2        # download if newer
+make download-kanjidic2-force  # re-download even if current
+make version-kanjidic2         # print installed KANJIDIC2 version
+```
+
+**All sources:**
+
+```bash
+make download-all              # download all data sources
 ```
 
 ### Scope Filtering

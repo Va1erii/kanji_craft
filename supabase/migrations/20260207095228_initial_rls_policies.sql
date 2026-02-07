@@ -106,7 +106,11 @@ CREATE POLICY "Users can delete own settings"
   USING (user_id = auth.uid());
 
 -- =============================================================
--- srs_cards: full CRUD where user_id = auth.uid()
+-- srs_cards: SELECT + INSERT + UPDATE where user_id = auth.uid()
+-- No DELETE — cards are never deleted by users (review_logs
+-- depend on card_id via CASCADE; allowing DELETE would silently
+-- destroy append-only review history). Account deletion cascades
+-- through users → srs_cards → review_logs at the FK level.
 -- =============================================================
 
 CREATE POLICY "Users can read own cards"
@@ -121,10 +125,6 @@ CREATE POLICY "Users can update own cards"
   ON srs_cards FOR UPDATE TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Users can delete own cards"
-  ON srs_cards FOR DELETE TO authenticated
-  USING (user_id = auth.uid());
 
 -- =============================================================
 -- review_logs: SELECT + INSERT only (append-only)

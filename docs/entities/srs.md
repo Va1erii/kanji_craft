@@ -97,7 +97,8 @@ SrsCard    ──N:1──→ Vocabulary     (when item_type = vocabulary; see v
 9. `difficulty` must stay in the range [1, 10]. FSRS clamps it after every update.
 10. `stability` must be non-negative. After a lapse, `stability` is recalculated but never increases from a forget event.
 11. ReviewLog rows are append-only — never updated or deleted (except by explicit user data wipe).
-12. FSRS scheduler parameters (the `w` array, `desired_retention`, learning/relearning steps) are global configuration, not per-card. Store them in app settings.
+12. SrsCard rows cannot be deleted by users — only reset (update state back to `new_card`). Deletion only occurs via account deletion cascade (`users` → `srs_cards` → `review_logs`). This protects the append-only review history.
+13. FSRS scheduler parameters (the `w` array, `desired_retention`, learning/relearning steps) are global configuration, not per-card. Store them in app settings.
 
 ## Edge Cases
 

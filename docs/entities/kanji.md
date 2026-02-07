@@ -92,7 +92,7 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 3. Every kanji must have at least one `primary` reading.
 4. `KanjiI18n` must exist for the default language ("en") at minimum.
 5. `meanings` in `KanjiI18n` must have at least one entry.
-6. A kanji cannot enter `lesson` status until all its radicals (via `KanjiComponent`) have reached `guru1` SRS stage (see srs.md).
+6. A kanji cannot enter the lesson queue until all its radicals (via `KanjiComponent`) have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
 7. Kanji are reviewed on both meaning and reading — unlike radicals, which are meaning-only.
 8. `frequency_rank` must be a positive integer (1 = most common).
 9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–6.

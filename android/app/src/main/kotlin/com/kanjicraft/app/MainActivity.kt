@@ -1,4 +1,4 @@
-package com.example.kanji_craft
+package com.kanjicraft.app
 
 import io.flutter.embedding.android.FlutterActivity
 

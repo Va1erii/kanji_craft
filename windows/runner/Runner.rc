@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "kanjicraft" "\0"
             VALUE "FileDescription", "kanji_craft" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "kanji_craft" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 kanjicraft. All rights reserved." "\0"
             VALUE "OriginalFilename", "kanji_craft.exe" "\0"
             VALUE "ProductName", "kanji_craft" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

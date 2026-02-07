@@ -14,7 +14,7 @@ set -euo pipefail
 
 KEY_ID=""
 TEAM_ID=""
-CLIENT_ID="com.kanjicraft.app"
+CLIENT_ID="com.kanjicraft.app.sid"
 KEY_FILE=""
 EXPIRY_DAYS=180
 

@@ -108,7 +108,7 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 6. A vocabulary cannot enter the lesson queue until all its kanji (via `VocabularyKanji`) have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
 7. Vocabulary is reviewed on both meaning and reading.
 8. `vocabulary_id` + `reading` must be unique in `VocabularyReading` — no duplicate readings.
-9. `vocabulary_id` + `kanji_id` must be unique in `VocabularyKanji` — a kanji appears in a given word at most once.
+9. `vocabulary_id` + `position` must be unique in `VocabularyKanji` — each position in a word holds exactly one kanji. The same kanji may appear at multiple positions (e.g. 人々).
 10. `vocabulary_id` + `lang_code` must be unique in `VocabularyI18n` — one translation per language.
 11. `frequency_rank` must be a positive integer (1 = most common).
 12. `min_jlpt_level`, when present, must be in the range 1–5.
@@ -117,7 +117,7 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 
 - **Vocabulary with no JLPT level:** Some common words aren't in the JLPT set. They unlock based on kanji progress alone and surface via search, not the JLPT lesson path.
 - **Kana-only vocabulary:** Words like すごい or ありがとう contain no kanji. They have zero `VocabularyKanji` rows and no unlock gate — they can enter the lesson queue immediately. Rule #6 is trivially satisfied (all zero kanji are stable).
-- **Repeated kanji in a word:** Words like 人々 or 日々 use the same kanji twice. `VocabularyKanji` stores it once (rule #9) since the unlock gate only cares whether the kanji is known, not how many times it appears. The `position` field records the first occurrence.
+- **Repeated kanji in a word:** Words like 人々 or 日々 use the same kanji twice. `VocabularyKanji` stores one row per occurrence, each with a distinct `position`. The unlock gate deduplicates by `kanji_id` — it only checks whether each distinct kanji is known, not how many times it appears.
 - **Multiple primary readings:** Some words genuinely have two primary readings (e.g. 明日: あした and あす are both common). SRS should test all primary readings.
 - **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana.
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.

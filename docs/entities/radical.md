@@ -118,6 +118,7 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 7. `impact_score` must be in the range 1–10.
 8. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–6.
 9. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
+10. A radical's `master_symbol` may duplicate a kanji's `character`. Both rows must exist independently — the radical serves as a building block in `kanji_components`, the kanji serves as a learnable item with its own readings and SRS card.
 
 ## Edge Cases
 
@@ -127,3 +128,4 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 - **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. This is modeled through separate `RadicalVariant` rows, not special-cased.
 - **Radicals with no kanji:** During early content seeding, a radical may exist before any kanji reference it (see kanji_component.md). The radical is still reviewable; the composition section in the UI should show an empty state.
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.
+- **Kanji-like radicals:** Some radicals are visually identical to learnable kanji (e.g., 青 is both Kangxi radical #174 and a kanji meaning "Blue"). Both rows must exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. This dual existence is natural for many Kangxi radicals (木, 金, 山, etc.) and is also used for custom non-Kangxi building blocks (`is_official: false`). For example, 清 (Pure) = 氵 (Water) + 青 (Blue) — `kanji_components` always references `radicals.id`, never `kanji.id`.

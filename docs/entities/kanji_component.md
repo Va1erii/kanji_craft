@@ -50,3 +50,4 @@ Kanji  ──1:N──→ KanjiComponent    (one kanji is composed of many radic
 - **Radical with no kanji:** During early content seeding, a radical may exist before any `KanjiComponent` rows link it to kanji. The radical is still reviewable on its own (see radical.md).
 - **Kanji with no components:** Should not happen in production. Every kanji is composed of at least one radical. Flag in content validation tooling.
 - **Ambiguous logic_hint:** Some radicals arguably contribute both meaning and sound. Pick the dominant role and document the ambiguity in the content pipeline, not in the data model.
+- **Radical duplicates a kanji character:** Some `radical_id` entries in `kanji_components` point to radicals whose `master_symbol` matches a kanji `character` (e.g., 木 as radical and kanji). This is by design — see radical.md. The `kanji_components` FK always points to `radicals.id`, never to `kanji.id`.

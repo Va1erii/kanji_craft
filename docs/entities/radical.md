@@ -84,7 +84,7 @@ Some variants are structurally fixed — 氵 only ever appears on the left. Know
 
 ### RadicalExample (Entity)
 
-Links a radical to a specific kanji so the learner sees the radical "in the wild."
+The join table between Radical and Kanji. This is the bridge that lets the app look up all example kanji for a given radical (`SELECT * FROM radical_examples WHERE radical_id = ?`) and all radicals inside a given kanji (reverse lookup). More importantly, it carries metadata that belongs to neither side alone — properties like `logic_hint` describe the *connection* between a radical and a kanji, not the radical or the kanji individually.
 
 | Field | Type | Description |
 |---|---|---|
@@ -93,6 +93,22 @@ Links a radical to a specific kanji so the learner sees the radical "in the wild
 | `kanji_char` | `String` | The example kanji, e.g. "海" |
 | `kanji_jlpt_level` | `int` | JLPT level of this kanji (5 = N5, 1 = N1) |
 | `kanji_grade` | `int` | School grade of this kanji (1–6) |
+| `logic_hint` | `LogicHint` | Whether this radical contributes meaning or sound in this specific kanji |
+
+**Why `logic_hint` on RadicalExample, not on Radical?**
+
+The same radical can play different roles in different kanji. For example, 亡 is **phonetic** in 忙 (busy) — it's only there because its Chinese reading BOU matches the kanji's reading. But 亡 is **semantic** in 死 (death) — it directly contributes to the meaning. Placing `logic_hint` per radical-kanji pair captures this accurately.
+
+This field is critical for teaching. Without it, a user sees 忄 (Heart) + 亡 (Death) = 忙 (Busy) and thinks the system is broken. With a phonetic hint, the app can explain: "亡 is here for its sound (BOU), not its meaning."
+
+### LogicHint (Enum)
+
+Describes the role a radical plays inside a specific kanji.
+
+| Value | Description |
+|---|---|
+| `semantic` | The radical contributes to the kanji's meaning. e.g. 氵 (Water) + 目 (Eye) = 涙 (Tear) |
+| `phonetic` | The radical contributes to the kanji's reading (pronunciation), not its meaning. e.g. 亡 (BOU) in 忙 (BOU) |
 
 ## Relationships
 

@@ -266,37 +266,43 @@ After setup, download the data sources manually (see next section) and extract t
 
 ### Data Sources — Manual Download
 
-Archives are **not** tracked in git. Download ZIP/gzip files from GitHub releases, extract into `.unpacked/` directories (gitignored), and keep stable names so parser code doesn't change between versions.
+Download ZIP/gzip files from GitHub releases and place them in the appropriate `data/` subdirectory. Archives are tracked in git so version upgrades produce a reviewable diff. The parser extracts them into `.unpacked/` (gitignored) on first run if not already extracted.
 
 #### Sources to download
 
-| Source | Repo / URL | Assets (MVP) | Extract to |
-|---|---|---|---|
-| KanjiVG | [`KanjiVG/kanjivg`](https://github.com/KanjiVG/kanjivg/releases) GitHub releases | `kanjivg-*.xml.gz`, `kanjivg-*-main.zip` | `data/kanjivg/.unpacked/` |
-| JMdict + KANJIDIC | [`yomidevs/jmdict-yomitan`](https://github.com/yomidevs/jmdict-yomitan/releases) GitHub releases | `JMdict_english_with_examples.zip`, `JMdict_spanish.zip`, `KANJIDIC_english.zip`, `KANJIDIC_spanish.zip` | `data/jmdict/.unpacked/{name}/` |
+| Source | Repo / URL | Assets (MVP) |
+|---|---|---|
+| KanjiVG | [`KanjiVG/kanjivg`](https://github.com/KanjiVG/kanjivg/releases) GitHub releases | `kanjivg-{tag}.xml.gz`, `kanjivg-{tag}-main.zip` |
+| JMdict + KANJIDIC | [`yomidevs/jmdict-yomitan`](https://github.com/yomidevs/jmdict-yomitan/releases) GitHub releases | `JMdict_english_with_examples.zip`, `JMdict_spanish.zip`, `KANJIDIC_english.zip`, `KANJIDIC_spanish.zip` |
 
 **MVP languages:** English (with Tatoeba examples via `JMdict_english_with_examples.zip`) and Spanish (`JMdict_spanish.zip`, no examples).
+
+**Updating:** To upgrade a source, replace the archive files (or create a new version-tagged directory) and commit. The parser re-extracts into `.unpacked/` when it detects the archive is newer than the extracted contents.
 
 #### Directory structure
 
 ```
 tools/parser/data/
 ├── kanjivg/
-│   └── .unpacked/
-│       ├── kanjivg.xml               ← gunzip kanjivg-*.xml.gz
-│       └── kanjivg/                  ← unzip kanjivg-*-main.zip
+│   ├── kanjivg-20250816.xml.gz          ← tracked in git
+│   ├── kanjivg-20250816-main.zip        ← tracked in git
+│   └── .unpacked/                        ← gitignored, parser extracts here
+│       ├── kanjivg.xml
+│       └── kanjivg/
 │           └── *.svg
 └── jmdict/
-    └── .unpacked/
-        ├── jmdict-en/                ← JMdict_english_with_examples.zip
-        ├── jmdict-es/                ← JMdict_spanish.zip
-        ├── kanjidic-en/              ← KANJIDIC_english.zip
-        └── kanjidic-es/              ← KANJIDIC_spanish.zip
+    ├── JMdict_english_with_examples.zip  ← tracked in git
+    ├── JMdict_spanish.zip                ← tracked in git
+    ├── KANJIDIC_english.zip              ← tracked in git
+    ├── KANJIDIC_spanish.zip              ← tracked in git
+    └── .unpacked/                        ← gitignored, parser extracts here
+        ├── jmdict-en/
+        ├── jmdict-es/
+        ├── kanjidic-en/
+        └── kanjidic-es/
 ```
 
-Each ZIP extracts Yomitan-format JSON files (`index.json`, `tag_bank_*.json`, `term_bank_*.json`, `term_meta_bank_*.json`). Extract each into its own subdirectory under `.unpacked/`.
-
-All `.unpacked/` directories are gitignored. No archives are tracked in git.
+Each JMdict/KANJIDIC ZIP extracts Yomitan-format JSON files (`index.json`, `tag_bank_*.json`, `term_bank_*.json`, `term_meta_bank_*.json`) into its own subdirectory under `.unpacked/`.
 
 ### Scope Filtering
 

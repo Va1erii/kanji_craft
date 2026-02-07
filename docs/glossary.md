@@ -39,7 +39,8 @@ Traditional names for where a radical sits inside a kanji character (see radical
 | **system mnemonic** | App-provided learning story shipped with the content, stored in I18n tables. Shared by all users, translated per language |
 | **user mnemonic** | A personal memory aid written by the user. Overrides the system mnemonic in the UI. Stored in `UserMnemonic` |
 | **impact score** | 1–10 rating of how many kanji use a radical. Higher = more valuable to learn early. On `Radical` |
-| **frequency rank** | Integer rank of kanji usage frequency (1 = most common). Based on newspaper corpus. On `Kanji` |
+| **vocabulary** | A Japanese word or compound using one or more kanji (e.g. 日本). Final stage of the SRS progression. Modeled as `Vocabulary` (see vocabulary.md) |
+| **frequency rank** | Integer rank of usage frequency (1 = most common). On both `Kanji` (newspaper corpus) and `Vocabulary` |
 | **unlock gate** | A radical must reach stability >= 7.0 days before kanji containing it enter the lesson queue. See srs.md rule #7 |
 | **lesson queue** | The queue of new items waiting for their first review. Items enter after prerequisites are met |
 | **leech** | A card with many lapses (e.g. >= 8) indicating the user keeps forgetting it. The app suggests revisiting the mnemonic |
@@ -87,7 +88,7 @@ The app teaches items in a fixed dependency order:
 radical → kanji → vocabulary
 ```
 
-A radical must be stable (>= 7.0 days) before kanji containing it unlock. Radicals are reviewed on meaning only; kanji on both meaning and reading.
+A radical must be stable (>= 7.0 days) before kanji containing it unlock. All kanji in a word must be stable before its vocabulary unlocks. Radicals are reviewed on meaning only; kanji and vocabulary on both meaning and reading.
 
 ## Abbreviations
 

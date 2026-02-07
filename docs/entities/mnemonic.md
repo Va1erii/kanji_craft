@@ -6,16 +6,6 @@ A mnemonic is a short story or phrase that helps a user remember a radical or ka
 
 ## Entities
 
-### ItemType (Enum)
-
-The three core learning item categories in the SRS system. Items are unlocked and reviewed in order: radical → kanji → vocabulary.
-
-| Value | Description |
-|---|---|
-| `radical` | A radical — the smallest meaningful building block of a kanji (see radical.md) |
-| `kanji` | A kanji character composed of one or more radicals (see kanji.md) |
-| `vocabulary` | A word or compound built from kanji |
-
 ### UserMnemonic (Entity)
 
 A user-written mnemonic for a specific radical or kanji. At most one per user per item. When present, the UI displays this instead of the `system_mnemonic` from the I18n table.
@@ -24,7 +14,7 @@ A user-written mnemonic for a specific radical or kanji. At most one per user pe
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `user_id` | `int` | FK to the user who created this mnemonic |
-| `item_type` | `ItemType` | `radical` or `kanji` — which kind of item this mnemonic is for (see item_type.dart) |
+| `item_type` | `ItemType` | `radical` or `kanji` — which kind of item this mnemonic is for (see shared_types.md) |
 | `item_id` | `int` | FK to the Radical or Kanji, depending on `item_type` |
 | `text` | `String` | The user's mnemonic text |
 | `created_at` | `DateTime` | When the mnemonic was first written |

@@ -36,7 +36,7 @@ The per-item FSRS state. One card per user per item. This is the core scheduling
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `user_id` | `int` | FK to the user |
-| `item_type` | `ItemType` | `radical`, `kanji`, or `vocabulary` (see mnemonic.md for ItemType) |
+| `item_type` | `ItemType` | `radical`, `kanji`, or `vocabulary` (see shared_types.md) |
 | `item_id` | `int` | FK to the Radical, Kanji, or Vocabulary |
 | `state` | `CardState` | Current lifecycle state |
 | `due` | `DateTime` | When the next review is scheduled (UTC) |
@@ -81,6 +81,7 @@ User       ──1:N──→ SrsCard        (one user, many cards across all it
 SrsCard    ──1:N──→ ReviewLog      (one card, many review events)
 SrsCard    ──N:1──→ Radical        (when item_type = radical; see radical.md)
 SrsCard    ──N:1──→ Kanji          (when item_type = kanji; see kanji.md)
+SrsCard    ──N:1──→ Vocabulary     (when item_type = vocabulary; see vocabulary.md)
 ```
 
 ## Business Rules

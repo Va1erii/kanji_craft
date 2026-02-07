@@ -6,15 +6,6 @@ A kanji is a logographic character used in the Japanese writing system, original
 
 ## Entities
 
-### ReadingPriority (Enum)
-
-Indicates whether a reading is a primary or secondary pronunciation for the kanji.
-
-| Value | Description |
-|---|---|
-| `primary` | A core reading taught during initial lessons. A kanji can have multiple primary readings per type (e.g. ニチ and ジツ are both primary onyomi for 日) |
-| `secondary` | A less common reading shown for reference but not tested during early SRS stages |
-
 ### Kanji (Entity)
 
 The core identity of a single kanji character. Holds language-independent data: the character itself, structural metadata, and level classifications.
@@ -48,7 +39,7 @@ A single pronunciation of a kanji. Each kanji has one or more readings, categori
 | `kanji_id` | `int` | FK to the parent Kanji |
 | `reading` | `String` | The pronunciation in kana, e.g. "ニチ", "ひ" |
 | `reading_type` | `ReadingType` | `onyomi` or `kunyomi` (see reading_type.dart) |
-| `priority` | `ReadingPriority` | `primary` or `secondary` |
+| `priority` | `ReadingPriority` | `primary` or `secondary` (see shared_types.md) |
 
 **Why a separate entity instead of a list on Kanji?**
 
@@ -83,7 +74,7 @@ Kanji  ──1:N──→ KanjiComponent    (one kanji, many radical components;
 Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 ```
 
-`ReadingType` and `ReadingPriority` are properties of `KanjiReading`, not of the kanji itself.
+`ReadingType` and `ReadingPriority` (see shared_types.md) are properties of `KanjiReading`, not of the kanji itself.
 
 ## Business Rules
 

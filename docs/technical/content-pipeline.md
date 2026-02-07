@@ -251,6 +251,51 @@ Location: `tools/parser/`
 
 The parser reads external XML sources and produces `seed.json`. It runs locally (not in CI) and is invoked manually.
 
+### Environment Setup
+
+The parser uses a Python virtual environment. On a fresh checkout:
+
+```bash
+cd tools/parser
+make setup      # creates .venv, installs dependencies
+make download   # fetches latest KanjiVG data
+```
+
+`make setup` creates `.venv/` from `requirements.txt`. All `make` targets activate the venv automatically — no manual `source .venv/bin/activate` needed.
+
+### Data Source Management
+
+Each external data source has its own subdirectory under `tools/parser/data/`. Versioned archives are tracked in git so upgrades produce a reviewable diff. Extracted files go into a `.unpacked/` subdirectory (gitignored) with stable names so parser code doesn't change between versions.
+
+```
+tools/parser/data/
+├── kanjivg/             ← one directory per source
+│   ├── kanjivg-20250816.xml.gz      ← versioned archive (tracked in git)
+│   ├── kanjivg-20250816-main.zip    ← versioned archive (tracked in git)
+│   ├── .version                      ← release tag (tracked in git)
+│   └── .unpacked/                    ← gitignored
+│       ├── kanjivg.xml               ← stable name for parser
+│       └── kanjivg/
+│           └── *.svg
+├── kanjidic2/           ← future
+└── jmdict/              ← future
+```
+
+Each source has a download script that:
+
+- Checks if the versioned archive already exists — skips download if so
+- Extracts to `.unpacked/` with stable filenames
+- Removes old version archives when a new version is downloaded
+- Tracks the installed version in `.version` for quick lookup
+
+**KanjiVG download:**
+
+```bash
+make download          # download latest if not current
+make download-force    # re-download even if current
+make version           # print installed KanjiVG version
+```
+
 ### Scope Filtering
 
 The MVP targets **N5 + Grade 1** content. The parser accepts a scope argument to filter which characters and words to include:
@@ -263,7 +308,7 @@ This produces only radicals, kanji, and vocabulary that fall within JLPT N5 or s
 
 ### KANJIDIC2 Parsing
 
-**Input:** `tools/parser/data/kanjidic2.xml`
+**Input:** `tools/parser/data/kanjidic2/.unpacked/kanjidic2.xml`
 
 1. Filter `<character>` entries by grade (1–6) and JLPT level
 2. Extract: character, stroke_count, grade, jlpt, freq, readings, meanings
@@ -274,7 +319,7 @@ This produces only radicals, kanji, and vocabulary that fall within JLPT N5 or s
 
 ### KanjiVG Parsing
 
-**Input:** `tools/parser/data/kanjivg-*.xml` (SVG files per character)
+**Input:** `tools/parser/data/kanjivg/.unpacked/kanjivg.xml` (SVGs in `.unpacked/kanjivg/`)
 
 The parser extracts the component decomposition tree from each KanjiVG file and flattens it into `kanji_components` rows.
 
@@ -295,7 +340,7 @@ This strategy avoids over-decomposing (e.g., splitting 木 into 十 and 八) whi
 
 ### JMdict Parsing
 
-**Input:** `tools/parser/data/JMdict_e.xml`
+**Input:** `tools/parser/data/jmdict/.unpacked/JMdict_e.xml`
 
 JMdict contains no JLPT tags, so N5 vocabulary filtering uses an external word list.
 
@@ -430,7 +475,7 @@ Child rows use this map to resolve FKs. For example, a kanji component with `"ra
 
 Before inserting rows that reference SVGs (`radicals`, `radical_variants`, `kanji`):
 
-1. Read the SVG file from `tools/parser/data/kanjivg/` by `svg_file_name`
+1. Read the SVG file from `tools/parser/data/kanjivg/.unpacked/kanjivg/` by `svg_file_name`
 2. Compute SHA-256 hash → populate `svg_hash`
 3. Upload to the `svg` Supabase Storage bucket (public read)
 4. Get the public URL → populate `svg_file_url`

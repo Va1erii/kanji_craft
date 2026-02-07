@@ -258,62 +258,45 @@ The parser uses a Python virtual environment. On a fresh checkout:
 ```bash
 cd tools/parser
 make setup          # creates .venv, installs dependencies
-make download-all   # fetches all data sources (KanjiVG, KANJIDIC2)
 ```
 
 `make setup` creates `.venv/` from `requirements.txt`. All `make` targets activate the venv automatically — no manual `source .venv/bin/activate` needed.
 
-### Data Source Management
+After setup, download the data sources manually (see next section) and extract them into `data/`.
 
-Each external data source has its own subdirectory under `tools/parser/data/`. Versioned archives are tracked in git so upgrades produce a reviewable diff. Extracted files go into a `.unpacked/` subdirectory (gitignored) with stable names so parser code doesn't change between versions.
+### Data Sources — Manual Download
+
+Archives are **not** tracked in git. Download ZIP/gzip files from GitHub releases, extract into `.unpacked/` directories (gitignored), and keep stable names so parser code doesn't change between versions.
+
+#### Sources to download
+
+| Source | Repo / URL | Assets (MVP) | Extract to |
+|---|---|---|---|
+| KanjiVG | [`KanjiVG/kanjivg`](https://github.com/KanjiVG/kanjivg/releases) GitHub releases | `kanjivg-*.xml.gz`, `kanjivg-*-main.zip` | `data/kanjivg/.unpacked/` |
+| JMdict + KANJIDIC | [`yomidevs/jmdict-yomitan`](https://github.com/yomidevs/jmdict-yomitan/releases) GitHub releases | `JMdict_english_with_examples.zip`, `JMdict_spanish.zip`, `KANJIDIC_english.zip`, `KANJIDIC_spanish.zip` | `data/jmdict/.unpacked/{name}/` |
+
+**MVP languages:** English (with Tatoeba examples via `JMdict_english_with_examples.zip`) and Spanish (`JMdict_spanish.zip`, no examples).
+
+#### Directory structure
 
 ```
 tools/parser/data/
-├── kanjivg/             ← one directory per source
-│   ├── kanjivg-20250816.xml.gz      ← versioned archive (tracked in git)
-│   ├── kanjivg-20250816-main.zip    ← versioned archive (tracked in git)
-│   ├── .version                      ← release tag (tracked in git)
-│   └── .unpacked/                    ← gitignored
-│       ├── kanjivg.xml               ← stable name for parser
-│       └── kanjivg/
+├── kanjivg/
+│   └── .unpacked/
+│       ├── kanjivg.xml               ← gunzip kanjivg-*.xml.gz
+│       └── kanjivg/                  ← unzip kanjivg-*-main.zip
 │           └── *.svg
-├── kanjidic2/
-│   ├── kanjidic2-20260207.xml.gz    ← date-stamped archive (tracked in git)
-│   ├── .version                      ← database_version string (tracked in git)
-│   ├── .last-modified                ← HTTP Last-Modified header (tracked in git)
-│   └── .unpacked/                    ← gitignored
-│       └── kanjidic2.xml             ← stable name for parser
-└── jmdict/              ← future
+└── jmdict/
+    └── .unpacked/
+        ├── jmdict-en/                ← JMdict_english_with_examples.zip
+        ├── jmdict-es/                ← JMdict_spanish.zip
+        ├── kanjidic-en/              ← KANJIDIC_english.zip
+        └── kanjidic-es/              ← KANJIDIC_spanish.zip
 ```
 
-Each source has a download script that:
+Each ZIP extracts Yomitan-format JSON files (`index.json`, `tag_bank_*.json`, `term_bank_*.json`, `term_meta_bank_*.json`). Extract each into its own subdirectory under `.unpacked/`.
 
-- Checks if the versioned archive already exists — skips download if so
-- Extracts to `.unpacked/` with stable filenames
-- Removes old version archives when a new version is downloaded
-- Tracks the installed version in `.version` for quick lookup
-
-**KanjiVG download:** Uses GitHub Releases API to detect new versions. Archives are named by release tag.
-
-```bash
-make download-kanjivg          # download latest if not current
-make download-kanjivg-force    # re-download even if current
-make version-kanjivg           # print installed KanjiVG version
-```
-
-**KANJIDIC2 download:** The file is updated in-place at a fixed URL (no releases). New-version detection uses the HTTP `Last-Modified` header compared against a stored value. The archive is date-stamped using `<date_of_creation>` from the XML header; the version is the `<database_version>` value (e.g., `2026-038`).
-
-```bash
-make download-kanjidic2        # download if newer
-make download-kanjidic2-force  # re-download even if current
-make version-kanjidic2         # print installed KANJIDIC2 version
-```
-
-**All sources:**
-
-```bash
-make download-all              # download all data sources
-```
+All `.unpacked/` directories are gitignored. No archives are tracked in git.
 
 ### Scope Filtering
 
@@ -327,7 +310,7 @@ This produces only radicals, kanji, and vocabulary that fall within JLPT N5 or s
 
 ### KANJIDIC2 Parsing
 
-**Input:** `tools/parser/data/kanjidic2/.unpacked/kanjidic2.xml`
+**Input:** `tools/parser/data/jmdict/.unpacked/kanjidic-en/` (Yomitan-format JSON)
 
 1. Filter `<character>` entries by grade (1–6) and JLPT level
 2. Extract: character, stroke_count, grade, jlpt, freq, readings, meanings
@@ -359,7 +342,7 @@ This strategy avoids over-decomposing (e.g., splitting 木 into 十 and 八) whi
 
 ### JMdict Parsing
 
-**Input:** `tools/parser/data/jmdict/.unpacked/JMdict_e.xml`
+**Input:** `tools/parser/data/jmdict/.unpacked/jmdict-en/` (Yomitan-format JSON)
 
 JMdict contains no JLPT tags, so N5 vocabulary filtering uses an external word list.
 

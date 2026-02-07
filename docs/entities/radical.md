@@ -21,6 +21,11 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 | `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
+| `is_official` | `bool` | `true` for official Kangxi radicals (214 traditional set), `false` for custom radicals invented as learning aids. Defaults to `false` |
+
+**Why `is_official`?**
+
+Many kanji learning systems create custom radicals that aren't part of the 214 Kangxi set — they're useful mnemonics but don't exist in traditional references. This flag lets the UI distinguish them (e.g. badge, filter) and helps users who already know some Japanese trust which radicals are "real."
 
 **Why `master_symbol` instead of storing every shape?**
 

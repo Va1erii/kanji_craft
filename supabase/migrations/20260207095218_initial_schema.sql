@@ -67,6 +67,7 @@ CREATE TABLE radicals (
   svg_file_name TEXT   NOT NULL,
   svg_file_url  TEXT   NOT NULL,
   svg_hash      TEXT   NOT NULL,
+  is_official   BOOLEAN NOT NULL DEFAULT false,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
 

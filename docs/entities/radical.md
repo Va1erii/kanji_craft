@@ -39,14 +39,14 @@ Each radical and variant needs a visual SVG for teaching stroke order and shape 
 
 ### RadicalI18n (Value Object)
 
-Localized name, mnemonic, and search data for a radical. One row per radical per language.
+Localized name, system mnemonic, and search data for a radical. One row per radical per language.
 
 | Field | Type | Description |
 |---|---|---|
 | `radical_id` | `int` | FK to the parent Radical |
 | `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es", "fr" |
 | `name` | `String` | Localized name, e.g. "Water" (en), "Agua" (es) |
-| `mnemonic` | `String` | The learning story to help remember the shape |
+| `system_mnemonic` | `String` | The app-provided learning story to help remember the shape (see mnemonic.md) |
 | `search_tags` | `List<String>` | Synonyms for search, e.g. ["liquid", "splash", "ocean"] |
 
 **Why separate from Radical?**
@@ -116,7 +116,7 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 
 - **Radical with a single variant:** Some radicals look the same in every position (e.g. 口). They still get one `RadicalVariant` row — the model is consistent regardless of variant count.
 - **Locked vs unlocked variants:** A locked variant (e.g. 氵, always left) means the UI can skip position context. An unlocked variant means the app should show "this shape can appear here or here."
-- **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or mnemonic.
+- **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or system mnemonic.
 - **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. This is modeled through separate `RadicalVariant` rows, not special-cased.
 - **Radicals with no kanji:** During early content seeding, a radical may exist before any kanji reference it (see kanji_component.md). The radical is still reviewable; the composition section in the UI should show an empty state.
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.

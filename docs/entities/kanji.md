@@ -60,14 +60,14 @@ Sort order implies a strict linear ranking, but multiple readings can be equally
 
 ### KanjiI18n (Value Object)
 
-Localized meanings, mnemonic, and search data for a kanji. One row per kanji per language.
+Localized meanings, system mnemonic, and search data for a kanji. One row per kanji per language.
 
 | Field | Type | Description |
 |---|---|---|
 | `kanji_id` | `int` | FK to the parent Kanji |
 | `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es" |
 | `meanings` | `List<String>` | Localized meanings in priority order, e.g. ["day", "sun", "Japan"] |
-| `mnemonic` | `String` | A learning story to help remember the character's shape and meaning |
+| `system_mnemonic` | `String` | The app-provided learning story to help remember the character's shape and meaning (see mnemonic.md) |
 | `search_tags` | `List<String>` | Synonyms and related terms for search, e.g. ["solar", "daily", "date"] |
 
 **Why `meanings` is a list, not a single string?**
@@ -105,6 +105,6 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 - **Kanji with no grade:** Non-jouyou kanji have no school grade assignment. Same filtering concern as above.
 - **Multiple primary readings per type:** This is normal, not an error. 日 has two primary onyomi (ニチ, ジツ). SRS should test all primary readings, not just the first.
 - **SVG asset missing:** Same local-first fallback as radicals (see radical.md): bundled asset → remote download → unicode character text fallback.
-- **Missing translations:** If a user's language has no `KanjiI18n` row, fall back to "en". Never show blank meanings or mnemonic.
+- **Missing translations:** If a user's language has no `KanjiI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
 - **Kanji with no components:** Should not happen in production — every kanji is composed of at least one radical. Flag in content validation tooling (see kanji_component.md).
 - **Rare kanji outside both JLPT and grade:** These have null `min_jlpt_level` and null `min_grade`. They should only surface via explicit search, never in the default lesson queue.

@@ -257,7 +257,7 @@ CREATE TABLE vocabulary_kanji (
 
   CONSTRAINT fk_vocabulary_kanji_vocabulary_id FOREIGN KEY (vocabulary_id) REFERENCES vocabulary (id) ON DELETE CASCADE,
   CONSTRAINT fk_vocabulary_kanji_kanji_id FOREIGN KEY (kanji_id) REFERENCES kanji (id) ON DELETE CASCADE,
-  CONSTRAINT uq_vocabulary_kanji_vocabulary_id_kanji_id UNIQUE (vocabulary_id, kanji_id),
+  CONSTRAINT uq_vocabulary_kanji_vocabulary_id_position UNIQUE (vocabulary_id, position),
   CONSTRAINT chk_vocabulary_kanji_position CHECK (position >= 0)
 );
 

@@ -18,6 +18,8 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1) |
 | `min_grade` | `int` | The earliest Japanese school grade this appears in (1–6) |
+| `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
+| `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 
 **Why `master_symbol` instead of storing every shape?**
 
@@ -30,6 +32,10 @@ Users choose their study path — JLPT-based (N5 → N1) or school-grade-based (
 **Why `impact_score`?**
 
 Helps prioritize which radicals to teach first within a level. A radical appearing in 200 kanji is more valuable to learn early than one appearing in 3.
+
+**Why `svg_file_name` + `svg_file_url` instead of inline SVG data or implicit paths?**
+
+Each radical and variant needs a visual SVG for teaching stroke order and shape recognition. The app uses a local-first resolution strategy: (1) look for `svg_file_name` in bundled assets, (2) check device cache, (3) download from `svg_file_url` and cache locally. Storing both fields explicitly in the schema means the data layer controls which file maps to which entity — no filename conventions to guess, no magic path construction. Common radicals ship pre-bundled for instant offline rendering; rare ones are fetched on demand.
 
 ### RadicalI18n (Value Object)
 
@@ -77,6 +83,8 @@ A specific visual form a radical takes when placed in a particular position insi
 | `shape` | `String` | The specific form, e.g. "氵" |
 | `position` | `Position` | Where this shape appears |
 | `is_locked` | `bool` | If `true`, this shape never moves to another position (e.g. 氵 is always left) |
+| `svg_file_name` | `String` | Local asset filename for the variant SVG, e.g. "06c35.svg" |
+| `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 
 **Why `is_locked`?**
 
@@ -102,6 +110,7 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 7. A radical must reach `guru1` SRS stage (see srs.md) before the kanji that contain it are unlocked for lessons.
 8. `impact_score` must be in the range 1–10.
 9. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–6.
+10. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
 
 ## Edge Cases
 
@@ -110,3 +119,4 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 - **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or mnemonic.
 - **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. This is modeled through separate `RadicalVariant` rows, not special-cased.
 - **Radicals with no kanji:** During early content seeding, a radical may exist before any kanji reference it (see kanji_component.md). The radical is still reviewable; the composition section in the UI should show an empty state.
+- **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.

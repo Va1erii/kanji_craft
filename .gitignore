@@ -47,3 +47,4 @@ app.*.map.json
 # Content pipeline
 tools/parser/.venv/
 tools/parser/data/*/.unpacked/
+tools/parser/output/*.json

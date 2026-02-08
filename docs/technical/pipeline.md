@@ -101,10 +101,10 @@ For every new `KanjiComponent`, the system estimates `logic_hint` (semantic vs p
 
 1. Fetch onyomi for the kanji (e.g. 忙 = ボウ).
 2. Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi (e.g. 亡 = ボウ, モウ). Radicals don't store readings directly (see [radical.md](../entities/radical.md) rule #5).
-3. If match → set `logic_hint = phonetic`, `verification_status = draft`.
-4. If no match → set `logic_hint = semantic`, `verification_status = draft`.
+3. If match → set `logic_hint = phonetic`, create a `kanji_component_reviews` row with `verification_status = draft`.
+4. If no match → set `logic_hint = semantic`, create a `kanji_component_reviews` row with `verification_status = draft`.
 
-All new components start as `draft` regardless of confidence. The `ai_confidence` score (0.0–1.0) helps prioritize the review queue — lowest confidence first.
+All new components start with a `draft` review row regardless of confidence. The `ai_confidence` score (0.0–1.0) on the review row helps prioritize the review queue — lowest confidence first.
 
 On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
@@ -114,7 +114,7 @@ On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
 ### 3.1 Verification Status
 
-Entities that require human review (specifically `KanjiComponent`) track their state:
+Entities that require human review (specifically `KanjiComponent`) have a corresponding row in the `kanji_component_reviews` table that tracks their review state:
 
 | Status | Description |
 |---|---|
@@ -122,11 +122,11 @@ Entities that require human review (specifically `KanjiComponent`) track their s
 | `verified` | Confirmed by human review (or high-confidence auto-rule). Ready for remote sync |
 | `flagged` | Identified as problematic/error. Excluded from sync |
 
-See `verification_status` field in [kanji_component.md](../entities/kanji_component.md).
+See `KanjiComponentReview` entity in [kanji_component.md](../entities/kanji_component.md).
 
 ### 3.2 Review Queue (Admin Dashboard)
 
-The Admin Tool queries `kanji_components WHERE verification_status = 'draft'`, ordered by `ai_confidence ASC` (least confident first).
+The Admin Tool queries `kanji_component_reviews JOIN kanji_components` where `verification_status = 'draft'`, ordered by `ai_confidence ASC` (least confident first).
 
 **Review UI:**
 - Visual diff: kanji and component shown side-by-side.
@@ -145,7 +145,7 @@ High-confidence matches (e.g. `ai_confidence >= 0.95`) can be auto-verified in b
 
 - **Direction:** One-way (Local → Remote).
 - **Method:** Incremental upsert.
-- **Safety gate:** `WHERE verification_status = 'verified'` for tables that have it (currently `kanji_components`). Other content tables sync all rows.
+- **Safety gate:** Only `kanji_components` with a corresponding `kanji_component_reviews.verification_status = 'verified'` row are synced. Other content tables sync all rows.
 
 ### 4.2 Sync Order (FK Dependency Resolution)
 
@@ -195,7 +195,7 @@ python scripts/ingest_kanjivg.py --version "2024-04-01"
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table
-- [kanji_component.md](../entities/kanji_component.md) — verification_status and ai_confidence fields
+- [kanji_component.md](../entities/kanji_component.md) — component entity and KanjiComponentReview (admin review state)
 - [radical.md](../entities/radical.md) — radical extraction target
 - [kanji.md](../entities/kanji.md) — kanji creation target
 - [offline.md](offline.md) — client-side sync after promotion

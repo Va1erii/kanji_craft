@@ -1,17 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/raw_kanjivg.dart';
-import '../../domain/repositories/raw_kanjivg_repository.dart';
 import '../dto/raw_kanjivg_dto.dart';
 
-class RawKanjiVgRepositoryImpl implements RawKanjiVgRepository {
-  RawKanjiVgRepositoryImpl(this._client);
+class SupabaseRawKanjiVgDataSource {
+  SupabaseRawKanjiVgDataSource(this._client);
 
   final SupabaseClient _client;
 
   static const _table = 'raw_kanjivg';
 
-  @override
   Future<void> insertBatch(List<RawKanjiVg> rows) async {
     final payload = rows.map((r) {
       final dto = RawKanjiVgDto.fromDomain(r);
@@ -23,7 +21,6 @@ class RawKanjiVgRepositoryImpl implements RawKanjiVgRepository {
     await _client.from(_table).insert(payload);
   }
 
-  @override
   Future<List<RawKanjiVg>> getByImportId(int importId) async {
     final response = await _client
         .from(_table)
@@ -35,7 +32,6 @@ class RawKanjiVgRepositoryImpl implements RawKanjiVgRepository {
         .toList();
   }
 
-  @override
   Future<RawKanjiVg?> getByCharacter({
     required int importId,
     required String character,
@@ -50,7 +46,6 @@ class RawKanjiVgRepositoryImpl implements RawKanjiVgRepository {
     return RawKanjiVgDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<int> countByImportId(int importId) async {
     final response = await _client
         .from(_table)
@@ -58,5 +53,20 @@ class RawKanjiVgRepositoryImpl implements RawKanjiVgRepository {
         .eq('import_id', importId)
         .count(CountOption.exact);
     return response.count;
+  }
+
+  Future<List<RawKanjiVg>> getByImportIdCreatedSince(
+    int importId,
+    DateTime since,
+  ) async {
+    final response = await _client
+        .from(_table)
+        .select()
+        .eq('import_id', importId)
+        .gt('created_at', since.toIso8601String())
+        .order('character');
+    return response
+        .map((json) => RawKanjiVgDto.fromJson(json).toDomain())
+        .toList();
   }
 }

@@ -1,17 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/raw_kanjidic.dart';
-import '../../domain/repositories/raw_kanjidic_repository.dart';
 import '../dto/raw_kanjidic_dto.dart';
 
-class RawKanjidicRepositoryImpl implements RawKanjidicRepository {
-  RawKanjidicRepositoryImpl(this._client);
+class SupabaseRawKanjidicDataSource {
+  SupabaseRawKanjidicDataSource(this._client);
 
   final SupabaseClient _client;
 
   static const _table = 'raw_kanjidic';
 
-  @override
   Future<void> insertBatch(List<RawKanjidic> rows) async {
     final payload = rows.map((r) {
       final dto = RawKanjidicDto.fromDomain(r);
@@ -23,7 +21,6 @@ class RawKanjidicRepositoryImpl implements RawKanjidicRepository {
     await _client.from(_table).insert(payload);
   }
 
-  @override
   Future<List<RawKanjidic>> getByImportId(int importId) async {
     final response = await _client
         .from(_table)
@@ -35,7 +32,6 @@ class RawKanjidicRepositoryImpl implements RawKanjidicRepository {
         .toList();
   }
 
-  @override
   Future<RawKanjidic?> getByLiteral({
     required int importId,
     required String literal,
@@ -50,7 +46,6 @@ class RawKanjidicRepositoryImpl implements RawKanjidicRepository {
     return RawKanjidicDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<int> countByImportId(int importId) async {
     final response = await _client
         .from(_table)
@@ -58,5 +53,20 @@ class RawKanjidicRepositoryImpl implements RawKanjidicRepository {
         .eq('import_id', importId)
         .count(CountOption.exact);
     return response.count;
+  }
+
+  Future<List<RawKanjidic>> getByImportIdCreatedSince(
+    int importId,
+    DateTime since,
+  ) async {
+    final response = await _client
+        .from(_table)
+        .select()
+        .eq('import_id', importId)
+        .gt('created_at', since.toIso8601String())
+        .order('literal');
+    return response
+        .map((json) => RawKanjidicDto.fromJson(json).toDomain())
+        .toList();
   }
 }

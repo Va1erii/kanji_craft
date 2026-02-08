@@ -2851,6 +2851,228 @@ class KanjiComponentReviewEntriesCompanion
   }
 }
 
+class $SyncMetadataEntriesTable extends SyncMetadataEntries
+    with TableInfo<$SyncMetadataEntriesTable, SyncMetadataEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncMetadataEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, lastSyncedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_metadata_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncMetadataEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastSyncedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  SyncMetadataEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncMetadataEntry(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncMetadataEntriesTable createAlias(String alias) {
+    return $SyncMetadataEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncMetadataEntry extends DataClass
+    implements Insertable<SyncMetadataEntry> {
+  final String key;
+  final DateTime lastSyncedAt;
+  const SyncMetadataEntry({required this.key, required this.lastSyncedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    return map;
+  }
+
+  SyncMetadataEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SyncMetadataEntriesCompanion(
+      key: Value(key),
+      lastSyncedAt: Value(lastSyncedAt),
+    );
+  }
+
+  factory SyncMetadataEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncMetadataEntry(
+      key: serializer.fromJson<String>(json['key']),
+      lastSyncedAt: serializer.fromJson<DateTime>(json['lastSyncedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'lastSyncedAt': serializer.toJson<DateTime>(lastSyncedAt),
+    };
+  }
+
+  SyncMetadataEntry copyWith({String? key, DateTime? lastSyncedAt}) =>
+      SyncMetadataEntry(
+        key: key ?? this.key,
+        lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      );
+  SyncMetadataEntry copyWithCompanion(SyncMetadataEntriesCompanion data) {
+    return SyncMetadataEntry(
+      key: data.key.present ? data.key.value : this.key,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetadataEntry(')
+          ..write('key: $key, ')
+          ..write('lastSyncedAt: $lastSyncedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, lastSyncedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncMetadataEntry &&
+          other.key == this.key &&
+          other.lastSyncedAt == this.lastSyncedAt);
+}
+
+class SyncMetadataEntriesCompanion extends UpdateCompanion<SyncMetadataEntry> {
+  final Value<String> key;
+  final Value<DateTime> lastSyncedAt;
+  final Value<int> rowid;
+  const SyncMetadataEntriesCompanion({
+    this.key = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncMetadataEntriesCompanion.insert({
+    required String key,
+    required DateTime lastSyncedAt,
+    this.rowid = const Value.absent(),
+  }) : key = Value(key),
+       lastSyncedAt = Value(lastSyncedAt);
+  static Insertable<SyncMetadataEntry> custom({
+    Expression<String>? key,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncMetadataEntriesCompanion copyWith({
+    Value<String>? key,
+    Value<DateTime>? lastSyncedAt,
+    Value<int>? rowid,
+  }) {
+    return SyncMetadataEntriesCompanion(
+      key: key ?? this.key,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetadataEntriesCompanion(')
+          ..write('key: $key, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AdminDatabase extends GeneratedDatabase {
   _$AdminDatabase(QueryExecutor e) : super(e);
   late final $DataImportEntriesTable dataImportEntries =
@@ -2861,6 +3083,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $RawKanjidicEntriesTable(this);
   late final $KanjiComponentReviewEntriesTable kanjiComponentReviewEntries =
       $KanjiComponentReviewEntriesTable(this);
+  late final $SyncMetadataEntriesTable syncMetadataEntries =
+      $SyncMetadataEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2870,6 +3094,7 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     rawKanjiVgEntries,
     rawKanjidicEntries,
     kanjiComponentReviewEntries,
+    syncMetadataEntries,
   ];
   @override
   DriftDatabaseOptions get options =>

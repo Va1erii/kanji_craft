@@ -2,18 +2,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/kanji_component_review.dart';
 import '../../domain/entities/verification_status.dart';
-import '../../domain/repositories/kanji_component_review_repository.dart';
 import '../dto/kanji_component_review_dto.dart';
 
-class KanjiComponentReviewRepositoryImpl
-    implements KanjiComponentReviewRepository {
-  KanjiComponentReviewRepositoryImpl(this._client);
+class SupabaseKanjiComponentReviewDataSource {
+  SupabaseKanjiComponentReviewDataSource(this._client);
 
   final SupabaseClient _client;
 
   static const _table = 'kanji_component_reviews';
 
-  @override
   Future<KanjiComponentReview> create({
     required int kanjiComponentId,
     required VerificationStatus verificationStatus,
@@ -31,7 +28,6 @@ class KanjiComponentReviewRepositoryImpl
     return KanjiComponentReviewDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<KanjiComponentReview?> getByComponentId(
     int kanjiComponentId,
   ) async {
@@ -44,7 +40,6 @@ class KanjiComponentReviewRepositoryImpl
     return KanjiComponentReviewDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<List<KanjiComponentReview>> getDraftReviews({int? limit}) async {
     var query = _client
         .from(_table)
@@ -60,7 +55,6 @@ class KanjiComponentReviewRepositoryImpl
         .toList();
   }
 
-  @override
   Future<KanjiComponentReview> updateStatus({
     required int id,
     required VerificationStatus status,
@@ -74,7 +68,6 @@ class KanjiComponentReviewRepositoryImpl
     return KanjiComponentReviewDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<int> bulkVerify({required double threshold}) async {
     final response = await _client
         .from(_table)
@@ -84,5 +77,16 @@ class KanjiComponentReviewRepositoryImpl
         .select()
         .count(CountOption.exact);
     return response.count;
+  }
+
+  Future<List<KanjiComponentReview>> getUpdatedSince(DateTime since) async {
+    final response = await _client
+        .from(_table)
+        .select()
+        .gt('updated_at', since.toIso8601String())
+        .order('updated_at');
+    return response
+        .map((json) => KanjiComponentReviewDto.fromJson(json).toDomain())
+        .toList();
   }
 }

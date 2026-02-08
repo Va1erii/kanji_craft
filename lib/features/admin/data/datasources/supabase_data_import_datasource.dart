@@ -3,17 +3,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/data_import.dart';
 import '../../domain/entities/import_source.dart';
 import '../../domain/entities/import_status.dart';
-import '../../domain/repositories/data_import_repository.dart';
 import '../dto/data_import_dto.dart';
 
-class DataImportRepositoryImpl implements DataImportRepository {
-  DataImportRepositoryImpl(this._client);
+class SupabaseDataImportDataSource {
+  SupabaseDataImportDataSource(this._client);
 
   final SupabaseClient _client;
 
   static const _table = 'data_imports';
 
-  @override
   Future<DataImport> create({
     required ImportSource source,
     required String sourceVersion,
@@ -31,7 +29,6 @@ class DataImportRepositoryImpl implements DataImportRepository {
     return DataImportDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<DataImport?> getById(int id) async {
     final response = await _client
         .from(_table)
@@ -42,7 +39,6 @@ class DataImportRepositoryImpl implements DataImportRepository {
     return DataImportDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<DataImport?> getActiveBySource(ImportSource source) async {
     final response = await _client
         .from(_table)
@@ -54,7 +50,6 @@ class DataImportRepositoryImpl implements DataImportRepository {
     return DataImportDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<DataImport> updateStatus({
     required int id,
     required ImportStatus status,
@@ -90,11 +85,21 @@ class DataImportRepositoryImpl implements DataImportRepository {
     return DataImportDto.fromJson(response).toDomain();
   }
 
-  @override
   Future<List<DataImport>> listAll() async {
     final response = await _client
         .from(_table)
         .select()
+        .order('created_at', ascending: false);
+    return response
+        .map((json) => DataImportDto.fromJson(json).toDomain())
+        .toList();
+  }
+
+  Future<List<DataImport>> listUpdatedSince(DateTime since) async {
+    final response = await _client
+        .from(_table)
+        .select()
+        .gt('updated_at', since.toIso8601String())
         .order('created_at', ascending: false);
     return response
         .map((json) => DataImportDto.fromJson(json).toDomain())

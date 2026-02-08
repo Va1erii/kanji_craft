@@ -16,6 +16,7 @@ import 'tables/data_import_table.dart';
 import 'tables/kanji_component_review_table.dart';
 import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
+import 'tables/sync_metadata_table.dart';
 
 part 'admin_database.g.dart';
 
@@ -25,6 +26,7 @@ part 'admin_database.g.dart';
     RawKanjiVgEntries,
     RawKanjidicEntries,
     KanjiComponentReviewEntries,
+    SyncMetadataEntries,
   ],
 )
 class AdminDatabase extends _$AdminDatabase {
@@ -33,7 +35,17 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(syncMetadataEntries);
+          }
+        },
+      );
 
   /// Deletes all rows from every table. Useful for pipeline reset.
   Future<void> clearAll() async {

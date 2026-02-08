@@ -15,8 +15,9 @@ One row per character entry in KANJIDIC2. Scalar fields for commonly queried dat
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
+| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `literal`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback |
 | `source_version` | `String` | KANJIDIC2 release version, e.g. "2024-363". Used to detect diffs and migrate when the source updates |
-| `literal` | `String` | The character, e.g. "日". Unique |
+| `literal` | `String` | The character, e.g. "日" |
 | `stroke_count` | `int` | Primary stroke count |
 | `stroke_count_misstrokes` | `JsonList?` | Alternative stroke counts from common miscounts, e.g. `[5, 7]`. Null if none |
 | `grade` | `int?` | School grade: 1–6 (kyouiku), 8 (remaining jouyou), 9 (jinmeiyou), 10 (variant of jouyou). Null for ungraded characters |
@@ -118,8 +119,8 @@ Dictionary and reference book indexes. All values are strings except `moro` whic
 | `halpern_kkd` | `String?` | Kanji & Kana Dictionary (Halpern) |
 | `halpern_kkld` | `String?` | Kanji Learners Dictionary (1st ed.) |
 | `halpern_kkld_2ed` | `String?` | Kanji Learners Dictionary (2nd ed.) |
-| `heisig` | `String?` | Remembering the Kanji (6th ed.) |
-| `heisig6` | `String?` | Remembering the Kanji (6th ed., alt) |
+| `heisig` | `String?` | Remembering the Kanji (original) |
+| `heisig6` | `String?` | Remembering the Kanji (6th ed.) |
 | `gakken` | `String?` | Gakken Kanji Dictionary |
 | `oneill_names` | `String?` | Japanese Names (O'Neill) |
 | `oneill_kk` | `String?` | Essential Kanji (O'Neill) |
@@ -235,14 +236,14 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 
 ## Business Rules
 
-1. `literal` must be a single Unicode code point. Unique across all rows.
-2. `stroke_count` must be a positive integer.
-3. `readings` must contain at least `ja_on` or `ja_kun` (a character always has at least one Japanese reading).
-4. `meanings.en` must be a non-empty array (KANJIDIC2 always includes English meanings).
-5. `codepoints.ucs` must be present and non-null.
-6. `radicals.classical` must be present and in the range 1–214.
-7. **RLS:** RLS is enabled with zero policies for `authenticated` or `anon` roles. Only `service_role` (which bypasses RLS) can read or write this table.
-8. **Upsert on re-import:** The import pipeline uses `ON CONFLICT (literal) DO UPDATE` so re-running the import is idempotent — existing rows are overwritten with fresh data, no duplicates are created.
+1. `literal` must be a single Unicode code point.
+2. **Composite unique constraint:** `import_id` + `literal` must be unique. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
+3. `stroke_count` must be a positive integer.
+4. `readings` must contain at least `ja_on` or `ja_kun` (a character always has at least one Japanese reading).
+5. `meanings.en` must be a non-empty array (KANJIDIC2 always includes English meanings).
+6. `codepoints.ucs` must be present and non-null.
+7. `radicals.classical` must be present and in the range 1–214.
+8. **RLS:** RLS is enabled with zero policies for `authenticated` or `anon` roles. Only `service_role` (which bypasses RLS) can read or write this table.
 9. `grade`, when present, must be one of: 1, 2, 3, 4, 5, 6, 8, 9, 10.
 10. `jlpt`, when present, must be in the range 1–4 (pre-2010 scale).
 

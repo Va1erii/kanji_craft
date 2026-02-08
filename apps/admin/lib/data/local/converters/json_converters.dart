@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../../domain/entities/raw_jmdict.dart';
 import '../../../domain/entities/raw_kanjidic.dart';
 import '../../../domain/entities/raw_kanjivg.dart';
+import '../../dto/raw_jmdict_dto.dart';
 import '../../dto/raw_kanjidic_dto.dart';
 import '../../dto/raw_kanjivg_dto.dart';
 
@@ -210,6 +212,75 @@ class MeaningsConverter
   @override
   String toSql(Map<String, List<String>> value) => jsonEncode(value);
 }
+
+// ---------------------------------------------------------------------------
+// JMDict converters
+// ---------------------------------------------------------------------------
+
+class JmdictKanjiElementsConverter
+    extends TypeConverter<List<JmdictKanjiElement>, String> {
+  const JmdictKanjiElementsConverter();
+
+  @override
+  List<JmdictKanjiElement> fromSql(String fromDb) {
+    final list = jsonDecode(fromDb) as List;
+    return list
+        .map((e) => JmdictKanjiElementDto.fromJson(e as Map<String, Object?>)
+            .toDomain())
+        .toList();
+  }
+
+  @override
+  String toSql(List<JmdictKanjiElement> value) {
+    final dtos = value.map(JmdictKanjiElementDto.fromDomain).toList();
+    return jsonEncode(dtos.map((d) => d.toJson()).toList());
+  }
+}
+
+class JmdictReadingElementsConverter
+    extends TypeConverter<List<JmdictReadingElement>, String> {
+  const JmdictReadingElementsConverter();
+
+  @override
+  List<JmdictReadingElement> fromSql(String fromDb) {
+    final list = jsonDecode(fromDb) as List;
+    return list
+        .map((e) =>
+            JmdictReadingElementDto.fromJson(e as Map<String, Object?>)
+                .toDomain())
+        .toList();
+  }
+
+  @override
+  String toSql(List<JmdictReadingElement> value) {
+    final dtos = value.map(JmdictReadingElementDto.fromDomain).toList();
+    return jsonEncode(dtos.map((d) => d.toJson()).toList());
+  }
+}
+
+class JmdictSensesConverter
+    extends TypeConverter<List<JmdictSense>, String> {
+  const JmdictSensesConverter();
+
+  @override
+  List<JmdictSense> fromSql(String fromDb) {
+    final list = jsonDecode(fromDb) as List;
+    return list
+        .map((e) =>
+            JmdictSenseDto.fromJson(e as Map<String, Object?>).toDomain())
+        .toList();
+  }
+
+  @override
+  String toSql(List<JmdictSense> value) {
+    final dtos = value.map(JmdictSenseDto.fromDomain).toList();
+    return jsonEncode(dtos.map((d) => d.toJson()).toList());
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Generic converters
+// ---------------------------------------------------------------------------
 
 class JsonMapConverter extends TypeConverter<Map<String, Object?>?, String?> {
   const JsonMapConverter();

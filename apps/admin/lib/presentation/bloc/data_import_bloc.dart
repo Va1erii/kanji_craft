@@ -55,7 +55,7 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
       final ingest = switch (source) {
         ImportSource.kanjivg => _ingestionService.ingestKanjiVg,
         ImportSource.kanjidic => _ingestionService.ingestKanjidic,
-        ImportSource.jmdict => throw UnsupportedError('JMdict not yet supported'),
+        ImportSource.jmdict => _ingestionService.ingestJmdict,
       };
 
       // Temporary import ID for tracking progress before we know the real one.

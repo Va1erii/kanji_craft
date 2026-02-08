@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../domain/entities/import_source.dart';
 import '../../domain/entities/import_status.dart';
+import '../../domain/entities/raw_jmdict.dart';
 import '../../domain/entities/raw_kanjidic.dart';
 import '../../domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_core/domain/entities/verification_status.dart';
@@ -14,6 +15,7 @@ import 'converters/enum_converters.dart';
 import 'converters/json_converters.dart';
 import 'tables/data_import_table.dart';
 import 'tables/kanji_component_review_table.dart';
+import 'tables/raw_jmdict_table.dart';
 import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
 import 'tables/sync_metadata_table.dart';
@@ -25,6 +27,7 @@ part 'admin_database.g.dart';
     DataImportEntries,
     RawKanjiVgEntries,
     RawKanjidicEntries,
+    RawJmdictEntries,
     KanjiComponentReviewEntries,
     SyncMetadataEntries,
   ],
@@ -35,7 +38,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -43,6 +46,9 @@ class AdminDatabase extends _$AdminDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(syncMetadataEntries);
+          }
+          if (from < 3) {
+            await m.createTable(rawJmdictEntries);
           }
         },
       );

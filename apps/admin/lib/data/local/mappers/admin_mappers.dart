@@ -1,5 +1,6 @@
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/kanji_component_review.dart';
+import '../../../domain/entities/raw_jmdict.dart';
 import '../../../domain/entities/raw_kanjidic.dart';
 import '../../../domain/entities/raw_kanjivg.dart';
 import '../admin_database.dart';
@@ -116,6 +117,32 @@ extension RawKanjidicEntryToDomain on RawKanjidicEntry {
         meanings: meanings,
         variants: variants,
         radicalNames: radicalNames,
+        createdAt: createdAt,
+      );
+}
+
+// -- RawJmdict ↔ RawJmdictEntry --
+
+extension RawJmdictToEntry on RawJmdict {
+  RawJmdictEntry toEntry() => RawJmdictEntry(
+        id: id,
+        importId: importId,
+        entSeq: entSeq,
+        kanjiElements: kanjiElements,
+        readingElements: readingElements,
+        senses: senses,
+        createdAt: createdAt,
+      );
+}
+
+extension RawJmdictEntryToDomain on RawJmdictEntry {
+  RawJmdict toDomain() => RawJmdict(
+        id: id,
+        importId: importId,
+        entSeq: entSeq,
+        kanjiElements: kanjiElements,
+        readingElements: readingElements,
+        senses: senses,
         createdAt: createdAt,
       );
 }

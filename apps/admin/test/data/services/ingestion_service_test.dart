@@ -4,9 +4,11 @@ import 'package:kanji_craft_admin/data/parsers/kanjivg_parser.dart';
 import 'package:kanji_craft_admin/data/services/ingestion_service.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
+import 'package:kanji_craft_admin/domain/entities/raw_jmdict.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dart';
+import 'package:kanji_craft_admin/domain/repositories/raw_jmdict_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjivg_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,6 +22,8 @@ class MockRawKanjiVgRepository extends Mock implements RawKanjiVgRepository {}
 class MockRawKanjidicRepository extends Mock
     implements RawKanjidicRepository {}
 
+class MockRawJmdictRepository extends Mock implements RawJmdictRepository {}
+
 class MockKanjiVgParser extends Mock implements KanjiVgParser {}
 
 class MockKanjidicParser extends Mock implements KanjidicParser {}
@@ -28,6 +32,7 @@ void main() {
   late MockDataImportRepository mockImportRepo;
   late MockRawKanjiVgRepository mockKanjiVgRepo;
   late MockRawKanjidicRepository mockKanjidicRepo;
+  late MockRawJmdictRepository mockJmdictRepo;
   late MockKanjiVgParser mockKanjiVgParser;
   late MockKanjidicParser mockKanjidicParser;
   late IngestionService service;
@@ -35,6 +40,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(<RawKanjiVg>[]);
     registerFallbackValue(<RawKanjidic>[]);
+    registerFallbackValue(<RawJmdict>[]);
     registerFallbackValue(ImportSource.kanjivg);
     registerFallbackValue(ImportStatus.pending);
   });
@@ -44,6 +50,7 @@ void main() {
     mockImportRepo = MockDataImportRepository();
     mockKanjiVgRepo = MockRawKanjiVgRepository();
     mockKanjidicRepo = MockRawKanjidicRepository();
+    mockJmdictRepo = MockRawJmdictRepository();
     mockKanjiVgParser = MockKanjiVgParser();
     mockKanjidicParser = MockKanjidicParser();
 
@@ -51,6 +58,7 @@ void main() {
       importRepository: mockImportRepo,
       kanjiVgRepository: mockKanjiVgRepo,
       kanjidicRepository: mockKanjidicRepo,
+      jmdictRepository: mockJmdictRepo,
       kanjiVgParser: mockKanjiVgParser,
       kanjidicParser: mockKanjidicParser,
     );

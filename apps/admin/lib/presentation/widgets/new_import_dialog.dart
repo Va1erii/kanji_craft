@@ -28,9 +28,7 @@ class _NewImportDialogState extends State<NewImportDialog> {
   String? _fileName;
 
   bool get _canSubmit =>
-      _source != ImportSource.jmdict &&
-      _versionController.text.trim().isNotEmpty &&
-      _filePath != null;
+      _versionController.text.trim().isNotEmpty && _filePath != null;
 
   @override
   void dispose() {
@@ -71,20 +69,7 @@ class _NewImportDialogState extends State<NewImportDialog> {
                 for (final source in ImportSource.values)
                   DropdownMenuItem(
                     value: source,
-                    enabled: source != ImportSource.jmdict,
-                    child: Text(
-                      source == ImportSource.jmdict
-                          ? '${source.name} (coming soon)'
-                          : source.name,
-                      style: source == ImportSource.jmdict
-                          ? TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.38),
-                            )
-                          : null,
-                    ),
+                    child: Text(source.name),
                   ),
               ],
               onChanged: (value) {

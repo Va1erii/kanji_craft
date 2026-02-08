@@ -8,21 +8,21 @@ A mnemonic is a short story or phrase that helps a user remember a radical or ka
 
 ### UserMnemonic (Entity)
 
-A user-written mnemonic for a specific radical or kanji. At most one per user per item. When present, the UI displays this instead of the `system_mnemonic` from the I18n table.
+A user-written mnemonic for a specific radical, kanji, or vocabulary item. At most one per user per item. When present, the UI displays this instead of the `system_mnemonic` from the I18n table.
 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `user_id` | `int` | FK to the user who created this mnemonic |
-| `item_type` | `ItemType` | `radical` or `kanji` — which kind of item this mnemonic is for (see shared_types.md) |
-| `item_id` | `int` | FK to the Radical or Kanji, depending on `item_type` |
+| `user_id` | `UUID` | FK to the user who created this mnemonic |
+| `item_type` | `ItemType` | `radical`, `kanji`, or `vocabulary` — which kind of item this mnemonic is for (see shared_types.md). Vocabulary mnemonics are not used in MVP but the schema supports them |
+| `item_id` | `int` | FK to the Radical, Kanji, or Vocabulary, depending on `item_type` |
 | `text` | `String` | The user's mnemonic text |
 | `created_at` | `DateTime` | When the mnemonic was first written |
 | `updated_at` | `DateTime` | When the mnemonic was last edited |
 
 **Why a polymorphic `item_type` + `item_id` instead of separate `radical_id` / `kanji_id` columns?**
 
-A user mnemonic works identically for radicals and kanji — same UI, same logic, same table. Using `ItemType` to discriminate avoids duplicating the entity and keeps the query pattern consistent with the SRS system, which already uses `ItemType` to address items generically.
+A user mnemonic works identically for radicals, kanji, and vocabulary — same UI, same logic, same table. Using `ItemType` to discriminate avoids duplicating the entity and keeps the query pattern consistent with the SRS system, which already uses `ItemType` to address items generically.
 
 **Why not store user mnemonics in the I18n tables?**
 
@@ -34,15 +34,16 @@ System mnemonics are content-pipeline data — written by translators, shipped w
 User          ──1:N──→ UserMnemonic    (one user, many custom mnemonics; see user.md)
 UserMnemonic  ──N:1──→ Radical         (when item_type = radical; see radical.md)
 UserMnemonic  ──N:1──→ Kanji           (when item_type = kanji; see kanji.md)
+UserMnemonic  ──N:1──→ Vocabulary      (when item_type = vocabulary; see vocabulary.md — post-MVP)
 ```
 
-The system mnemonic lives in `RadicalI18n.system_mnemonic` (see radical.md) and `KanjiI18n.system_mnemonic` (see kanji.md). `UserMnemonic` overrides it in the UI but never modifies it.
+The system mnemonic lives in `RadicalI18n.system_mnemonic` (see radical.md) and `KanjiI18n.system_mnemonic` (see kanji.md). `VocabularyI18n.system_mnemonic` is nullable — vocabulary mnemonics are deferred to post-MVP. `UserMnemonic` overrides the system mnemonic in the UI but never modifies it.
 
 ## Business Rules
 
 1. `user_id` + `item_type` + `item_id` must be unique — one user mnemonic per item per user.
 2. `text` must be non-empty. To remove a custom mnemonic, delete the row (reverts to system mnemonic).
-3. `item_type` must be `radical` or `kanji` (not `vocabulary` — vocabulary mnemonics are out of scope for now).
+3. `item_type` accepts all three values (`radical`, `kanji`, `vocabulary`). Vocabulary mnemonics are deferred to post-MVP — no UI or system mnemonic exists for vocabulary items yet.
 4. The referenced item (`item_id`) must exist for the given `item_type`.
 
 ## Edge Cases

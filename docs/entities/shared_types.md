@@ -18,6 +18,17 @@ The three core learning item categories in the SRS system. Items are unlocked an
 
 Used by: `SrsCard.item_type` (see srs.md), `UserMnemonic.item_type` (see mnemonic.md).
 
+### ReadingType (Enum)
+
+The two Japanese reading systems for kanji characters.
+
+| Value | Script | Description |
+|---|---|---|
+| `onyomi` | Katakana | Sino-Japanese reading derived from Chinese pronunciation (e.g. ニチ, ジツ for 日) |
+| `kunyomi` | Hiragana | Native Japanese reading (e.g. ひ, か for 日) |
+
+Used by: `KanjiReading.reading_type` (see kanji.md).
+
 ### ReadingPriority (Enum)
 
 Indicates whether a reading is a primary or secondary pronunciation. Used for both kanji readings and vocabulary readings.

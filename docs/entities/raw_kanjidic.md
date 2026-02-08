@@ -179,8 +179,8 @@ Pronunciations grouped by reading system.
 
 | Key | Type | Description |
 |---|---|---|
-| `ja_on` | `JsonList` | On'yomi (Sino-Japanese) readings in katakana |
-| `ja_kun` | `JsonList` | Kun'yomi (native) readings in hiragana. Prefix `-` indicates okurigana boundary |
+| `ja_on` | `JsonList` | On'yomi (Sino-Japanese) readings — always in katakana (e.g. "ニチ"). May be empty if the character has only kun'yomi |
+| `ja_kun` | `JsonList` | Kun'yomi (native Japanese) readings — always in hiragana (e.g. "ひ"). Prefix `-` indicates okurigana boundary. May be empty if the character has only on'yomi |
 | `pinyin` | `JsonList?` | Chinese pinyin reading(s) |
 | `korean_r` | `JsonList?` | Korean romanized reading(s) |
 | `korean_h` | `JsonList?` | Korean hangul reading(s) |
@@ -238,7 +238,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 1. `literal` must be a single Unicode code point.
 2. **Composite unique constraint:** `import_id` + `literal` must be unique. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
 3. `stroke_count` must be a positive integer.
-4. `readings` must contain at least `ja_on` or `ja_kun` (a character always has at least one Japanese reading).
+4. `readings` must contain at least `ja_on` or `ja_kun` with a non-empty array (a character always has at least one Japanese reading). The other may be an empty list.
 5. `meanings.en` must be a non-empty array (KANJIDIC2 always includes English meanings).
 6. `codepoints.ucs` must be present and non-null.
 7. `radicals.classical` must be present and in the range 1–214.

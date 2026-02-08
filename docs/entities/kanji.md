@@ -16,7 +16,7 @@ The core identity of a single kanji character. Holds language-independent data: 
 | `character` | `String` | The kanji character, e.g. "日", "人", "大". Unique across all kanji |
 | `stroke_count` | `int` | Number of strokes to write the character |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this kanji appears in (5 = N5, 1 = N1). Null for kanji outside the JLPT set |
-| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught (1–6). Null for kanji outside the jouyou set |
+| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught (1–8). Null for kanji outside the jouyou set |
 | `frequency_rank` | `int` | Frequency rank based on newspaper corpus (1 = most common). Used for ordering within a level |
 | `svg_file_name` | `String` | Local asset filename for the kanji SVG, e.g. "065e5.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
@@ -39,7 +39,7 @@ A single pronunciation of a kanji. Each kanji has one or more readings, categori
 | `id` | `int` | Unique identifier |
 | `kanji_id` | `int` | FK to the parent Kanji |
 | `reading` | `String` | The pronunciation in kana, e.g. "ニチ", "ひ" |
-| `reading_type` | `ReadingType` | `onyomi` or `kunyomi` (see reading_type.dart) |
+| `reading_type` | `ReadingType` | `onyomi` (katakana) or `kunyomi` (hiragana) — see shared_types.md |
 | `priority` | `ReadingPriority` | `primary` or `secondary` (see shared_types.md) |
 
 **Why a separate entity instead of a list on Kanji?**
@@ -87,7 +87,7 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 6. A kanji cannot enter the lesson queue until all its radicals (via `KanjiComponent`) have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
 7. Kanji are reviewed on both meaning and reading — unlike radicals, which are meaning-only.
 8. `frequency_rank` must be a positive integer (1 = most common).
-9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–6.
+9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8.
 10. Every `Kanji` must have both `svg_file_name` and `svg_file_url` populated.
 11. `kanji_id` + `reading` + `reading_type` must be unique in `KanjiReading` — no duplicate readings.
 

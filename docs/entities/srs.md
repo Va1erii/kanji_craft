@@ -35,13 +35,13 @@ The per-item FSRS state. One card per user per item. This is the core scheduling
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `user_id` | `int` | FK to the user |
+| `user_id` | `UUID` | FK to the user |
 | `item_type` | `ItemType` | `radical`, `kanji`, or `vocabulary` (see shared_types.md) |
 | `item_id` | `int` | FK to the Radical, Kanji, or Vocabulary |
 | `state` | `CardState` | Current lifecycle state |
 | `due` | `DateTime` | When the next review is scheduled (UTC) |
 | `stability` | `double` | Memory stability in days — the interval at which retrievability drops to 90% |
-| `difficulty` | `double` | Card difficulty, range [1, 10]. Higher = harder to grow stability |
+| `difficulty` | `double` | Card difficulty. `0` for unreviewed cards; [1, 10] after first review. Higher = harder to grow stability |
 | `elapsed_days` | `int` | Days since the last review |
 | `scheduled_days` | `int` | Days the card was scheduled to wait before this review |
 | `reps` | `int` | Total number of reviews performed |
@@ -94,7 +94,7 @@ SrsCard    ──N:1──→ Vocabulary     (when item_type = vocabulary; see v
 6. A card graduates from `relearning` to `review` after completing all relearning steps (default: 10 min).
 7. **Unlock gate:** a radical's SrsCard must reach `stability >= 7.0` days before any kanji containing that radical (via KanjiComponent; see kanji_component.md) can enter the lesson queue. This is the unlock threshold — roughly equivalent to a one-week review interval.
 8. Radicals are reviewed on meaning only. Kanji are reviewed on both meaning and reading (see radical.md rule #5, kanji.md rule #7).
-9. `difficulty` must stay in the range [1, 10]. FSRS clamps it after every update.
+9. After the first review, `difficulty` is clamped to the range [1, 10]. New cards use `0` as a sentinel (see rule #2).
 10. `stability` must be non-negative. After a lapse, `stability` is recalculated but never increases from a forget event.
 11. ReviewLog rows are append-only — never updated or deleted (except by explicit user data wipe).
 12. SrsCard rows cannot be deleted by users — only reset (update state back to `new_card`). Deletion only occurs via account deletion cascade (`users` → `srs_cards` → `review_logs`). This protects the append-only review history.

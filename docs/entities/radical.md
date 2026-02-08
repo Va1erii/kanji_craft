@@ -17,7 +17,7 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `stroke_count` | `int` | Stroke count of the master symbol |
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1) |
-| `min_grade` | `int` | The earliest Japanese school grade this appears in (1–6) |
+| `min_grade` | `int` | The earliest Japanese school grade this appears in (1–8) |
 | `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 | `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
@@ -33,7 +33,7 @@ A radical can look different depending on position (水 → 氵), but its identi
 
 **Why store both `min_jlpt_level` and `min_grade`?**
 
-Users choose their study path — JLPT-based (N5 → N1) or school-grade-based (grade 1 → 6). Both fields are on the radical itself so filtering is a simple query without joins. These are properties of the radical's earliest appearance, not user preferences.
+Users choose their study path — JLPT-based (N5 → N1) or school-grade-based (grade 1 → 8). Both fields are on the radical itself so filtering is a simple query without joins. These are properties of the radical's earliest appearance, not user preferences.
 
 **Why `impact_score`?**
 
@@ -116,7 +116,7 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 5. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
 6. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
 7. `impact_score` must be in the range 1–10.
-8. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–6.
+8. `min_jlpt_level` must be in the range 1–5; `min_grade` must be in the range 1–8.
 9. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
 10. A radical's `master_symbol` may duplicate a kanji's `character`. Both rows must exist independently — the radical serves as a building block in `kanji_components`, the kanji serves as a learnable item with its own readings and SRS card.
 

@@ -10,25 +10,41 @@ The pipeline runs entirely in the **Local Environment** (Local Supabase + Admin 
 
 Immutable source data lives in `sources/` at the project root. Each folder is a versioned snapshot — never modified after download.
 
-### `jmdict-{version}/`
+### 1. Kanji Source (Official XML) — `kanjidic-{date}/`
 
-Downloaded from the [EDRDG](http://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project) project. Contains both JMdict (vocabulary) and KANJIDIC2 (kanji dictionary) exports in Yomichan-compatible JSON bank format. JMdict and KANJIDIC come from the same release because KANJIDIC character entries map directly to JMdict vocabulary entries.
+Downloaded from the [EDRDG](http://www.edrdg.org/wiki/index.php/KANJIDIC_Project) project. The official KANJIDIC2 XML contains every field (meanings in all languages, classical radicals, nanori, variants, dictionary refs) in a single file.
+
+| Archive | Contents | Pipeline target |
+|---|---|---|
+| `kanjidic2.xml.gz` | Full KANJIDIC2 dictionary (~13,000 entries) | `raw_kanjidic` → `kanji`, `kanji_i18n`, `kanji_readings` |
+
+Single-pass ingestion: meanings are grouped by `m_lang` attribute (EN, ES, FR, etc.) into the `raw_kanjidic.meanings` JSONB column.
+
+### 2. Vocabulary Source (Yomichan JSON) — `jmdict-{version}/`
+
+Downloaded from [yomidevs](https://github.com/yomidevs). Vocabulary entries in Yomichan-compatible JSON bank format. Two files are needed for the two-pass merge strategy.
 
 | Archive | Contents | Pipeline target |
 |---|---|---|
 | `JMdict_english_with_examples.zip` | English vocabulary entries + example sentences | `vocabulary`, `vocabulary_i18n` (en), `vocabulary_sentences` (en) |
 | `JMdict_spanish.zip` | Spanish vocabulary entries | `vocabulary_i18n` (es) |
-| `KANJIDIC_english.zip` | Kanji meanings and metadata in English | `raw_kanjidic` → `kanji`, `kanji_i18n` (en), `kanji_readings` |
-| `KANJIDIC_spanish.zip` | Kanji meanings in Spanish | `kanji_i18n` (es) |
 
-### `kanjivg-{version}/`
+### 3. Visual Source (KanjiVG) — `kanjivg-{version}/`
 
 Downloaded from the [KanjiVG](https://kanjivg.tagaini.net/) project. Stroke order and component decomposition data.
 
 | Archive | Contents | Pipeline target |
 |---|---|---|
+| `kanjivg-{version}.xml.gz` | Single XML with all kanji stroke/component data (~6,700 entries) | `raw_kanjivg` → `radicals`, `kanji_components` |
 | `kanjivg-{version}-main.zip` | Individual SVG files per kanji (stroke diagrams) | `radicals` (SVG assets), `radical_variants` |
-| `kanjivg-{version}.xml.gz` | Single XML with all kanji stroke/component data | `raw_kanjivg` → `radicals`, `kanji_components` |
+
+### Source Strategy Summary
+
+| Source | Files | Languages | Strategy |
+|---|---|---|---|
+| Kanji | 1 XML (`kanjidic2.xml.gz`) | EN + ES + all | Single pass, meanings grouped by `m_lang` |
+| Vocabulary | 2 JSON ZIPs | EN (+ sentences), ES | Two-pass merge by `ent_seq` |
+| KanjiVG | 1 XML + 1 SVG ZIP | N/A | Single pass |
 
 ## Architecture
 
@@ -94,10 +110,16 @@ See [data_import.md](../entities/data_import.md).
 
 ### 1.2 Parsing & Insertion
 
-Python scripts parse source files and insert rows into `raw_kanjidic` / `raw_kanjivg`.
+Dart parsers running inside the Admin Tool parse source files and insert rows into `raw_kanjidic` / `raw_kanjivg`.
 
+- **Kanji (XML):** Single Dart pass on `kanjidic2.xml`. Groups all `<meaning>` tags by `m_lang` attribute into `raw_kanjidic.meanings` JSONB column (EN, ES, etc. in one pass). Gzip decompression via `dart:io` `GZipCodec`.
+- **KanjiVG (XML):** Single Dart pass on `kanjivg-{version}.xml` for stroke paths and component trees. Gzip decompression via `dart:io` `GZipCodec`.
+- **Vocabulary (JSON):** Two-pass merge (Phase 2.6). First ingest `JMdict_english_with_examples` to create rows, then ingest `JMdict_spanish` to update/inject Spanish definitions into `vocabulary_i18n`.
+
+Common rules:
 - Every row carries the `import_id` from step 1.1.
 - **Conflict strategy:** Insert new rows under the new `import_id`. Old import versions are preserved for diffing.
+- Batch insert in chunks of 500 rows via repository.
 - On success: set `data_imports.status` = `ingested`, populate `record_count`.
 - On failure: set `status` = `failed`, populate `error_message`.
 
@@ -121,7 +143,7 @@ See [radical.md](../entities/radical.md).
 
 ### 2.3 Kanji & Component Composition
 
-1. **Kanji creation:** Upsert `kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping).
+1. **Kanji creation:** Upsert `kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping). Spanish kanji meanings come from `raw_kanjidic.meanings['es']` (populated from the official XML in Phase 1), so no separate Spanish file is needed.
 2. **Component linking:** Recursively parse `raw_kanjivg.components` tree.
    - Stop recursion when a node matches a known `radicals.master_symbol`.
    - Create `kanji_components` rows.
@@ -157,17 +179,25 @@ All new components start with a `draft` review row regardless of confidence. The
 
 On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
-### 2.6 Vocabulary Extraction
+### 2.6 Vocabulary Extraction (Two-Pass Merge)
 
-JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
+JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline using a two-pass merge strategy.
 
-1. **Vocabulary creation:** Parse `JMdict_english_with_examples.zip` to upsert `vocabulary` rows (word, frequency rank, JLPT level).
-2. **Localized meanings:** Extract meanings per language into `vocabulary_i18n`. English comes from the English dump; Spanish from `JMdict_spanish.zip`.
-3. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
-4. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
-5. **Example sentences (English):** Extract sentence pairs (Japanese + English translation) from the English dump into `vocabulary_sentences` with `verification_status = 'verified'` (source data is trustworthy).
-6. **AI Translation (Spanish):** For each English sentence, use AI to generate a Spanish translation. Insert into `vocabulary_sentences` with `lang_code = 'es'` and `verification_status = 'draft'`. The AI model (local or API) is configured per environment.
-7. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
+**Pass 1 (English Source):** Parse `JMdict_english_with_examples.zip`.
+1. **Vocabulary creation:** Upsert `vocabulary` rows (word, reading, `ent_seq`, metadata).
+2. **Localized meanings (EN):** Insert `vocabulary_i18n` with `lang_code='en'`.
+3. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
+4. **Example sentences (English):** Extract sentence pairs (Japanese + English translation) into `vocabulary_sentences` with `verification_status = 'verified'` (source data is trustworthy).
+
+**Pass 2 (Spanish Source):** Parse `JMdict_spanish.zip`.
+1. **Match existing rows:** Find `vocabulary` row by `ent_seq`.
+2. **Localized meanings (ES):** Insert `vocabulary_i18n` with `lang_code='es'`.
+3. Does **not** touch `vocabulary_sentences` (no sentences in this file).
+
+**After both passes:**
+1. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
+2. **AI Translation (Spanish):** For each English sentence, use AI to generate a Spanish translation. Insert into `vocabulary_sentences` with `lang_code = 'es'` and `verification_status = 'draft'`. The AI model (local or API) is configured per environment.
+3. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
 
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` references the `kanji` table.
 
@@ -273,9 +303,9 @@ Each transition updates the corresponding timestamp on `data_imports`. See [data
 ## Commands
 
 ```bash
-# Phase 1: Ingest raw data into local Supabase
-python scripts/ingest_kanjidic.py --version "2024-363"
-python scripts/ingest_kanjivg.py --version "2024-04-01"
+# Phase 1: Ingest raw data (Dart parsers via Admin Tool)
+flutter run -d macos --target lib/pipeline/ingest_kanji.dart
+flutter run -d macos --target lib/pipeline/ingest_kanjivg.dart
 
 # Phase 2: Run transformation (via Admin Tool or CLI)
 # Triggered from Admin Dashboard UI

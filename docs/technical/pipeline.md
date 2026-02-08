@@ -63,8 +63,9 @@ graph TD
 
     XML & SVG -->|"1. Ingest"| RawK & RawV
     RawK & RawV -->|"2. Transform & AI"| Rad & Kan & Comp
-    JMD -->|"2. Transform"| Vocab
+    JMD -->|"2. Transform & AI"| Vocab
     Admin -->|"3. Verify & Fix"| Comp
+    Admin -->|"3. Verify & Fix"| Vocab
     Rad & Kan & Comp & Vocab -->|"4. Promote"| ProdDB
 ```
 
@@ -143,7 +144,9 @@ JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
 2. **Localized meanings:** Extract meanings per language into `vocabulary_i18n`. English comes from the English dump; Spanish from `JMdict_spanish.zip`.
 3. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
 4. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
-5. **Example sentences:** Extract sentence pairs (Japanese + translation) from the English dump into `vocabulary_sentences`.
+5. **Example sentences (English):** Extract sentence pairs (Japanese + English translation) from the English dump into `vocabulary_sentences` with `verification_status = 'verified'` (source data is trustworthy).
+6. **AI Translation (Spanish):** For each English sentence, use AI to generate a Spanish translation. Insert into `vocabulary_sentences` with `lang_code = 'es'` and `verification_status = 'draft'`. The AI model (local or API) is configured per environment.
+7. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
 
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` references the `kanji` table.
 
@@ -157,7 +160,7 @@ See [vocabulary.md](../entities/vocabulary.md).
 
 ### 3.1 Verification Status
 
-Entities that require human review (specifically `KanjiComponent`) have a corresponding row in the `kanji_component_reviews` table that tracks their review state:
+Entities that require human review use the `verification_status` enum:
 
 | Status | Description |
 |---|---|
@@ -165,7 +168,9 @@ Entities that require human review (specifically `KanjiComponent`) have a corres
 | `verified` | Confirmed by human review (or high-confidence auto-rule). Ready for remote sync |
 | `flagged` | Identified as problematic/error. Excluded from sync |
 
-See `KanjiComponentReview` entity in [kanji_component.md](../entities/kanji_component.md).
+This status is tracked in two places:
+- **`kanji_component_reviews`** — separate 1:1 table for component review metadata (`ai_confidence`, etc.). See [kanji_component.md](../entities/kanji_component.md).
+- **`vocabulary_sentences.verification_status`** — column directly on the sentence row (option A: simpler than a separate review table since sentences only need a status flag). See [vocabulary.md](../entities/vocabulary.md).
 
 ### 3.2 Review Queue (Admin Dashboard)
 
@@ -180,6 +185,17 @@ The Admin Tool queries `kanji_component_reviews JOIN kanji_components` where `ve
 
 High-confidence matches (e.g. `ai_confidence >= 0.95`) can be auto-verified in bulk via an admin action, reducing manual review volume. The threshold is configurable.
 
+### 3.4 Sentence Review Queue
+
+The Admin Tool queries `vocabulary_sentences` where `verification_status = 'draft'`, primarily AI-translated Spanish sentences.
+
+**Review UI:**
+- Side-by-side: English source sentence vs AI-generated Spanish translation.
+- The Japanese original and furigana are shown for context.
+- Actions: "Edit Translation", "Confirm", "Reject".
+
+**Batch action:** "Approve all" can be used with caution for bulk verification. Unlike component reviews (which have `ai_confidence` scores), sentence reviews rely on human judgement of translation quality.
+
 ## Phase 4: Remote Sync (Promotion)
 
 **Goal:** Push only verified, stable content to the Remote Production database.
@@ -190,7 +206,10 @@ High-confidence matches (e.g. `ai_confidence >= 0.95`) can be auto-verified in b
 - **Method:** Incremental upsert.
 - **Safety gates:**
   - `kanji_components`: only rows with `kanji_component_reviews.verification_status = 'verified'` are synced.
-  - `vocabulary` (and its child tables): only rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB are synced. This prevents FK violations for words containing kanji from an unfinished or failed import.
+  - `vocabulary` (word, meanings, readings, kanji associations): sync all rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB. This prevents FK violations for words containing kanji from an unfinished or failed import.
+  - `vocabulary_sentences`: only rows where `verification_status = 'verified'` are synced. English source sentences (born `verified`) sync immediately. AI-translated sentences (born `draft`) sync only after human review.
+
+**Result:** Users get vocabulary words with definitions and readings immediately. English example sentences arrive with the word. AI-translated sentences (e.g. Spanish) arrive only after admin approval.
 
 ### 4.2 Sync Order (FK Dependency Resolution)
 
@@ -199,7 +218,7 @@ Tables must be synced in strict order to satisfy foreign key constraints:
 1. **radicals** — root entities (includes `radical_i18n`, `radical_variants`)
 2. **kanji** — depends on nothing directly (includes `kanji_i18n`, `kanji_readings`)
 3. **kanji_components** — depends on both `radicals` and `kanji`
-4. **vocabulary** — depends on `kanji` (includes `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`)
+4. **vocabulary** — depends on `kanji` (includes `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`, `vocabulary_sentences`)
 
 Sync will fail if a parent radical or kanji is missing on remote. The sync script validates parent existence before upserting children.
 

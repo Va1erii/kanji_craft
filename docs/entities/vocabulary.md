@@ -79,6 +79,7 @@ An example sentence that uses the vocabulary word in context. Helps the user see
 | `sentence_ja` | `String` | The Japanese sentence in plain text, e.g. "日本に行きたい。" |
 | `sentence_furigana` | `String` | The same sentence with inline furigana using `[kanji|reading]` notation, e.g. "[日本|にほん]に[行|い]きたい。" |
 | `sentence_translated` | `String` | Translated sentence, e.g. "I want to go to Japan." |
+| `verification_status` | `VerificationStatus` | `verified` for source-extracted sentences (e.g. English from JMdict), `draft` for AI-generated translations (e.g. Spanish). Only `verified` sentences sync to remote. See [pipeline.md](../technical/pipeline.md) |
 
 **Why separate `sentence_ja` and `sentence_furigana`?**
 
@@ -112,6 +113,8 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 10. `vocabulary_id` + `lang_code` must be unique in `VocabularyI18n` — one translation per language.
 11. `frequency_rank` must be a positive integer (1 = most common).
 12. `min_jlpt_level`, when present, must be in the range 1–5.
+13. `vocabulary_id` + `lang_code` must be unique in `VocabularySentence` — one sentence per language per word.
+14. Source-extracted sentences (English from JMdict) are created with `verification_status = 'verified'`. AI-generated translations are created with `verification_status = 'draft'`. Only `verified` sentences are synced to the remote database.
 
 ## Edge Cases
 
@@ -121,5 +124,5 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 - **Multiple primary readings:** Some words genuinely have two primary readings (e.g. 明日: あした and あす are both common). SRS should test all primary readings.
 - **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana.
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
-- **Missing sentences:** Not every vocabulary word will have example sentences for every language. The UI should gracefully hide the sentence section when none exist.
+- **Missing sentences:** Not every vocabulary word will have example sentences for every language. The UI should gracefully hide the sentence section when none exist. On the remote DB, a Spanish sentence may not yet be available if the AI translation is still in `draft` status awaiting review.
 - **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence, and associated SrsCard/ReviewLog rows.

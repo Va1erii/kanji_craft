@@ -24,8 +24,8 @@ A persistent left sidebar provides top-level navigation:
 The landing screen. Shows a summary card for each area:
 
 - **Imports** — count by `import_status` (`pending`, `ingested`, `processing`, `processed`, `promoted`, `failed`). Clicking a status filters the Data Pipeline view.
-- **Component Reviews** — count of `kanji_component_reviews` rows where `verification_status = 'draft'`. Links to the Component Review queue.
-- **Sentence Reviews** — count of `vocabulary_sentences` rows where `verification_status = 'draft'`. Links to the Sentence Review queue.
+- **Component Reviews** — count of `kanji_component_reviews` rows where `verification_status = 'draft'`, broken down by grade. Links to the Component Review queue.
+- **Sentence Reviews** — count of `vocabulary_sentences` rows where `verification_status = 'draft'`, broken down by JLPT level. Links to the Sentence Review queue.
 - **Last Promotion** — timestamp of the most recent `data_imports.promoted_at`, or "Never" if no promotion has run.
 
 ## Data Pipeline
@@ -82,19 +82,46 @@ Available only for imports with status `ingested`.
 
 ### AI Enrichment
 
-A supplementary panel (not tied to a single import) for running AI tasks on existing content.
+A supplementary panel (not tied to a single import) for running AI tasks on existing content. Supports **scoped execution** to limit AI costs to only the content tier you're preparing for release.
 
-- **Content Gaps Report** — shows counts of:
-  - Kanji components without a `kanji_component_reviews` row.
+- **Content Gaps Report** — shows counts (broken down by grade and JLPT level) of:
+  - Kanji components missing a `kanji_component_reviews` row.
   - Vocabulary words missing Spanish `vocabulary_i18n`.
   - Vocabulary sentences missing a Spanish translation.
-- **"Run AI Enricher"** button with checkboxes:
-  - [ ] Generate missing `logic_hint` estimates
-  - [ ] Translate missing Spanish sentences
-  - [ ] Infer missing JLPT levels
-- Progress bar and log output while running.
 
-**Service invoked:** `EnrichmentService` — runs the same AI heuristic and translation logic as Phase 2 sub-phases, but scoped to rows missing data rather than a specific import.
+**"Run AI Enricher"** button opens a configuration dialog:
+
+- **Target Scope** (two independent dropdowns):
+  - **Kanji Grade:** `Grade 1` | `Grade 2` | `Grade 3` | `Grade 4` | `Grade 5` | `Grade 6` | `Secondary` | `All` — default: `Grade 1`
+  - **Vocabulary JLPT:** `N5` | `N4` | `N3` | `N2` | `N1` | `All` — default: `N5`
+
+- **Tasks** (checkboxes, each filtered by the relevant scope):
+  - [ ] Generate missing `logic_hint` estimates — uses Kanji Grade scope
+  - [ ] Translate missing Spanish sentences — uses Vocabulary JLPT scope
+  - [ ] Infer missing JLPT levels — uses Vocabulary JLPT scope
+
+- Progress bar with scope-aware feedback (e.g. "Processing 80 kanji (Grade 1)...").
+
+**Query logic:** `EnrichmentService` applies the scope filter matching each task type:
+
+```sql
+-- Logic hints: filtered by kanji grade
+SELECT kc.* FROM kanji_components kc
+JOIN kanji k ON kc.kanji_id = k.id
+WHERE k.min_grade = 1
+AND kc.logic_hint IS NULL;
+
+-- Sentence translation: filtered by vocabulary JLPT
+SELECT vs.* FROM vocabulary_sentences vs
+JOIN vocabulary v ON vs.vocabulary_id = v.id
+WHERE v.min_jlpt_level = 5
+AND vs.verification_status = 'draft'
+AND vs.lang_code = 'es';
+```
+
+Rows outside the selected scope are untouched — they remain `draft` and can be enriched in a later sprint.
+
+**Service invoked:** `EnrichmentService` — runs the same AI heuristic and translation logic as Phase 2 sub-phases, but scoped to rows matching the selected grade/JLPT that are still missing data.
 
 ## Review: Components
 
@@ -102,14 +129,18 @@ A supplementary panel (not tied to a single import) for running AI tasks on exis
 
 ### Queue
 
-A filterable list of `kanji_component_reviews` rows where `verification_status = 'draft'`, ordered by `ai_confidence ASC` (least confident first).
+A filterable list of `kanji_component_reviews` rows where `verification_status = 'draft'`.
+
+**Default sort:** `min_grade` ASC, then `ai_confidence` ASC. This surfaces Grade 1 kanji first (~80 items), then Grade 2 (~160), so you clear one grade at a time.
 
 **Filters:**
+- **Grade level:** `Grade 1` | `Grade 2` | ... | `Grade 6` | `Secondary` | `All` — **defaults to `Grade 1`**
 - Confidence range slider (0.0 – 1.0)
 - Logic hint (`semantic` / `phonetic` / all)
-- Kanji grade level
 
-**Batch action:** **"Auto-verify high confidence"** button. Verifies all `draft` rows with `ai_confidence >= threshold` (default 0.95, configurable in Settings). Sets `verification_status = 'verified'`.
+**Typical workflow:** Select Grade 1 → review ~80 items → select Grade 2 → review ~160 items. After Grades 1-2 are done, the MVP component tier is complete.
+
+**Batch action:** **"Auto-verify high confidence"** button. Verifies all `draft` rows **within the current filter** with `ai_confidence >= threshold` (default 0.95, configurable in Settings). Sets `verification_status = 'verified'`.
 
 ### Review Card
 
@@ -146,11 +177,15 @@ After each action, the next `draft` item loads automatically.
 
 ### Queue
 
-A filterable list of `vocabulary_sentences` rows where `verification_status = 'draft'`, ordered by `created_at ASC`.
+A filterable list of `vocabulary_sentences` rows where `verification_status = 'draft'`.
+
+**Default sort:** `frequency_rank` ASC (most common words first), then `created_at ASC`.
 
 **Filters:**
+- **JLPT level:** `N5` | `N4` | `N3` | `N2` | `N1` | `All` — **defaults to `N5`**
 - Language (`es` by default, since EN sentences are born `verified`)
-- JLPT level of the parent vocabulary word
+
+**Typical workflow:** Select N5 → review ~800 sentences sorted by frequency → the most common words are verified first. After N5 is done, the MVP sentence tier is complete.
 
 **Batch action:** **"Approve all visible"** — sets `verification_status = 'verified'` for all currently filtered `draft` rows. Confirmation dialog warns about bulk approval.
 
@@ -178,7 +213,18 @@ After each action, the next `draft` item loads automatically.
 
 ## Promotion (Phase 4)
 
-Accessible from the Dashboard or Data Pipeline view when at least one import has status `processed` and review queues have been addressed.
+Accessible from the Dashboard or Data Pipeline view when at least one import has status `processed`.
+
+Promotion syncs **all local production data**, but the Phase 4 safety gates ensure only verified content is fully usable in the app. Unreviewed tiers get promoted as "skeleton" data:
+
+| Content | Reviewed tier (verified) | Unreviewed tier (draft) |
+|---|---|---|
+| Kanji (base row) | Synced | Synced (searchable) |
+| Components | Synced (decomposition visible) | **Blocked** — app shows empty decomposition |
+| Vocabulary (base row) | Synced | Synced (searchable) |
+| Sentences | Synced (examples visible) | **Blocked** — app shows no examples |
+
+This is intentional: users can search and discover all content, but only the reviewed tier has the full learning experience. Each subsequent promotion adds the next tier without affecting previously verified content.
 
 ### Pre-Promotion Report
 
@@ -245,16 +291,50 @@ Each row is expandable to show related data (components, readings, sentences, va
 
 ## Admin User Journey
 
-End-to-end flow for adding a new version of source data:
+### Sprint 1: MVP Launch (Grade 1 + N5)
+
+Ingest everything, but only enrich and review the first tier.
 
 1. **Download** source archives into `sources/` (manual step, outside the app).
-2. **Ingest** — Open Data Pipeline → New Import → select source file → Start Ingestion. Repeat for each source (kanjidic, kanjivg, jmdict).
-3. **Transform** — Click "Run Processor" on each `ingested` import. Wait for all sub-phases to complete.
-4. **Enrich** (if needed) — Open AI Enrichment panel → check gaps → run enricher for missing translations or JLPT inferences.
-5. **Review Components** — Open Review: Components → work through the queue using keyboard shortcuts (`1`/`2`/`3`). Use "Auto-verify high confidence" for bulk verification.
-6. **Review Sentences** — Open Review: Sentences → verify AI-translated sentences. Edit translations as needed.
-7. **Promote** — Open Promotion → review the diff report → resolve any orphan warnings → click "Promote to Production". Monitor log output.
-8. **Verify** — Check Dashboard for updated promotion timestamp. App clients receive new content through their standard sync mechanism (see [offline.md](offline.md)).
+2. **Ingest** — Open Data Pipeline → New Import → select source file → Start Ingestion. Repeat for each source (kanjidic, kanjivg, jmdict). All ~13,000 kanji and ~20,000 words are loaded.
+3. **Transform** — Click "Run Processor" on each `ingested` import. Wait for all sub-phases to complete. The full local DB is populated.
+4. **Enrich** — Open AI Enrichment → set Kanji Grade: `Grade 1`, Vocabulary JLPT: `N5` → check all tasks → run. Cost: ~80 component hints + ~800 sentence translations.
+5. **Review Components** — Open Review: Components (default: Grade 1). Review ~80 items using keyboard shortcuts (`1`/`2`/`3`). Use "Auto-verify high confidence" for batch verification.
+6. **Review Sentences** — Open Review: Sentences (default: N5). Review ~800 sentences sorted by frequency. Edit translations as needed.
+7. **Promote** — Open Promotion → review the diff report → resolve any orphan warnings → click "Promote to Production". Grade 1 + N5 content syncs fully; everything else syncs as searchable skeletons.
+8. **Launch** — App is live with a high-quality free tier.
+
+### Sprint 2: Grade 2 + N4
+
+No re-ingestion or re-transformation needed.
+
+1. **Enrich** — Set Kanji Grade: `Grade 2`, Vocabulary JLPT: `N4` → run.
+2. **Review Components** — Filter to Grade 2. Review ~160 items.
+3. **Review Sentences** — Filter to N4. Review sentences.
+4. **Promote** — Newly verified content syncs. Previously promoted content is unaffected.
+
+### Sprint N: Continue expanding
+
+Repeat the enrich → review → promote cycle for each tier:
+
+| Sprint | Kanji Grade | Vocabulary JLPT | Cumulative kanji | Cumulative words |
+|---|---|---|---|---|
+| 1 (MVP) | Grade 1 | N5 | ~80 | ~800 |
+| 2 | Grade 2 | N4 | ~240 | ~2,500 |
+| 3 | Grade 3 | N3 | ~440 | ~5,000 |
+| 4 | Grade 4 | N2 | ~640 | ~12,000 |
+| 5 | Grade 5-6 | N1 | ~1,006 | ~20,000 |
+| 6 | Secondary | — | ~2,200 | ~20,000 |
+
+### Full Re-Import
+
+When a new version of source data is released (e.g. KanjiVG update):
+
+1. **Ingest** new version alongside existing data (old imports preserved for diffing).
+2. **Transform** the new import.
+3. **Enrich** at desired scope.
+4. **Review** any new `draft` items introduced by the update.
+5. **Promote** — only changed rows (by field comparison and `svg_hash` diff) are synced.
 
 ## Related Docs
 

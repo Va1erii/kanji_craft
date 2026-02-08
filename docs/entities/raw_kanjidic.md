@@ -15,8 +15,7 @@ One row per character entry in KANJIDIC2. Scalar fields for commonly queried dat
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `literal`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback |
-| `source_version` | `String` | KANJIDIC2 release version, e.g. "2024-363". Used to detect diffs and migrate when the source updates |
+| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `literal`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
 | `literal` | `String` | The character, e.g. "日" |
 | `stroke_count` | `int` | Primary stroke count |
 | `stroke_count_misstrokes` | `JsonList?` | Alternative stroke counts from common miscounts, e.g. `[5, 7]`. Null if none |
@@ -256,5 +255,5 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 - **Moro dict_ref as object:** Unlike all other dictionary references (flat strings), `moro` is `{volume, page}`. The pipeline must handle this structural difference when extracting dict_refs.
 - **Multiple misclass entries:** A single character can have several common misclassifications in `query_codes.misclass`. All are preserved as an array.
 - **Empty optional JSONB fields:** `dict_refs`, `query_codes`, `variants`, `nanori`, `radical_names`, and `stroke_count_misstrokes` can all be null. The pipeline must not assume their presence.
-- **Re-import with fewer characters:** If a new KANJIDIC2 release drops a character, the upsert does not delete the old row. Orphan detection is a separate pipeline step.
+- **Re-import with fewer characters:** If a new KANJIDIC2 release drops a character, the old row remains under the previous `import_id`. The new import simply won't have a row for that character. Orphan detection (comparing import versions) is a separate pipeline step.
 - **Language coverage varies:** Not all characters have meanings in all languages. English is always present; French, Spanish, and Portuguese coverage is partial. The pipeline falls back to English for `kanji_i18n` rows in unsupported languages.

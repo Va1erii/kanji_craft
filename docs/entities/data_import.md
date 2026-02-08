@@ -2,7 +2,7 @@
 
 ## Overview
 
-Tracks each execution of the content import pipeline. Every time raw source data (KanjiVG or KANJIDIC2) is imported, a `DataImport` row is created to record the source, version, status, and outcome. Rows in `raw_kanjivg` and `raw_kanjidic` reference this table via `import_id`, enabling version-aware diffing and rollback — old import rows are preserved alongside new ones.
+Tracks each execution of the content pipeline (see [pipeline.md](../technical/pipeline.md)). Every time raw source data (KanjiVG or KANJIDIC2) enters the pipeline, a `DataImport` row is created to track it through all four phases: ingestion, transformation, verification, and promotion. Rows in `raw_kanjivg` and `raw_kanjidic` reference this table via `import_id`, enabling version-aware diffing and rollback — old import rows are preserved alongside new ones.
 
 This is an **admin-only table** — not used by the client app. This table lives in the **Supabase Staging Database** (Postgres) as the source of truth. The Admin Tool (Flutter/Drift) fetches this data into a local Drift database for processing/transformation before writing to the production tables. Access is restricted to the `service_role` key (which bypasses RLS).
 
@@ -19,13 +19,16 @@ Identifies which external dataset an import run targets.
 
 ### ImportStatus (Enum)
 
-Tracks the lifecycle of an import run.
+Tracks the lifecycle of a pipeline run through all four phases (see [pipeline.md](../technical/pipeline.md)).
 
 | Value | Description |
 |---|---|
-| `in_progress` | Import is currently running |
-| `completed` | Import finished successfully |
-| `failed` | Import terminated with errors |
+| `pending` | Import created, parsing not yet started |
+| `ingested` | Raw data successfully inserted into staging tables |
+| `processing` | Transformation to production tables is running |
+| `processed` | Transformation complete, awaiting human verification |
+| `promoted` | Verified data synced to remote production |
+| `failed` | Pipeline terminated with errors (can occur at any phase) |
 
 ### DataImport (Entity)
 
@@ -37,9 +40,11 @@ One row per pipeline execution. Created at the start of an import, updated on co
 | `source` | `ImportSource` | Which dataset this import targets |
 | `source_version` | `String` | Release version of the source data, e.g. "2024-04-01" (KanjiVG) or "2024-363" (KANJIDIC2) |
 | `status` | `ImportStatus` | Current state of the import run |
-| `record_count` | `int?` | Number of rows written to the raw table. Null while `in_progress` |
-| `started_at` | `DateTime` | When the import run began |
-| `completed_at` | `DateTime?` | When the import run finished. Null while `in_progress` |
+| `record_count` | `int?` | Number of rows written to the raw table. Set when `ingested` |
+| `started_at` | `DateTime` | When the pipeline run began |
+| `ingested_at` | `DateTime?` | When raw data insertion completed. Null until `ingested` |
+| `processed_at` | `DateTime?` | When transformation to production tables completed. Null until `processed` |
+| `promoted_at` | `DateTime?` | When verified data was synced to remote. Null until `promoted` |
 | `error_message` | `String?` | Error details if `status` is `failed`. Null otherwise |
 | `metadata` | `JsonObject?` | Optional context: file hash, download URL, notes. Null if none |
 
@@ -62,17 +67,18 @@ A `DataImport` row with `source: kanjivg` only has children in `raw_kanjivg`; on
 
 ## Business Rules
 
-1. Only one import per `source` can be `in_progress` at a time. Attempting to start a second concurrent import for the same source must fail.
-2. `source_version` + `source` should be unique across `completed` imports — don't re-import the same version twice. A failed import of the same version can be retried.
-3. `status` transitions are one-way: `in_progress` → `completed` or `in_progress` → `failed`. A completed or failed import cannot be reopened.
-4. `record_count` must be set when `status` transitions to `completed`.
-5. `completed_at` must be set when `status` transitions to `completed` or `failed`.
+1. Only one import per `source` can be active (not `failed` or `promoted`) at a time. Attempting to start a second concurrent pipeline for the same source must fail.
+2. `source_version` + `source` should be unique across `promoted` imports — don't re-import the same version twice. A failed import of the same version can be retried.
+3. **Status transitions are one-way:** `pending` → `ingested` → `processing` → `processed` → `promoted`. Any state can transition to `failed`. A failed or promoted import cannot be reopened.
+4. `record_count` must be set when `status` transitions to `ingested`.
+5. Each phase sets its corresponding timestamp: `ingested_at`, `processed_at`, `promoted_at`.
 6. Deleting a `DataImport` row must cascade-delete all associated raw rows (`raw_kanjivg` or `raw_kanjidic` rows with that `import_id`). This is the rollback mechanism.
 7. **RLS:** RLS is enabled with zero policies for `authenticated` or `anon` roles. Only `service_role` (which bypasses RLS) can read or write this table.
 
 ## Edge Cases
 
-- **Failed import with partial data:** If an import fails mid-way, some raw rows may already be written under that `import_id`. The `failed` status signals that this import is incomplete. Cleanup (deleting the partial rows) is a manual admin action via cascade-delete of the `DataImport` row.
-- **Same version, different content:** Source projects occasionally publish corrections under the same version string. Business rule #2 prevents accidental re-import, but an admin can delete the old completed import and re-run.
+- **Failure at any phase:** The pipeline can fail during ingestion (parse error), processing (transformation bug), or promotion (network error). The `failed` status plus `error_message` captures where and why. Cleanup of partial data is a manual admin action via cascade-delete.
+- **Same version, different content:** Source projects occasionally publish corrections under the same version string. Business rule #2 prevents accidental re-import, but an admin can delete the old promoted import and re-run.
 - **Concurrent imports for different sources:** Allowed — a KanjiVG import and a KANJIDIC2 import can run simultaneously. The constraint is per-source.
-- **Old imports accumulating:** Over time, many import versions may pile up in the raw tables. Admin tooling should provide a "prune old imports" action that keeps the N most recent completed imports per source and cascade-deletes the rest.
+- **Processed but not promoted:** An import can sit in `processed` state indefinitely while the admin reviews `kanji_components` in the verification queue. The pipeline does not auto-promote.
+- **Old imports accumulating:** Over time, many import versions may pile up in the raw tables. Admin tooling should provide a "prune old imports" action that keeps the N most recent promoted imports per source and cascade-deletes the rest.

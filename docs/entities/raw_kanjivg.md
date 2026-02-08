@@ -15,8 +15,7 @@ One row per kanji character. Flat scalar fields for queryable data; JSONB column
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `character`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback |
-| `source_version` | `String` | KanjiVG release version, e.g. "2024-04-01". Used to detect diffs and migrate when the source updates |
+| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `character`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
 | `character` | `String` | The kanji character, e.g. "休" |
 | `unicode_hex` | `String` | 5-char zero-padded hex code point, e.g. "04f11" |
 | `view_box` | `String` | The SVG `viewBox` attribute, typically "0 0 109 109". Stored explicitly so the renderer never assumes a fixed canvas size |
@@ -142,4 +141,4 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 - **Multiple radicals marked:** A single kanji can have more than one node with a non-null `radical` field (one "s" for Kangxi, one "n" for Nelson). Both are preserved.
 - **Variant without original:** If KanjiVG marks `variant: true` but omits the `original` field, the pipeline should log a warning and skip variant linkage for that node.
 - **Null `position` on root:** The root node of the component tree always has `position: null` — it represents the whole character, not a positioned sub-part.
-- **Re-import with fewer characters:** If a new KanjiVG release drops a character, the upsert does not delete the old row. Orphan detection is a separate pipeline step.
+- **Re-import with fewer characters:** If a new KanjiVG release drops a character, the old row remains under the previous `import_id`. The new import simply won't have a row for that character. Orphan detection (comparing import versions) is a separate pipeline step.

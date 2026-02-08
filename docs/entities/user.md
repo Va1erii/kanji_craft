@@ -58,7 +58,7 @@ Per-user preferences that control the learning experience. Separated from User t
 | `id` | `int` | Unique identifier |
 | `user_id` | `UUID` | FK to the parent User. Unique — one settings row per user |
 | `study_path` | `StudyPath` | `jlpt` or `grade` — which curriculum path to follow |
-| `current_level` | `int` | The level the user is currently studying. For JLPT: 1–5 (starts at 5). For grade: 1–8 (starts at 1) |
+| `current_level` | `int` | The level the user is currently studying. For JLPT: 1–5 (starts at 5). For grade: 1–6 and 8 (starts at 1). KANJIDIC skips 7 |
 | `daily_lesson_limit` | `int` | Max new items per day. Default: 10 |
 | `daily_review_limit` | `int` | Max reviews per session. Default: 100 |
 

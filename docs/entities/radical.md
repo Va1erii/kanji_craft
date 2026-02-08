@@ -17,7 +17,7 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `stroke_count` | `int` | Stroke count of the master symbol |
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1) |
-| `min_grade` | `int` | The earliest Japanese school grade this appears in (1–8) |
+| `min_grade` | `int` | The earliest Japanese school grade this appears in. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7 |
 | `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 | `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |

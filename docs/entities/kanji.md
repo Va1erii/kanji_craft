@@ -16,7 +16,7 @@ The core identity of a single kanji character. Holds language-independent data: 
 | `character` | `String` | The kanji character, e.g. "日", "人", "大". Unique across all kanji |
 | `stroke_count` | `int` | Number of strokes to write the character |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this kanji appears in (5 = N5, 1 = N1). Null for kanji outside the JLPT set |
-| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught (1–8). Null for kanji outside the jouyou set |
+| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null for jinmeiyou and unofficial kanji |
 | `frequency_rank` | `int` | Frequency rank based on newspaper corpus (1 = most common). Used for ordering within a level |
 | `svg_file_name` | `String` | Local asset filename for the kanji SVG, e.g. "065e5.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |

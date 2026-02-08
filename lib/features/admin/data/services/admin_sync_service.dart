@@ -1,7 +1,7 @@
 import '../../domain/entities/data_import.dart';
 import '../../domain/entities/import_status.dart';
 import '../../domain/entities/kanji_component_review.dart';
-import '../../domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 import '../datasources/supabase_data_import_datasource.dart';
 import '../datasources/supabase_kanji_component_review_datasource.dart';
 import '../datasources/supabase_raw_kanjidic_datasource.dart';

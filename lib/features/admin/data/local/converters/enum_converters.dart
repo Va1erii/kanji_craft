@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../../domain/entities/import_source.dart';
 import '../../../domain/entities/import_status.dart';
-import '../../../domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 
 class ImportSourceConverter extends TypeConverter<ImportSource, String> {
   const ImportSourceConverter();

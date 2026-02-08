@@ -2,7 +2,7 @@
 
 ## Overview
 
-Tracks each execution of the content pipeline (see [pipeline.md](../technical/pipeline.md)). Every time raw source data (KanjiVG or KANJIDIC2) enters the pipeline, a `DataImport` row is created to track it through all four phases: ingestion, transformation, verification, and promotion. Rows in `raw_kanjivg` and `raw_kanjidic` reference this table via `import_id`, enabling version-aware diffing and rollback — old import rows are preserved alongside new ones.
+Tracks each execution of the content pipeline (see [pipeline.md](../technical/pipeline.md)). Every time raw source data (KanjiVG, KANJIDIC2, or JMdict) enters the pipeline, a `DataImport` row is created to track it through all four phases: ingestion, transformation, verification, and promotion. Rows in `raw_kanjivg` and `raw_kanjidic` reference this table via `import_id`, enabling version-aware diffing and rollback — old import rows are preserved alongside new ones.
 
 This is an **admin-only table** — not used by the client app. This table lives in the **Supabase Staging Database** (Postgres) as the source of truth. The Admin Tool (Flutter/Drift) fetches this data into a local Drift database for processing/transformation before writing to the production tables. Access is restricted to the `service_role` key (which bypasses RLS).
 
@@ -16,6 +16,7 @@ Identifies which external dataset an import run targets.
 |---|---|
 | `kanjivg` | KanjiVG stroke and component data |
 | `kanjidic` | KANJIDIC2 dictionary data |
+| `jmdict` | JMdict vocabulary and sentence data |
 
 ### ImportStatus (Enum)
 

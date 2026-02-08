@@ -4,7 +4,7 @@ import 'package:kanji_craft/features/admin/domain/entities/import_status.dart';
 import 'package:kanji_craft/features/admin/domain/entities/kanji_component_review.dart';
 import 'package:kanji_craft/features/admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft/features/admin/domain/entities/raw_kanjivg.dart';
-import 'package:kanji_craft/features/admin/domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 
 final _epoch = DateTime.utc(2025, 1, 1);
 

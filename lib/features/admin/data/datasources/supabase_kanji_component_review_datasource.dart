@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/kanji_component_review.dart';
-import '../../domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 import '../dto/kanji_component_review_dto.dart';
 
 class SupabaseKanjiComponentReviewDataSource {

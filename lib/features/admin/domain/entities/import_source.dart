@@ -2,4 +2,5 @@
 ///
 /// - [kanjivg] — KanjiVG stroke and component data.
 /// - [kanjidic] — KANJIDIC2 dictionary data.
-enum ImportSource { kanjivg, kanjidic }
+/// - [jmdict] — JMdict vocabulary and sentence data.
+enum ImportSource { kanjivg, kanjidic, jmdict }

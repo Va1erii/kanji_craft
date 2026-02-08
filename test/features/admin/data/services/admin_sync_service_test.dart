@@ -11,7 +11,7 @@ import 'package:kanji_craft/features/admin/data/repositories/drift_raw_kanjivg_r
 import 'package:kanji_craft/features/admin/data/services/admin_sync_service.dart';
 import 'package:kanji_craft/features/admin/domain/entities/import_source.dart';
 import 'package:kanji_craft/features/admin/domain/entities/import_status.dart';
-import 'package:kanji_craft/features/admin/domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/admin_fixtures.dart';

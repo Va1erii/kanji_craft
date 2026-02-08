@@ -9,7 +9,7 @@ import '../../domain/entities/import_source.dart';
 import '../../domain/entities/import_status.dart';
 import '../../domain/entities/raw_kanjidic.dart';
 import '../../domain/entities/raw_kanjivg.dart';
-import '../../domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 import 'converters/enum_converters.dart';
 import 'converters/json_converters.dart';
 import 'tables/data_import_table.dart';

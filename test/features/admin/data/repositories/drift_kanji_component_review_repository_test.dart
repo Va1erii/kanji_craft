@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:kanji_craft/features/admin/data/local/admin_database.dart';
 import 'package:kanji_craft/features/admin/data/repositories/drift_kanji_component_review_repository.dart';
-import 'package:kanji_craft/features/admin/domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 
 import '../../helpers/admin_fixtures.dart';
 import '../../helpers/admin_test_helpers.dart';

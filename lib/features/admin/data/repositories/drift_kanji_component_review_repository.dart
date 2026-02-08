@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../domain/entities/kanji_component_review.dart';
-import '../../domain/entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 import '../../domain/repositories/kanji_component_review_repository.dart';
 import '../local/admin_database.dart';
 import '../local/mappers/admin_mappers.dart';

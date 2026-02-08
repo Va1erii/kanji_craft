@@ -49,6 +49,7 @@ Map<String, dynamic> _$DataImportDtoToJson(_DataImportDto instance) =>
 const _$ImportSourceEnumMap = {
   ImportSource.kanjivg: 'kanjivg',
   ImportSource.kanjidic: 'kanjidic',
+  ImportSource.jmdict: 'jmdict',
 };
 
 const _$ImportStatusEnumMap = {

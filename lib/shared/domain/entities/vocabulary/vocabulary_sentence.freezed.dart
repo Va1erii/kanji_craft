@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$VocabularySentence {
 
- int get id; int get vocabularyId; String get langCode; String get sentenceJa; String get sentenceFurigana; String get sentenceTranslated; DateTime get createdAt; DateTime get updatedAt;
+ int get id; int get vocabularyId; String get langCode; String get sentenceJa; String get sentenceFurigana; String get sentenceTranslated; VerificationStatus get verificationStatus; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of VocabularySentence
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $VocabularySentenceCopyWith<VocabularySentence> get copyWith => _$VocabularySent
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VocabularySentence&&(identical(other.id, id) || other.id == id)&&(identical(other.vocabularyId, vocabularyId) || other.vocabularyId == vocabularyId)&&(identical(other.langCode, langCode) || other.langCode == langCode)&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceFurigana, sentenceFurigana) || other.sentenceFurigana == sentenceFurigana)&&(identical(other.sentenceTranslated, sentenceTranslated) || other.sentenceTranslated == sentenceTranslated)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VocabularySentence&&(identical(other.id, id) || other.id == id)&&(identical(other.vocabularyId, vocabularyId) || other.vocabularyId == vocabularyId)&&(identical(other.langCode, langCode) || other.langCode == langCode)&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceFurigana, sentenceFurigana) || other.sentenceFurigana == sentenceFurigana)&&(identical(other.sentenceTranslated, sentenceTranslated) || other.sentenceTranslated == sentenceTranslated)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vocabularyId,langCode,sentenceJa,sentenceFurigana,sentenceTranslated,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,vocabularyId,langCode,sentenceJa,sentenceFurigana,sentenceTranslated,verificationStatus,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'VocabularySentence(id: $id, vocabularyId: $vocabularyId, langCode: $langCode, sentenceJa: $sentenceJa, sentenceFurigana: $sentenceFurigana, sentenceTranslated: $sentenceTranslated, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'VocabularySentence(id: $id, vocabularyId: $vocabularyId, langCode: $langCode, sentenceJa: $sentenceJa, sentenceFurigana: $sentenceFurigana, sentenceTranslated: $sentenceTranslated, verificationStatus: $verificationStatus, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $VocabularySentenceCopyWith<$Res>  {
   factory $VocabularySentenceCopyWith(VocabularySentence value, $Res Function(VocabularySentence) _then) = _$VocabularySentenceCopyWithImpl;
 @useResult
 $Res call({
- int id, int vocabularyId, String langCode, String sentenceJa, String sentenceFurigana, String sentenceTranslated, DateTime createdAt, DateTime updatedAt
+ int id, int vocabularyId, String langCode, String sentenceJa, String sentenceFurigana, String sentenceTranslated, VerificationStatus verificationStatus, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,7 +62,7 @@ class _$VocabularySentenceCopyWithImpl<$Res>
 
 /// Create a copy of VocabularySentence
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? vocabularyId = null,Object? langCode = null,Object? sentenceJa = null,Object? sentenceFurigana = null,Object? sentenceTranslated = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? vocabularyId = null,Object? langCode = null,Object? sentenceJa = null,Object? sentenceFurigana = null,Object? sentenceTranslated = null,Object? verificationStatus = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,vocabularyId: null == vocabularyId ? _self.vocabularyId : vocabularyId // ignore: cast_nullable_to_non_nullable
@@ -70,7 +70,8 @@ as int,langCode: null == langCode ? _self.langCode : langCode // ignore: cast_nu
 as String,sentenceJa: null == sentenceJa ? _self.sentenceJa : sentenceJa // ignore: cast_nullable_to_non_nullable
 as String,sentenceFurigana: null == sentenceFurigana ? _self.sentenceFurigana : sentenceFurigana // ignore: cast_nullable_to_non_nullable
 as String,sentenceTranslated: null == sentenceTranslated ? _self.sentenceTranslated : sentenceTranslated // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,verificationStatus: null == verificationStatus ? _self.verificationStatus : verificationStatus // ignore: cast_nullable_to_non_nullable
+as VerificationStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  VerificationStatus verificationStatus,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VocabularySentence() when $default != null:
-return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.verificationStatus,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  VerificationStatus verificationStatus,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _VocabularySentence():
-return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.verificationStatus,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int vocabularyId,  String langCode,  String sentenceJa,  String sentenceFurigana,  String sentenceTranslated,  VerificationStatus verificationStatus,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _VocabularySentence() when $default != null:
-return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_that.sentenceFurigana,_that.sentenceTranslated,_that.verificationStatus,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -213,7 +214,7 @@ return $default(_that.id,_that.vocabularyId,_that.langCode,_that.sentenceJa,_tha
 
 
 class _VocabularySentence implements VocabularySentence {
-  const _VocabularySentence({required this.id, required this.vocabularyId, required this.langCode, required this.sentenceJa, required this.sentenceFurigana, required this.sentenceTranslated, required this.createdAt, required this.updatedAt});
+  const _VocabularySentence({required this.id, required this.vocabularyId, required this.langCode, required this.sentenceJa, required this.sentenceFurigana, required this.sentenceTranslated, required this.verificationStatus, required this.createdAt, required this.updatedAt});
   
 
 @override final  int id;
@@ -222,6 +223,7 @@ class _VocabularySentence implements VocabularySentence {
 @override final  String sentenceJa;
 @override final  String sentenceFurigana;
 @override final  String sentenceTranslated;
+@override final  VerificationStatus verificationStatus;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 
@@ -235,16 +237,16 @@ _$VocabularySentenceCopyWith<_VocabularySentence> get copyWith => __$VocabularyS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VocabularySentence&&(identical(other.id, id) || other.id == id)&&(identical(other.vocabularyId, vocabularyId) || other.vocabularyId == vocabularyId)&&(identical(other.langCode, langCode) || other.langCode == langCode)&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceFurigana, sentenceFurigana) || other.sentenceFurigana == sentenceFurigana)&&(identical(other.sentenceTranslated, sentenceTranslated) || other.sentenceTranslated == sentenceTranslated)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VocabularySentence&&(identical(other.id, id) || other.id == id)&&(identical(other.vocabularyId, vocabularyId) || other.vocabularyId == vocabularyId)&&(identical(other.langCode, langCode) || other.langCode == langCode)&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceFurigana, sentenceFurigana) || other.sentenceFurigana == sentenceFurigana)&&(identical(other.sentenceTranslated, sentenceTranslated) || other.sentenceTranslated == sentenceTranslated)&&(identical(other.verificationStatus, verificationStatus) || other.verificationStatus == verificationStatus)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,vocabularyId,langCode,sentenceJa,sentenceFurigana,sentenceTranslated,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,vocabularyId,langCode,sentenceJa,sentenceFurigana,sentenceTranslated,verificationStatus,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'VocabularySentence(id: $id, vocabularyId: $vocabularyId, langCode: $langCode, sentenceJa: $sentenceJa, sentenceFurigana: $sentenceFurigana, sentenceTranslated: $sentenceTranslated, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'VocabularySentence(id: $id, vocabularyId: $vocabularyId, langCode: $langCode, sentenceJa: $sentenceJa, sentenceFurigana: $sentenceFurigana, sentenceTranslated: $sentenceTranslated, verificationStatus: $verificationStatus, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -255,7 +257,7 @@ abstract mixin class _$VocabularySentenceCopyWith<$Res> implements $VocabularySe
   factory _$VocabularySentenceCopyWith(_VocabularySentence value, $Res Function(_VocabularySentence) _then) = __$VocabularySentenceCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int vocabularyId, String langCode, String sentenceJa, String sentenceFurigana, String sentenceTranslated, DateTime createdAt, DateTime updatedAt
+ int id, int vocabularyId, String langCode, String sentenceJa, String sentenceFurigana, String sentenceTranslated, VerificationStatus verificationStatus, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -272,7 +274,7 @@ class __$VocabularySentenceCopyWithImpl<$Res>
 
 /// Create a copy of VocabularySentence
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? vocabularyId = null,Object? langCode = null,Object? sentenceJa = null,Object? sentenceFurigana = null,Object? sentenceTranslated = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? vocabularyId = null,Object? langCode = null,Object? sentenceJa = null,Object? sentenceFurigana = null,Object? sentenceTranslated = null,Object? verificationStatus = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_VocabularySentence(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,vocabularyId: null == vocabularyId ? _self.vocabularyId : vocabularyId // ignore: cast_nullable_to_non_nullable
@@ -280,7 +282,8 @@ as int,langCode: null == langCode ? _self.langCode : langCode // ignore: cast_nu
 as String,sentenceJa: null == sentenceJa ? _self.sentenceJa : sentenceJa // ignore: cast_nullable_to_non_nullable
 as String,sentenceFurigana: null == sentenceFurigana ? _self.sentenceFurigana : sentenceFurigana // ignore: cast_nullable_to_non_nullable
 as String,sentenceTranslated: null == sentenceTranslated ? _self.sentenceTranslated : sentenceTranslated // ignore: cast_nullable_to_non_nullable
-as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,verificationStatus: null == verificationStatus ? _self.verificationStatus : verificationStatus // ignore: cast_nullable_to_non_nullable
+as VerificationStatus,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));

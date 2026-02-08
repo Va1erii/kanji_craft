@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 
 part 'kanji_component_review.freezed.dart';
 

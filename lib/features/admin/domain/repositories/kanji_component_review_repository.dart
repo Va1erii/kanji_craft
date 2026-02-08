@@ -1,5 +1,5 @@
 import '../entities/kanji_component_review.dart';
-import '../entities/verification_status.dart';
+import 'package:kanji_craft/shared/domain/entities/verification_status.dart';
 
 abstract class KanjiComponentReviewRepository {
   /// Creates a review row for a newly created component.

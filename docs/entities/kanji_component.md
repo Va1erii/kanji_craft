@@ -24,7 +24,12 @@ Each row represents one radical appearing inside one kanji. It carries metadata 
 | `id` | `int` | Unique identifier |
 | `kanji_id` | `int` | FK to the Kanji (see kanji.md) |
 | `radical_id` | `int` | FK to the Radical (see radical.md) |
+| `position` | `Position` | Where this radical sits inside this kanji (see radical.md Position enum) |
 | `logic_hint` | `LogicHint` | Whether this radical contributes meaning or sound in this specific kanji |
+
+**Why `position` on KanjiComponent, not just on RadicalVariant?**
+
+`RadicalVariant` records what shapes a radical *can* take at each position. `KanjiComponent.position` records where the radical *actually sits* in a specific kanji. For example, 口 can appear as `hen` (left), `ashi` (bottom), or `kamae` (enclosure) depending on the kanji. The position per kanji is what the decomposition tree view needs to show the spatial layout.
 
 **Why `logic_hint` on KanjiComponent, not on Radical?**
 
@@ -41,7 +46,7 @@ Kanji  ──1:N──→ KanjiComponent    (one kanji is composed of many radic
 
 ## Business Rules
 
-1. `kanji_id` + `radical_id` must be unique — a radical appears in a given kanji exactly once.
+1. `kanji_id` + `radical_id` + `position` must be unique — a radical appears at a given position in a given kanji exactly once.
 2. Every `KanjiComponent` must have a `logic_hint` value. Default to `semantic` if unknown during content seeding.
 3. Deleting a Radical or Kanji must cascade-delete its `KanjiComponent` rows.
 

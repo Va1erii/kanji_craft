@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$KanjiComponent {
 
- int get id; int get kanjiId; int get radicalId; LogicHint get logicHint; DateTime get createdAt; DateTime get updatedAt;
+ int get id; int get kanjiId; int get radicalId; Position get position; LogicHint get logicHint; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of KanjiComponent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $KanjiComponentCopyWith<KanjiComponent> get copyWith => _$KanjiComponentCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is KanjiComponent&&(identical(other.id, id) || other.id == id)&&(identical(other.kanjiId, kanjiId) || other.kanjiId == kanjiId)&&(identical(other.radicalId, radicalId) || other.radicalId == radicalId)&&(identical(other.logicHint, logicHint) || other.logicHint == logicHint)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is KanjiComponent&&(identical(other.id, id) || other.id == id)&&(identical(other.kanjiId, kanjiId) || other.kanjiId == kanjiId)&&(identical(other.radicalId, radicalId) || other.radicalId == radicalId)&&(identical(other.position, position) || other.position == position)&&(identical(other.logicHint, logicHint) || other.logicHint == logicHint)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,kanjiId,radicalId,logicHint,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,kanjiId,radicalId,position,logicHint,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'KanjiComponent(id: $id, kanjiId: $kanjiId, radicalId: $radicalId, logicHint: $logicHint, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'KanjiComponent(id: $id, kanjiId: $kanjiId, radicalId: $radicalId, position: $position, logicHint: $logicHint, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $KanjiComponentCopyWith<$Res>  {
   factory $KanjiComponentCopyWith(KanjiComponent value, $Res Function(KanjiComponent) _then) = _$KanjiComponentCopyWithImpl;
 @useResult
 $Res call({
- int id, int kanjiId, int radicalId, LogicHint logicHint, DateTime createdAt, DateTime updatedAt
+ int id, int kanjiId, int radicalId, Position position, LogicHint logicHint, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,12 +62,13 @@ class _$KanjiComponentCopyWithImpl<$Res>
 
 /// Create a copy of KanjiComponent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? kanjiId = null,Object? radicalId = null,Object? logicHint = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? kanjiId = null,Object? radicalId = null,Object? position = null,Object? logicHint = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,kanjiId: null == kanjiId ? _self.kanjiId : kanjiId // ignore: cast_nullable_to_non_nullable
 as int,radicalId: null == radicalId ? _self.radicalId : radicalId // ignore: cast_nullable_to_non_nullable
-as int,logicHint: null == logicHint ? _self.logicHint : logicHint // ignore: cast_nullable_to_non_nullable
+as int,position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
+as Position,logicHint: null == logicHint ? _self.logicHint : logicHint // ignore: cast_nullable_to_non_nullable
 as LogicHint,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
@@ -155,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int kanjiId,  int radicalId,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int kanjiId,  int radicalId,  Position position,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _KanjiComponent() when $default != null:
-return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.kanjiId,_that.radicalId,_that.position,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -176,10 +177,10 @@ return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.cre
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int kanjiId,  int radicalId,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int kanjiId,  int radicalId,  Position position,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _KanjiComponent():
-return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.kanjiId,_that.radicalId,_that.position,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +197,10 @@ return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.cre
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int kanjiId,  int radicalId,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int kanjiId,  int radicalId,  Position position,  LogicHint logicHint,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _KanjiComponent() when $default != null:
-return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.kanjiId,_that.radicalId,_that.position,_that.logicHint,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -211,12 +212,13 @@ return $default(_that.id,_that.kanjiId,_that.radicalId,_that.logicHint,_that.cre
 
 
 class _KanjiComponent implements KanjiComponent {
-  const _KanjiComponent({required this.id, required this.kanjiId, required this.radicalId, required this.logicHint, required this.createdAt, required this.updatedAt});
+  const _KanjiComponent({required this.id, required this.kanjiId, required this.radicalId, required this.position, required this.logicHint, required this.createdAt, required this.updatedAt});
   
 
 @override final  int id;
 @override final  int kanjiId;
 @override final  int radicalId;
+@override final  Position position;
 @override final  LogicHint logicHint;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
@@ -231,16 +233,16 @@ _$KanjiComponentCopyWith<_KanjiComponent> get copyWith => __$KanjiComponentCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KanjiComponent&&(identical(other.id, id) || other.id == id)&&(identical(other.kanjiId, kanjiId) || other.kanjiId == kanjiId)&&(identical(other.radicalId, radicalId) || other.radicalId == radicalId)&&(identical(other.logicHint, logicHint) || other.logicHint == logicHint)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KanjiComponent&&(identical(other.id, id) || other.id == id)&&(identical(other.kanjiId, kanjiId) || other.kanjiId == kanjiId)&&(identical(other.radicalId, radicalId) || other.radicalId == radicalId)&&(identical(other.position, position) || other.position == position)&&(identical(other.logicHint, logicHint) || other.logicHint == logicHint)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,kanjiId,radicalId,logicHint,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,kanjiId,radicalId,position,logicHint,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'KanjiComponent(id: $id, kanjiId: $kanjiId, radicalId: $radicalId, logicHint: $logicHint, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'KanjiComponent(id: $id, kanjiId: $kanjiId, radicalId: $radicalId, position: $position, logicHint: $logicHint, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -251,7 +253,7 @@ abstract mixin class _$KanjiComponentCopyWith<$Res> implements $KanjiComponentCo
   factory _$KanjiComponentCopyWith(_KanjiComponent value, $Res Function(_KanjiComponent) _then) = __$KanjiComponentCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int kanjiId, int radicalId, LogicHint logicHint, DateTime createdAt, DateTime updatedAt
+ int id, int kanjiId, int radicalId, Position position, LogicHint logicHint, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -268,12 +270,13 @@ class __$KanjiComponentCopyWithImpl<$Res>
 
 /// Create a copy of KanjiComponent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? kanjiId = null,Object? radicalId = null,Object? logicHint = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? kanjiId = null,Object? radicalId = null,Object? position = null,Object? logicHint = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_KanjiComponent(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,kanjiId: null == kanjiId ? _self.kanjiId : kanjiId // ignore: cast_nullable_to_non_nullable
 as int,radicalId: null == radicalId ? _self.radicalId : radicalId // ignore: cast_nullable_to_non_nullable
-as int,logicHint: null == logicHint ? _self.logicHint : logicHint // ignore: cast_nullable_to_non_nullable
+as int,position: null == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
+as Position,logicHint: null == logicHint ? _self.logicHint : logicHint // ignore: cast_nullable_to_non_nullable
 as LogicHint,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,

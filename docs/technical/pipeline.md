@@ -53,20 +53,27 @@ graph TD
         Vocab[vocabulary]
     end
 
+    subgraph "Local Storage"
+        LocalSVG[SVG files on disk]
+    end
+
     subgraph "Human Review"
         Admin[Admin Dashboard]
     end
 
     subgraph "Remote Supabase"
         ProdDB[(Production DB)]
+        Bucket[svg bucket]
     end
 
     XML & SVG -->|"1. Ingest"| RawK & RawV
+    SVG -->|"2. Hash & index"| LocalSVG
     RawK & RawV -->|"2. Transform & AI"| Rad & Kan & Comp
     JMD -->|"2. Transform & AI"| Vocab
     Admin -->|"3. Verify & Fix"| Comp
     Admin -->|"3. Verify & Fix"| Vocab
     Rad & Kan & Comp & Vocab -->|"4. Promote"| ProdDB
+    LocalSVG -->|"4. Upload changed"| Bucket
 ```
 
 ## Phase 1: Ingestion (Raw Staging)
@@ -121,7 +128,21 @@ See [radical.md](../entities/radical.md).
 
 See [kanji.md](../entities/kanji.md), [kanji_component.md](../entities/kanji_component.md).
 
-### 2.4 AI Heuristics (Logic Hint Estimation)
+### 2.4 SVG Processing & Hashing
+
+After radicals and kanji are created, the pipeline processes SVG files from the `kanjivg-{version}-main.zip` archive.
+
+1. **Extract SVGs:** Unzip individual SVG files from the archive into a local working directory.
+2. **Compute `svg_hash`:** For each SVG file, compute `SHA-256` of the raw file bytes and store the hex digest. This hash is content-based — identical SVG bytes always produce the same hash regardless of source version.
+3. **Populate fields:** For each `radicals` and `radical_variants` row, set:
+   - `svg_file_name` — Unicode hex filename, e.g. `06c34.svg` (see [supabase.md](supabase.md#file-naming))
+   - `svg_hash` — the SHA-256 hex digest from step 2
+   - `svg_file_url` — constructed from the bucket URL pattern: `{supabase_url}/storage/v1/object/public/svg/{svg_file_name}`
+4. **Populate kanji SVGs:** Same process for `kanji` rows — each kanji has its own SVG from the same archive.
+
+**Hash stability:** If a new KanjiVG version ships identical bytes for a given character, the hash stays the same. Only characters with actual SVG changes get a new hash. This enables efficient delta uploads during promotion (Phase 4).
+
+### 2.5 AI Heuristics (Logic Hint Estimation)
 
 For every new `KanjiComponent`, the system estimates `logic_hint` (semantic vs phonetic).
 
@@ -136,7 +157,7 @@ All new components start with a `draft` review row regardless of confidence. The
 
 On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
-### 2.5 Vocabulary Extraction
+### 2.6 Vocabulary Extraction
 
 JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
 
@@ -209,9 +230,21 @@ The Admin Tool queries `vocabulary_sentences` where `verification_status = 'draf
   - `vocabulary` (word, meanings, readings, kanji associations): sync all rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB. This prevents FK violations for words containing kanji from an unfinished or failed import.
   - `vocabulary_sentences`: only rows where `verification_status = 'verified'` are synced. English source sentences (born `verified`) sync immediately. AI-translated sentences (born `draft`) sync only after human review.
 
+- **URL rewrite:** When syncing `radicals`, `kanji`, or `radical_variants` to Remote, the sync script must replace the local base URL in `svg_file_url` with the Remote Production Storage URL (e.g. `https://<project-ref>.supabase.co/storage/v1/object/public/svg/...`). Do not sync localhost URLs to production.
+
 **Result:** Users get vocabulary words with definitions and readings immediately. English example sentences arrive with the word. AI-translated sentences (e.g. Spanish) arrive only after admin approval.
 
-### 4.2 Sync Order (FK Dependency Resolution)
+### 4.2 SVG Upload
+
+Before syncing database rows, upload changed SVG files to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
+
+1. **Diff by hash:** For each `radicals`, `radical_variants`, and `kanji` row being promoted, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
+2. **Upload changed files:** Only upload SVGs where the hash differs or the remote row is new. Use `supabase.storage.from('svg').upload()` with upsert mode.
+3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed. On a typical version bump, most SVGs are unchanged, so this keeps promotion fast.
+
+**Failure handling:** If an SVG upload fails, the promotion for that entity is skipped and logged. The database row is not synced without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.
+
+### 4.3 Sync Order (FK Dependency Resolution)
 
 Tables must be synced in strict order to satisfy foreign key constraints:
 
@@ -222,7 +255,7 @@ Tables must be synced in strict order to satisfy foreign key constraints:
 
 Sync will fail if a parent radical or kanji is missing on remote. The sync script validates parent existence before upserting children.
 
-### 4.3 Post-Sync Actions
+### 4.4 Post-Sync Actions
 
 1. Set `data_imports.status` = `promoted`, populate `promoted_at`.
 2. Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).

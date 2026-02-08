@@ -8,15 +8,35 @@ Kanji Craft is a Japanese kanji learning Flutter app using FSRS spaced repetitio
 
 **Bundle ID:** `com.kanjicraft.app` (all platforms)
 
+## Workspace Structure
+
+Dart native workspace with 3 packages:
+
+- `packages/core` — `kanji_craft_core`: pure Dart package with shared domain entities
+- `apps/admin` — `kanji_craft_admin`: Flutter desktop app for data ingestion and review
+- `apps/client` — `kanji_craft_client`: Flutter mobile/web/desktop app for learners
+
 ## Commands
 
 ```bash
-flutter run                                    # Run the app
-flutter test                                   # Run all tests
-flutter test test/path/to_test.dart            # Run a single test
-flutter analyze                                # Lint (uses flutter_lints)
-flutter pub run build_runner build             # Code generation (Freezed)
-flutter pub run build_runner watch             # Watch mode for code gen
+# Admin app
+cd apps/admin && flutter run -d macos          # Run admin app
+cd apps/admin && flutter test                   # Run admin tests
+cd apps/admin && flutter analyze                # Lint admin
+
+# Client app
+cd apps/client && flutter run                   # Run client app
+cd apps/client && flutter analyze               # Lint client
+
+# Core package
+cd packages/core && dart analyze                # Lint core
+
+# Code generation
+cd packages/core && dart run build_runner build --delete-conflicting-outputs   # Freezed (core)
+cd apps/admin && flutter pub run build_runner build --delete-conflicting-outputs  # Freezed + Drift (admin)
+
+# Workspace-wide
+dart pub get                                    # Resolve all packages from root
 ```
 
 Supabase CLI commands are in [docs/technical/supabase.md](docs/technical/supabase.md#commands).
@@ -26,6 +46,7 @@ Supabase CLI commands are in [docs/technical/supabase.md](docs/technical/supabas
 - **Clean Architecture:** domain → data → presentation layers
 - **State Management:** BLoC (`flutter_bloc`)
 - **Routing:** `go_router`
+- **DI:** `get_it` (singleton DB/repos, factory BLoCs)
 - **Local DB:** Drift (SQLite) — source of truth for offline-first
 - **Remote:** Supabase (PostgreSQL + Auth + Storage)
 - **Code Gen:** Freezed for immutable data classes
@@ -33,11 +54,13 @@ Supabase CLI commands are in [docs/technical/supabase.md](docs/technical/supabas
 
 ### Key Directories
 
-- `lib/core/` — cross-cutting concerns (analytics, design_system, logging, network)
-- `lib/di/` — dependency injection
-- `lib/features/` — feature modules
-- `lib/shared/domain/entities/` — shared domain entities
-- `lib/shared/domain/repositories/` — shared repository interfaces
+- `packages/core/lib/domain/entities/` — shared domain entities and enums
+- `apps/admin/lib/domain/` — admin-only entities and repository interfaces
+- `apps/admin/lib/data/` — Drift DB, parsers, DTOs, repositories, services
+- `apps/admin/lib/presentation/` — BLoC, pages, widgets
+- `apps/admin/lib/core/` — theme, router
+- `apps/admin/lib/di/` — get_it dependency injection
+- `apps/client/lib/` — client app (scaffold)
 - `docs/entities/` — entity group specs (docs-first design)
 - `docs/technical/` — infrastructure docs (supabase.md, offline.md)
 - `supabase/` — config, migrations, seed data, `.env`

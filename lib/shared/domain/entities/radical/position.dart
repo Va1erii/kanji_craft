@@ -1,3 +1,7 @@
+/// The spatial position a radical occupies within a kanji character.
+///
+/// Traditional Japanese naming conventions are used (hen, tsukuri, etc.).
+/// Each value carries a human-readable [description].
 enum Position {
   hen("Left Side"),
   tsukuri("Right Side"),

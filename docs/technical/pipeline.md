@@ -2,17 +2,42 @@
 
 ## Overview
 
-The Content Pipeline transforms raw open-source dictionary data (KANJIDIC2, KanjiVG) into structured, verified educational content used by the app. It follows a **Local-First, Human-in-the-Loop** architecture.
+The Content Pipeline transforms raw open-source dictionary data (KANJIDIC2, KanjiVG, JMdict) into structured, verified educational content used by the app. It follows a **Local-First, Human-in-the-Loop** architecture.
 
 The pipeline runs entirely in the **Local Environment** (Local Supabase + Admin Tool). Only verified, production-ready data is synced to the **Remote Production** database.
+
+## Source Archives
+
+Immutable source data lives in `sources/` at the project root. Each folder is a versioned snapshot — never modified after download.
+
+### `jmdict-{version}/`
+
+Downloaded from the [EDRDG](http://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project) project. Contains both JMdict (vocabulary) and KANJIDIC2 (kanji dictionary) exports in Yomichan-compatible JSON bank format. JMdict and KANJIDIC come from the same release because KANJIDIC character entries map directly to JMdict vocabulary entries.
+
+| Archive | Contents | Pipeline target |
+|---|---|---|
+| `JMdict_english_with_examples.zip` | English vocabulary entries + example sentences | `vocabulary`, `vocabulary_i18n` (en), `vocabulary_sentences` (en) |
+| `JMdict_spanish.zip` | Spanish vocabulary entries | `vocabulary_i18n` (es) |
+| `KANJIDIC_english.zip` | Kanji meanings and metadata in English | `raw_kanjidic` → `kanji`, `kanji_i18n` (en), `kanji_readings` |
+| `KANJIDIC_spanish.zip` | Kanji meanings in Spanish | `kanji_i18n` (es) |
+
+### `kanjivg-{version}/`
+
+Downloaded from the [KanjiVG](https://kanjivg.tagaini.net/) project. Stroke order and component decomposition data.
+
+| Archive | Contents | Pipeline target |
+|---|---|---|
+| `kanjivg-{version}-main.zip` | Individual SVG files per kanji (stroke diagrams) | `radicals` (SVG assets), `radical_variants` |
+| `kanjivg-{version}.xml.gz` | Single XML with all kanji stroke/component data | `raw_kanjivg` → `radicals`, `kanji_components` |
 
 ## Architecture
 
 ```mermaid
 graph TD
     subgraph Sources
-        XML[KANJIDIC2 XML]
-        SVG[KanjiVG SVG]
+        XML[KANJIDIC2]
+        SVG[KanjiVG]
+        JMD[JMdict]
     end
 
     subgraph "Local Supabase (Staging)"
@@ -25,6 +50,7 @@ graph TD
         Rad[radicals]
         Kan[kanji]
         Comp[kanji_components]
+        Vocab[vocabulary]
     end
 
     subgraph "Human Review"
@@ -37,8 +63,9 @@ graph TD
 
     XML & SVG -->|"1. Ingest"| RawK & RawV
     RawK & RawV -->|"2. Transform & AI"| Rad & Kan & Comp
+    JMD -->|"2. Transform"| Vocab
     Admin -->|"3. Verify & Fix"| Comp
-    Rad & Kan & Comp -->|"4. Promote"| ProdDB
+    Rad & Kan & Comp & Vocab -->|"4. Promote"| ProdDB
 ```
 
 ## Phase 1: Ingestion (Raw Staging)
@@ -108,6 +135,22 @@ All new components start with a `draft` review row regardless of confidence. The
 
 On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
+### 2.5 Vocabulary Extraction
+
+JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
+
+1. **Vocabulary creation:** Parse `JMdict_english_with_examples.zip` to upsert `vocabulary` rows (word, frequency rank, JLPT level).
+2. **Localized meanings:** Extract meanings per language into `vocabulary_i18n`. English comes from the English dump; Spanish from `JMdict_spanish.zip`.
+3. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
+4. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
+5. **Example sentences:** Extract sentence pairs (Japanese + translation) from the English dump into `vocabulary_sentences`.
+
+**Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` references the `kanji` table.
+
+**Orphan prevention:** Vocabulary entries that contain kanji not present in the `kanji` table are skipped and logged. This prevents FK violations and ensures every `vocabulary_kanji` row points to a valid kanji.
+
+See [vocabulary.md](../entities/vocabulary.md).
+
 ## Phase 3: Verification (Human-in-the-Loop)
 
 **Goal:** Ensure AI guesses and raw data errors do not reach end users.
@@ -145,7 +188,9 @@ High-confidence matches (e.g. `ai_confidence >= 0.95`) can be auto-verified in b
 
 - **Direction:** One-way (Local → Remote).
 - **Method:** Incremental upsert.
-- **Safety gate:** Only `kanji_components` with a corresponding `kanji_component_reviews.verification_status = 'verified'` row are synced. Other content tables sync all rows.
+- **Safety gates:**
+  - `kanji_components`: only rows with `kanji_component_reviews.verification_status = 'verified'` are synced.
+  - `vocabulary` (and its child tables): only rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB are synced. This prevents FK violations for words containing kanji from an unfinished or failed import.
 
 ### 4.2 Sync Order (FK Dependency Resolution)
 
@@ -198,5 +243,6 @@ python scripts/ingest_kanjivg.py --version "2024-04-01"
 - [kanji_component.md](../entities/kanji_component.md) — component entity and KanjiComponentReview (admin review state)
 - [radical.md](../entities/radical.md) — radical extraction target
 - [kanji.md](../entities/kanji.md) — kanji creation target
+- [vocabulary.md](../entities/vocabulary.md) — vocabulary extraction target
 - [offline.md](offline.md) — client-side sync after promotion
 - [supabase.md](supabase.md) — database infrastructure

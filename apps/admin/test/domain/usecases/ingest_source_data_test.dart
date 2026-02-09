@@ -179,7 +179,8 @@ void main() {
 
       test('extracts version from jmdict folder name', () async {
         final dir = _createDir('jmdict-2024.12.1');
-        File('${dir.path}/jmdict-english.zip').writeAsBytesSync([]);
+        File('${dir.path}/JMdict.gz').writeAsBytesSync([]);
+        File('${dir.path}/JMdict_e_examp.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
         final result = fakeDataImport(source: ImportSource.jmdict);
@@ -346,10 +347,12 @@ void main() {
         expect(actual, result);
       });
 
-      test('JMDict: delegates to ingestJmdict', () async {
+      test('JMDict: delegates to ingestJmdict with primary file path',
+          () async {
         final dir = _createDir('jmdict-2024.12');
-        final file = File('${dir.path}/jmdict-english.zip');
-        file.writeAsBytesSync([]);
+        final primaryFile = File('${dir.path}/JMdict.gz');
+        primaryFile.writeAsBytesSync([]);
+        File('${dir.path}/JMdict_e_examp.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
         final result = fakeDataImport(source: ImportSource.jmdict);
@@ -360,7 +363,7 @@ void main() {
               sourceVersion: '2024.12',
             )).thenAnswer((_) async => false);
         when(() => mockService.ingestJmdict(
-              filePath: file.path,
+              filePath: primaryFile.path,
               sourceVersion: '2024.12',
               onProgress: any(named: 'onProgress'),
             )).thenAnswer((_) async => result);
@@ -371,6 +374,30 @@ void main() {
         );
 
         expect(actual, result);
+        verify(() => mockService.ingestJmdict(
+              filePath: primaryFile.path,
+              sourceVersion: '2024.12',
+              onProgress: any(named: 'onProgress'),
+            )).called(1);
+      });
+
+      test('JMDict: throws when second required file is missing', () async {
+        final dir = _createDir('jmdict-2024.12');
+        File('${dir.path}/JMdict.gz').writeAsBytesSync([]);
+        // JMdict_e_examp.gz intentionally missing
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        expect(
+          () => useCase.call(
+            folderPath: dir.path,
+            source: ImportSource.jmdict,
+          ),
+          throwsA(isA<IngestionValidationException>().having(
+            (e) => e.message,
+            'message',
+            contains('No required data file'),
+          )),
+        );
       });
 
       test('progress callback is forwarded', () async {

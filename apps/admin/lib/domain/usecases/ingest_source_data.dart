@@ -18,26 +18,28 @@ class IngestionValidationException implements Exception {
 /// Source-specific config for folder/file detection.
 typedef _SourceConfig = ({
   RegExp folderPattern,
-  bool Function(String) isRequiredFile,
+  List<bool Function(String)> requiredFiles,
   bool Function(String)? isOptionalFile,
 });
 
 _SourceConfig _sourceConfig(ImportSource source) => switch (source) {
       ImportSource.kanjivg => (
           folderPattern: RegExp(r'kanjivg[_-](.+)'),
-          isRequiredFile: (String name) => name.endsWith('.xml.gz'),
+          requiredFiles: [(String name) => name.endsWith('.xml.gz')],
           isOptionalFile: (String name) =>
               name.endsWith('.zip') && name.contains('main'),
         ),
       ImportSource.kanjidic => (
           folderPattern: RegExp(r'kanjidic2?[_-](.+)'),
-          isRequiredFile: (String name) => name.endsWith('.xml.gz'),
+          requiredFiles: [(String name) => name.endsWith('.xml.gz')],
           isOptionalFile: null,
         ),
       ImportSource.jmdict => (
-          folderPattern: RegExp(r'jmdict[_-]?(.+)'),
-          isRequiredFile: (String name) =>
-              name.endsWith('.zip') && name.contains('english'),
+          folderPattern: RegExp(r'jmdict[_-](.+)'),
+          requiredFiles: [
+            (String name) => name == 'JMdict.gz',
+            (String name) => name == 'JMdict_e_examp.gz',
+          ],
           isOptionalFile: null,
         ),
     };
@@ -77,21 +79,26 @@ class IngestSourceData {
     }
     final sourceVersion = match.group(1)!;
 
-    // Scan for required file.
+    // Scan for required files.
     final files = dir.listSync().whereType<File>().toList();
-    String? requiredFilePath;
-    for (final file in files) {
-      final name = file.uri.pathSegments.last;
-      if (config.isRequiredFile(name)) {
-        requiredFilePath = file.path;
-        break;
+    final resolvedPaths = <String?>[];
+    for (final matcher in config.requiredFiles) {
+      String? found;
+      for (final file in files) {
+        final name = file.uri.pathSegments.last;
+        if (matcher(name)) {
+          found = file.path;
+          break;
+        }
       }
+      resolvedPaths.add(found);
     }
-    if (requiredFilePath == null) {
+    if (resolvedPaths.any((p) => p == null)) {
       throw IngestionValidationException(
         'No required data file found in folder "$folderName"',
       );
     }
+    final primaryFilePath = resolvedPaths.first!;
 
     // Check for active import.
     final active = await _importRepository.getActiveBySource(source);
@@ -114,16 +121,22 @@ class IngestSourceData {
     }
 
     // Delegate to the appropriate ingestion method.
-    final ingest = switch (source) {
-      ImportSource.kanjivg => _ingestionService.ingestKanjiVg,
-      ImportSource.kanjidic => _ingestionService.ingestKanjidic,
-      ImportSource.jmdict => _ingestionService.ingestJmdict,
+    return switch (source) {
+      ImportSource.kanjivg => _ingestionService.ingestKanjiVg(
+          filePath: primaryFilePath,
+          sourceVersion: sourceVersion,
+          onProgress: onProgress,
+        ),
+      ImportSource.kanjidic => _ingestionService.ingestKanjidic(
+          filePath: primaryFilePath,
+          sourceVersion: sourceVersion,
+          onProgress: onProgress,
+        ),
+      ImportSource.jmdict => _ingestionService.ingestJmdict(
+          filePath: primaryFilePath,
+          sourceVersion: sourceVersion,
+          onProgress: onProgress,
+        ),
     };
-
-    return ingest(
-      filePath: requiredFilePath,
-      sourceVersion: sourceVersion,
-      onProgress: onProgress,
-    );
   }
 }

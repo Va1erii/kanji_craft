@@ -84,6 +84,23 @@ class DriftDataImportRepository implements DataImportRepository {
   }
 
   @override
+  Future<bool> hasPromotedVersion({
+    required ImportSource source,
+    required String sourceVersion,
+  }) async {
+    final query = _db.select(_db.dataImportEntries)
+      ..where(
+        (t) =>
+            t.source.equalsValue(source) &
+            t.sourceVersion.equals(sourceVersion) &
+            t.status.equalsValue(ImportStatus.promoted),
+      )
+      ..limit(1);
+    final result = await query.getSingleOrNull();
+    return result != null;
+  }
+
+  @override
   Future<List<DataImport>> listAll() async {
     final entries = await (_db.select(_db.dataImportEntries)
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))

@@ -119,11 +119,11 @@ return startIngestion(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  load,TResult Function( ImportSource source,  String sourceVersion,  String filePath)?  startIngestion,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  load,TResult Function( ImportSource source,  String folderPath)?  startIngestion,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Load() when load != null:
 return load();case _StartIngestion() when startIngestion != null:
-return startIngestion(_that.source,_that.sourceVersion,_that.filePath);case _:
+return startIngestion(_that.source,_that.folderPath);case _:
   return orElse();
 
 }
@@ -141,11 +141,11 @@ return startIngestion(_that.source,_that.sourceVersion,_that.filePath);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  load,required TResult Function( ImportSource source,  String sourceVersion,  String filePath)  startIngestion,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  load,required TResult Function( ImportSource source,  String folderPath)  startIngestion,}) {final _that = this;
 switch (_that) {
 case _Load():
 return load();case _StartIngestion():
-return startIngestion(_that.source,_that.sourceVersion,_that.filePath);}
+return startIngestion(_that.source,_that.folderPath);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -159,11 +159,11 @@ return startIngestion(_that.source,_that.sourceVersion,_that.filePath);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  load,TResult? Function( ImportSource source,  String sourceVersion,  String filePath)?  startIngestion,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  load,TResult? Function( ImportSource source,  String folderPath)?  startIngestion,}) {final _that = this;
 switch (_that) {
 case _Load() when load != null:
 return load();case _StartIngestion() when startIngestion != null:
-return startIngestion(_that.source,_that.sourceVersion,_that.filePath);case _:
+return startIngestion(_that.source,_that.folderPath);case _:
   return null;
 
 }
@@ -207,12 +207,11 @@ String toString() {
 
 
 class _StartIngestion implements DataImportEvent {
-  const _StartIngestion({required this.source, required this.sourceVersion, required this.filePath});
+  const _StartIngestion({required this.source, required this.folderPath});
   
 
  final  ImportSource source;
- final  String sourceVersion;
- final  String filePath;
+ final  String folderPath;
 
 /// Create a copy of DataImportEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -224,16 +223,16 @@ _$StartIngestionCopyWith<_StartIngestion> get copyWith => __$StartIngestionCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StartIngestion&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.filePath, filePath) || other.filePath == filePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StartIngestion&&(identical(other.source, source) || other.source == source)&&(identical(other.folderPath, folderPath) || other.folderPath == folderPath));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,source,sourceVersion,filePath);
+int get hashCode => Object.hash(runtimeType,source,folderPath);
 
 @override
 String toString() {
-  return 'DataImportEvent.startIngestion(source: $source, sourceVersion: $sourceVersion, filePath: $filePath)';
+  return 'DataImportEvent.startIngestion(source: $source, folderPath: $folderPath)';
 }
 
 
@@ -244,7 +243,7 @@ abstract mixin class _$StartIngestionCopyWith<$Res> implements $DataImportEventC
   factory _$StartIngestionCopyWith(_StartIngestion value, $Res Function(_StartIngestion) _then) = __$StartIngestionCopyWithImpl;
 @useResult
 $Res call({
- ImportSource source, String sourceVersion, String filePath
+ ImportSource source, String folderPath
 });
 
 
@@ -261,11 +260,10 @@ class __$StartIngestionCopyWithImpl<$Res>
 
 /// Create a copy of DataImportEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? source = null,Object? sourceVersion = null,Object? filePath = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? source = null,Object? folderPath = null,}) {
   return _then(_StartIngestion(
 source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
-as ImportSource,sourceVersion: null == sourceVersion ? _self.sourceVersion : sourceVersion // ignore: cast_nullable_to_non_nullable
-as String,filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
+as ImportSource,folderPath: null == folderPath ? _self.folderPath : folderPath // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

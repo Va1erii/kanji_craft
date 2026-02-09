@@ -10,6 +10,7 @@ import '../domain/repositories/data_import_repository.dart';
 import '../domain/repositories/raw_jmdict_repository.dart';
 import '../domain/repositories/raw_kanjidic_repository.dart';
 import '../domain/repositories/raw_kanjivg_repository.dart';
+import '../domain/usecases/ingest_source_data.dart';
 import '../presentation/bloc/data_import_bloc.dart';
 
 final getIt = GetIt.instance;
@@ -37,12 +38,18 @@ Future<void> configureDependencies() async {
       jmdictRepository: getIt<RawJmdictRepository>(),
     ),
   );
+  getIt.registerLazySingleton<IngestSourceData>(
+    () => IngestSourceData(
+      importRepository: getIt<DataImportRepository>(),
+      ingestionService: getIt<IngestionService>(),
+    ),
+  );
 
   // Factories (new instance each time)
   getIt.registerFactory<DataImportBloc>(
     () => DataImportBloc(
       importRepository: getIt<DataImportRepository>(),
-      ingestionService: getIt<IngestionService>(),
+      ingestSourceData: getIt<IngestSourceData>(),
     ),
   );
 }

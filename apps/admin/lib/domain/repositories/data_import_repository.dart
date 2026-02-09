@@ -25,6 +25,12 @@ abstract class DataImportRepository {
     String? errorMessage,
   });
 
+  /// Returns whether a promoted import exists for [source] with [sourceVersion].
+  Future<bool> hasPromotedVersion({
+    required ImportSource source,
+    required String sourceVersion,
+  });
+
   /// Lists all imports, most recent first.
   Future<List<DataImport>> listAll();
 }

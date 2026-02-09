@@ -121,6 +121,53 @@ void main() {
       });
     });
 
+    group('hasPromotedVersion', () {
+      test('returns true when promoted import with matching source+version exists',
+          () async {
+        final created = await repo.create(
+          source: ImportSource.kanjivg,
+          sourceVersion: '2024.1',
+        );
+        await repo.updateStatus(
+          id: created.id,
+          status: ImportStatus.promoted,
+        );
+
+        final result = await repo.hasPromotedVersion(
+          source: ImportSource.kanjivg,
+          sourceVersion: '2024.1',
+        );
+        expect(result, isTrue);
+      });
+
+      test('returns false when no match exists', () async {
+        final result = await repo.hasPromotedVersion(
+          source: ImportSource.kanjivg,
+          sourceVersion: '2024.1',
+        );
+        expect(result, isFalse);
+      });
+
+      test('returns false when matching source+version exists but status is failed',
+          () async {
+        final created = await repo.create(
+          source: ImportSource.kanjivg,
+          sourceVersion: '2024.1',
+        );
+        await repo.updateStatus(
+          id: created.id,
+          status: ImportStatus.failed,
+          errorMessage: 'oops',
+        );
+
+        final result = await repo.hasPromotedVersion(
+          source: ImportSource.kanjivg,
+          sourceVersion: '2024.1',
+        );
+        expect(result, isFalse);
+      });
+    });
+
     group('updateStatus', () {
       test('sets status to ingested with ingestedAt timestamp', () async {
         final created = await repo.create(

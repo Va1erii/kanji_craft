@@ -72,8 +72,7 @@ class DataPipelinePage extends StatelessWidget {
       context.read<DataImportBloc>().add(
             DataImportEvent.startIngestion(
               source: result.source,
-              sourceVersion: result.sourceVersion,
-              filePath: result.filePath,
+              folderPath: result.folderPath,
             ),
           );
     }

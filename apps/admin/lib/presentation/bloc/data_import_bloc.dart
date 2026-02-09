@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kanji_craft_admin/data/services/ingestion_service.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dart';
+import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
 
 import 'data_import_event.dart';
 import 'data_import_state.dart';
@@ -9,15 +9,15 @@ import 'data_import_state.dart';
 class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
   DataImportBloc({
     required DataImportRepository importRepository,
-    required IngestionService ingestionService,
+    required IngestSourceData ingestSourceData,
   })  : _importRepository = importRepository,
-        _ingestionService = ingestionService,
+        _ingestSourceData = ingestSourceData,
         super(const DataImportState.initial()) {
     on<DataImportEvent>(_onEvent);
   }
 
   final DataImportRepository _importRepository;
-  final IngestionService _ingestionService;
+  final IngestSourceData _ingestSourceData;
 
   Future<void> _onEvent(
     DataImportEvent event,
@@ -25,8 +25,8 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
   ) async {
     await event.when(
       load: () => _onLoad(emit),
-      startIngestion: (source, sourceVersion, filePath) =>
-          _onStartIngestion(source, sourceVersion, filePath, emit),
+      startIngestion: (source, folderPath) =>
+          _onStartIngestion(source, folderPath, emit),
     );
   }
 
@@ -47,17 +47,10 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
 
   Future<void> _onStartIngestion(
     ImportSource source,
-    String sourceVersion,
-    String filePath,
+    String folderPath,
     Emitter<DataImportState> emit,
   ) async {
     try {
-      final ingest = switch (source) {
-        ImportSource.kanjivg => _ingestionService.ingestKanjiVg,
-        ImportSource.kanjidic => _ingestionService.ingestKanjidic,
-        ImportSource.jmdict => _ingestionService.ingestJmdict,
-      };
-
       // Temporary import ID for tracking progress before we know the real one.
       // We use a negative hash to avoid collision with real DB IDs.
       final trackingKey = -source.index - 1;
@@ -72,9 +65,9 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
         ));
       }
 
-      final result = await ingest(
-        filePath: filePath,
-        sourceVersion: sourceVersion,
+      final result = await _ingestSourceData.call(
+        folderPath: folderPath,
+        source: source,
         onProgress: (inserted, total) {
           if (state is DataImportLoaded) {
             final current = state as DataImportLoaded;

@@ -8,7 +8,6 @@ sealed class DataImportEvent with _$DataImportEvent {
   const factory DataImportEvent.load() = _Load;
   const factory DataImportEvent.startIngestion({
     required ImportSource source,
-    required String sourceVersion,
-    required String filePath,
+    required String folderPath,
   }) = _StartIngestion;
 }

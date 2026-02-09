@@ -39,7 +39,6 @@ class ImportsTable extends StatelessWidget {
           DataColumn(label: Text('Status')),
           DataColumn(label: Text('Records'), numeric: true),
           DataColumn(label: Text('Started')),
-          DataColumn(label: Text('Progress')),
         ],
         rows: [
           for (final entry in imports)
@@ -47,37 +46,36 @@ class ImportsTable extends StatelessWidget {
               DataCell(Text('${entry.id}')),
               DataCell(Text(entry.source.name)),
               DataCell(Text(entry.sourceVersion)),
-              DataCell(StatusBadge(status: entry.status)),
+              DataCell(_statusCell(entry)),
               DataCell(Text(entry.recordCount?.toString() ?? '-')),
               DataCell(Text(_dateFormat.format(entry.startedAt))),
-              DataCell(_progressCell(entry)),
             ]),
         ],
       ),
     );
   }
 
-  Widget _progressCell(DataImport entry) {
-    // Find active ingestion by source tracking key.
+  Widget _statusCell(DataImport entry) {
     final trackingKey = -entry.source.index - 1;
     final progress = activeIngestions[trackingKey];
 
     if (progress == null || progress.total == 0) {
-      return const SizedBox.shrink();
+      return StatusBadge(status: entry.status);
     }
 
     final fraction = progress.inserted / progress.total;
     return SizedBox(
-      width: 120,
+      width: 140,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LinearProgressIndicator(value: fraction),
-          const SizedBox(height: 4),
           Text(
-            '${progress.inserted} / ${progress.total}',
-            style: const TextStyle(fontSize: 11),
+            'Ingesting ${progress.inserted} / ${progress.total}',
+            style: const TextStyle(fontSize: 11, color: Colors.orange),
           ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(value: fraction),
         ],
       ),
     );

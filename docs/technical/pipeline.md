@@ -297,7 +297,7 @@ The Admin Tool queries `vocabulary_sentences` where `verification_status = 'draf
 
 Before syncing database rows, upload changed SVG files to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
 
-1. **Diff by hash:** For each `radicals`, `radical_variants`, and `kanji` row being promoted, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
+1. **Diff by hash:** For each `radicals`, `radical_variants`, and `kanji` row being synced, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
 2. **Upload changed files:** Only upload SVGs where the hash differs or the remote row is new. Use `supabase.storage.from('svg').upload()` with upsert mode.
 3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed. On a typical version bump, most SVGs are unchanged, so this keeps promotion fast.
 
@@ -316,15 +316,16 @@ Sync will fail if a parent radical or kanji is missing on remote. The sync scrip
 
 ### 4.4 Post-Sync Actions
 
-1. Set `data_imports.status` = `promoted`, populate `promoted_at`.
-2. Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).
+1. Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).
+
+> **Note:** Promotion happens at the item level, not the import level. The import's terminal success state is `processed`. Individual items (kanji, radicals, vocabulary) are promoted independently after review.
 
 ## Pipeline Status Lifecycle
 
 ```
-pending → ingested → processing → processed → promoted
-   ↓         ↓           ↓            ↓
- failed    failed      failed      failed
+pending → ingested → processing → processed
+   ↓         ↓           ↓
+ failed    failed      failed
 ```
 
 Each transition updates the corresponding timestamp on `data_imports`. See [data_import.md](../entities/data_import.md) for the full status enum.

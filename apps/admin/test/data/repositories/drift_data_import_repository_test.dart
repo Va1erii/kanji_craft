@@ -34,7 +34,6 @@ void main() {
         expect(result.recordCount, isNull);
         expect(result.ingestedAt, isNull);
         expect(result.processedAt, isNull);
-        expect(result.promotedAt, isNull);
         expect(result.errorMessage, isNull);
         expect(result.metadata, isNull);
         expect(result.startedAt, isNotNull);
@@ -86,14 +85,14 @@ void main() {
         expect(active!.status, ImportStatus.pending);
       });
 
-      test('excludes promoted imports', () async {
+      test('excludes processed imports', () async {
         final created = await repo.create(
           source: ImportSource.kanjivg,
           sourceVersion: '1.0',
         );
         await repo.updateStatus(
           id: created.id,
-          status: ImportStatus.promoted,
+          status: ImportStatus.processed,
         );
 
         final active = await repo.getActiveBySource(ImportSource.kanjivg);
@@ -121,8 +120,8 @@ void main() {
       });
     });
 
-    group('hasPromotedVersion', () {
-      test('returns true when promoted import with matching source+version exists',
+    group('hasProcessedVersion', () {
+      test('returns true when processed import with matching source+version exists',
           () async {
         final created = await repo.create(
           source: ImportSource.kanjivg,
@@ -130,10 +129,10 @@ void main() {
         );
         await repo.updateStatus(
           id: created.id,
-          status: ImportStatus.promoted,
+          status: ImportStatus.processed,
         );
 
-        final result = await repo.hasPromotedVersion(
+        final result = await repo.hasProcessedVersion(
           source: ImportSource.kanjivg,
           sourceVersion: '2024.1',
         );
@@ -141,7 +140,7 @@ void main() {
       });
 
       test('returns false when no match exists', () async {
-        final result = await repo.hasPromotedVersion(
+        final result = await repo.hasProcessedVersion(
           source: ImportSource.kanjivg,
           sourceVersion: '2024.1',
         );
@@ -160,7 +159,7 @@ void main() {
           errorMessage: 'oops',
         );
 
-        final result = await repo.hasPromotedVersion(
+        final result = await repo.hasProcessedVersion(
           source: ImportSource.kanjivg,
           sourceVersion: '2024.1',
         );
@@ -185,7 +184,6 @@ void main() {
         expect(updated.recordCount, 100);
         expect(updated.ingestedAt, isNotNull);
         expect(updated.processedAt, isNull);
-        expect(updated.promotedAt, isNull);
       });
 
       test('sets processedAt when status is processed', () async {
@@ -201,21 +199,6 @@ void main() {
 
         expect(updated.status, ImportStatus.processed);
         expect(updated.processedAt, isNotNull);
-      });
-
-      test('sets promotedAt when status is promoted', () async {
-        final created = await repo.create(
-          source: ImportSource.kanjivg,
-          sourceVersion: '1.0',
-        );
-
-        final updated = await repo.updateStatus(
-          id: created.id,
-          status: ImportStatus.promoted,
-        );
-
-        expect(updated.status, ImportStatus.promoted);
-        expect(updated.promotedAt, isNotNull);
       });
 
       test('sets errorMessage on failure', () async {

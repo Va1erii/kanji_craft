@@ -49,7 +49,7 @@ Tracks whether a component's `logic_hint` has been reviewed by a human. Used as 
 
 ### KanjiComponentReview (Entity)
 
-Admin-only review state for each `KanjiComponent`. This table is **not present in the client Drift schema** — it exists only in the Supabase database and is accessed exclusively via the `service_role` key (which bypasses RLS). Clients never see review data; they only receive components that have been promoted after verification.
+Admin-only review state for each `KanjiComponent`. This table is **not present in the client Drift schema** — it exists only in the Supabase database and is accessed exclusively via the `service_role` key (which bypasses RLS). Clients never see review data; they only receive components that have been verified and synced to production.
 
 | Field | Type | Description |
 |---|---|---|

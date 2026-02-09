@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DataImportDto {
 
- int get id; ImportSource get source;@JsonKey(name: 'source_version') String get sourceVersion; ImportStatus get status;@JsonKey(name: 'record_count') int? get recordCount;@JsonKey(name: 'started_at') DateTime get startedAt;@JsonKey(name: 'ingested_at') DateTime? get ingestedAt;@JsonKey(name: 'processed_at') DateTime? get processedAt;@JsonKey(name: 'promoted_at') DateTime? get promotedAt;@JsonKey(name: 'error_message') String? get errorMessage; Map<String, Object?>? get metadata;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
+ int get id; ImportSource get source;@JsonKey(name: 'source_version') String get sourceVersion; ImportStatus get status;@JsonKey(name: 'record_count') int? get recordCount;@JsonKey(name: 'started_at') DateTime get startedAt;@JsonKey(name: 'ingested_at') DateTime? get ingestedAt;@JsonKey(name: 'processed_at') DateTime? get processedAt;@JsonKey(name: 'error_message') String? get errorMessage; Map<String, Object?>? get metadata;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;
 /// Create a copy of DataImportDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $DataImportDtoCopyWith<DataImportDto> get copyWith => _$DataImportDtoCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataImportDto&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.promotedAt, promotedAt) || other.promotedAt == promotedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataImportDto&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,promotedAt,errorMessage,const DeepCollectionEquality().hash(metadata),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,errorMessage,const DeepCollectionEquality().hash(metadata),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DataImportDto(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, promotedAt: $promotedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DataImportDto(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $DataImportDtoCopyWith<$Res>  {
   factory $DataImportDtoCopyWith(DataImportDto value, $Res Function(DataImportDto) _then) = _$DataImportDtoCopyWithImpl;
 @useResult
 $Res call({
- int id, ImportSource source,@JsonKey(name: 'source_version') String sourceVersion, ImportStatus status,@JsonKey(name: 'record_count') int? recordCount,@JsonKey(name: 'started_at') DateTime startedAt,@JsonKey(name: 'ingested_at') DateTime? ingestedAt,@JsonKey(name: 'processed_at') DateTime? processedAt,@JsonKey(name: 'promoted_at') DateTime? promotedAt,@JsonKey(name: 'error_message') String? errorMessage, Map<String, Object?>? metadata,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, ImportSource source,@JsonKey(name: 'source_version') String sourceVersion, ImportStatus status,@JsonKey(name: 'record_count') int? recordCount,@JsonKey(name: 'started_at') DateTime startedAt,@JsonKey(name: 'ingested_at') DateTime? ingestedAt,@JsonKey(name: 'processed_at') DateTime? processedAt,@JsonKey(name: 'error_message') String? errorMessage, Map<String, Object?>? metadata,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -65,7 +65,7 @@ class _$DataImportDtoCopyWithImpl<$Res>
 
 /// Create a copy of DataImportDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? promotedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,6 @@ as ImportStatus,recordCount: freezed == recordCount ? _self.recordCount : record
 as int?,startedAt: null == startedAt ? _self.startedAt : startedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ingestedAt: freezed == ingestedAt ? _self.ingestedAt : ingestedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,processedAt: freezed == processedAt ? _self.processedAt : processedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,promotedAt: freezed == promotedAt ? _self.promotedAt : promotedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -165,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'promoted_at')  DateTime? promotedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DataImportDto() when $default != null:
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -186,10 +185,10 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'promoted_at')  DateTime? promotedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _DataImportDto():
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -206,10 +205,10 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'promoted_at')  DateTime? promotedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ImportSource source, @JsonKey(name: 'source_version')  String sourceVersion,  ImportStatus status, @JsonKey(name: 'record_count')  int? recordCount, @JsonKey(name: 'started_at')  DateTime startedAt, @JsonKey(name: 'ingested_at')  DateTime? ingestedAt, @JsonKey(name: 'processed_at')  DateTime? processedAt, @JsonKey(name: 'error_message')  String? errorMessage,  Map<String, Object?>? metadata, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DataImportDto() when $default != null:
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -221,7 +220,7 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 @JsonSerializable()
 
 class _DataImportDto extends DataImportDto {
-  const _DataImportDto({required this.id, required this.source, @JsonKey(name: 'source_version') required this.sourceVersion, required this.status, @JsonKey(name: 'record_count') this.recordCount, @JsonKey(name: 'started_at') required this.startedAt, @JsonKey(name: 'ingested_at') this.ingestedAt, @JsonKey(name: 'processed_at') this.processedAt, @JsonKey(name: 'promoted_at') this.promotedAt, @JsonKey(name: 'error_message') this.errorMessage, final  Map<String, Object?>? metadata, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _metadata = metadata,super._();
+  const _DataImportDto({required this.id, required this.source, @JsonKey(name: 'source_version') required this.sourceVersion, required this.status, @JsonKey(name: 'record_count') this.recordCount, @JsonKey(name: 'started_at') required this.startedAt, @JsonKey(name: 'ingested_at') this.ingestedAt, @JsonKey(name: 'processed_at') this.processedAt, @JsonKey(name: 'error_message') this.errorMessage, final  Map<String, Object?>? metadata, @JsonKey(name: 'created_at') required this.createdAt, @JsonKey(name: 'updated_at') required this.updatedAt}): _metadata = metadata,super._();
   factory _DataImportDto.fromJson(Map<String, dynamic> json) => _$DataImportDtoFromJson(json);
 
 @override final  int id;
@@ -232,7 +231,6 @@ class _DataImportDto extends DataImportDto {
 @override@JsonKey(name: 'started_at') final  DateTime startedAt;
 @override@JsonKey(name: 'ingested_at') final  DateTime? ingestedAt;
 @override@JsonKey(name: 'processed_at') final  DateTime? processedAt;
-@override@JsonKey(name: 'promoted_at') final  DateTime? promotedAt;
 @override@JsonKey(name: 'error_message') final  String? errorMessage;
  final  Map<String, Object?>? _metadata;
 @override Map<String, Object?>? get metadata {
@@ -259,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DataImportDto&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.promotedAt, promotedAt) || other.promotedAt == promotedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DataImportDto&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,promotedAt,errorMessage,const DeepCollectionEquality().hash(_metadata),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,errorMessage,const DeepCollectionEquality().hash(_metadata),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DataImportDto(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, promotedAt: $promotedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DataImportDto(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -279,7 +277,7 @@ abstract mixin class _$DataImportDtoCopyWith<$Res> implements $DataImportDtoCopy
   factory _$DataImportDtoCopyWith(_DataImportDto value, $Res Function(_DataImportDto) _then) = __$DataImportDtoCopyWithImpl;
 @override @useResult
 $Res call({
- int id, ImportSource source,@JsonKey(name: 'source_version') String sourceVersion, ImportStatus status,@JsonKey(name: 'record_count') int? recordCount,@JsonKey(name: 'started_at') DateTime startedAt,@JsonKey(name: 'ingested_at') DateTime? ingestedAt,@JsonKey(name: 'processed_at') DateTime? processedAt,@JsonKey(name: 'promoted_at') DateTime? promotedAt,@JsonKey(name: 'error_message') String? errorMessage, Map<String, Object?>? metadata,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
+ int id, ImportSource source,@JsonKey(name: 'source_version') String sourceVersion, ImportStatus status,@JsonKey(name: 'record_count') int? recordCount,@JsonKey(name: 'started_at') DateTime startedAt,@JsonKey(name: 'ingested_at') DateTime? ingestedAt,@JsonKey(name: 'processed_at') DateTime? processedAt,@JsonKey(name: 'error_message') String? errorMessage, Map<String, Object?>? metadata,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt
 });
 
 
@@ -296,7 +294,7 @@ class __$DataImportDtoCopyWithImpl<$Res>
 
 /// Create a copy of DataImportDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? promotedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_DataImportDto(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
@@ -306,7 +304,6 @@ as ImportStatus,recordCount: freezed == recordCount ? _self.recordCount : record
 as int?,startedAt: null == startedAt ? _self.startedAt : startedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ingestedAt: freezed == ingestedAt ? _self.ingestedAt : ingestedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,processedAt: freezed == processedAt ? _self.processedAt : processedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,promotedAt: freezed == promotedAt ? _self.promotedAt : promotedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

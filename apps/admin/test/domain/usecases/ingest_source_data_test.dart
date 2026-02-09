@@ -95,7 +95,7 @@ void main() {
         final result = fakeDataImport();
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
               sourceVersion: '20240401',
             )).thenAnswer((_) async => false);
@@ -125,7 +125,7 @@ void main() {
         final result = fakeDataImport(source: ImportSource.kanjidic);
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjidic,
               sourceVersion: '2024-04-01',
             )).thenAnswer((_) async => false);
@@ -155,7 +155,7 @@ void main() {
         final result = fakeDataImport(source: ImportSource.jmdict);
         when(() => mockImportRepo.getActiveBySource(ImportSource.jmdict))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.jmdict,
               sourceVersion: '2024.12.1',
             )).thenAnswer((_) async => false);
@@ -201,15 +201,15 @@ void main() {
       });
     });
 
-    group('promoted version guard', () {
-      test('throws when a promoted import with same version exists', () async {
+    group('processed version guard', () {
+      test('throws when a processed import with same version exists', () async {
         final dir = _createDir('kanjivg-1.0');
         File('${dir.path}/data.xml.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
               sourceVersion: '1.0',
             )).thenAnswer((_) async => true);
@@ -222,7 +222,7 @@ void main() {
           throwsA(isA<IngestionValidationException>().having(
             (e) => e.message,
             'message',
-            contains('promoted'),
+            contains('processed'),
           )),
         );
       });
@@ -236,7 +236,7 @@ void main() {
         final result = fakeDataImport();
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
               sourceVersion: '1.0',
             )).thenAnswer((_) async => false);
@@ -266,7 +266,7 @@ void main() {
         final result = fakeDataImport();
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
               sourceVersion: '2024.1',
             )).thenAnswer((_) async => false);
@@ -298,7 +298,7 @@ void main() {
         final result = fakeDataImport(source: ImportSource.kanjidic);
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjidic,
               sourceVersion: '2024',
             )).thenAnswer((_) async => false);
@@ -325,7 +325,7 @@ void main() {
         final result = fakeDataImport(source: ImportSource.jmdict);
         when(() => mockImportRepo.getActiveBySource(ImportSource.jmdict))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.jmdict,
               sourceVersion: '2024.12',
             )).thenAnswer((_) async => false);
@@ -351,7 +351,7 @@ void main() {
         final result = fakeDataImport();
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasPromotedVersion(
+        when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
               sourceVersion: '1.0',
             )).thenAnswer((_) async => false);

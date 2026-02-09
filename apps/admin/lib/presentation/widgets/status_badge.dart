@@ -12,8 +12,7 @@ class StatusBadge extends StatelessWidget {
       ImportStatus.pending => ('Pending', Colors.orange),
       ImportStatus.ingested => ('Ingested', Colors.blue),
       ImportStatus.processing => ('Processing', Colors.purple),
-      ImportStatus.processed => ('Processed', Colors.teal),
-      ImportStatus.promoted => ('Promoted', Colors.green),
+      ImportStatus.processed => ('Processed', Colors.green),
       ImportStatus.failed => ('Failed', Colors.red),
     };
 

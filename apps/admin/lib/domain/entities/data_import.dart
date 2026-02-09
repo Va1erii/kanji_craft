@@ -16,7 +16,6 @@ abstract class DataImport with _$DataImport {
     required DateTime startedAt,
     DateTime? ingestedAt,
     DateTime? processedAt,
-    DateTime? promotedAt,
     String? errorMessage,
     Map<String, Object?>? metadata,
     required DateTime createdAt,

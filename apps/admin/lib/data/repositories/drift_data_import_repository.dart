@@ -49,7 +49,7 @@ class DriftDataImportRepository implements DataImportRepository {
           ..where(
             (t) =>
                 t.source.equalsValue(source) &
-                t.status.isNotInValues([ImportStatus.promoted, ImportStatus.failed]),
+                t.status.isNotInValues([ImportStatus.processed, ImportStatus.failed]),
           ))
         .getSingleOrNull();
     return entry?.toDomain();
@@ -71,7 +71,6 @@ class DriftDataImportRepository implements DataImportRepository {
       updatedAt: Value(now),
       ingestedAt: status == ImportStatus.ingested ? Value(now) : const Value.absent(),
       processedAt: status == ImportStatus.processed ? Value(now) : const Value.absent(),
-      promotedAt: status == ImportStatus.promoted ? Value(now) : const Value.absent(),
     );
 
     await (_db.update(_db.dataImportEntries)..where((t) => t.id.equals(id)))
@@ -84,7 +83,7 @@ class DriftDataImportRepository implements DataImportRepository {
   }
 
   @override
-  Future<bool> hasPromotedVersion({
+  Future<bool> hasProcessedVersion({
     required ImportSource source,
     required String sourceVersion,
   }) async {
@@ -93,7 +92,7 @@ class DriftDataImportRepository implements DataImportRepository {
         (t) =>
             t.source.equalsValue(source) &
             t.sourceVersion.equals(sourceVersion) &
-            t.status.equalsValue(ImportStatus.promoted),
+            t.status.equalsValue(ImportStatus.processed),
       )
       ..limit(1);
     final result = await query.getSingleOrNull();

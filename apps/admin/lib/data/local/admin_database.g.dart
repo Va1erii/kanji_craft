@@ -98,17 +98,6 @@ class $DataImportEntriesTable extends DataImportEntries
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _promotedAtMeta = const VerificationMeta(
-    'promotedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> promotedAt = GeneratedColumn<DateTime>(
-    'promoted_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _errorMessageMeta = const VerificationMeta(
     'errorMessage',
   );
@@ -164,7 +153,6 @@ class $DataImportEntriesTable extends DataImportEntries
     startedAt,
     ingestedAt,
     processedAt,
-    promotedAt,
     errorMessage,
     metadata,
     createdAt,
@@ -226,12 +214,6 @@ class $DataImportEntriesTable extends DataImportEntries
           data['processed_at']!,
           _processedAtMeta,
         ),
-      );
-    }
-    if (data.containsKey('promoted_at')) {
-      context.handle(
-        _promotedAtMeta,
-        promotedAt.isAcceptableOrUnknown(data['promoted_at']!, _promotedAtMeta),
       );
     }
     if (data.containsKey('error_message')) {
@@ -304,10 +286,6 @@ class $DataImportEntriesTable extends DataImportEntries
         DriftSqlType.dateTime,
         data['${effectivePrefix}processed_at'],
       ),
-      promotedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}promoted_at'],
-      ),
       errorMessage: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}error_message'],
@@ -351,7 +329,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
   final DateTime startedAt;
   final DateTime? ingestedAt;
   final DateTime? processedAt;
-  final DateTime? promotedAt;
   final String? errorMessage;
   final Map<String, Object?>? metadata;
   final DateTime createdAt;
@@ -365,7 +342,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
     required this.startedAt,
     this.ingestedAt,
     this.processedAt,
-    this.promotedAt,
     this.errorMessage,
     this.metadata,
     required this.createdAt,
@@ -396,9 +372,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
     if (!nullToAbsent || processedAt != null) {
       map['processed_at'] = Variable<DateTime>(processedAt);
     }
-    if (!nullToAbsent || promotedAt != null) {
-      map['promoted_at'] = Variable<DateTime>(promotedAt);
-    }
     if (!nullToAbsent || errorMessage != null) {
       map['error_message'] = Variable<String>(errorMessage);
     }
@@ -428,9 +401,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
       processedAt: processedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(processedAt),
-      promotedAt: promotedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(promotedAt),
       errorMessage: errorMessage == null && nullToAbsent
           ? const Value.absent()
           : Value(errorMessage),
@@ -456,7 +426,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
       ingestedAt: serializer.fromJson<DateTime?>(json['ingestedAt']),
       processedAt: serializer.fromJson<DateTime?>(json['processedAt']),
-      promotedAt: serializer.fromJson<DateTime?>(json['promotedAt']),
       errorMessage: serializer.fromJson<String?>(json['errorMessage']),
       metadata: serializer.fromJson<Map<String, Object?>?>(json['metadata']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -475,7 +444,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
       'startedAt': serializer.toJson<DateTime>(startedAt),
       'ingestedAt': serializer.toJson<DateTime?>(ingestedAt),
       'processedAt': serializer.toJson<DateTime?>(processedAt),
-      'promotedAt': serializer.toJson<DateTime?>(promotedAt),
       'errorMessage': serializer.toJson<String?>(errorMessage),
       'metadata': serializer.toJson<Map<String, Object?>?>(metadata),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -492,7 +460,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
     DateTime? startedAt,
     Value<DateTime?> ingestedAt = const Value.absent(),
     Value<DateTime?> processedAt = const Value.absent(),
-    Value<DateTime?> promotedAt = const Value.absent(),
     Value<String?> errorMessage = const Value.absent(),
     Value<Map<String, Object?>?> metadata = const Value.absent(),
     DateTime? createdAt,
@@ -506,7 +473,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
     startedAt: startedAt ?? this.startedAt,
     ingestedAt: ingestedAt.present ? ingestedAt.value : this.ingestedAt,
     processedAt: processedAt.present ? processedAt.value : this.processedAt,
-    promotedAt: promotedAt.present ? promotedAt.value : this.promotedAt,
     errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
     metadata: metadata.present ? metadata.value : this.metadata,
     createdAt: createdAt ?? this.createdAt,
@@ -530,9 +496,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
       processedAt: data.processedAt.present
           ? data.processedAt.value
           : this.processedAt,
-      promotedAt: data.promotedAt.present
-          ? data.promotedAt.value
-          : this.promotedAt,
       errorMessage: data.errorMessage.present
           ? data.errorMessage.value
           : this.errorMessage,
@@ -553,7 +516,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
           ..write('startedAt: $startedAt, ')
           ..write('ingestedAt: $ingestedAt, ')
           ..write('processedAt: $processedAt, ')
-          ..write('promotedAt: $promotedAt, ')
           ..write('errorMessage: $errorMessage, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
@@ -572,7 +534,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
     startedAt,
     ingestedAt,
     processedAt,
-    promotedAt,
     errorMessage,
     metadata,
     createdAt,
@@ -590,7 +551,6 @@ class DataImportEntry extends DataClass implements Insertable<DataImportEntry> {
           other.startedAt == this.startedAt &&
           other.ingestedAt == this.ingestedAt &&
           other.processedAt == this.processedAt &&
-          other.promotedAt == this.promotedAt &&
           other.errorMessage == this.errorMessage &&
           other.metadata == this.metadata &&
           other.createdAt == this.createdAt &&
@@ -606,7 +566,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
   final Value<DateTime> startedAt;
   final Value<DateTime?> ingestedAt;
   final Value<DateTime?> processedAt;
-  final Value<DateTime?> promotedAt;
   final Value<String?> errorMessage;
   final Value<Map<String, Object?>?> metadata;
   final Value<DateTime> createdAt;
@@ -620,7 +579,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
     this.startedAt = const Value.absent(),
     this.ingestedAt = const Value.absent(),
     this.processedAt = const Value.absent(),
-    this.promotedAt = const Value.absent(),
     this.errorMessage = const Value.absent(),
     this.metadata = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -635,7 +593,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
     required DateTime startedAt,
     this.ingestedAt = const Value.absent(),
     this.processedAt = const Value.absent(),
-    this.promotedAt = const Value.absent(),
     this.errorMessage = const Value.absent(),
     this.metadata = const Value.absent(),
     required DateTime createdAt,
@@ -654,7 +611,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
     Expression<DateTime>? startedAt,
     Expression<DateTime>? ingestedAt,
     Expression<DateTime>? processedAt,
-    Expression<DateTime>? promotedAt,
     Expression<String>? errorMessage,
     Expression<String>? metadata,
     Expression<DateTime>? createdAt,
@@ -669,7 +625,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
       if (startedAt != null) 'started_at': startedAt,
       if (ingestedAt != null) 'ingested_at': ingestedAt,
       if (processedAt != null) 'processed_at': processedAt,
-      if (promotedAt != null) 'promoted_at': promotedAt,
       if (errorMessage != null) 'error_message': errorMessage,
       if (metadata != null) 'metadata': metadata,
       if (createdAt != null) 'created_at': createdAt,
@@ -686,7 +641,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
     Value<DateTime>? startedAt,
     Value<DateTime?>? ingestedAt,
     Value<DateTime?>? processedAt,
-    Value<DateTime?>? promotedAt,
     Value<String?>? errorMessage,
     Value<Map<String, Object?>?>? metadata,
     Value<DateTime>? createdAt,
@@ -701,7 +655,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
       startedAt: startedAt ?? this.startedAt,
       ingestedAt: ingestedAt ?? this.ingestedAt,
       processedAt: processedAt ?? this.processedAt,
-      promotedAt: promotedAt ?? this.promotedAt,
       errorMessage: errorMessage ?? this.errorMessage,
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
@@ -740,9 +693,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
     if (processedAt.present) {
       map['processed_at'] = Variable<DateTime>(processedAt.value);
     }
-    if (promotedAt.present) {
-      map['promoted_at'] = Variable<DateTime>(promotedAt.value);
-    }
     if (errorMessage.present) {
       map['error_message'] = Variable<String>(errorMessage.value);
     }
@@ -771,7 +721,6 @@ class DataImportEntriesCompanion extends UpdateCompanion<DataImportEntry> {
           ..write('startedAt: $startedAt, ')
           ..write('ingestedAt: $ingestedAt, ')
           ..write('processedAt: $processedAt, ')
-          ..write('promotedAt: $promotedAt, ')
           ..write('errorMessage: $errorMessage, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')

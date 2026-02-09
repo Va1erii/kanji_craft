@@ -14,7 +14,7 @@ abstract class DataImportRepository {
   Future<DataImport?> getById(int id);
 
   /// Returns the active (non-terminal) import for [source], if any.
-  /// An import is active if its status is not `promoted` or `failed`.
+  /// An import is active if its status is not `processed` or `failed`.
   Future<DataImport?> getActiveBySource(ImportSource source);
 
   /// Updates the status and related fields of an import.
@@ -25,8 +25,8 @@ abstract class DataImportRepository {
     String? errorMessage,
   });
 
-  /// Returns whether a promoted import exists for [source] with [sourceVersion].
-  Future<bool> hasPromotedVersion({
+  /// Returns whether a processed import exists for [source] with [sourceVersion].
+  Future<bool> hasProcessedVersion({
     required ImportSource source,
     required String sourceVersion,
   });

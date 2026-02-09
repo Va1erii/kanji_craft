@@ -16,7 +16,6 @@ class DataImportEntries extends Table {
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get ingestedAt => dateTime().nullable()();
   DateTimeColumn get processedAt => dateTime().nullable()();
-  DateTimeColumn get promotedAt => dateTime().nullable()();
   TextColumn get errorMessage => text().nullable()();
   TextColumn get metadata => text().map(const JsonMapConverter()).nullable()();
   DateTimeColumn get createdAt => dateTime()();

@@ -44,7 +44,7 @@ class SupabaseDataImportDataSource {
         .from(_table)
         .select()
         .eq('source', source.name)
-        .not('status', 'in', '(promoted,failed)')
+        .not('status', 'in', '(processed,failed)')
         .maybeSingle();
     if (response == null) return null;
     return DataImportDto.fromJson(response).toDomain();
@@ -68,8 +68,6 @@ class SupabaseDataImportDataSource {
         updates['ingested_at'] = DateTime.now().toUtc().toIso8601String();
       case ImportStatus.processed:
         updates['processed_at'] = DateTime.now().toUtc().toIso8601String();
-      case ImportStatus.promoted:
-        updates['promoted_at'] = DateTime.now().toUtc().toIso8601String();
       case ImportStatus.pending:
       case ImportStatus.processing:
       case ImportStatus.failed:

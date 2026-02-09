@@ -101,14 +101,14 @@ class IngestSourceData {
       );
     }
 
-    // Check for promoted duplicate.
-    final hasPromoted = await _importRepository.hasPromotedVersion(
+    // Check for processed duplicate.
+    final hasProcessed = await _importRepository.hasProcessedVersion(
       source: source,
       sourceVersion: sourceVersion,
     );
-    if (hasPromoted) {
+    if (hasProcessed) {
       throw IngestionValidationException(
-        'A promoted ${source.name} import with version "$sourceVersion" '
+        'A processed ${source.name} import with version "$sourceVersion" '
         'already exists',
       );
     }

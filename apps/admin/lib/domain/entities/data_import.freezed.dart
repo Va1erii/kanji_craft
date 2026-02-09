@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DataImport {
 
- int get id; ImportSource get source; String get sourceVersion; ImportStatus get status; int? get recordCount; DateTime get startedAt; DateTime? get ingestedAt; DateTime? get processedAt; DateTime? get promotedAt; String? get errorMessage; Map<String, Object?>? get metadata; DateTime get createdAt; DateTime get updatedAt;
+ int get id; ImportSource get source; String get sourceVersion; ImportStatus get status; int? get recordCount; DateTime get startedAt; DateTime? get ingestedAt; DateTime? get processedAt; String? get errorMessage; Map<String, Object?>? get metadata; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of DataImport
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $DataImportCopyWith<DataImport> get copyWith => _$DataImportCopyWithImpl<DataImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataImport&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.promotedAt, promotedAt) || other.promotedAt == promotedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataImport&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,promotedAt,errorMessage,const DeepCollectionEquality().hash(metadata),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,errorMessage,const DeepCollectionEquality().hash(metadata),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DataImport(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, promotedAt: $promotedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DataImport(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $DataImportCopyWith<$Res>  {
   factory $DataImportCopyWith(DataImport value, $Res Function(DataImport) _then) = _$DataImportCopyWithImpl;
 @useResult
 $Res call({
- int id, ImportSource source, String sourceVersion, ImportStatus status, int? recordCount, DateTime startedAt, DateTime? ingestedAt, DateTime? processedAt, DateTime? promotedAt, String? errorMessage, Map<String, Object?>? metadata, DateTime createdAt, DateTime updatedAt
+ int id, ImportSource source, String sourceVersion, ImportStatus status, int? recordCount, DateTime startedAt, DateTime? ingestedAt, DateTime? processedAt, String? errorMessage, Map<String, Object?>? metadata, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,7 +62,7 @@ class _$DataImportCopyWithImpl<$Res>
 
 /// Create a copy of DataImport
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? promotedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
@@ -72,7 +72,6 @@ as ImportStatus,recordCount: freezed == recordCount ? _self.recordCount : record
 as int?,startedAt: null == startedAt ? _self.startedAt : startedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ingestedAt: freezed == ingestedAt ? _self.ingestedAt : ingestedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,processedAt: freezed == processedAt ? _self.processedAt : processedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,promotedAt: freezed == promotedAt ? _self.promotedAt : promotedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -162,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  DateTime? promotedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _DataImport() when $default != null:
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -183,10 +182,10 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  DateTime? promotedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _DataImport():
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -203,10 +202,10 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  DateTime? promotedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  ImportSource source,  String sourceVersion,  ImportStatus status,  int? recordCount,  DateTime startedAt,  DateTime? ingestedAt,  DateTime? processedAt,  String? errorMessage,  Map<String, Object?>? metadata,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _DataImport() when $default != null:
-return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.promotedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.recordCount,_that.startedAt,_that.ingestedAt,_that.processedAt,_that.errorMessage,_that.metadata,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -218,7 +217,7 @@ return $default(_that.id,_that.source,_that.sourceVersion,_that.status,_that.rec
 
 
 class _DataImport implements DataImport {
-  const _DataImport({required this.id, required this.source, required this.sourceVersion, required this.status, this.recordCount, required this.startedAt, this.ingestedAt, this.processedAt, this.promotedAt, this.errorMessage, final  Map<String, Object?>? metadata, required this.createdAt, required this.updatedAt}): _metadata = metadata;
+  const _DataImport({required this.id, required this.source, required this.sourceVersion, required this.status, this.recordCount, required this.startedAt, this.ingestedAt, this.processedAt, this.errorMessage, final  Map<String, Object?>? metadata, required this.createdAt, required this.updatedAt}): _metadata = metadata;
   
 
 @override final  int id;
@@ -229,7 +228,6 @@ class _DataImport implements DataImport {
 @override final  DateTime startedAt;
 @override final  DateTime? ingestedAt;
 @override final  DateTime? processedAt;
-@override final  DateTime? promotedAt;
 @override final  String? errorMessage;
  final  Map<String, Object?>? _metadata;
 @override Map<String, Object?>? get metadata {
@@ -253,16 +251,16 @@ _$DataImportCopyWith<_DataImport> get copyWith => __$DataImportCopyWithImpl<_Dat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DataImport&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.promotedAt, promotedAt) || other.promotedAt == promotedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DataImport&&(identical(other.id, id) || other.id == id)&&(identical(other.source, source) || other.source == source)&&(identical(other.sourceVersion, sourceVersion) || other.sourceVersion == sourceVersion)&&(identical(other.status, status) || other.status == status)&&(identical(other.recordCount, recordCount) || other.recordCount == recordCount)&&(identical(other.startedAt, startedAt) || other.startedAt == startedAt)&&(identical(other.ingestedAt, ingestedAt) || other.ingestedAt == ingestedAt)&&(identical(other.processedAt, processedAt) || other.processedAt == processedAt)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,promotedAt,errorMessage,const DeepCollectionEquality().hash(_metadata),createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,source,sourceVersion,status,recordCount,startedAt,ingestedAt,processedAt,errorMessage,const DeepCollectionEquality().hash(_metadata),createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'DataImport(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, promotedAt: $promotedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'DataImport(id: $id, source: $source, sourceVersion: $sourceVersion, status: $status, recordCount: $recordCount, startedAt: $startedAt, ingestedAt: $ingestedAt, processedAt: $processedAt, errorMessage: $errorMessage, metadata: $metadata, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -273,7 +271,7 @@ abstract mixin class _$DataImportCopyWith<$Res> implements $DataImportCopyWith<$
   factory _$DataImportCopyWith(_DataImport value, $Res Function(_DataImport) _then) = __$DataImportCopyWithImpl;
 @override @useResult
 $Res call({
- int id, ImportSource source, String sourceVersion, ImportStatus status, int? recordCount, DateTime startedAt, DateTime? ingestedAt, DateTime? processedAt, DateTime? promotedAt, String? errorMessage, Map<String, Object?>? metadata, DateTime createdAt, DateTime updatedAt
+ int id, ImportSource source, String sourceVersion, ImportStatus status, int? recordCount, DateTime startedAt, DateTime? ingestedAt, DateTime? processedAt, String? errorMessage, Map<String, Object?>? metadata, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -290,7 +288,7 @@ class __$DataImportCopyWithImpl<$Res>
 
 /// Create a copy of DataImport
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? promotedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? source = null,Object? sourceVersion = null,Object? status = null,Object? recordCount = freezed,Object? startedAt = null,Object? ingestedAt = freezed,Object? processedAt = freezed,Object? errorMessage = freezed,Object? metadata = freezed,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_DataImport(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
@@ -300,7 +298,6 @@ as ImportStatus,recordCount: freezed == recordCount ? _self.recordCount : record
 as int?,startedAt: null == startedAt ? _self.startedAt : startedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ingestedAt: freezed == ingestedAt ? _self.ingestedAt : ingestedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,processedAt: freezed == processedAt ? _self.processedAt : processedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,promotedAt: freezed == promotedAt ? _self.promotedAt : promotedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,metadata: freezed == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
 as Map<String, Object?>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

@@ -12,7 +12,7 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 1. **Single active import per source.** Only one import per `ImportSource` can be in a non-terminal status (`pending`, `ingested`, `processing`, `processed`) at a time. Starting a second concurrent import for the same source must throw immediately. *(Implemented: `getActiveBySource` check in `IngestionService`.)*
 
-2. **Version uniqueness against promoted imports.** The same `(source, source_version)` pair must not be re-ingested if a `promoted` import with that version already exists ([data_import.md](../entities/data_import.md) rule #2). A failed import of the same version may be retried. *(NOT implemented: no check in code today.)*
+2. **Version uniqueness against processed imports.** The same `(source, source_version)` pair must not be re-ingested if a `processed` import with that version already exists ([data_import.md](../entities/data_import.md) rule #2). A failed import of the same version may be retried. *(Implemented: `hasProcessedVersion` check in `IngestSourceData` use case.)*
 
 3. **Folder validation.** The pipeline operates on folders, not individual files. Before parsing begins, the service must validate that: (a) the folder name matches the expected pattern for the source (`kanjidic-{version}/`, `jmdict-{version}/`, `kanjivg-{version}/`), (b) all required files are present (see [pipeline.md — Folder Preparation](pipeline.md#folder-preparation)), and (c) the `source_version` is extracted from the folder name. *(Partially implemented: the import dialog detects files, but `IngestionService` does not validate folder structure or required file presence.)*
 
@@ -46,7 +46,7 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 14. **Re-import after failure is allowed.** Same `(source, source_version)` can be re-ingested if the previous import failed.
 
-15. **Re-import after promotion is blocked.** Same `(source, source_version)` cannot be re-ingested if a `promoted` import with that version exists (invariant #2).
+15. **Re-import after processing is blocked.** Same `(source, source_version)` cannot be re-ingested if a `processed` import with that version exists (invariant #2).
 
 ## Source-Specific Rules
 
@@ -84,7 +84,7 @@ These are known limitations of the current ingestion layer, documented here so t
 
 1. **No content diffing between imports.** Re-importing the same data creates duplicate rows under a different `import_id`. There is no mechanism to detect "nothing changed" and skip insertion.
 
-2. **No version uniqueness check against promoted imports.** [data_import.md](../entities/data_import.md) rule #2 requires blocking re-import of an already-promoted version, but the code does not enforce this. The same version can be re-ingested even if a `promoted` import exists.
+2. ~~**No version uniqueness check against processed imports.**~~ Resolved: `IngestSourceData` use case now checks `hasProcessedVersion` before starting ingestion.
 
 3. **No database-level constraint for single-active-import.** The one-active-import guard is app logic only (`getActiveBySource` query + throw). A race condition is theoretically possible if two ingestion runs start simultaneously for the same source. There is no DB partial unique index or advisory lock.
 
@@ -92,7 +92,7 @@ These are known limitations of the current ingestion layer, documented here so t
 
 5. **No automatic pruning of old imports.** Raw rows from old imports accumulate. The admin must manually delete old imports to reclaim space.
 
-6. **No folder validation in the service layer.** `IngestionService` accepts a `filePath` string and passes it directly to the parser. It does not verify folder naming, required file presence, or extract `source_version` from the folder name. All folder-level validation is deferred to the UI layer.
+6. ~~**No folder validation in the service layer.**~~ Resolved: `IngestSourceData` use case validates folder existence, naming pattern, and required file presence before delegating to `IngestionService`.
 
 ## Recovery Procedures
 
@@ -107,5 +107,5 @@ If the app crashes or is killed mid-ingestion, the `DataImport` row stays in `pe
 
 The single-active-import guard will block new imports until the stuck one is resolved.
 
-### Duplicate promoted versions
-If the same `(source, source_version)` was promoted twice (possible because invariant #2 is not enforced), the admin must manually delete the older promoted import and its associated raw rows. Downstream tables may also need reconciliation depending on how far the duplicate progressed.
+### Duplicate processed versions
+If the same `(source, source_version)` was processed twice (possible if the DB constraint is bypassed), the admin must manually delete the older processed import and its associated raw rows. Downstream tables may also need reconciliation depending on how far the duplicate progressed.

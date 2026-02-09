@@ -25,14 +25,6 @@ class DashboardPage extends StatelessWidget {
                   status: imports.where((i) => i.status == status).length,
               },
               totalImports: imports.length,
-              lastPromotion: imports
-                  .where((i) => i.promotedAt != null)
-                  .fold<DateTime?>(null, (latest, i) {
-                if (latest == null || i.promotedAt!.isAfter(latest)) {
-                  return i.promotedAt;
-                }
-                return latest;
-              }),
             ),
         );
       },
@@ -67,12 +59,10 @@ class _DashboardContent extends StatelessWidget {
   const _DashboardContent({
     required this.statusCounts,
     required this.totalImports,
-    required this.lastPromotion,
   });
 
   final Map<ImportStatus, int> statusCounts;
   final int totalImports;
-  final DateTime? lastPromotion;
 
   @override
   Widget build(BuildContext context) {
@@ -112,15 +102,6 @@ class _DashboardContent extends StatelessWidget {
             _SummaryCard(label: 'Flagged', value: '0', icon: Icons.flag_outlined),
           ],
         ),
-        const SizedBox(height: 32),
-        Text('Last Promotion', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        Text(
-          lastPromotion != null ? lastPromotion.toString() : 'No promotions yet',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-        ),
       ],
     );
   }
@@ -130,7 +111,6 @@ class _DashboardContent extends StatelessWidget {
         ImportStatus.ingested => Icons.download_done,
         ImportStatus.processing => Icons.sync,
         ImportStatus.processed => Icons.check,
-        ImportStatus.promoted => Icons.publish,
         ImportStatus.failed => Icons.error_outline,
       };
 }

@@ -38,7 +38,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +49,11 @@ class AdminDatabase extends _$AdminDatabase {
           }
           if (from < 3) {
             await m.createTable(rawJmdictEntries);
+          }
+          if (from < 4) {
+            await m.database.customStatement(
+              'ALTER TABLE data_import_entries DROP COLUMN promoted_at',
+            );
           }
         },
       );

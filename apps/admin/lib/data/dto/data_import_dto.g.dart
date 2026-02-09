@@ -20,9 +20,6 @@ _DataImportDto _$DataImportDtoFromJson(Map<String, dynamic> json) =>
       processedAt: json['processed_at'] == null
           ? null
           : DateTime.parse(json['processed_at'] as String),
-      promotedAt: json['promoted_at'] == null
-          ? null
-          : DateTime.parse(json['promoted_at'] as String),
       errorMessage: json['error_message'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -39,7 +36,6 @@ Map<String, dynamic> _$DataImportDtoToJson(_DataImportDto instance) =>
       'started_at': instance.startedAt.toIso8601String(),
       'ingested_at': instance.ingestedAt?.toIso8601String(),
       'processed_at': instance.processedAt?.toIso8601String(),
-      'promoted_at': instance.promotedAt?.toIso8601String(),
       'error_message': instance.errorMessage,
       'metadata': instance.metadata,
       'created_at': instance.createdAt.toIso8601String(),
@@ -57,6 +53,5 @@ const _$ImportStatusEnumMap = {
   ImportStatus.ingested: 'ingested',
   ImportStatus.processing: 'processing',
   ImportStatus.processed: 'processed',
-  ImportStatus.promoted: 'promoted',
   ImportStatus.failed: 'failed',
 };

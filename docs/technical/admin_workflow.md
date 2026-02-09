@@ -23,10 +23,9 @@ A persistent left sidebar provides top-level navigation:
 
 The landing screen. Shows a summary card for each area:
 
-- **Imports** — count by `import_status` (`pending`, `ingested`, `processing`, `processed`, `promoted`, `failed`). Clicking a status filters the Data Pipeline view.
+- **Imports** — count by `import_status` (`pending`, `ingested`, `processing`, `processed`, `failed`). Clicking a status filters the Data Pipeline view.
 - **Component Reviews** — count of `kanji_component_reviews` rows where `verification_status = 'draft'`, broken down by grade. Links to the Component Review queue.
 - **Sentence Reviews** — count of `vocabulary_sentences` rows where `verification_status = 'draft'`, broken down by JLPT level. Links to the Sentence Review queue.
-- **Last Promotion** — timestamp of the most recent `data_imports.promoted_at`, or "Never" if no promotion has run.
 
 ## Data Pipeline
 
@@ -215,7 +214,7 @@ After each action, the next `draft` item loads automatically.
 
 Accessible from the Dashboard or Data Pipeline view when at least one import has status `processed`.
 
-Promotion syncs **all local production data**, but the Phase 4 safety gates ensure only verified content is fully usable in the app. Unreviewed tiers get promoted as "skeleton" data:
+Remote sync pushes **only individually promoted items**, so unreviewed tiers are never exposed to clients:
 
 | Content | Reviewed tier (verified) | Unreviewed tier (draft) |
 |---|---|---|
@@ -258,7 +257,7 @@ If orphans are found, a warning is displayed listing the affected items. Promoti
    - `kanji_components`
    - `vocabulary` (+ `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`, `vocabulary_sentences`)
 3. Rewrites `svg_file_url` from local base URL to Remote Production URL during sync.
-4. Sets `data_imports.status = 'promoted'`, populates `promoted_at`.
+4. Individual items are promoted at the item level (not the import level).
 
 **Log output** panel shows real-time progress: entity counts synced, SVGs uploaded, errors encountered.
 
@@ -311,7 +310,7 @@ No re-ingestion or re-transformation needed.
 1. **Enrich** — Set Kanji Grade: `Grade 2`, Vocabulary JLPT: `N4` → run.
 2. **Review Components** — Filter to Grade 2. Review ~160 items.
 3. **Review Sentences** — Filter to N4. Review sentences.
-4. **Promote** — Newly verified content syncs. Previously promoted content is unaffected.
+4. **Sync** — Newly verified content syncs to remote. Previously synced content is unaffected.
 
 ### Sprint N: Continue expanding
 

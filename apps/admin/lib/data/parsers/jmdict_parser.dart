@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:xml/xml.dart';
 
 import '../../domain/entities/raw_jmdict.dart';
+import 'parse_result.dart';
 
 class JmdictParser {
-  List<RawJmdict> parseFile({
+  ParseResult<RawJmdict> parseFile({
     required String filePath,
     required int importId,
   }) {
@@ -24,20 +25,23 @@ class JmdictParser {
     return parseXmlString(xmlString: xmlString, importId: importId);
   }
 
-  List<RawJmdict> parseXmlString({
+  ParseResult<RawJmdict> parseXmlString({
     required String xmlString,
     required int importId,
   }) {
     final resolved = _resolveEntities(xmlString);
     final document = XmlDocument.parse(resolved);
-    final entries = document.findAllElements('entry');
+    final xmlEntries = document.findAllElements('entry').toList();
     final results = <RawJmdict>[];
 
-    for (final entry in entries) {
+    for (final entry in xmlEntries) {
       results.add(_parseEntry(entry, importId));
     }
 
-    return results;
+    return ParseResult(
+      entries: results,
+      totalElements: xmlEntries.length,
+    );
   }
 
   /// Extracts entity definitions from the DTD, strips the DTD, and replaces

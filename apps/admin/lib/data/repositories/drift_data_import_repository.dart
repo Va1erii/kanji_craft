@@ -61,6 +61,7 @@ class DriftDataImportRepository implements DataImportRepository {
     required ImportStatus status,
     int? recordCount,
     String? errorMessage,
+    Map<String, Object?>? metadata,
   }) async {
     final now = DateTime.now().toUtc();
 
@@ -68,6 +69,7 @@ class DriftDataImportRepository implements DataImportRepository {
       status: Value(status),
       recordCount: recordCount != null ? Value(recordCount) : const Value.absent(),
       errorMessage: errorMessage != null ? Value(errorMessage) : const Value.absent(),
+      metadata: metadata != null ? Value(metadata) : const Value.absent(),
       updatedAt: Value(now),
       ingestedAt: status == ImportStatus.ingested ? Value(now) : const Value.absent(),
       processedAt: status == ImportStatus.processed ? Value(now) : const Value.absent(),

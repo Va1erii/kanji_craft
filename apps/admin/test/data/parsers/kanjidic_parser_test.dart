@@ -68,7 +68,7 @@ void main() {
   group('KanjidicParser', () {
     test('parses full entry with all fields populated', () {
       final results =
-          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 42);
+          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 42).entries;
 
       expect(results, hasLength(1));
       final entry = results.first;
@@ -84,7 +84,7 @@ void main() {
     test('parses codepoints correctly', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.codepoints.ucs, '4e9c');
       expect(entry.codepoints.jis208, '16-01');
@@ -95,7 +95,7 @@ void main() {
     test('parses radicals correctly', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.radicals.classical, 7);
       expect(entry.radicals.nelsonC, 1);
@@ -104,7 +104,7 @@ void main() {
     test('parses multi-language meanings grouped by m_lang', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.meanings['en'], ['Asia', 'rank next']);
       expect(entry.meanings['es'], ['sub-', 'Asia']);
@@ -127,7 +127,7 @@ void main() {
 </character>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.meanings['en'], ['tree', 'wood']);
       expect(entry.meanings.length, 1);
     });
@@ -135,7 +135,7 @@ void main() {
     test('parses nanori readings', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.nanori, ['や', 'つぎ']);
     });
@@ -143,7 +143,7 @@ void main() {
     test('parses all reading types', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.readings.jaOn, ['ア']);
       expect(entry.readings.jaKun, ['つ.ぐ']);
@@ -155,7 +155,7 @@ void main() {
     test('parses dictionary references', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.dictRefs, isNotNull);
       expect(entry.dictRefs!.nelsonC, '43');
@@ -168,7 +168,7 @@ void main() {
     test('parses moro dict ref with volume and page', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.dictRefs!.moro, isNotNull);
       expect(entry.dictRefs!.moro!.volume, '1');
@@ -178,7 +178,7 @@ void main() {
     test('parses query codes including skip', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.queryCodes, isNotNull);
       expect(entry.queryCodes!.skip, '4-7-1');
@@ -189,7 +189,7 @@ void main() {
     test('parses skip misclass entries', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.queryCodes!.misclass, isNotNull);
       expect(entry.queryCodes!.misclass, hasLength(1));
@@ -200,7 +200,7 @@ void main() {
     test('parses variants', () {
       final entry = parser
           .parseXmlString(xmlString: _wrap(_fullEntry), importId: 1)
-          .first;
+          .entries.first;
 
       expect(entry.variants, isNotNull);
       expect(entry.variants, hasLength(1));
@@ -218,7 +218,7 @@ void main() {
 </character>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
 
       expect(entry.literal, '〇');
       expect(entry.grade, isNull);
@@ -249,7 +249,7 @@ void main() {
 </character>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
 
       expect(entry.strokeCount, 9);
       expect(entry.strokeCountMisstrokes, [10, 11]);
@@ -271,7 +271,7 @@ void main() {
 </character>
 ''');
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(2));
       expect(results[0].literal, '一');
       expect(results[1].literal, '二');
@@ -295,7 +295,7 @@ void main() {
 </character>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.radicalNames, ['みず', 'さんずい']);
     });
 
@@ -308,7 +308,7 @@ void main() {
 
     test('returns empty list for document with no character elements', () {
       final xml = '<kanjidic2><header/></kanjidic2>';
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, isEmpty);
     });
 
@@ -326,7 +326,7 @@ void main() {
 </character>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.codepoints.jis212, '16-01');
       expect(entry.codepoints.jis213, '2-01-02');
     });

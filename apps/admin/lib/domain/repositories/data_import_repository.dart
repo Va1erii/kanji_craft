@@ -23,6 +23,7 @@ abstract class DataImportRepository {
     required ImportStatus status,
     int? recordCount,
     String? errorMessage,
+    Map<String, Object?>? metadata,
   });
 
   /// Returns whether a processed import exists for [source] with [sourceVersion].

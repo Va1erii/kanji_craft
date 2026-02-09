@@ -55,13 +55,13 @@ class IngestionService {
     );
 
     try {
-      final entries = _kanjiVgParser.parseFile(
+      final result = _kanjiVgParser.parseFile(
         filePath: filePath,
         importId: dataImport.id,
       );
 
       await _batchInsert(
-        entries,
+        result.entries,
         (batch) => _kanjiVgRepository.insertBatch(batch),
         onProgress: onProgress,
       );
@@ -69,7 +69,8 @@ class IngestionService {
       return await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.ingested,
-        recordCount: entries.length,
+        recordCount: result.parsedCount,
+        metadata: result.toMetadata(),
       );
     } catch (e) {
       await _kanjiVgRepository.deleteByImportId(dataImport.id);
@@ -101,13 +102,13 @@ class IngestionService {
     );
 
     try {
-      final entries = _kanjidicParser.parseFile(
+      final result = _kanjidicParser.parseFile(
         filePath: filePath,
         importId: dataImport.id,
       );
 
       await _batchInsert(
-        entries,
+        result.entries,
         (batch) => _kanjidicRepository.insertBatch(batch),
         onProgress: onProgress,
       );
@@ -115,7 +116,8 @@ class IngestionService {
       return await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.ingested,
-        recordCount: entries.length,
+        recordCount: result.parsedCount,
+        metadata: result.toMetadata(),
       );
     } catch (e) {
       await _kanjidicRepository.deleteByImportId(dataImport.id);
@@ -147,13 +149,13 @@ class IngestionService {
     );
 
     try {
-      final entries = _jmdictParser.parseFile(
+      final result = _jmdictParser.parseFile(
         filePath: filePath,
         importId: dataImport.id,
       );
 
       await _batchInsert(
-        entries,
+        result.entries,
         (batch) => _jmdictRepository.insertBatch(batch),
         onProgress: onProgress,
       );
@@ -161,7 +163,8 @@ class IngestionService {
       return await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.ingested,
-        recordCount: entries.length,
+        recordCount: result.parsedCount,
+        metadata: result.toMetadata(),
       );
     } catch (e) {
       await _jmdictRepository.deleteByImportId(dataImport.id);

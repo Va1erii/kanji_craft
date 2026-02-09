@@ -51,7 +51,7 @@ void main() {
   group('JmdictParser', () {
     test('parses full entry with kanji elements, readings, and senses', () {
       final results =
-          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 42);
+          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 42).entries;
 
       expect(results, hasLength(1));
       final entry = results.first;
@@ -68,7 +68,7 @@ void main() {
 
     test('parses multi-language glosses (xml:lang defaults to "eng")', () {
       final entry =
-          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 1).first;
+          parser.parseXmlString(xmlString: _wrap(_fullEntry), importId: 1).entries.first;
 
       final sense = entry.senses.first;
       expect(sense.glosses['eng'], ['to eat', 'to live on (e.g. a salary)']);
@@ -89,7 +89,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.kanjiElements, isEmpty);
       expect(entry.readingElements, hasLength(1));
       expect(entry.readingElements.first.reb, 'おはよう');
@@ -115,7 +115,7 @@ void main() {
 ''',
       );
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(1));
       expect(results.first.senses.first.pos, ['noun (common) (futsuumeishi)']);
     });
@@ -141,7 +141,7 @@ void main() {
 ''',
       );
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.senses.first.pos,
           ['noun (common) (futsuumeishi)']);
       expect(results.first.senses.first.misc,
@@ -172,7 +172,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses, hasLength(3));
       expect(entry.senses[0].glosses['eng'], ['to run']);
       expect(entry.senses[1].glosses['eng'],
@@ -201,7 +201,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.readingElements, hasLength(2));
       expect(entry.readingElements[0].reb, 'あした');
       expect(entry.readingElements[0].reRestr, ['明日']);
@@ -223,7 +223,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses.first.lsource, isNotNull);
       expect(entry.senses.first.lsource, hasLength(1));
       expect(entry.senses.first.lsource!.first.lang, 'dut');
@@ -244,7 +244,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       final ls = entry.senses.first.lsource!.first;
       expect(ls.lang, 'eng');
       expect(ls.value, 'salary');
@@ -266,7 +266,7 @@ void main() {
 </entry>
 ''');
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(2));
       expect(results[0].entSeq, 1000001);
       expect(results[1].entSeq, 1000002);
@@ -274,7 +274,7 @@ void main() {
 
     test('returns empty list for empty document', () {
       final results =
-          parser.parseXmlString(xmlString: '<JMdict></JMdict>', importId: 1);
+          parser.parseXmlString(xmlString: '<JMdict></JMdict>', importId: 1).entries;
       expect(results, isEmpty);
     });
 
@@ -298,7 +298,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.kanjiElements.first.keInf, ['irregular kanji usage']);
     });
 
@@ -315,7 +315,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.readingElements.first.reNokanji, isTrue);
     });
 
@@ -334,7 +334,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses.first.stagr, ['あした']);
       expect(entry.senses.first.stagk, ['明日']);
     });
@@ -353,7 +353,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses.first.xref, ['小さい']);
       expect(entry.senses.first.ant, ['小さい']);
     });
@@ -371,7 +371,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses.first.field, ['computing']);
       expect(entry.senses.first.dial, ['Kansai-ben']);
     });
@@ -388,7 +388,7 @@ void main() {
 </entry>
 ''');
 
-      final entry = parser.parseXmlString(xmlString: xml, importId: 1).first;
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
       expect(entry.senses.first.sInf, ['often derogatory']);
     });
 
@@ -406,7 +406,7 @@ void main() {
         dtd: '<!ENTITY n "noun">',
       );
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.senses.first.glosses['eng'], ['Smith & Jones']);
     });
   });

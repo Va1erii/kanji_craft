@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanji_craft_admin/data/parsers/kanjidic_parser.dart';
 import 'package:kanji_craft_admin/data/parsers/kanjivg_parser.dart';
+import 'package:kanji_craft_admin/data/parsers/parse_result.dart';
 import 'package:kanji_craft_admin/data/services/ingestion_service.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
@@ -95,13 +96,17 @@ void main() {
         when(() => mockKanjiVgParser.parseFile(
               filePath: '/path/to/kanjivg.xml.gz',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 2,
+            ));
         when(() => mockKanjiVgRepo.insertBatch(any()))
             .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 2,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => ingestedImport);
 
         final result = await service.ingestKanjiVg(
@@ -215,7 +220,10 @@ void main() {
         when(() => mockKanjiVgParser.parseFile(
               filePath: '/path/to/file.xml',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 800,
+            ));
 
         var batchCall = 0;
         when(() => mockKanjiVgRepo.insertBatch(any())).thenAnswer((_) async {
@@ -269,13 +277,17 @@ void main() {
         when(() => mockKanjiVgParser.parseFile(
               filePath: '/path/to/file.xml',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 1200,
+            ));
         when(() => mockKanjiVgRepo.insertBatch(any()))
             .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 1200,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => ingestedImport);
 
         await service.ingestKanjiVg(
@@ -312,13 +324,17 @@ void main() {
         when(() => mockKanjiVgParser.parseFile(
               filePath: '/path/to/file.xml',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 1200,
+            ));
         when(() => mockKanjiVgRepo.insertBatch(any()))
             .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 1200,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => ingestedImport);
 
         final progressCalls = <(int, int)>[];
@@ -355,11 +371,15 @@ void main() {
         when(() => mockKanjiVgParser.parseFile(
               filePath: '/path/to/empty.xml',
               importId: 1,
-            )).thenReturn([]);
+            )).thenReturn(ParseResult(
+              entries: <RawKanjiVg>[],
+              totalElements: 0,
+            ));
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 0,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => ingestedImport);
 
         final result = await service.ingestKanjiVg(
@@ -403,13 +423,17 @@ void main() {
         when(() => mockKanjidicParser.parseFile(
               filePath: '/path/to/kanjidic2.xml.gz',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 2,
+            ));
         when(() => mockKanjidicRepo.insertBatch(any()))
             .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 2,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => ingestedImport);
 
         final result = await service.ingestKanjidic(
@@ -464,13 +488,17 @@ void main() {
         when(() => mockKanjidicParser.parseFile(
               filePath: '/path/to/file.xml',
               importId: 1,
-            )).thenReturn(entries);
+            )).thenReturn(ParseResult(
+              entries: entries,
+              totalElements: 3,
+            ));
         when(() => mockKanjidicRepo.insertBatch(any()))
             .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 3,
+              metadata: any(named: 'metadata'),
             )).thenAnswer((_) async => fakeDataImport(
               id: 1,
               status: ImportStatus.ingested,
@@ -486,6 +514,7 @@ void main() {
               id: 1,
               status: ImportStatus.ingested,
               recordCount: 3,
+              metadata: any(named: 'metadata'),
             )).called(1);
       });
     });

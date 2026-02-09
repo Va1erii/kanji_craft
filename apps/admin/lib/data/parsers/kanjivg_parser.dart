@@ -4,12 +4,13 @@ import 'dart:io';
 import 'package:xml/xml.dart';
 
 import '../../domain/entities/raw_kanjivg.dart';
+import 'parse_result.dart';
 
 class KanjiVgParser {
   static const _kvgNamespace = 'http://kanjivg.tagaini.net';
   static const _viewBox = '0 0 109 109';
 
-  List<RawKanjiVg> parseFile({
+  ParseResult<RawKanjiVg> parseFile({
     required String filePath,
     required int importId,
   }) {
@@ -27,22 +28,32 @@ class KanjiVgParser {
     return parseXmlString(xmlString: xmlString, importId: importId);
   }
 
-  List<RawKanjiVg> parseXmlString({
+  ParseResult<RawKanjiVg> parseXmlString({
     required String xmlString,
     required int importId,
   }) {
     final document = XmlDocument.parse(xmlString);
-    final kanjiElements = document.findAllElements('kanji');
+    final kanjiElements = document.findAllElements('kanji').toList();
     final results = <RawKanjiVg>[];
+    final skipped = <SkippedEntry>[];
 
     for (final kanji in kanjiElements) {
+      final id = kanji.getAttribute('id') ?? '';
       final parsed = _parseKanjiElement(kanji, importId);
       if (parsed != null) {
         results.add(parsed);
+      } else {
+        final match = RegExp(r'kvg:kanji_([0-9a-fA-F]+)').firstMatch(id);
+        final reason = match == null ? 'invalid id format' : 'missing root <g>';
+        skipped.add(SkippedEntry(id: id, reason: reason));
       }
     }
 
-    return results;
+    return ParseResult(
+      entries: results,
+      totalElements: kanjiElements.length,
+      skipped: skipped,
+    );
   }
 
   RawKanjiVg? _parseKanjiElement(XmlElement kanji, int importId) {

@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:xml/xml.dart';
 
 import '../../domain/entities/raw_kanjidic.dart';
+import 'parse_result.dart';
 
 class KanjidicParser {
-  List<RawKanjidic> parseFile({
+  ParseResult<RawKanjidic> parseFile({
     required String filePath,
     required int importId,
   }) {
@@ -24,19 +25,22 @@ class KanjidicParser {
     return parseXmlString(xmlString: xmlString, importId: importId);
   }
 
-  List<RawKanjidic> parseXmlString({
+  ParseResult<RawKanjidic> parseXmlString({
     required String xmlString,
     required int importId,
   }) {
     final document = XmlDocument.parse(xmlString);
-    final characters = document.findAllElements('character');
+    final characters = document.findAllElements('character').toList();
     final results = <RawKanjidic>[];
 
     for (final character in characters) {
       results.add(_parseCharacter(character, importId));
     }
 
-    return results;
+    return ParseResult(
+      entries: results,
+      totalElements: characters.length,
+    );
   }
 
   RawKanjidic _parseCharacter(XmlElement character, int importId) {

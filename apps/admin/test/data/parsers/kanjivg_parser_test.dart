@@ -23,7 +23,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 42);
+      final results = parser.parseXmlString(xmlString: xml, importId: 42).entries;
 
       expect(results, hasLength(1));
       final entry = results.first;
@@ -50,7 +50,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
 
       expect(results.first.character, '木');
       expect(results.first.unicodeHex, '06728');
@@ -69,7 +69,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.unicodeHex, '04e00');
     });
 
@@ -95,7 +95,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(1));
       final entry = results.first;
 
@@ -143,7 +143,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       final root = results.first.components;
       expect(root.children, hasLength(1));
 
@@ -172,7 +172,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       final strokes = results.first.strokes;
 
       expect(strokes[0].number, 1);
@@ -192,7 +192,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.strokes.first.type, '');
     });
 
@@ -214,7 +214,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       final right = results.first.components.children[1];
       expect(right.phon, 'ボウ');
     });
@@ -232,7 +232,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.components.tradForm, '學');
     });
 
@@ -256,7 +256,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       final children = results.first.components.children;
       expect(children[0].element, '辶');
       expect(children[0].part, 1);
@@ -281,7 +281,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(2));
       expect(results[0].character, '一');
       expect(results[0].strokeCount, 1);
@@ -305,7 +305,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(1));
       expect(results.first.character, '一');
     });
@@ -322,7 +322,7 @@ void main() {
 ''';
 
       final before = DateTime.now();
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       final after = DateTime.now();
 
       expect(
@@ -346,7 +346,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.components.children, isEmpty);
     });
 
@@ -362,7 +362,7 @@ void main() {
     test('returns empty list for XML with no kanji elements', () {
       const xml = '<kanjivg></kanjivg>';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, isEmpty);
     });
 
@@ -379,7 +379,7 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1);
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.components.radical, 'n');
     });
   });

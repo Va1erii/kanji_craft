@@ -10,7 +10,7 @@ import 'parse_result.dart';
 ///
 /// Used by [IngestSourceData] as the parsing step in the ingestion pipeline.
 abstract class SourceParser {
-  ParseResult<Object> parseFile({
+  Future<ParseResult<Object>> parseFile({
     required ImportSource source,
     required String filePath,
     required int importId,

@@ -22,6 +22,30 @@ class IngestionValidationException implements Exception {
   String toString() => message;
 }
 
+/// Events yielded by [IngestSourceData] to report pipeline progress.
+sealed class IngestionEvent {
+  const IngestionEvent();
+}
+
+/// Batch insert progress: [inserted] of [total] entries written so far.
+class IngestionProgress extends IngestionEvent {
+  const IngestionProgress(this.inserted, this.total);
+  final int inserted;
+  final int total;
+}
+
+/// Import record created, parsing is about to begin.
+class IngestionStarted extends IngestionEvent {
+  const IngestionStarted(this.dataImport);
+  final DataImport dataImport;
+}
+
+/// Terminal event: ingestion succeeded and the import record is updated.
+class IngestionComplete extends IngestionEvent {
+  const IngestionComplete(this.dataImport);
+  final DataImport dataImport;
+}
+
 /// Source-specific config for folder/file detection.
 typedef _SourceConfig = ({
   RegExp folderPattern,
@@ -53,15 +77,18 @@ _SourceConfig _sourceConfig(ImportSource source) => switch (source) {
 
 /// Orchestrates the full ingestion pipeline for a source data folder.
 ///
-/// Steps:
+/// Returns a [Stream] of [IngestionEvent]s reporting progress. The stream
+/// ends with [IngestionComplete] on success, or an error on failure (after
+/// cleaning up partial raw rows and marking the import as failed).
+///
+/// Pipeline steps:
 /// 1. Validate the folder structure, extract the source version, and resolve
 ///    the primary data file path.
 /// 2. Guard against duplicate or concurrent imports.
 /// 3. Create a [DataImport] record via [DataImportRepository].
 /// 4. Parse the source file via [SourceParser].
-/// 5. Batch-insert parsed entities into the appropriate raw repository.
-/// 6. Update the import status to [ImportStatus.ingested] on success, or
-///    [ImportStatus.failed] on error (after cleaning up partial raw rows).
+/// 5. Batch-insert parsed entities, yielding [IngestionProgress] per batch.
+/// 6. Update the import status to [ImportStatus.ingested].
 class IngestSourceData {
   IngestSourceData({
     required DataImportRepository importRepository,
@@ -83,11 +110,10 @@ class IngestSourceData {
 
   static const _batchSize = 500;
 
-  Future<DataImport> call({
+  Stream<IngestionEvent> call({
     required String folderPath,
     required ImportSource source,
-    void Function(int inserted, int total)? onProgress,
-  }) async {
+  }) async* {
     final dir = Directory(folderPath);
     if (!dir.existsSync()) {
       throw IngestionValidationException(
@@ -154,27 +180,26 @@ class IngestSourceData {
       source: source,
       sourceVersion: sourceVersion,
     );
+    yield IngestionStarted(dataImport);
 
     // Parse → insert → update status (with cleanup on failure).
     try {
-      final result = _sourceParser.parseFile(
+      final result = await _sourceParser.parseFile(
         source: source,
         filePath: primaryFilePath,
         importId: dataImport.id,
       );
 
-      await _insertEntries(
-        source: source,
-        entries: result.entries,
-        onProgress: onProgress,
-      );
+      yield* _insertEntries(source: source, entries: result.entries);
 
-      return await _importRepository.updateStatus(
+      final updated = await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.ingested,
         recordCount: result.parsedCount,
         metadata: result.toMetadata(),
       );
+
+      yield IngestionComplete(updated);
     } catch (e) {
       await _deleteRawRows(source: source, importId: dataImport.id);
       await _importRepository.updateStatus(
@@ -186,32 +211,24 @@ class IngestSourceData {
     }
   }
 
-  Future<void> _insertEntries({
+  Stream<IngestionProgress> _insertEntries({
     required ImportSource source,
     required List<Object> entries,
-    void Function(int inserted, int total)? onProgress,
-  }) async {
-    switch (source) {
-      case ImportSource.kanjivg:
-        await _batchInsert(
-          entries.cast<RawKanjiVg>(),
-          (batch) => _kanjiVgRepository.insertBatch(batch),
-          onProgress: onProgress,
-        );
-      case ImportSource.kanjidic:
-        await _batchInsert(
-          entries.cast<RawKanjidic>(),
-          (batch) => _kanjidicRepository.insertBatch(batch),
-          onProgress: onProgress,
-        );
-      case ImportSource.jmdict:
-        await _batchInsert(
-          entries.cast<RawJmdict>(),
-          (batch) => _jmdictRepository.insertBatch(batch),
-          onProgress: onProgress,
-        );
-    }
-  }
+  }) =>
+      switch (source) {
+        ImportSource.kanjivg => _batchInsert(
+            entries.cast<RawKanjiVg>(),
+            (batch) => _kanjiVgRepository.insertBatch(batch),
+          ),
+        ImportSource.kanjidic => _batchInsert(
+            entries.cast<RawKanjidic>(),
+            (batch) => _kanjidicRepository.insertBatch(batch),
+          ),
+        ImportSource.jmdict => _batchInsert(
+            entries.cast<RawJmdict>(),
+            (batch) => _jmdictRepository.insertBatch(batch),
+          ),
+      };
 
   Future<void> _deleteRawRows({
     required ImportSource source,
@@ -227,16 +244,15 @@ class IngestSourceData {
     }
   }
 
-  Future<void> _batchInsert<T>(
+  Stream<IngestionProgress> _batchInsert<T>(
     List<T> entries,
-    Future<void> Function(List<T> batch) insert, {
-    void Function(int inserted, int total)? onProgress,
-  }) async {
+    Future<void> Function(List<T> batch) insert,
+  ) async* {
     for (var i = 0; i < entries.length; i += _batchSize) {
       final end =
           (i + _batchSize > entries.length) ? entries.length : i + _batchSize;
       await insert(entries.sublist(i, end));
-      onProgress?.call(end, entries.length);
+      yield IngestionProgress(end, entries.length);
     }
   }
 }

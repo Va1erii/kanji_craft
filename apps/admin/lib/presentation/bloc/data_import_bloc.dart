@@ -37,7 +37,7 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
       final imports = await _importRepository.listAll();
       final activeIngestions = state is DataImportLoaded
           ? (state as DataImportLoaded).activeIngestions
-          : <int, IngestionProgress>{};
+          : <int, IngestionProgress?>{};
       emit(DataImportState.loaded(
         imports: imports,
         activeIngestions: activeIngestions,
@@ -53,61 +53,68 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
     String folderPath,
     Emitter<DataImportState> emit,
   ) async {
-    try {
-      // Temporary import ID for tracking progress before we know the real one.
-      // We use a negative hash to avoid collision with real DB IDs.
-      final trackingKey = -source.index - 1;
+    // Temporary tracking key using a negative hash to avoid collision
+    // with real DB IDs.
+    final trackingKey = -source.index - 1;
 
+    try {
       if (state is DataImportLoaded) {
         final current = state as DataImportLoaded;
         emit(current.copyWith(
           activeIngestions: {
             ...current.activeIngestions,
-            trackingKey: const IngestionProgress(inserted: 0, total: 0),
+            trackingKey: null, // null = parsing phase
           },
         ));
       }
 
-      final result = await _ingestSourceData.call(
+      await for (final event in _ingestSourceData.call(
         folderPath: folderPath,
         source: source,
-        onProgress: (inserted, total) {
-          if (state is DataImportLoaded) {
-            final current = state as DataImportLoaded;
-            emit(current.copyWith(
-              activeIngestions: {
-                ...current.activeIngestions,
-                trackingKey: IngestionProgress(inserted: inserted, total: total),
-              },
+      )) {
+        switch (event) {
+          case IngestionStarted():
+            if (state is DataImportLoaded) {
+              final current = state as DataImportLoaded;
+              emit(current.copyWith(
+                imports: [...current.imports, event.dataImport],
+              ));
+            }
+          case IngestionProgress():
+            if (state is DataImportLoaded) {
+              final current = state as DataImportLoaded;
+              emit(current.copyWith(
+                activeIngestions: {
+                  ...current.activeIngestions,
+                  trackingKey: event,
+                },
+              ));
+            }
+            // Drift batch inserts resolve as microtasks, starving the event
+            // loop. Yield so the framework can render the progress update.
+            await Future<void>.delayed(Duration.zero);
+          case IngestionComplete():
+            final imports = await _importRepository.listAll();
+            final activeIngestions = state is DataImportLoaded
+                ? Map<int, IngestionProgress?>.from(
+                    (state as DataImportLoaded).activeIngestions)
+                : <int, IngestionProgress?>{};
+            activeIngestions.remove(trackingKey);
+            emit(DataImportState.loaded(
+              imports: imports,
+              activeIngestions: activeIngestions,
             ));
-          }
-        },
-      );
-
-      // Reload and clear progress entry.
-      final imports = await _importRepository.listAll();
-      final activeIngestions = state is DataImportLoaded
-          ? Map<int, IngestionProgress>.from(
-              (state as DataImportLoaded).activeIngestions)
-          : <int, IngestionProgress>{};
-      activeIngestions.remove(trackingKey);
-
-      emit(DataImportState.loaded(
-        imports: imports,
-        activeIngestions: activeIngestions,
-      ));
-
-      // Ignore the result variable lint — we need the await.
-      result;
+        }
+      }
     } on Exception catch (e, st) {
       log('Ingestion failed', error: e, stackTrace: st, name: 'DataImportBloc');
       // Reload to get the failed import record, clear progress.
       final imports = await _importRepository.listAll();
       final activeIngestions = state is DataImportLoaded
-          ? Map<int, IngestionProgress>.from(
+          ? Map<int, IngestionProgress?>.from(
               (state as DataImportLoaded).activeIngestions)
-          : <int, IngestionProgress>{};
-      activeIngestions.remove(-source.index - 1);
+          : <int, IngestionProgress?>{};
+      activeIngestions.remove(trackingKey);
 
       emit(DataImportState.loaded(
         imports: imports,

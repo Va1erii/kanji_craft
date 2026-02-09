@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kanji_craft_admin/domain/entities/data_import.dart';
-import 'package:kanji_craft_admin/presentation/bloc/data_import_state.dart';
+import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
 import 'package:kanji_craft_admin/presentation/widgets/status_badge.dart';
 
 class ImportsTable extends StatelessWidget {
@@ -12,7 +12,7 @@ class ImportsTable extends StatelessWidget {
   });
 
   final List<DataImport> imports;
-  final Map<int, IngestionProgress> activeIngestions;
+  final Map<int, IngestionProgress?> activeIngestions;
 
   static final _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -65,13 +65,31 @@ class ImportsTable extends StatelessWidget {
 
   Widget _statusCell(DataImport entry) {
     final trackingKey = -entry.source.index - 1;
-    final progress = activeIngestions[trackingKey];
-
-    if (progress == null || progress.total == 0) {
+    if (!activeIngestions.containsKey(trackingKey)) {
       return StatusBadge(status: entry.status);
     }
 
-    final fraction = progress.inserted / progress.total;
+    final progress = activeIngestions[trackingKey];
+    if (progress == null) {
+      return SizedBox(
+        width: 140,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Parsing...',
+              style: const TextStyle(fontSize: 11, color: Colors.orange),
+            ),
+            const SizedBox(height: 4),
+            const LinearProgressIndicator(),
+          ],
+        ),
+      );
+    }
+
+    final fraction =
+        progress.total > 0 ? progress.inserted / progress.total : 0.0;
     return SizedBox(
       width: 140,
       child: Column(

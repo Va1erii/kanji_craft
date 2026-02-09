@@ -15,4 +15,7 @@ abstract class RawKanjidicRepository {
 
   /// Returns the total row count for the given [importId].
   Future<int> countByImportId(int importId);
+
+  /// Deletes all rows for the given [importId].
+  Future<void> deleteByImportId(int importId);
 }

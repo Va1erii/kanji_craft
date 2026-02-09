@@ -51,6 +51,13 @@ class DriftRawKanjidicRepository implements RawKanjidicRepository {
     return result.read(count)!;
   }
 
+  @override
+  Future<void> deleteByImportId(int importId) async {
+    await (_db.delete(_db.rawKanjidicEntries)
+          ..where((t) => t.importId.equals(importId)))
+        .go();
+  }
+
   Future<void> upsertAll(List<RawKanjidic> rows) async {
     await _db.batch((b) {
       for (final row in rows) {

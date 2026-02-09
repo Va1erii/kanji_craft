@@ -72,6 +72,7 @@ class IngestionService {
         recordCount: entries.length,
       );
     } catch (e) {
+      await _kanjiVgRepository.deleteByImportId(dataImport.id);
       await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.failed,
@@ -117,6 +118,7 @@ class IngestionService {
         recordCount: entries.length,
       );
     } catch (e) {
+      await _kanjidicRepository.deleteByImportId(dataImport.id);
       await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.failed,
@@ -162,6 +164,7 @@ class IngestionService {
         recordCount: entries.length,
       );
     } catch (e) {
+      await _jmdictRepository.deleteByImportId(dataImport.id);
       await _importRepository.updateStatus(
         id: dataImport.id,
         status: ImportStatus.failed,

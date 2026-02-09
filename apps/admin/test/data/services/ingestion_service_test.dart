@@ -138,7 +138,8 @@ void main() {
             ));
       });
 
-      test('failure marks import as failed and rethrows', () async {
+      test('failure cleans up partial rows, marks failed, and rethrows',
+          () async {
         final pendingImport = fakeDataImport(
           id: 1,
           source: ImportSource.kanjivg,
@@ -161,6 +162,8 @@ void main() {
               filePath: '/path/to/bad.xml',
               importId: 1,
             )).thenThrow(Exception('parse error'));
+        when(() => mockKanjiVgRepo.deleteByImportId(1))
+            .thenAnswer((_) async {});
         when(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.failed,
@@ -175,11 +178,68 @@ void main() {
           throwsA(isA<Exception>()),
         );
 
+        verify(() => mockKanjiVgRepo.deleteByImportId(1)).called(1);
         verify(() => mockImportRepo.updateStatus(
               id: 1,
               status: ImportStatus.failed,
               errorMessage: any(named: 'errorMessage'),
             )).called(1);
+      });
+
+      test('mid-batch failure cleans up already-inserted rows', () async {
+        final pendingImport = fakeDataImport(
+          id: 1,
+          source: ImportSource.kanjivg,
+          status: ImportStatus.pending,
+        );
+        final failedImport = fakeDataImport(
+          id: 1,
+          source: ImportSource.kanjivg,
+          status: ImportStatus.failed,
+        );
+        final entries = List.generate(
+          800,
+          (i) => fakeRawKanjiVg(
+            importId: 1,
+            character: String.fromCharCode(0x4e00 + i),
+            unicodeHex: (0x4e00 + i).toRadixString(16),
+          ),
+        );
+
+        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
+            .thenAnswer((_) async => null);
+        when(() => mockImportRepo.create(
+              source: ImportSource.kanjivg,
+              sourceVersion: '2024.1',
+            )).thenAnswer((_) async => pendingImport);
+        when(() => mockKanjiVgParser.parseFile(
+              filePath: '/path/to/file.xml',
+              importId: 1,
+            )).thenReturn(entries);
+
+        var batchCall = 0;
+        when(() => mockKanjiVgRepo.insertBatch(any())).thenAnswer((_) async {
+          batchCall++;
+          if (batchCall == 2) throw Exception('db write error');
+        });
+        when(() => mockKanjiVgRepo.deleteByImportId(1))
+            .thenAnswer((_) async {});
+        when(() => mockImportRepo.updateStatus(
+              id: 1,
+              status: ImportStatus.failed,
+              errorMessage: any(named: 'errorMessage'),
+            )).thenAnswer((_) async => failedImport);
+
+        await expectLater(
+          service.ingestKanjiVg(
+            filePath: '/path/to/file.xml',
+            sourceVersion: '2024.1',
+          ),
+          throwsA(isA<Exception>()),
+        );
+
+        // First batch succeeded, second threw — cleanup must delete all.
+        verify(() => mockKanjiVgRepo.deleteByImportId(1)).called(1);
       });
 
       test('batch insert called correct number of times for large dataset',

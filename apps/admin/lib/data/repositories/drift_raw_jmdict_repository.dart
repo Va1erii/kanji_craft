@@ -42,6 +42,13 @@ class DriftRawJmdictRepository implements RawJmdictRepository {
   }
 
   @override
+  Future<void> deleteByImportId(int importId) async {
+    await (_db.delete(_db.rawJmdictEntries)
+          ..where((t) => t.importId.equals(importId)))
+        .go();
+  }
+
+  @override
   Future<int> countByImportId(int importId) async {
     final count = countAll();
     final query = _db.selectOnly(_db.rawJmdictEntries)

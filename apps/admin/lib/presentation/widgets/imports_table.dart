@@ -38,6 +38,7 @@ class ImportsTable extends StatelessWidget {
           DataColumn(label: Text('Version')),
           DataColumn(label: Text('Status')),
           DataColumn(label: Text('Records'), numeric: true),
+          DataColumn(label: Text('Skipped'), numeric: true),
           DataColumn(label: Text('Started')),
         ],
         rows: [
@@ -48,11 +49,18 @@ class ImportsTable extends StatelessWidget {
               DataCell(Text(entry.sourceVersion)),
               DataCell(_statusCell(entry)),
               DataCell(Text(entry.recordCount?.toString() ?? '-')),
+              DataCell(Text(_skippedCount(entry))),
               DataCell(Text(_dateFormat.format(entry.startedAt))),
             ]),
         ],
       ),
     );
+  }
+
+  String _skippedCount(DataImport entry) {
+    final skipped = entry.metadata?['skipped'];
+    if (skipped is List) return '${skipped.length}';
+    return '-';
   }
 
   Widget _statusCell(DataImport entry) {

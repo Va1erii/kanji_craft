@@ -306,10 +306,33 @@ void main() {
       );
     });
 
-    test('returns empty list for document with no character elements', () {
+    test('returns empty result for document with no character elements', () {
       final xml = '<kanjidic2><header/></kanjidic2>';
-      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      expect(results, isEmpty);
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.entries, isEmpty);
+      expect(result.totalElements, 0);
+    });
+
+    test('totalElements matches number of character elements', () {
+      final xml = _wrap('''
+<character>
+  <literal>一</literal>
+  <codepoint><cp_value cp_type="ucs">4e00</cp_value></codepoint>
+  <radical><rad_value rad_type="classical">1</rad_value></radical>
+  <misc><stroke_count>1</stroke_count></misc>
+</character>
+<character>
+  <literal>二</literal>
+  <codepoint><cp_value cp_type="ucs">4e8c</cp_value></codepoint>
+  <radical><rad_value rad_type="classical">7</rad_value></radical>
+  <misc><stroke_count>2</stroke_count></misc>
+</character>
+''');
+
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.totalElements, 2);
+      expect(result.parsedCount, 2);
+      expect(result.skipped, isEmpty);
     });
 
     test('parses jis212 and jis213 codepoints', () {

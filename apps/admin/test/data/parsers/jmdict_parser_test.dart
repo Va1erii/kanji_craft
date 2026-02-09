@@ -272,10 +272,31 @@ void main() {
       expect(results[1].entSeq, 1000002);
     });
 
-    test('returns empty list for empty document', () {
-      final results =
-          parser.parseXmlString(xmlString: '<JMdict></JMdict>', importId: 1).entries;
-      expect(results, isEmpty);
+    test('returns empty result for empty document', () {
+      final result =
+          parser.parseXmlString(xmlString: '<JMdict></JMdict>', importId: 1);
+      expect(result.entries, isEmpty);
+      expect(result.totalElements, 0);
+    });
+
+    test('totalElements matches number of entry elements', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1000001</ent_seq>
+  <r_ele><reb>あ</reb></r_ele>
+  <sense><gloss>ah</gloss></sense>
+</entry>
+<entry>
+  <ent_seq>1000002</ent_seq>
+  <r_ele><reb>い</reb></r_ele>
+  <sense><gloss>stomach</gloss></sense>
+</entry>
+''');
+
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.totalElements, 2);
+      expect(result.parsedCount, 2);
+      expect(result.skipped, isEmpty);
     });
 
     test('throws on malformed XML', () {

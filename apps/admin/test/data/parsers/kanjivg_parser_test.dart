@@ -289,7 +289,7 @@ void main() {
       expect(results[1].strokeCount, 2);
     });
 
-    test('skips kanji with invalid id format', () {
+    test('skips kanji with invalid id format and records in skipped', () {
       final xml = '''
 <kanjivg>
   <kanji id="invalid">
@@ -305,9 +305,35 @@ void main() {
 </kanjivg>
 ''';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      expect(results, hasLength(1));
-      expect(results.first.character, '一');
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.entries, hasLength(1));
+      expect(result.entries.first.character, '一');
+      expect(result.totalElements, 2);
+      expect(result.skippedCount, 1);
+      expect(result.skipped.first.id, 'invalid');
+      expect(result.skipped.first.reason, 'invalid id format');
+    });
+
+    test('skips kanji with missing root <g> and records in skipped', () {
+      final xml = '''
+<kanjivg>
+  <kanji id="kvg:kanji_04e01">
+    <path d="M 10,50 L 100,50"/>
+  </kanji>
+  <kanji id="kvg:kanji_04e00">
+    <g kvg:element="一" xmlns:kvg="http://kanjivg.tagaini.net">
+      <path d="M 10,50 L 100,50"/>
+    </g>
+  </kanji>
+</kanjivg>
+''';
+
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.entries, hasLength(1));
+      expect(result.totalElements, 2);
+      expect(result.skippedCount, 1);
+      expect(result.skipped.first.id, 'kvg:kanji_04e01');
+      expect(result.skipped.first.reason, 'missing root <g>');
     });
 
     test('sets createdAt to now', () {
@@ -359,11 +385,13 @@ void main() {
       );
     });
 
-    test('returns empty list for XML with no kanji elements', () {
+    test('returns empty result for XML with no kanji elements', () {
       const xml = '<kanjivg></kanjivg>';
 
-      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      expect(results, isEmpty);
+      final result = parser.parseXmlString(xmlString: xml, importId: 1);
+      expect(result.entries, isEmpty);
+      expect(result.totalElements, 0);
+      expect(result.skipped, isEmpty);
     });
 
     test('nelson radical marker parsed correctly', () {

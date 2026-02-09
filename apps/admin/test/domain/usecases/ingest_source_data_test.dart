@@ -1,9 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanji_craft_admin/data/services/ingestion_service.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
+import 'package:kanji_craft_admin/domain/entities/import_status.dart';
 import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dart';
+import 'package:kanji_craft_admin/domain/repositories/raw_jmdict_repository.dart';
+import 'package:kanji_craft_admin/domain/repositories/raw_kanjidic_repository.dart';
+import 'package:kanji_craft_admin/domain/repositories/raw_kanjivg_repository.dart';
+import 'package:kanji_craft_admin/domain/services/parse_result.dart';
+import 'package:kanji_craft_admin/domain/services/source_parser.dart';
 import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -11,7 +16,14 @@ import '../../helpers/admin_fixtures.dart';
 
 class MockDataImportRepository extends Mock implements DataImportRepository {}
 
-class MockIngestionService extends Mock implements IngestionService {}
+class MockRawKanjiVgRepository extends Mock implements RawKanjiVgRepository {}
+
+class MockRawKanjidicRepository extends Mock
+    implements RawKanjidicRepository {}
+
+class MockRawJmdictRepository extends Mock implements RawJmdictRepository {}
+
+class MockSourceParser extends Mock implements SourceParser {}
 
 /// Creates a subdirectory with an exact name inside the system temp dir.
 Directory _createDir(String name) {
@@ -22,18 +34,78 @@ Directory _createDir(String name) {
 
 void main() {
   late MockDataImportRepository mockImportRepo;
-  late MockIngestionService mockService;
+  late MockRawKanjiVgRepository mockKanjiVgRepo;
+  late MockRawKanjidicRepository mockKanjidicRepo;
+  late MockRawJmdictRepository mockJmdictRepo;
+  late MockSourceParser mockParser;
   late IngestSourceData useCase;
 
   setUp(() {
     resetFixtureIds();
     mockImportRepo = MockDataImportRepository();
-    mockService = MockIngestionService();
+    mockKanjiVgRepo = MockRawKanjiVgRepository();
+    mockKanjidicRepo = MockRawKanjidicRepository();
+    mockJmdictRepo = MockRawJmdictRepository();
+    mockParser = MockSourceParser();
     useCase = IngestSourceData(
       importRepository: mockImportRepo,
-      ingestionService: mockService,
+      kanjiVgRepository: mockKanjiVgRepo,
+      kanjidicRepository: mockKanjidicRepo,
+      jmdictRepository: mockJmdictRepo,
+      sourceParser: mockParser,
     );
   });
+
+  /// Sets up mocks so validation passes and the orchestration pipeline runs.
+  void stubHappyPath({
+    required ImportSource source,
+    required ParseResult<Object> parseResult,
+    int importId = 1,
+  }) {
+    final createdImport = fakeDataImport(id: importId, source: source);
+    final ingestedImport = fakeDataImport(
+      id: importId,
+      source: source,
+      status: ImportStatus.ingested,
+      recordCount: parseResult.parsedCount,
+    );
+
+    when(() => mockImportRepo.getActiveBySource(source))
+        .thenAnswer((_) async => null);
+    when(() => mockImportRepo.hasProcessedVersion(
+          source: source,
+          sourceVersion: any(named: 'sourceVersion'),
+        )).thenAnswer((_) async => false);
+    when(() => mockImportRepo.create(
+          source: source,
+          sourceVersion: any(named: 'sourceVersion'),
+        )).thenAnswer((_) async => createdImport);
+    when(() => mockParser.parseFile(
+          source: source,
+          filePath: any(named: 'filePath'),
+          importId: importId,
+        )).thenReturn(parseResult);
+    when(() => mockImportRepo.updateStatus(
+          id: importId,
+          status: ImportStatus.ingested,
+          recordCount: any(named: 'recordCount'),
+          metadata: any(named: 'metadata'),
+        )).thenAnswer((_) async => ingestedImport);
+
+    // Stub raw repo insert/delete for all sources.
+    when(() => mockKanjiVgRepo.insertBatch(any()))
+        .thenAnswer((_) async {});
+    when(() => mockKanjidicRepo.insertBatch(any()))
+        .thenAnswer((_) async {});
+    when(() => mockJmdictRepo.insertBatch(any()))
+        .thenAnswer((_) async {});
+    when(() => mockKanjiVgRepo.deleteByImportId(any()))
+        .thenAnswer((_) async {});
+    when(() => mockKanjidicRepo.deleteByImportId(any()))
+        .thenAnswer((_) async {});
+    when(() => mockJmdictRepo.deleteByImportId(any()))
+        .thenAnswer((_) async {});
+  }
 
   group('IngestSourceData', () {
     group('folder validation', () {
@@ -83,129 +155,6 @@ void main() {
             contains('No required data file'),
           )),
         );
-      });
-    });
-
-    group('version extraction', () {
-      test('extracts version from kanjivg folder name', () async {
-        final dir = _createDir('kanjivg-20240401');
-        File('${dir.path}/kanjivg.xml.gz').writeAsBytesSync([]);
-        addTearDown(() => dir.parent.deleteSync(recursive: true));
-
-        final result = fakeDataImport();
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjivg,
-              sourceVersion: '20240401',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjiVg(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '20240401',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
-
-        await useCase.call(
-          folderPath: dir.path,
-          source: ImportSource.kanjivg,
-        );
-
-        verify(() => mockService.ingestKanjiVg(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '20240401',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
-      });
-
-      test('extracts version from kanjidic folder name', () async {
-        final dir = _createDir('kanjidic-2024-04-01');
-        File('${dir.path}/kanjidic2.xml.gz').writeAsBytesSync([]);
-        addTearDown(() => dir.parent.deleteSync(recursive: true));
-
-        final result = fakeDataImport(source: ImportSource.kanjidic);
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjidic,
-              sourceVersion: '2024-04-01',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjidic(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '2024-04-01',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
-
-        await useCase.call(
-          folderPath: dir.path,
-          source: ImportSource.kanjidic,
-        );
-
-        verify(() => mockService.ingestKanjidic(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '2024-04-01',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
-      });
-
-      test('extracts version from kanjidic2 folder name', () async {
-        final dir = _createDir('kanjidic2-20260208');
-        File('${dir.path}/kanjidic2.xml.gz').writeAsBytesSync([]);
-        addTearDown(() => dir.parent.deleteSync(recursive: true));
-
-        final result = fakeDataImport(source: ImportSource.kanjidic);
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjidic,
-              sourceVersion: '20260208',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjidic(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '20260208',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
-
-        await useCase.call(
-          folderPath: dir.path,
-          source: ImportSource.kanjidic,
-        );
-
-        verify(() => mockService.ingestKanjidic(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '20260208',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
-      });
-
-      test('extracts version from jmdict folder name', () async {
-        final dir = _createDir('jmdict-2024.12.1');
-        File('${dir.path}/JMdict.gz').writeAsBytesSync([]);
-        File('${dir.path}/JMdict_e_examp.gz').writeAsBytesSync([]);
-        addTearDown(() => dir.parent.deleteSync(recursive: true));
-
-        final result = fakeDataImport(source: ImportSource.jmdict);
-        when(() => mockImportRepo.getActiveBySource(ImportSource.jmdict))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.jmdict,
-              sourceVersion: '2024.12.1',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestJmdict(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '2024.12.1',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
-
-        await useCase.call(
-          folderPath: dir.path,
-          source: ImportSource.jmdict,
-        );
-
-        verify(() => mockService.ingestJmdict(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '2024.12.1',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
       });
     });
 
@@ -264,120 +213,112 @@ void main() {
         File('${dir.path}/data.xml.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
-        final result = fakeDataImport();
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjivg,
-              sourceVersion: '1.0',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjiVg(
-              filePath: any(named: 'filePath'),
-              sourceVersion: '1.0',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
+        final entries = [
+          fakeRawKanjiVg(importId: 1),
+        ];
+        stubHappyPath(
+          source: ImportSource.kanjivg,
+          parseResult: ParseResult(entries: entries, totalElements: 1),
+        );
 
         final actual = await useCase.call(
           folderPath: dir.path,
           source: ImportSource.kanjivg,
         );
 
-        expect(actual, result);
+        expect(actual.status, ImportStatus.ingested);
       });
     });
 
     group('happy path', () {
-      test('KanjiVG: delegates to ingestKanjiVg with resolved file path',
-          () async {
+      test('KanjiVG: create → parse → insertBatch → updateStatus', () async {
         final dir = _createDir('kanjivg-2024.1');
         final file = File('${dir.path}/kanjivg.xml.gz');
         file.writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
-        final result = fakeDataImport();
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjivg,
-              sourceVersion: '2024.1',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjiVg(
-              filePath: file.path,
-              sourceVersion: '2024.1',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
+        final entries = [
+          fakeRawKanjiVg(importId: 1, character: '木'),
+          fakeRawKanjiVg(importId: 1, character: '水'),
+        ];
+        stubHappyPath(
+          source: ImportSource.kanjivg,
+          parseResult: ParseResult(entries: entries, totalElements: 2),
+        );
 
         final actual = await useCase.call(
           folderPath: dir.path,
           source: ImportSource.kanjivg,
         );
 
-        expect(actual, result);
-        verify(() => mockService.ingestKanjiVg(
-              filePath: file.path,
-              sourceVersion: '2024.1',
-              onProgress: any(named: 'onProgress'),
-            )).called(1);
+        expect(actual.status, ImportStatus.ingested);
+
+        // Verify orchestration order.
+        verifyInOrder([
+          () => mockImportRepo.create(
+                source: ImportSource.kanjivg,
+                sourceVersion: '2024.1',
+              ),
+          () => mockParser.parseFile(
+                source: ImportSource.kanjivg,
+                filePath: file.path,
+                importId: 1,
+              ),
+          () => mockKanjiVgRepo.insertBatch(any()),
+          () => mockImportRepo.updateStatus(
+                id: 1,
+                status: ImportStatus.ingested,
+                recordCount: any(named: 'recordCount'),
+                metadata: any(named: 'metadata'),
+              ),
+        ]);
       });
 
-      test('KANJIDIC: delegates to ingestKanjidic', () async {
+      test('KANJIDIC: create → parse → insertBatch → updateStatus', () async {
         final dir = _createDir('kanjidic2-2024');
         final file = File('${dir.path}/kanjidic2.xml.gz');
         file.writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
-        final result = fakeDataImport(source: ImportSource.kanjidic);
-        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.kanjidic,
-              sourceVersion: '2024',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjidic(
-              filePath: file.path,
-              sourceVersion: '2024',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
+        final entries = [
+          fakeRawKanjidic(importId: 1, literal: '木'),
+        ];
+        stubHappyPath(
+          source: ImportSource.kanjidic,
+          parseResult: ParseResult(entries: entries, totalElements: 1),
+        );
 
         final actual = await useCase.call(
           folderPath: dir.path,
           source: ImportSource.kanjidic,
         );
 
-        expect(actual, result);
+        expect(actual.status, ImportStatus.ingested);
+        verify(() => mockKanjidicRepo.insertBatch(any())).called(1);
       });
 
-      test('JMDict: delegates to ingestJmdict with primary file path',
-          () async {
+      test('JMDict: create → parse → insertBatch → updateStatus', () async {
         final dir = _createDir('jmdict-2024.12');
         final primaryFile = File('${dir.path}/JMdict.gz');
         primaryFile.writeAsBytesSync([]);
         File('${dir.path}/JMdict_e_examp.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
-        final result = fakeDataImport(source: ImportSource.jmdict);
-        when(() => mockImportRepo.getActiveBySource(ImportSource.jmdict))
-            .thenAnswer((_) async => null);
-        when(() => mockImportRepo.hasProcessedVersion(
-              source: ImportSource.jmdict,
-              sourceVersion: '2024.12',
-            )).thenAnswer((_) async => false);
-        when(() => mockService.ingestJmdict(
-              filePath: primaryFile.path,
-              sourceVersion: '2024.12',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((_) async => result);
+        stubHappyPath(
+          source: ImportSource.jmdict,
+          parseResult: ParseResult(entries: <Object>[], totalElements: 0),
+        );
 
         final actual = await useCase.call(
           folderPath: dir.path,
           source: ImportSource.jmdict,
         );
 
-        expect(actual, result);
-        verify(() => mockService.ingestJmdict(
+        expect(actual.status, ImportStatus.ingested);
+        verify(() => mockParser.parseFile(
+              source: ImportSource.jmdict,
               filePath: primaryFile.path,
-              sourceVersion: '2024.12',
-              onProgress: any(named: 'onProgress'),
+              importId: 1,
             )).called(1);
       });
 
@@ -399,31 +340,111 @@ void main() {
           )),
         );
       });
+    });
 
-      test('progress callback is forwarded', () async {
+    group('orchestration', () {
+      test('failure marks import as failed, cleans up raw rows, and rethrows',
+          () async {
         final dir = _createDir('kanjivg-1.0');
         File('${dir.path}/data.xml.gz').writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));
 
-        final result = fakeDataImport();
+        final createdImport = fakeDataImport(id: 1);
+        final failedImport = fakeDataImport(
+          id: 1,
+          status: ImportStatus.failed,
+          errorMessage: 'Exception: parse error',
+        );
+
         when(() => mockImportRepo.getActiveBySource(ImportSource.kanjivg))
             .thenAnswer((_) async => null);
         when(() => mockImportRepo.hasProcessedVersion(
               source: ImportSource.kanjivg,
-              sourceVersion: '1.0',
+              sourceVersion: any(named: 'sourceVersion'),
             )).thenAnswer((_) async => false);
-        when(() => mockService.ingestKanjiVg(
+        when(() => mockImportRepo.create(
+              source: ImportSource.kanjivg,
+              sourceVersion: any(named: 'sourceVersion'),
+            )).thenAnswer((_) async => createdImport);
+        when(() => mockParser.parseFile(
+              source: ImportSource.kanjivg,
               filePath: any(named: 'filePath'),
-              sourceVersion: '1.0',
-              onProgress: any(named: 'onProgress'),
-            )).thenAnswer((invocation) async {
-          final onProgress = invocation.namedArguments[#onProgress]
-              as void Function(int, int)?;
-          onProgress?.call(50, 100);
-          return result;
-        });
+              importId: 1,
+            )).thenThrow(Exception('parse error'));
+        when(() => mockKanjiVgRepo.deleteByImportId(1))
+            .thenAnswer((_) async {});
+        when(() => mockImportRepo.updateStatus(
+              id: 1,
+              status: ImportStatus.failed,
+              errorMessage: any(named: 'errorMessage'),
+            )).thenAnswer((_) async => failedImport);
+
+        await expectLater(
+          useCase.call(
+            folderPath: dir.path,
+            source: ImportSource.kanjivg,
+          ),
+          throwsA(isA<Exception>()),
+        );
+
+        verify(() => mockKanjiVgRepo.deleteByImportId(1)).called(1);
+        verify(() => mockImportRepo.updateStatus(
+              id: 1,
+              status: ImportStatus.failed,
+              errorMessage: any(named: 'errorMessage'),
+            )).called(1);
+      });
+
+      test('batch insert called correct number of times for large dataset',
+          () async {
+        final dir = _createDir('kanjivg-1.0');
+        File('${dir.path}/data.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        final entries = List.generate(
+          1200,
+          (i) => fakeRawKanjiVg(
+            importId: 1,
+            character: String.fromCharCode(0x4e00 + i),
+            unicodeHex: (0x4e00 + i).toRadixString(16),
+          ),
+        );
+
+        stubHappyPath(
+          source: ImportSource.kanjivg,
+          parseResult: ParseResult(entries: entries, totalElements: 1200),
+        );
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.kanjivg,
+        );
+
+        // 1200 entries / 500 batch size = 3 batches.
+        verify(() => mockKanjiVgRepo.insertBatch(any())).called(3);
+      });
+
+      test('onProgress called after each batch with correct values', () async {
+        final dir = _createDir('kanjivg-1.0');
+        File('${dir.path}/data.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        final entries = List.generate(
+          1200,
+          (i) => fakeRawKanjiVg(
+            importId: 1,
+            character: String.fromCharCode(0x4e00 + i),
+            unicodeHex: (0x4e00 + i).toRadixString(16),
+          ),
+        );
+
+        stubHappyPath(
+          source: ImportSource.kanjivg,
+          parseResult: ParseResult(entries: entries, totalElements: 1200),
+        );
 
         final progressCalls = <(int, int)>[];
+
         await useCase.call(
           folderPath: dir.path,
           source: ImportSource.kanjivg,
@@ -431,7 +452,102 @@ void main() {
               progressCalls.add((inserted, total)),
         );
 
-        expect(progressCalls, [(50, 100)]);
+        expect(progressCalls, [
+          (500, 1200),
+          (1000, 1200),
+          (1200, 1200),
+        ]);
+      });
+    });
+
+    group('version extraction', () {
+      test('extracts version from kanjivg folder name', () async {
+        final dir = _createDir('kanjivg-20240401');
+        File('${dir.path}/kanjivg.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        stubHappyPath(
+          source: ImportSource.kanjivg,
+          parseResult:
+              ParseResult(entries: <Object>[], totalElements: 0),
+        );
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.kanjivg,
+        );
+
+        verify(() => mockImportRepo.create(
+              source: ImportSource.kanjivg,
+              sourceVersion: '20240401',
+            )).called(1);
+      });
+
+      test('extracts version from kanjidic folder name', () async {
+        final dir = _createDir('kanjidic-2024-04-01');
+        File('${dir.path}/kanjidic2.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        stubHappyPath(
+          source: ImportSource.kanjidic,
+          parseResult:
+              ParseResult(entries: <Object>[], totalElements: 0),
+        );
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.kanjidic,
+        );
+
+        verify(() => mockImportRepo.create(
+              source: ImportSource.kanjidic,
+              sourceVersion: '2024-04-01',
+            )).called(1);
+      });
+
+      test('extracts version from kanjidic2 folder name', () async {
+        final dir = _createDir('kanjidic2-20260208');
+        File('${dir.path}/kanjidic2.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        stubHappyPath(
+          source: ImportSource.kanjidic,
+          parseResult:
+              ParseResult(entries: <Object>[], totalElements: 0),
+        );
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.kanjidic,
+        );
+
+        verify(() => mockImportRepo.create(
+              source: ImportSource.kanjidic,
+              sourceVersion: '20260208',
+            )).called(1);
+      });
+
+      test('extracts version from jmdict folder name', () async {
+        final dir = _createDir('jmdict-2024.12.1');
+        File('${dir.path}/JMdict.gz').writeAsBytesSync([]);
+        File('${dir.path}/JMdict_e_examp.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        stubHappyPath(
+          source: ImportSource.jmdict,
+          parseResult:
+              ParseResult(entries: <Object>[], totalElements: 0),
+        );
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.jmdict,
+        );
+
+        verify(() => mockImportRepo.create(
+              source: ImportSource.jmdict,
+              sourceVersion: '2024.12.1',
+            )).called(1);
       });
     });
   });

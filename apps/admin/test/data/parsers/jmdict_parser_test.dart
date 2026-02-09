@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanji_craft_admin/data/parsers/jmdict_parser.dart';
+import 'package:kanji_craft_admin/data/services/jmdict_parser.dart';
 import 'package:xml/xml.dart';
 
 /// Minimal JMDict wrapper.

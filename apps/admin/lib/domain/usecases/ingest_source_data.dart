@@ -1,9 +1,16 @@
 import 'dart:io';
 
-import '../../data/services/ingestion_service.dart';
 import '../entities/data_import.dart';
 import '../entities/import_source.dart';
+import '../entities/import_status.dart';
+import '../entities/raw_jmdict.dart';
+import '../entities/raw_kanjidic.dart';
+import '../entities/raw_kanjivg.dart';
 import '../repositories/data_import_repository.dart';
+import '../repositories/raw_jmdict_repository.dart';
+import '../repositories/raw_kanjidic_repository.dart';
+import '../repositories/raw_kanjivg_repository.dart';
+import '../services/source_parser.dart';
 
 /// Thrown when pre-ingestion validation fails.
 class IngestionValidationException implements Exception {
@@ -44,15 +51,37 @@ _SourceConfig _sourceConfig(ImportSource source) => switch (source) {
         ),
     };
 
+/// Orchestrates the full ingestion pipeline for a source data folder.
+///
+/// Steps:
+/// 1. Validate the folder structure, extract the source version, and resolve
+///    the primary data file path.
+/// 2. Guard against duplicate or concurrent imports.
+/// 3. Create a [DataImport] record via [DataImportRepository].
+/// 4. Parse the source file via [SourceParser].
+/// 5. Batch-insert parsed entities into the appropriate raw repository.
+/// 6. Update the import status to [ImportStatus.ingested] on success, or
+///    [ImportStatus.failed] on error (after cleaning up partial raw rows).
 class IngestSourceData {
   IngestSourceData({
     required DataImportRepository importRepository,
-    required IngestionService ingestionService,
+    required RawKanjiVgRepository kanjiVgRepository,
+    required RawKanjidicRepository kanjidicRepository,
+    required RawJmdictRepository jmdictRepository,
+    required SourceParser sourceParser,
   })  : _importRepository = importRepository,
-        _ingestionService = ingestionService;
+        _kanjiVgRepository = kanjiVgRepository,
+        _kanjidicRepository = kanjidicRepository,
+        _jmdictRepository = jmdictRepository,
+        _sourceParser = sourceParser;
 
   final DataImportRepository _importRepository;
-  final IngestionService _ingestionService;
+  final RawKanjiVgRepository _kanjiVgRepository;
+  final RawKanjidicRepository _kanjidicRepository;
+  final RawJmdictRepository _jmdictRepository;
+  final SourceParser _sourceParser;
+
+  static const _batchSize = 500;
 
   Future<DataImport> call({
     required String folderPath,
@@ -120,23 +149,94 @@ class IngestSourceData {
       );
     }
 
-    // Delegate to the appropriate ingestion method.
-    return switch (source) {
-      ImportSource.kanjivg => _ingestionService.ingestKanjiVg(
-          filePath: primaryFilePath,
-          sourceVersion: sourceVersion,
+    // Create import record.
+    final dataImport = await _importRepository.create(
+      source: source,
+      sourceVersion: sourceVersion,
+    );
+
+    // Parse → insert → update status (with cleanup on failure).
+    try {
+      final result = _sourceParser.parseFile(
+        source: source,
+        filePath: primaryFilePath,
+        importId: dataImport.id,
+      );
+
+      await _insertEntries(
+        source: source,
+        entries: result.entries,
+        onProgress: onProgress,
+      );
+
+      return await _importRepository.updateStatus(
+        id: dataImport.id,
+        status: ImportStatus.ingested,
+        recordCount: result.parsedCount,
+        metadata: result.toMetadata(),
+      );
+    } catch (e) {
+      await _deleteRawRows(source: source, importId: dataImport.id);
+      await _importRepository.updateStatus(
+        id: dataImport.id,
+        status: ImportStatus.failed,
+        errorMessage: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> _insertEntries({
+    required ImportSource source,
+    required List<Object> entries,
+    void Function(int inserted, int total)? onProgress,
+  }) async {
+    switch (source) {
+      case ImportSource.kanjivg:
+        await _batchInsert(
+          entries.cast<RawKanjiVg>(),
+          (batch) => _kanjiVgRepository.insertBatch(batch),
           onProgress: onProgress,
-        ),
-      ImportSource.kanjidic => _ingestionService.ingestKanjidic(
-          filePath: primaryFilePath,
-          sourceVersion: sourceVersion,
+        );
+      case ImportSource.kanjidic:
+        await _batchInsert(
+          entries.cast<RawKanjidic>(),
+          (batch) => _kanjidicRepository.insertBatch(batch),
           onProgress: onProgress,
-        ),
-      ImportSource.jmdict => _ingestionService.ingestJmdict(
-          filePath: primaryFilePath,
-          sourceVersion: sourceVersion,
+        );
+      case ImportSource.jmdict:
+        await _batchInsert(
+          entries.cast<RawJmdict>(),
+          (batch) => _jmdictRepository.insertBatch(batch),
           onProgress: onProgress,
-        ),
-    };
+        );
+    }
+  }
+
+  Future<void> _deleteRawRows({
+    required ImportSource source,
+    required int importId,
+  }) async {
+    switch (source) {
+      case ImportSource.kanjivg:
+        await _kanjiVgRepository.deleteByImportId(importId);
+      case ImportSource.kanjidic:
+        await _kanjidicRepository.deleteByImportId(importId);
+      case ImportSource.jmdict:
+        await _jmdictRepository.deleteByImportId(importId);
+    }
+  }
+
+  Future<void> _batchInsert<T>(
+    List<T> entries,
+    Future<void> Function(List<T> batch) insert, {
+    void Function(int inserted, int total)? onProgress,
+  }) async {
+    for (var i = 0; i < entries.length; i += _batchSize) {
+      final end =
+          (i + _batchSize > entries.length) ? entries.length : i + _batchSize;
+      await insert(entries.sublist(i, end));
+      onProgress?.call(end, entries.length);
+    }
   }
 }

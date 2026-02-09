@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:xml/xml.dart';
 
+import '../../domain/services/parse_result.dart';
 import '../../domain/entities/raw_kanjidic.dart';
-import 'parse_result.dart';
 
 class KanjidicParser {
   ParseResult<RawKanjidic> parseFile({

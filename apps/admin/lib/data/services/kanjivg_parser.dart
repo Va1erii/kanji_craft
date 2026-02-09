@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:xml/xml.dart';
 
+import '../../domain/services/parse_result.dart';
 import '../../domain/entities/raw_kanjivg.dart';
-import 'parse_result.dart';
 
 class KanjiVgParser {
   static const _kvgNamespace = 'http://kanjivg.tagaini.net';

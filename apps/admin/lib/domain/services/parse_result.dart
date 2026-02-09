@@ -1,3 +1,9 @@
+/// The result of parsing a source data file into raw domain entities.
+///
+/// Contains the successfully parsed [entries], the [totalElements] found in
+/// the source file, and any [skipped] entries that could not be parsed.
+/// Use [toMetadata] to serialise parse statistics for storage on a
+/// [DataImport] record.
 class ParseResult<T> {
   ParseResult({
     required this.entries,
@@ -20,6 +26,7 @@ class ParseResult<T> {
       };
 }
 
+/// An entry that was present in the source file but could not be parsed.
 class SkippedEntry {
   SkippedEntry({required this.id, required this.reason});
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanji_craft_admin/data/parsers/kanjivg_parser.dart';
+import 'package:kanji_craft_admin/data/services/kanjivg_parser.dart';
 import 'package:xml/xml.dart';
 
 void main() {

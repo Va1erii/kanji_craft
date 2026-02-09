@@ -5,11 +5,12 @@ import '../data/repositories/drift_data_import_repository.dart';
 import '../data/repositories/drift_raw_jmdict_repository.dart';
 import '../data/repositories/drift_raw_kanjidic_repository.dart';
 import '../data/repositories/drift_raw_kanjivg_repository.dart';
-import '../data/services/ingestion_service.dart';
+import '../data/services/source_parser_impl.dart';
 import '../domain/repositories/data_import_repository.dart';
 import '../domain/repositories/raw_jmdict_repository.dart';
 import '../domain/repositories/raw_kanjidic_repository.dart';
 import '../domain/repositories/raw_kanjivg_repository.dart';
+import '../domain/services/source_parser.dart';
 import '../domain/usecases/ingest_source_data.dart';
 import '../presentation/bloc/data_import_bloc.dart';
 
@@ -30,18 +31,16 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<RawJmdictRepository>(
     () => DriftRawJmdictRepository(getIt<AdminDatabase>()),
   );
-  getIt.registerLazySingleton<IngestionService>(
-    () => IngestionService(
-      importRepository: getIt<DataImportRepository>(),
-      kanjiVgRepository: getIt<RawKanjiVgRepository>(),
-      kanjidicRepository: getIt<RawKanjidicRepository>(),
-      jmdictRepository: getIt<RawJmdictRepository>(),
-    ),
+  getIt.registerLazySingleton<SourceParser>(
+    () => SourceParserImpl(),
   );
   getIt.registerLazySingleton<IngestSourceData>(
     () => IngestSourceData(
       importRepository: getIt<DataImportRepository>(),
-      ingestionService: getIt<IngestionService>(),
+      kanjiVgRepository: getIt<RawKanjiVgRepository>(),
+      kanjidicRepository: getIt<RawKanjidicRepository>(),
+      jmdictRepository: getIt<RawJmdictRepository>(),
+      sourceParser: getIt<SourceParser>(),
     ),
   );
 

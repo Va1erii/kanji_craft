@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanji_craft_admin/data/parsers/kanjidic_parser.dart';
+import 'package:kanji_craft_admin/data/services/kanjidic_parser.dart';
 import 'package:xml/xml.dart';
 
 /// Minimal KANJIDIC2 wrapper to avoid repeating the root element.

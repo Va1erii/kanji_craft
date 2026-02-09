@@ -26,6 +26,8 @@ Each row represents one radical appearing inside one kanji. It carries metadata 
 | `radical_id` | `int` | FK to the Radical (see radical.md) |
 | `position` | `Position` | Where this radical sits inside this kanji (see radical.md Position enum) |
 | `logic_hint` | `LogicHint` | Whether this radical contributes meaning or sound in this specific kanji |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
 **Why `position` on KanjiComponent, not just on RadicalVariant?**
 
@@ -49,7 +51,7 @@ Tracks whether a component's `logic_hint` has been reviewed by a human. Used as 
 
 ### KanjiComponentReview (Entity)
 
-Admin-only review state for each `KanjiComponent`. This table is **not present in the client Drift schema** — it exists only in the Supabase database and is accessed exclusively via the `service_role` key (which bypasses RLS). Clients never see review data; they only receive components that have been verified and synced to production.
+Admin-only review state for each `KanjiComponent`. This table lives in the **Remote `admin` schema** as the authoritative source of truth, surviving device loss. It is **not present in the client Drift schema** — clients never see review data; they only receive components that have been verified and synced to production. Access is restricted to the `service_role` key (which bypasses RLS).
 
 | Field | Type | Description |
 |---|---|---|
@@ -57,6 +59,8 @@ Admin-only review state for each `KanjiComponent`. This table is **not present i
 | `kanji_component_id` | `int` | FK to `kanji_components(id)`. One review row per component (unique constraint) |
 | `verification_status` | `VerificationStatus` | Review state for this component. Defaults to `draft`. Only `verified` rows are eligible for remote sync |
 | `ai_confidence` | `float?` | 0.0–1.0 confidence score from the onyomi-matching heuristic. Used to sort the review queue (lowest first). Null if set manually |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
 ## Relationships
 

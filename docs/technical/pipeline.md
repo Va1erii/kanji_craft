@@ -12,7 +12,7 @@ Immutable source data lives in `sources/` at the project root. Each folder is a 
 
 ### 1. Kanji Source (Official XML) — `kanjidic-{date}/`
 
-Downloaded from the [EDRDG](http://www.edrdg.org/wiki/index.php/KANJIDIC_Project) project. The official KANJIDIC2 XML contains every field (meanings in all languages, classical radicals, nanori, variants, dictionary refs) in a single file.
+Downloaded from the [EDRDG](https://www.edrdg.org/wiki/KANJIDIC_Project.html) project. The official KANJIDIC2 XML contains every field (meanings in all languages, classical radicals, nanori, variants, dictionary refs) in a single file.
 
 | Archive | Contents | Pipeline target |
 |---|---|---|
@@ -54,9 +54,9 @@ The admin prepares source data by placing downloaded archives into correctly nam
 
 | Source | Folder pattern | Example |
 |---|---|---|
-| KANJIDIC | `kanjidic-{version}/` | `kanjidic-20240401/` |
-| JMDict | `jmdict-{version}/` | `jmdict-20241201/` |
-| KanjiVG | `kanjivg-{version}/` | `kanjivg-20240401/` |
+| KANJIDIC | `kanjidic2-{version}/` | `kanjidic2-20260208/` |
+| JMDict | `jmdict-{version}/` | `jmdict-20260207/` |
+| KanjiVG | `kanjivg-{version}/` | `kanjivg-20250816/` |
 
 The `{version}` segment becomes the `source_version` value in `data_imports`.
 

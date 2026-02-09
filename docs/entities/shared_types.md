@@ -39,3 +39,14 @@ Indicates whether a reading is a primary or secondary pronunciation. Used for bo
 | `secondary` | A less common reading shown for reference but not tested during early SRS stages |
 
 Used by: `KanjiReading.priority` (see kanji.md), `VocabularyReading.priority` (see vocabulary.md).
+
+### Supported Languages
+
+The app supports two content languages. All localized data (meanings, glosses, example sentences) is stored and displayed only for these languages. During ingestion, parsers discard data for unsupported languages.
+
+| Code | Language | Notes |
+|---|---|---|
+| `en` | English | Default/primary. KANJIDIC: `m_lang` absent = English. JMDict: `xml:lang` absent = English |
+| `es` | Spanish | KANJIDIC: `m_lang="es"`. JMDict: `xml:lang="spa"` |
+
+Used by: `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, ingestion parsers (language filtering).

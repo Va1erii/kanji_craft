@@ -12,7 +12,7 @@ Immutable source data lives in `sources/` at the project root. Each folder is a 
 
 ### 1. Kanji Source (Official XML) — `kanjidic-{date}/`
 
-Downloaded from the [EDRDG](https://www.edrdg.org/wiki/KANJIDIC_Project.html) project. The official KANJIDIC2 XML contains every field (meanings in all languages, classical radicals, nanori, variants, dictionary refs) in a single file.
+Downloaded from the [EDRDG](http://www.edrdg.org/wiki/KANJIDIC_Project.html) project. The official KANJIDIC2 XML contains every field (meanings in all languages, classical radicals, nanori, variants, dictionary refs) in a single file.
 
 | Archive | Contents | Pipeline target |
 |---|---|---|
@@ -20,14 +20,14 @@ Downloaded from the [EDRDG](https://www.edrdg.org/wiki/KANJIDIC_Project.html) pr
 
 Single-pass ingestion: meanings are grouped by `m_lang` attribute (EN, ES, FR, etc.) into the `raw_kanjidic.meanings` JSONB column.
 
-### 2. Vocabulary Source (Yomichan JSON) — `jmdict-{version}/`
+### 2. Vocabulary Source (Official XML) — `jmdict-{version}/`
 
-Downloaded from [yomidevs](https://github.com/yomidevs). Vocabulary entries in Yomichan-compatible JSON bank format. Two files are needed for the two-pass merge strategy.
+Downloaded from the [EDRDG](http://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html). The official JMDict XML contains all vocabulary entries with readings, senses, and cross-references.
 
 | Archive | Contents | Pipeline target |
 |---|---|---|
-| `JMdict_english_with_examples.zip` | English vocabulary entries + example sentences | `vocabulary`, `vocabulary_i18n` (en), `vocabulary_sentences` (en) |
-| `JMdict_spanish.zip` | Spanish vocabulary entries | `vocabulary_i18n` (es) |
+| `JMdict.gz` | Full JMDict dictionary (~200,000 entries, all languages) | `raw_jmdict` → `vocabulary`, `vocabulary_i18n`, `vocabulary_readings` |
+| `JMdict_e_examp.gz` | English JMDict + example sentence pairs from the Tanaka Corpus | `vocabulary_sentences` (en) |
 
 ### 3. Visual Source (KanjiVG) — `kanjivg-{version}/`
 

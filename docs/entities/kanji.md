@@ -21,6 +21,8 @@ The core identity of a single kanji character. Holds language-independent data: 
 | `svg_file_name` | `String` | Local asset filename for the kanji SVG, e.g. "065e5.svg" |
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 | `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
 **Why `min_jlpt_level` and `min_grade` are nullable here but not on Radical?**
 

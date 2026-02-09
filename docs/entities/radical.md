@@ -22,6 +22,8 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
 | `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
 | `is_official` | `bool` | `true` for official Kangxi radicals (214 traditional set), `false` for custom radicals invented as learning aids. Defaults to `false` |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
 **Why `is_official`?**
 

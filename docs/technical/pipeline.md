@@ -6,6 +6,13 @@ The Content Pipeline transforms raw open-source dictionary data (KANJIDIC2, Kanj
 
 The pipeline runs entirely in the **Local Environment** (Local Supabase + Admin Tool). Only verified, production-ready data is synced to the **Remote Production** database.
 
+**Stateless Admin:** The local database is an ephemeral cache — it can be rebuilt from source files and Remote admin state at any time. If the admin loses the local DB (new device, crash), no work is lost:
+
+- **Idempotent ingestion:** same source file + version → same raw data
+- **Idempotent transformation:** same raw data + same logic → same entities
+- **Review decisions** and **import history** live in the Remote `admin` schema, not locally
+- Raw and generated tables are local-only and disposable
+
 ## Source Archives
 
 Immutable source data lives in `sources/` at the project root. Each folder is a versioned snapshot — never modified after download.
@@ -107,7 +114,11 @@ graph TD
         Admin[Admin Dashboard]
     end
 
-    subgraph "Remote Supabase"
+    subgraph "Remote Supabase (admin schema)"
+        AdminDB[(Import history + Reviews)]
+    end
+
+    subgraph "Remote Supabase (public schema)"
         ProdDB[(Production DB)]
         Bucket[svg bucket]
     end
@@ -118,9 +129,21 @@ graph TD
     RawJ -->|"2. Transform & AI"| Vocab
     Admin -->|"3. Verify & Fix"| Comp
     Admin -->|"3. Verify & Fix"| Vocab
-    Rad & Kan & Comp & Vocab -->|"4. Promote"| ProdDB
+    Comp -->|"3. Sync reviews"| AdminDB
+    Imports -->|"Sync history"| AdminDB
+    Rad & Kan & Comp & Vocab -->|"4. Push"| ProdDB
     LocalSVG -->|"4. Upload changed"| Bucket
 ```
+
+## Hydration (New Device Workflow)
+
+When an admin starts fresh (new device, wiped DB, crash recovery), the local DB is rebuilt from source files and Remote admin state:
+
+1. **Login** — admin authenticates with Supabase. The app pulls `data_imports` and `kanji_component_reviews` from the Remote `admin` schema.
+2. **Supply source files** — admin places the same source archives into `sources/`. Re-parse into raw tables (idempotent — same file + version = same rows).
+3. **Run transformation** — rebuild production tables from raw data (idempotent — same raw + same logic = same entities).
+4. **Apply saved reviews** — merge downloaded review decisions onto the locally regenerated `kanji_component_reviews` rows.
+5. **Resume work** — the admin is back to where they left off. No data was lost.
 
 ## Phase 1: Ingestion (Raw Staging)
 
@@ -276,34 +299,70 @@ The Admin Tool queries `vocabulary_sentences` where `verification_status = 'draf
 
 **Batch action:** "Approve all" can be used with caution for bulk verification. Unlike component reviews (which have `ai_confidence` scores), sentence reviews rely on human judgement of translation quality.
 
-## Phase 4: Remote Sync (Promotion)
+## Phase 4: Remote Sync (Release Builder)
 
-**Goal:** Push only verified, stable content to the Remote Production database.
+**Goal:** Selectively push subsets of verified content (e.g. "N5 only") and handle version updates without full re-syncs.
 
-### 4.1 Sync Strategy
+### 4.1 Comparison-Based Sync
 
-- **Direction:** One-way (Local → Remote).
-- **Method:** Incremental upsert.
-- **Safety gates:**
-  - `kanji_components`: only rows with `kanji_component_reviews.verification_status = 'verified'` are synced.
-  - `vocabulary` (word, meanings, readings, kanji associations): sync all rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB. This prevents FK violations for words containing kanji from an unfinished or failed import.
-  - `vocabulary_sentences`: only rows where `verification_status = 'verified'` are synced. English source sentences (born `verified`) sync immediately. AI-translated sentences (born `draft`) sync only after human review.
+The Release Builder uses **comparison-based sync** — it queries Remote Production at push time and compares against local state. No sync-tracking columns exist on local tables (the local DB is ephemeral; see Stateless Admin above).
 
-- **URL rewrite:** When syncing `radicals`, `kanji`, or `radical_variants` to Remote, the sync script must replace the local base URL in `svg_file_url` with the Remote Production Storage URL (e.g. `https://<project-ref>.supabase.co/storage/v1/object/public/svg/...`). Do not sync localhost URLs to production.
+**How it works:**
 
-**Result:** Users get vocabulary words with definitions and readings immediately. English example sentences arrive with the word. AI-translated sentences (e.g. Spanish) arrive only after admin approval.
+1. The Release Builder queries Remote Production for all IDs + `updated_at` within the selected scope (e.g. all N5 kanji).
+2. It compares each local row against the remote result:
+   - **New** — local row has no match on Remote → upsert
+   - **Updated** — local `updated_at` is newer than remote → upsert
+   - **Unchanged** — timestamps match → skip
+3. After push: no local state to update (stateless).
 
-### 4.2 SVG Upload
+**Dependency propagation:** When a child entity (`kanji_i18n`, `kanji_readings`, `kanji_components`, `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_sentences`) is inserted or modified, the parent entity's `updated_at` is automatically bumped via triggers. This ensures the parent surfaces as "updated" in the comparison so the Release Builder picks it up with the new child data.
+
+### 4.2 Safety Gates
+
+Before an item is eligible for sync, it must pass verification checks:
+
+- **`kanji_components`:** only rows with `kanji_component_reviews.verification_status = 'verified'` are synced.
+- **`vocabulary`:** sync only rows whose **all** constituent kanji (via `vocabulary_kanji`) already exist on the Remote DB. This prevents FK violations for words containing kanji from an unfinished or failed import.
+- **`vocabulary_sentences`:** only rows where `verification_status = 'verified'` are synced. English source sentences (born `verified`) sync immediately. AI-translated sentences (born `draft`) sync only after human review.
+
+### 4.3 The Release Builder (Admin UI)
+
+Instead of a "Sync All" button, the Admin Tool provides a **Release Builder** to define the scope of each push.
+
+**1. Scope selection (filters):**
+
+| Filter | Options | Example |
+|---|---|---|
+| Primary | All, New items only, Updates only | "New items only" for initial launch |
+| Grade | 1–6, Secondary, All | "1–2" for MVP |
+| JLPT | N5–N1, All | "N5" for first release |
+| Language | Target languages to include | "es" to push only items with Spanish translations |
+
+**2. Diff preview:** The system compares local rows against Remote Production and shows a summary:
+
+Result: "Ready to release: 120 new words, 5 updated words, 800 unchanged (skipped)."
+
+**3. Execution (the push):**
+
+1. **SVG sync** — upload dirty SVGs first (hash-based diff, see 4.4).
+2. **Batch upsert** — push the selected rows to Remote in FK dependency order (see 4.5).
+3. **URL rewrite** — replace the local base URL in `svg_file_url` with the Remote Production Storage URL (e.g. `https://<project-ref>.supabase.co/storage/v1/object/public/svg/...`). Do not sync localhost URLs to production.
+4. **Completion** — log push results. No local state to update (stateless).
+
+**Result:** Users get vocabulary words with definitions and readings immediately. English example sentences arrive with the word. AI-translated sentences arrive only after admin approval.
+
+### 4.4 SVG Upload
 
 Before syncing database rows, upload changed SVG files to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
 
 1. **Diff by hash:** For each `radicals`, `radical_variants`, and `kanji` row being synced, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
 2. **Upload changed files:** Only upload SVGs where the hash differs or the remote row is new. Use `supabase.storage.from('svg').upload()` with upsert mode.
-3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed. On a typical version bump, most SVGs are unchanged, so this keeps promotion fast.
+3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed. On a typical version bump, most SVGs are unchanged, so this keeps sync fast.
 
-**Failure handling:** If an SVG upload fails, the promotion for that entity is skipped and logged. The database row is not synced without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.
+**Failure handling:** If an SVG upload fails, the sync for that entity is skipped and logged. The database row is not synced without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.
 
-### 4.3 Sync Order (FK Dependency Resolution)
+### 4.5 Sync Order (FK Dependency Resolution)
 
 Tables must be synced in strict order to satisfy foreign key constraints:
 
@@ -312,13 +371,25 @@ Tables must be synced in strict order to satisfy foreign key constraints:
 3. **kanji_components** — depends on both `radicals` and `kanji`
 4. **vocabulary** — depends on `kanji` (includes `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`, `vocabulary_sentences`)
 
-Sync will fail if a parent radical or kanji is missing on remote. The sync script validates parent existence before upserting children.
+The sync script validates parent existence on Remote before upserting children.
 
-### 4.4 Post-Sync Actions
+### 4.6 Scenarios
 
-1. Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).
+**Source update (e.g. new KANJIDIC version):**
+1. Ingest new `raw_kanjidic` rows.
+2. Transformation updates existing `kanji` rows — `updated_at` bumps automatically.
+3. Changed items appear in the "Updates only" filter of the Release Builder.
+4. Admin reviews and pushes as a maintenance patch.
 
-> **Note:** Promotion happens at the item level, not the import level. The import's terminal success state is `processed`. Individual items (kanji, radicals, vocabulary) are promoted independently after review.
+**Adding a new language (e.g. French):**
+1. Run transformation with `target_languages=['fr']`.
+2. New `kanji_i18n` (fr) and `vocabulary_i18n` (fr) rows are inserted.
+3. Dependency propagation bumps parent `updated_at` on each affected `kanji`/`vocabulary` row.
+4. Admin opens Release Builder, sees dirty items, pushes — Remote receives the parent rows with their new French child data.
+
+### 4.7 Post-Sync
+
+Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).
 
 ## Pipeline Status Lifecycle
 

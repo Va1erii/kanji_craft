@@ -6,7 +6,7 @@ Tracks each execution of the content pipeline (see [pipeline.md](../technical/pi
 
 Promotion to production happens at the **item level** (per kanji, radical, vocabulary), not at the import level. Once an import reaches `processed`, individual items are reviewed and promoted independently.
 
-This is an **admin-only table** — not used by the client app. This table lives in the **Supabase Staging Database** (Postgres) as the source of truth. The Admin Tool (Flutter/Drift) fetches this data into a local Drift database for processing/transformation before writing to the production tables. Access is restricted to the `service_role` key (which bypasses RLS).
+This is an **admin-only table** — not used by the client app. This table lives in the **Remote `admin` schema** (Postgres) as the authoritative source of truth, surviving device loss. The Admin Tool pulls import history from Remote on hydration (see [pipeline.md](../technical/pipeline.md) Hydration section) and writes new imports back. Access is restricted to the `service_role` key (which bypasses RLS).
 
 ## Entities
 
@@ -48,6 +48,8 @@ One row per pipeline execution. Created at the start of an import, updated on co
 | `processed_at` | `DateTime?` | When transformation to production tables completed. Null until `processed` |
 | `error_message` | `String?` | Error details if `status` is `failed`. Null otherwise |
 | `metadata` | `JsonObject?` | Optional context: file hash, download URL, notes. Null if none |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
 **Why a dedicated table instead of just `source_version` on each raw row?**
 

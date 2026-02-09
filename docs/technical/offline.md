@@ -154,6 +154,15 @@ ReviewLogs are append-only (see srs.md rule #11), so conflicts don't overwrite �
 | SVG download | No | But cached after first download; bundled assets always available |
 | Settings changes | Yes | Saved locally, synced later |
 
+## Admin vs Client Sync
+
+The system has two independent sync directions:
+
+- **Admin push** (Local → Remote Production): comparison-based, via the Release Builder. The admin's local DB is ephemeral — sync state is not stored locally. The Release Builder compares local vs Remote at push time. Described in [pipeline.md](pipeline.md) Phase 4.
+- **Client pull** (Remote → Client Drift): timestamp-based via `last_content_sync_at` (documented above in Content Sync).
+
+These are independent flows — admin push writes to the `public` schema on Remote via the Release Builder, and client pull reads from that same `public` schema. Review decisions and import history live in the separate `admin` schema on Remote.
+
 ## Edge Cases
 
 - **First launch with no internet:** The app ships with bundled content (SQLite DB or asset files) for at least N5 radicals, kanji, and vocabulary. The user can begin studying immediately without any network call. Full content syncs on first connectivity.

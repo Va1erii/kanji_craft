@@ -16,6 +16,8 @@ The core identity of a single vocabulary word. Holds language-independent data: 
 | `word` | `String` | The vocabulary word as written, e.g. "日本", "食べる", "大きい". Unique across all vocabulary |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this word appears in (5 = N5, 1 = N1). Null for words outside the JLPT set |
 | `frequency_rank` | `int` | Frequency rank (1 = most common). Used for ordering within a level |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
 **Why no `min_grade` on Vocabulary?**
 

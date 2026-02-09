@@ -56,7 +56,6 @@ void main() {
       expect(results, hasLength(1));
       final entry = results.first;
 
-      expect(entry.id, 0);
       expect(entry.importId, 42);
       expect(entry.entSeq, 1358280);
       expect(entry.kanjiElements, hasLength(1));

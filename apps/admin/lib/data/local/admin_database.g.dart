@@ -736,19 +736,6 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RawKanjiVgEntriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
   static const VerificationMeta _importIdMeta = const VerificationMeta(
     'importId',
   );
@@ -844,7 +831,6 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
     importId,
     character,
     unicodeHex,
@@ -866,9 +852,6 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('import_id')) {
       context.handle(
         _importIdMeta,
@@ -924,19 +907,11 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {importId, character},
-  ];
+  Set<GeneratedColumn> get $primaryKey => {importId, character};
   @override
   RawKanjiVgEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return RawKanjiVgEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
       importId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}import_id'],
@@ -988,7 +963,6 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
 }
 
 class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
-  final int id;
   final int importId;
   final String character;
   final String unicodeHex;
@@ -998,7 +972,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   final KanjiVgComponent components;
   final DateTime createdAt;
   const RawKanjiVgEntry({
-    required this.id,
     required this.importId,
     required this.character,
     required this.unicodeHex,
@@ -1011,7 +984,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
     map['import_id'] = Variable<int>(importId);
     map['character'] = Variable<String>(character);
     map['unicode_hex'] = Variable<String>(unicodeHex);
@@ -1033,7 +1005,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
 
   RawKanjiVgEntriesCompanion toCompanion(bool nullToAbsent) {
     return RawKanjiVgEntriesCompanion(
-      id: Value(id),
       importId: Value(importId),
       character: Value(character),
       unicodeHex: Value(unicodeHex),
@@ -1051,7 +1022,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return RawKanjiVgEntry(
-      id: serializer.fromJson<int>(json['id']),
       importId: serializer.fromJson<int>(json['importId']),
       character: serializer.fromJson<String>(json['character']),
       unicodeHex: serializer.fromJson<String>(json['unicodeHex']),
@@ -1066,7 +1036,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'importId': serializer.toJson<int>(importId),
       'character': serializer.toJson<String>(character),
       'unicodeHex': serializer.toJson<String>(unicodeHex),
@@ -1079,7 +1048,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   }
 
   RawKanjiVgEntry copyWith({
-    int? id,
     int? importId,
     String? character,
     String? unicodeHex,
@@ -1089,7 +1057,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
     KanjiVgComponent? components,
     DateTime? createdAt,
   }) => RawKanjiVgEntry(
-    id: id ?? this.id,
     importId: importId ?? this.importId,
     character: character ?? this.character,
     unicodeHex: unicodeHex ?? this.unicodeHex,
@@ -1101,7 +1068,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   );
   RawKanjiVgEntry copyWithCompanion(RawKanjiVgEntriesCompanion data) {
     return RawKanjiVgEntry(
-      id: data.id.present ? data.id.value : this.id,
       importId: data.importId.present ? data.importId.value : this.importId,
       character: data.character.present ? data.character.value : this.character,
       unicodeHex: data.unicodeHex.present
@@ -1122,7 +1088,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   @override
   String toString() {
     return (StringBuffer('RawKanjiVgEntry(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('character: $character, ')
           ..write('unicodeHex: $unicodeHex, ')
@@ -1137,7 +1102,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
 
   @override
   int get hashCode => Object.hash(
-    id,
     importId,
     character,
     unicodeHex,
@@ -1151,7 +1115,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is RawKanjiVgEntry &&
-          other.id == this.id &&
           other.importId == this.importId &&
           other.character == this.character &&
           other.unicodeHex == this.unicodeHex &&
@@ -1163,7 +1126,6 @@ class RawKanjiVgEntry extends DataClass implements Insertable<RawKanjiVgEntry> {
 }
 
 class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
-  final Value<int> id;
   final Value<int> importId;
   final Value<String> character;
   final Value<String> unicodeHex;
@@ -1172,8 +1134,8 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
   final Value<List<KanjiVgStroke>> strokes;
   final Value<KanjiVgComponent> components;
   final Value<DateTime> createdAt;
+  final Value<int> rowid;
   const RawKanjiVgEntriesCompanion({
-    this.id = const Value.absent(),
     this.importId = const Value.absent(),
     this.character = const Value.absent(),
     this.unicodeHex = const Value.absent(),
@@ -1182,9 +1144,9 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     this.strokes = const Value.absent(),
     this.components = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   RawKanjiVgEntriesCompanion.insert({
-    this.id = const Value.absent(),
     required int importId,
     required String character,
     required String unicodeHex,
@@ -1193,6 +1155,7 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     required List<KanjiVgStroke> strokes,
     required KanjiVgComponent components,
     required DateTime createdAt,
+    this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        character = Value(character),
        unicodeHex = Value(unicodeHex),
@@ -1202,7 +1165,6 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
        components = Value(components),
        createdAt = Value(createdAt);
   static Insertable<RawKanjiVgEntry> custom({
-    Expression<int>? id,
     Expression<int>? importId,
     Expression<String>? character,
     Expression<String>? unicodeHex,
@@ -1211,9 +1173,9 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     Expression<String>? strokes,
     Expression<String>? components,
     Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (importId != null) 'import_id': importId,
       if (character != null) 'character': character,
       if (unicodeHex != null) 'unicode_hex': unicodeHex,
@@ -1222,11 +1184,11 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
       if (strokes != null) 'strokes': strokes,
       if (components != null) 'components': components,
       if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   RawKanjiVgEntriesCompanion copyWith({
-    Value<int>? id,
     Value<int>? importId,
     Value<String>? character,
     Value<String>? unicodeHex,
@@ -1235,9 +1197,9 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     Value<List<KanjiVgStroke>>? strokes,
     Value<KanjiVgComponent>? components,
     Value<DateTime>? createdAt,
+    Value<int>? rowid,
   }) {
     return RawKanjiVgEntriesCompanion(
-      id: id ?? this.id,
       importId: importId ?? this.importId,
       character: character ?? this.character,
       unicodeHex: unicodeHex ?? this.unicodeHex,
@@ -1246,15 +1208,13 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
       strokes: strokes ?? this.strokes,
       components: components ?? this.components,
       createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (importId.present) {
       map['import_id'] = Variable<int>(importId.value);
     }
@@ -1283,13 +1243,15 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('RawKanjiVgEntriesCompanion(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('character: $character, ')
           ..write('unicodeHex: $unicodeHex, ')
@@ -1297,7 +1259,8 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
           ..write('strokeCount: $strokeCount, ')
           ..write('strokes: $strokes, ')
           ..write('components: $components, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -1309,19 +1272,6 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RawKanjidicEntriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
   static const VerificationMeta _importIdMeta = const VerificationMeta(
     'importId',
   );
@@ -1517,7 +1467,6 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
     importId,
     literal,
     strokeCount,
@@ -1548,9 +1497,6 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('import_id')) {
       context.handle(
         _importIdMeta,
@@ -1608,19 +1554,11 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {importId, literal},
-  ];
+  Set<GeneratedColumn> get $primaryKey => {importId, literal};
   @override
   RawKanjidicEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return RawKanjidicEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
       importId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}import_id'],
@@ -1743,7 +1681,6 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
 
 class RawKanjidicEntry extends DataClass
     implements Insertable<RawKanjidicEntry> {
-  final int id;
   final int importId;
   final String literal;
   final int strokeCount;
@@ -1762,7 +1699,6 @@ class RawKanjidicEntry extends DataClass
   final List<String>? radicalNames;
   final DateTime createdAt;
   const RawKanjidicEntry({
-    required this.id,
     required this.importId,
     required this.literal,
     required this.strokeCount,
@@ -1784,7 +1720,6 @@ class RawKanjidicEntry extends DataClass
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
     map['import_id'] = Variable<int>(importId);
     map['literal'] = Variable<String>(literal);
     map['stroke_count'] = Variable<int>(strokeCount);
@@ -1855,7 +1790,6 @@ class RawKanjidicEntry extends DataClass
 
   RawKanjidicEntriesCompanion toCompanion(bool nullToAbsent) {
     return RawKanjidicEntriesCompanion(
-      id: Value(id),
       importId: Value(importId),
       literal: Value(literal),
       strokeCount: Value(strokeCount),
@@ -1898,7 +1832,6 @@ class RawKanjidicEntry extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return RawKanjidicEntry(
-      id: serializer.fromJson<int>(json['id']),
       importId: serializer.fromJson<int>(json['importId']),
       literal: serializer.fromJson<String>(json['literal']),
       strokeCount: serializer.fromJson<int>(json['strokeCount']),
@@ -1926,7 +1859,6 @@ class RawKanjidicEntry extends DataClass
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'importId': serializer.toJson<int>(importId),
       'literal': serializer.toJson<String>(literal),
       'strokeCount': serializer.toJson<int>(strokeCount),
@@ -1950,7 +1882,6 @@ class RawKanjidicEntry extends DataClass
   }
 
   RawKanjidicEntry copyWith({
-    int? id,
     int? importId,
     String? literal,
     int? strokeCount,
@@ -1969,7 +1900,6 @@ class RawKanjidicEntry extends DataClass
     Value<List<String>?> radicalNames = const Value.absent(),
     DateTime? createdAt,
   }) => RawKanjidicEntry(
-    id: id ?? this.id,
     importId: importId ?? this.importId,
     literal: literal ?? this.literal,
     strokeCount: strokeCount ?? this.strokeCount,
@@ -1992,7 +1922,6 @@ class RawKanjidicEntry extends DataClass
   );
   RawKanjidicEntry copyWithCompanion(RawKanjidicEntriesCompanion data) {
     return RawKanjidicEntry(
-      id: data.id.present ? data.id.value : this.id,
       importId: data.importId.present ? data.importId.value : this.importId,
       literal: data.literal.present ? data.literal.value : this.literal,
       strokeCount: data.strokeCount.present
@@ -2026,7 +1955,6 @@ class RawKanjidicEntry extends DataClass
   @override
   String toString() {
     return (StringBuffer('RawKanjidicEntry(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('literal: $literal, ')
           ..write('strokeCount: $strokeCount, ')
@@ -2050,7 +1978,6 @@ class RawKanjidicEntry extends DataClass
 
   @override
   int get hashCode => Object.hash(
-    id,
     importId,
     literal,
     strokeCount,
@@ -2073,7 +2000,6 @@ class RawKanjidicEntry extends DataClass
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is RawKanjidicEntry &&
-          other.id == this.id &&
           other.importId == this.importId &&
           other.literal == this.literal &&
           other.strokeCount == this.strokeCount &&
@@ -2094,7 +2020,6 @@ class RawKanjidicEntry extends DataClass
 }
 
 class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
-  final Value<int> id;
   final Value<int> importId;
   final Value<String> literal;
   final Value<int> strokeCount;
@@ -2112,8 +2037,8 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
   final Value<List<KanjidicVariant>?> variants;
   final Value<List<String>?> radicalNames;
   final Value<DateTime> createdAt;
+  final Value<int> rowid;
   const RawKanjidicEntriesCompanion({
-    this.id = const Value.absent(),
     this.importId = const Value.absent(),
     this.literal = const Value.absent(),
     this.strokeCount = const Value.absent(),
@@ -2131,9 +2056,9 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     this.variants = const Value.absent(),
     this.radicalNames = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   RawKanjidicEntriesCompanion.insert({
-    this.id = const Value.absent(),
     required int importId,
     required String literal,
     required int strokeCount,
@@ -2151,6 +2076,7 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     this.variants = const Value.absent(),
     this.radicalNames = const Value.absent(),
     required DateTime createdAt,
+    this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        literal = Value(literal),
        strokeCount = Value(strokeCount),
@@ -2160,7 +2086,6 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
        meanings = Value(meanings),
        createdAt = Value(createdAt);
   static Insertable<RawKanjidicEntry> custom({
-    Expression<int>? id,
     Expression<int>? importId,
     Expression<String>? literal,
     Expression<int>? strokeCount,
@@ -2178,9 +2103,9 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     Expression<String>? variants,
     Expression<String>? radicalNames,
     Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (importId != null) 'import_id': importId,
       if (literal != null) 'literal': literal,
       if (strokeCount != null) 'stroke_count': strokeCount,
@@ -2199,11 +2124,11 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
       if (variants != null) 'variants': variants,
       if (radicalNames != null) 'radical_names': radicalNames,
       if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   RawKanjidicEntriesCompanion copyWith({
-    Value<int>? id,
     Value<int>? importId,
     Value<String>? literal,
     Value<int>? strokeCount,
@@ -2221,9 +2146,9 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     Value<List<KanjidicVariant>?>? variants,
     Value<List<String>?>? radicalNames,
     Value<DateTime>? createdAt,
+    Value<int>? rowid,
   }) {
     return RawKanjidicEntriesCompanion(
-      id: id ?? this.id,
       importId: importId ?? this.importId,
       literal: literal ?? this.literal,
       strokeCount: strokeCount ?? this.strokeCount,
@@ -2242,15 +2167,13 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
       variants: variants ?? this.variants,
       radicalNames: radicalNames ?? this.radicalNames,
       createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (importId.present) {
       map['import_id'] = Variable<int>(importId.value);
     }
@@ -2326,13 +2249,15 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('RawKanjidicEntriesCompanion(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('literal: $literal, ')
           ..write('strokeCount: $strokeCount, ')
@@ -2349,7 +2274,8 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
           ..write('meanings: $meanings, ')
           ..write('variants: $variants, ')
           ..write('radicalNames: $radicalNames, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -2361,19 +2287,6 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RawJmdictEntriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
   static const VerificationMeta _importIdMeta = const VerificationMeta(
     'importId',
   );
@@ -2446,7 +2359,6 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
     importId,
     entSeq,
     kanjiElements,
@@ -2466,9 +2378,6 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
     if (data.containsKey('import_id')) {
       context.handle(
         _importIdMeta,
@@ -2497,19 +2406,11 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  List<Set<GeneratedColumn>> get uniqueKeys => [
-    {importId, entSeq},
-  ];
+  Set<GeneratedColumn> get $primaryKey => {importId, entSeq};
   @override
   RawJmdictEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return RawJmdictEntry(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
       importId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}import_id'],
@@ -2557,7 +2458,6 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
 }
 
 class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
-  final int id;
   final int importId;
   final int entSeq;
   final List<JmdictKanjiElement> kanjiElements;
@@ -2565,7 +2465,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   final List<JmdictSense> senses;
   final DateTime createdAt;
   const RawJmdictEntry({
-    required this.id,
     required this.importId,
     required this.entSeq,
     required this.kanjiElements,
@@ -2576,7 +2475,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
     map['import_id'] = Variable<int>(importId);
     map['ent_seq'] = Variable<int>(entSeq);
     {
@@ -2600,7 +2498,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
 
   RawJmdictEntriesCompanion toCompanion(bool nullToAbsent) {
     return RawJmdictEntriesCompanion(
-      id: Value(id),
       importId: Value(importId),
       entSeq: Value(entSeq),
       kanjiElements: Value(kanjiElements),
@@ -2616,7 +2513,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return RawJmdictEntry(
-      id: serializer.fromJson<int>(json['id']),
       importId: serializer.fromJson<int>(json['importId']),
       entSeq: serializer.fromJson<int>(json['entSeq']),
       kanjiElements: serializer.fromJson<List<JmdictKanjiElement>>(
@@ -2633,7 +2529,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
       'importId': serializer.toJson<int>(importId),
       'entSeq': serializer.toJson<int>(entSeq),
       'kanjiElements': serializer.toJson<List<JmdictKanjiElement>>(
@@ -2648,7 +2543,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   }
 
   RawJmdictEntry copyWith({
-    int? id,
     int? importId,
     int? entSeq,
     List<JmdictKanjiElement>? kanjiElements,
@@ -2656,7 +2550,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     List<JmdictSense>? senses,
     DateTime? createdAt,
   }) => RawJmdictEntry(
-    id: id ?? this.id,
     importId: importId ?? this.importId,
     entSeq: entSeq ?? this.entSeq,
     kanjiElements: kanjiElements ?? this.kanjiElements,
@@ -2666,7 +2559,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   );
   RawJmdictEntry copyWithCompanion(RawJmdictEntriesCompanion data) {
     return RawJmdictEntry(
-      id: data.id.present ? data.id.value : this.id,
       importId: data.importId.present ? data.importId.value : this.importId,
       entSeq: data.entSeq.present ? data.entSeq.value : this.entSeq,
       kanjiElements: data.kanjiElements.present
@@ -2683,7 +2575,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   @override
   String toString() {
     return (StringBuffer('RawJmdictEntry(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('entSeq: $entSeq, ')
           ..write('kanjiElements: $kanjiElements, ')
@@ -2696,7 +2587,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
 
   @override
   int get hashCode => Object.hash(
-    id,
     importId,
     entSeq,
     kanjiElements,
@@ -2708,7 +2598,6 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is RawJmdictEntry &&
-          other.id == this.id &&
           other.importId == this.importId &&
           other.entSeq == this.entSeq &&
           other.kanjiElements == this.kanjiElements &&
@@ -2718,30 +2607,30 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
 }
 
 class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
-  final Value<int> id;
   final Value<int> importId;
   final Value<int> entSeq;
   final Value<List<JmdictKanjiElement>> kanjiElements;
   final Value<List<JmdictReadingElement>> readingElements;
   final Value<List<JmdictSense>> senses;
   final Value<DateTime> createdAt;
+  final Value<int> rowid;
   const RawJmdictEntriesCompanion({
-    this.id = const Value.absent(),
     this.importId = const Value.absent(),
     this.entSeq = const Value.absent(),
     this.kanjiElements = const Value.absent(),
     this.readingElements = const Value.absent(),
     this.senses = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   RawJmdictEntriesCompanion.insert({
-    this.id = const Value.absent(),
     required int importId,
     required int entSeq,
     required List<JmdictKanjiElement> kanjiElements,
     required List<JmdictReadingElement> readingElements,
     required List<JmdictSense> senses,
     required DateTime createdAt,
+    this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        entSeq = Value(entSeq),
        kanjiElements = Value(kanjiElements),
@@ -2749,51 +2638,48 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
        senses = Value(senses),
        createdAt = Value(createdAt);
   static Insertable<RawJmdictEntry> custom({
-    Expression<int>? id,
     Expression<int>? importId,
     Expression<int>? entSeq,
     Expression<String>? kanjiElements,
     Expression<String>? readingElements,
     Expression<String>? senses,
     Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
       if (importId != null) 'import_id': importId,
       if (entSeq != null) 'ent_seq': entSeq,
       if (kanjiElements != null) 'kanji_elements': kanjiElements,
       if (readingElements != null) 'reading_elements': readingElements,
       if (senses != null) 'senses': senses,
       if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   RawJmdictEntriesCompanion copyWith({
-    Value<int>? id,
     Value<int>? importId,
     Value<int>? entSeq,
     Value<List<JmdictKanjiElement>>? kanjiElements,
     Value<List<JmdictReadingElement>>? readingElements,
     Value<List<JmdictSense>>? senses,
     Value<DateTime>? createdAt,
+    Value<int>? rowid,
   }) {
     return RawJmdictEntriesCompanion(
-      id: id ?? this.id,
       importId: importId ?? this.importId,
       entSeq: entSeq ?? this.entSeq,
       kanjiElements: kanjiElements ?? this.kanjiElements,
       readingElements: readingElements ?? this.readingElements,
       senses: senses ?? this.senses,
       createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
     if (importId.present) {
       map['import_id'] = Variable<int>(importId.value);
     }
@@ -2822,19 +2708,22 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('RawJmdictEntriesCompanion(')
-          ..write('id: $id, ')
           ..write('importId: $importId, ')
           ..write('entSeq: $entSeq, ')
           ..write('kanjiElements: $kanjiElements, ')
           ..write('readingElements: $readingElements, ')
           ..write('senses: $senses, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }

@@ -74,7 +74,6 @@ KanjiVgComponent fakeComponent({
     );
 
 RawKanjiVg fakeRawKanjiVg({
-  int? id,
   int importId = 1,
   String character = '木',
   String unicodeHex = '6728',
@@ -85,7 +84,6 @@ RawKanjiVg fakeRawKanjiVg({
   DateTime? createdAt,
 }) =>
     RawKanjiVg(
-      id: id ?? _nextId++,
       importId: importId,
       character: character,
       unicodeHex: unicodeHex,
@@ -135,7 +133,6 @@ KanjidicReadings fakeReadings({
     );
 
 RawKanjidic fakeRawKanjidic({
-  int? id,
   int importId = 1,
   String literal = '木',
   int strokeCount = 4,
@@ -155,7 +152,6 @@ RawKanjidic fakeRawKanjidic({
   DateTime? createdAt,
 }) =>
     RawKanjidic(
-      id: id ?? _nextId++,
       importId: importId,
       literal: literal,
       strokeCount: strokeCount,

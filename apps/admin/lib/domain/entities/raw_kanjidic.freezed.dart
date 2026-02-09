@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawKanjidic {
 
- int get id; int get importId; String get literal; int get strokeCount; List<int>? get strokeCountMisstrokes; int? get grade; int? get jlpt; int? get frequency; KanjidicCodepoints get codepoints; KanjidicRadicals get radicals; KanjidicDictRefs? get dictRefs; KanjidicQueryCodes? get queryCodes; KanjidicReadings get readings; List<String>? get nanori; Map<String, List<String>> get meanings; List<KanjidicVariant>? get variants; List<String>? get radicalNames; DateTime get createdAt;
+ int get importId; String get literal; int get strokeCount; List<int>? get strokeCountMisstrokes; int? get grade; int? get jlpt; int? get frequency; KanjidicCodepoints get codepoints; KanjidicRadicals get radicals; KanjidicDictRefs? get dictRefs; KanjidicQueryCodes? get queryCodes; KanjidicReadings get readings; List<String>? get nanori; Map<String, List<String>> get meanings; List<KanjidicVariant>? get variants; List<String>? get radicalNames; DateTime get createdAt;
 /// Create a copy of RawKanjidic
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $RawKanjidicCopyWith<RawKanjidic> get copyWith => _$RawKanjidicCopyWithImpl<RawK
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjidic&&(identical(other.id, id) || other.id == id)&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokeCountMisstrokes, strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other.nanori, nanori)&&const DeepCollectionEquality().equals(other.meanings, meanings)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.radicalNames, radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjidic&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokeCountMisstrokes, strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other.nanori, nanori)&&const DeepCollectionEquality().equals(other.meanings, meanings)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.radicalNames, radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,importId,literal,strokeCount,const DeepCollectionEquality().hash(strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(nanori),const DeepCollectionEquality().hash(meanings),const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(radicalNames),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(nanori),const DeepCollectionEquality().hash(meanings),const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(radicalNames),createdAt);
 
 @override
 String toString() {
-  return 'RawKanjidic(id: $id, importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
+  return 'RawKanjidic(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $RawKanjidicCopyWith<$Res>  {
   factory $RawKanjidicCopyWith(RawKanjidic value, $Res Function(RawKanjidic) _then) = _$RawKanjidicCopyWithImpl;
 @useResult
 $Res call({
- int id, int importId, String literal, int strokeCount, List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepoints codepoints, KanjidicRadicals radicals, KanjidicDictRefs? dictRefs, KanjidicQueryCodes? queryCodes, KanjidicReadings readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariant>? variants, List<String>? radicalNames, DateTime createdAt
+ int importId, String literal, int strokeCount, List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepoints codepoints, KanjidicRadicals radicals, KanjidicDictRefs? dictRefs, KanjidicQueryCodes? queryCodes, KanjidicReadings readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariant>? variants, List<String>? radicalNames, DateTime createdAt
 });
 
 
@@ -62,10 +62,9 @@ class _$RawKanjidicCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjidic
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
   return _then(_self.copyWith(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
+importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,literal: null == literal ? _self.literal : literal // ignore: cast_nullable_to_non_nullable
 as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,strokeCountMisstrokes: freezed == strokeCountMisstrokes ? _self.strokeCountMisstrokes : strokeCountMisstrokes // ignore: cast_nullable_to_non_nullable
@@ -218,10 +217,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawKanjidic() when $default != null:
-return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
   return orElse();
 
 }
@@ -239,10 +238,10 @@ return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.st
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjidic():
-return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -259,10 +258,10 @@ return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.st
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int importId,  String literal,  int strokeCount,  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepoints codepoints,  KanjidicRadicals radicals,  KanjidicDictRefs? dictRefs,  KanjidicQueryCodes? queryCodes,  KanjidicReadings readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariant>? variants,  List<String>? radicalNames,  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjidic() when $default != null:
-return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
   return null;
 
 }
@@ -274,10 +273,9 @@ return $default(_that.id,_that.importId,_that.literal,_that.strokeCount,_that.st
 
 
 class _RawKanjidic implements RawKanjidic {
-  const _RawKanjidic({required this.id, required this.importId, required this.literal, required this.strokeCount, final  List<int>? strokeCountMisstrokes, this.grade, this.jlpt, this.frequency, required this.codepoints, required this.radicals, this.dictRefs, this.queryCodes, required this.readings, final  List<String>? nanori, required final  Map<String, List<String>> meanings, final  List<KanjidicVariant>? variants, final  List<String>? radicalNames, required this.createdAt}): _strokeCountMisstrokes = strokeCountMisstrokes,_nanori = nanori,_meanings = meanings,_variants = variants,_radicalNames = radicalNames;
+  const _RawKanjidic({required this.importId, required this.literal, required this.strokeCount, final  List<int>? strokeCountMisstrokes, this.grade, this.jlpt, this.frequency, required this.codepoints, required this.radicals, this.dictRefs, this.queryCodes, required this.readings, final  List<String>? nanori, required final  Map<String, List<String>> meanings, final  List<KanjidicVariant>? variants, final  List<String>? radicalNames, required this.createdAt}): _strokeCountMisstrokes = strokeCountMisstrokes,_nanori = nanori,_meanings = meanings,_variants = variants,_radicalNames = radicalNames;
   
 
-@override final  int id;
 @override final  int importId;
 @override final  String literal;
 @override final  int strokeCount;
@@ -344,16 +342,16 @@ _$RawKanjidicCopyWith<_RawKanjidic> get copyWith => __$RawKanjidicCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjidic&&(identical(other.id, id) || other.id == id)&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokeCountMisstrokes, _strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other._nanori, _nanori)&&const DeepCollectionEquality().equals(other._meanings, _meanings)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._radicalNames, _radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjidic&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokeCountMisstrokes, _strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other._nanori, _nanori)&&const DeepCollectionEquality().equals(other._meanings, _meanings)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._radicalNames, _radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,importId,literal,strokeCount,const DeepCollectionEquality().hash(_strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(_nanori),const DeepCollectionEquality().hash(_meanings),const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_radicalNames),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(_strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(_nanori),const DeepCollectionEquality().hash(_meanings),const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_radicalNames),createdAt);
 
 @override
 String toString() {
-  return 'RawKanjidic(id: $id, importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
+  return 'RawKanjidic(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
 }
 
 
@@ -364,7 +362,7 @@ abstract mixin class _$RawKanjidicCopyWith<$Res> implements $RawKanjidicCopyWith
   factory _$RawKanjidicCopyWith(_RawKanjidic value, $Res Function(_RawKanjidic) _then) = __$RawKanjidicCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int importId, String literal, int strokeCount, List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepoints codepoints, KanjidicRadicals radicals, KanjidicDictRefs? dictRefs, KanjidicQueryCodes? queryCodes, KanjidicReadings readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariant>? variants, List<String>? radicalNames, DateTime createdAt
+ int importId, String literal, int strokeCount, List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepoints codepoints, KanjidicRadicals radicals, KanjidicDictRefs? dictRefs, KanjidicQueryCodes? queryCodes, KanjidicReadings readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariant>? variants, List<String>? radicalNames, DateTime createdAt
 });
 
 
@@ -381,10 +379,9 @@ class __$RawKanjidicCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjidic
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
   return _then(_RawKanjidic(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
+importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,literal: null == literal ? _self.literal : literal // ignore: cast_nullable_to_non_nullable
 as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,strokeCountMisstrokes: freezed == strokeCountMisstrokes ? _self._strokeCountMisstrokes : strokeCountMisstrokes // ignore: cast_nullable_to_non_nullable

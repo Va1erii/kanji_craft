@@ -310,7 +310,7 @@ void main() {
       expect(results.first.character, '一');
     });
 
-    test('sets id to 0 and createdAt to now', () {
+    test('sets createdAt to now', () {
       final xml = '''
 <kanjivg>
   <kanji id="kvg:kanji_04e00">
@@ -325,7 +325,6 @@ void main() {
       final results = parser.parseXmlString(xmlString: xml, importId: 1);
       final after = DateTime.now();
 
-      expect(results.first.id, 0);
       expect(
         results.first.createdAt.isAfter(before.subtract(Duration(seconds: 1))),
         isTrue,

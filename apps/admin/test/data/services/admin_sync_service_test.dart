@@ -153,7 +153,7 @@ void main() {
         await localImports.upsertAll([fakeDataImport(id: 1)]);
 
         final rows = [
-          fakeRawKanjiVg(id: 10, importId: 1, character: '木'),
+          fakeRawKanjiVg(importId: 1, character: '木'),
         ];
         when(() => remoteKanjiVg.getByImportId(1))
             .thenAnswer((_) async => rows);
@@ -175,7 +175,7 @@ void main() {
         await service.pullKanjiVg(1);
 
         final newRows = [
-          fakeRawKanjiVg(id: 11, importId: 1, character: '水'),
+          fakeRawKanjiVg(importId: 1, character: '水'),
         ];
         when(() => remoteKanjiVg.getByImportIdCreatedSince(1, any()))
             .thenAnswer((_) async => newRows);
@@ -213,7 +213,7 @@ void main() {
         ]);
 
         final rows = [
-          fakeRawKanjidic(id: 10, importId: 1, literal: '木'),
+          fakeRawKanjidic(importId: 1, literal: '木'),
         ];
         when(() => remoteKanjidic.getByImportId(1))
             .thenAnswer((_) async => rows);

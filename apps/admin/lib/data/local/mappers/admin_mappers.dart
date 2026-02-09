@@ -45,7 +45,6 @@ extension DataImportEntryToDomain on DataImportEntry {
 
 extension RawKanjiVgToEntry on RawKanjiVg {
   RawKanjiVgEntry toEntry() => RawKanjiVgEntry(
-        id: id,
         importId: importId,
         character: character,
         unicodeHex: unicodeHex,
@@ -59,7 +58,6 @@ extension RawKanjiVgToEntry on RawKanjiVg {
 
 extension RawKanjiVgEntryToDomain on RawKanjiVgEntry {
   RawKanjiVg toDomain() => RawKanjiVg(
-        id: id,
         importId: importId,
         character: character,
         unicodeHex: unicodeHex,
@@ -75,7 +73,6 @@ extension RawKanjiVgEntryToDomain on RawKanjiVgEntry {
 
 extension RawKanjidicToEntry on RawKanjidic {
   RawKanjidicEntry toEntry() => RawKanjidicEntry(
-        id: id,
         importId: importId,
         literal: literal,
         strokeCount: strokeCount,
@@ -98,7 +95,6 @@ extension RawKanjidicToEntry on RawKanjidic {
 
 extension RawKanjidicEntryToDomain on RawKanjidicEntry {
   RawKanjidic toDomain() => RawKanjidic(
-        id: id,
         importId: importId,
         literal: literal,
         strokeCount: strokeCount,
@@ -123,7 +119,6 @@ extension RawKanjidicEntryToDomain on RawKanjidicEntry {
 
 extension RawJmdictToEntry on RawJmdict {
   RawJmdictEntry toEntry() => RawJmdictEntry(
-        id: id,
         importId: importId,
         entSeq: entSeq,
         kanjiElements: kanjiElements,
@@ -135,7 +130,6 @@ extension RawJmdictToEntry on RawJmdict {
 
 extension RawJmdictEntryToDomain on RawJmdictEntry {
   RawJmdict toDomain() => RawJmdict(
-        id: id,
         importId: importId,
         entSeq: entSeq,
         kanjiElements: kanjiElements,

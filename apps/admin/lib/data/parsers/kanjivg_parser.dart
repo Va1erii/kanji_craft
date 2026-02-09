@@ -78,7 +78,6 @@ class KanjiVgParser {
     final components = _parseComponent(rootG, pathElements);
 
     return RawKanjiVg(
-      id: 0, // assigned by DB
       importId: importId,
       character: character,
       unicodeHex: unicodeHex,

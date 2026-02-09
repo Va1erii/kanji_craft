@@ -8,7 +8,6 @@ part of 'raw_jmdict_dto.dart';
 
 _RawJmdictDto _$RawJmdictDtoFromJson(Map<String, dynamic> json) =>
     _RawJmdictDto(
-      id: (json['id'] as num).toInt(),
       importId: (json['import_id'] as num).toInt(),
       entSeq: (json['ent_seq'] as num).toInt(),
       kanjiElements: (json['kanji_elements'] as List<dynamic>)
@@ -27,7 +26,6 @@ _RawJmdictDto _$RawJmdictDtoFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$RawJmdictDtoToJson(_RawJmdictDto instance) =>
     <String, dynamic>{
-      'id': instance.id,
       'import_id': instance.importId,
       'ent_seq': instance.entSeq,
       'kanji_elements': instance.kanjiElements,

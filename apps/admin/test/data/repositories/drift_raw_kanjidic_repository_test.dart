@@ -35,8 +35,8 @@ void main() {
     group('insertBatch + countByImportId', () {
       test('inserts rows and returns correct count', () async {
         await repo.insertBatch([
-          fakeRawKanjidic(id: 10, importId: importId, literal: '木'),
-          fakeRawKanjidic(id: 11, importId: importId, literal: '水'),
+          fakeRawKanjidic(importId: importId, literal: '木'),
+          fakeRawKanjidic(importId: importId, literal: '水'),
         ]);
 
         final count = await repo.countByImportId(importId);
@@ -52,7 +52,6 @@ void main() {
     group('complex nested types round-trip', () {
       test('preserves all nested structures', () async {
         final entity = fakeRawKanjidic(
-          id: 10,
           importId: importId,
           literal: '日',
           strokeCount: 4,
@@ -171,7 +170,6 @@ void main() {
     group('minimal entity round-trips', () {
       test('all nullable fields null', () async {
         final entity = fakeRawKanjidic(
-          id: 10,
           importId: importId,
           literal: '一',
           strokeCount: 1,
@@ -197,9 +195,9 @@ void main() {
     group('getByImportId', () {
       test('returns rows ordered by literal', () async {
         await repo.insertBatch([
-          fakeRawKanjidic(id: 10, importId: importId, literal: '水'),
-          fakeRawKanjidic(id: 11, importId: importId, literal: '木'),
-          fakeRawKanjidic(id: 12, importId: importId, literal: '火'),
+          fakeRawKanjidic(importId: importId, literal: '水'),
+          fakeRawKanjidic(importId: importId, literal: '木'),
+          fakeRawKanjidic(importId: importId, literal: '火'),
         ]);
 
         final rows = await repo.getByImportId(importId);
@@ -217,7 +215,7 @@ void main() {
     group('getByLiteral', () {
       test('returns matching row', () async {
         await repo.insertBatch([
-          fakeRawKanjidic(id: 10, importId: importId, literal: '木'),
+          fakeRawKanjidic(importId: importId, literal: '木'),
         ]);
 
         final result =
@@ -236,12 +234,12 @@ void main() {
     group('unique (importId, literal) constraint', () {
       test('throws on duplicate insert', () async {
         await repo.insertBatch([
-          fakeRawKanjidic(id: 10, importId: importId, literal: '木'),
+          fakeRawKanjidic(importId: importId, literal: '木'),
         ]);
 
         await expectLater(
           () => repo.insertBatch([
-            fakeRawKanjidic(id: 11, importId: importId, literal: '木'),
+            fakeRawKanjidic(importId: importId, literal: '木'),
           ]),
           throwsA(isA<SqliteException>()),
         );
@@ -252,7 +250,6 @@ void main() {
       test('inserts new and updates existing on conflict', () async {
         await repo.upsertAll([
           fakeRawKanjidic(
-            id: 10,
             importId: importId,
             literal: '木',
             strokeCount: 4,
@@ -261,13 +258,11 @@ void main() {
 
         await repo.upsertAll([
           fakeRawKanjidic(
-            id: 10,
             importId: importId,
             literal: '木',
             strokeCount: 5,
           ),
           fakeRawKanjidic(
-            id: 11,
             importId: importId,
             literal: '水',
           ),

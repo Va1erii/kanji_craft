@@ -73,7 +73,6 @@ void main() {
       expect(results, hasLength(1));
       final entry = results.first;
 
-      expect(entry.id, 0);
       expect(entry.importId, 42);
       expect(entry.literal, '亜');
       expect(entry.strokeCount, 7);

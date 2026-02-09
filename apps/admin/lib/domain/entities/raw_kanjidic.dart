@@ -5,7 +5,6 @@ part 'raw_kanjidic.freezed.dart';
 @freezed
 abstract class RawKanjidic with _$RawKanjidic {
   const factory RawKanjidic({
-    required int id,
     required int importId,
     required String literal,
     required int strokeCount,

@@ -35,8 +35,8 @@ void main() {
     group('insertBatch + countByImportId', () {
       test('inserts rows and returns correct count', () async {
         final rows = [
-          fakeRawKanjiVg(id: 10, importId: importId, character: '木'),
-          fakeRawKanjiVg(id: 11, importId: importId, character: '水'),
+          fakeRawKanjiVg(importId: importId, character: '木'),
+          fakeRawKanjiVg(importId: importId, character: '水'),
         ];
 
         await repo.insertBatch(rows);
@@ -78,7 +78,6 @@ void main() {
         ];
 
         final entity = fakeRawKanjiVg(
-          id: 10,
           importId: importId,
           character: '木',
           strokeCount: 4,
@@ -119,9 +118,9 @@ void main() {
     group('getByImportId', () {
       test('returns rows ordered by character', () async {
         await repo.insertBatch([
-          fakeRawKanjiVg(id: 10, importId: importId, character: '水'),
-          fakeRawKanjiVg(id: 11, importId: importId, character: '木'),
-          fakeRawKanjiVg(id: 12, importId: importId, character: '火'),
+          fakeRawKanjiVg(importId: importId, character: '水'),
+          fakeRawKanjiVg(importId: importId, character: '木'),
+          fakeRawKanjiVg(importId: importId, character: '火'),
         ]);
 
         final rows = await repo.getByImportId(importId);
@@ -139,7 +138,7 @@ void main() {
     group('getByCharacter', () {
       test('returns matching row', () async {
         await repo.insertBatch([
-          fakeRawKanjiVg(id: 10, importId: importId, character: '木'),
+          fakeRawKanjiVg(importId: importId, character: '木'),
         ]);
 
         final result =
@@ -158,12 +157,12 @@ void main() {
     group('unique (importId, character) constraint', () {
       test('throws on duplicate insert', () async {
         await repo.insertBatch([
-          fakeRawKanjiVg(id: 10, importId: importId, character: '木'),
+          fakeRawKanjiVg(importId: importId, character: '木'),
         ]);
 
         await expectLater(
           () => repo.insertBatch([
-            fakeRawKanjiVg(id: 11, importId: importId, character: '木'),
+            fakeRawKanjiVg(importId: importId, character: '木'),
           ]),
           throwsA(isA<SqliteException>()),
         );
@@ -175,7 +174,6 @@ void main() {
         // Insert initial
         await repo.upsertAll([
           fakeRawKanjiVg(
-            id: 10,
             importId: importId,
             character: '木',
             strokeCount: 4,
@@ -185,13 +183,11 @@ void main() {
         // Upsert with changed strokeCount
         await repo.upsertAll([
           fakeRawKanjiVg(
-            id: 10,
             importId: importId,
             character: '木',
             strokeCount: 5,
           ),
           fakeRawKanjiVg(
-            id: 11,
             importId: importId,
             character: '水',
           ),

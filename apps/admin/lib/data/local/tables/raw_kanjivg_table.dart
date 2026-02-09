@@ -4,7 +4,6 @@ import '../converters/json_converters.dart';
 import 'data_import_table.dart';
 
 class RawKanjiVgEntries extends Table {
-  IntColumn get id => integer().autoIncrement()();
   IntColumn get importId =>
       integer().references(DataImportEntries, #id)();
   TextColumn get character => text()();
@@ -17,7 +16,5 @@ class RawKanjiVgEntries extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [
-        {importId, character},
-      ];
+  Set<Column> get primaryKey => {importId, character};
 }

@@ -4,7 +4,6 @@ import '../converters/json_converters.dart';
 import 'data_import_table.dart';
 
 class RawKanjidicEntries extends Table {
-  IntColumn get id => integer().autoIncrement()();
   IntColumn get importId =>
       integer().references(DataImportEntries, #id)();
   TextColumn get literal => text()();
@@ -34,7 +33,5 @@ class RawKanjidicEntries extends Table {
   DateTimeColumn get createdAt => dateTime()();
 
   @override
-  List<Set<Column>> get uniqueKeys => [
-        {importId, literal},
-      ];
+  Set<Column> get primaryKey => {importId, literal};
 }

@@ -8,7 +8,6 @@ part 'raw_kanjivg_dto.g.dart';
 @freezed
 abstract class RawKanjiVgDto with _$RawKanjiVgDto {
   const factory RawKanjiVgDto({
-    required int id,
     @JsonKey(name: 'import_id') required int importId,
     required String character,
     @JsonKey(name: 'unicode_hex') required String unicodeHex,
@@ -25,7 +24,6 @@ abstract class RawKanjiVgDto with _$RawKanjiVgDto {
       _$RawKanjiVgDtoFromJson(json);
 
   factory RawKanjiVgDto.fromDomain(RawKanjiVg entity) => RawKanjiVgDto(
-        id: entity.id,
         importId: entity.importId,
         character: entity.character,
         unicodeHex: entity.unicodeHex,
@@ -37,7 +35,6 @@ abstract class RawKanjiVgDto with _$RawKanjiVgDto {
       );
 
   RawKanjiVg toDomain() => RawKanjiVg(
-        id: id,
         importId: importId,
         character: character,
         unicodeHex: unicodeHex,

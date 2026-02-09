@@ -38,7 +38,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -54,6 +54,20 @@ class AdminDatabase extends _$AdminDatabase {
             await m.database.customStatement(
               'ALTER TABLE data_import_entries DROP COLUMN promoted_at',
             );
+          }
+          if (from < 5) {
+            // Recreate raw tables without surrogate id column.
+            // Composite natural keys become the primary keys.
+            for (final name in [
+              'raw_kanji_vg_entries',
+              'raw_kanjidic_entries',
+              'raw_jmdict_entries',
+            ]) {
+              await m.database.customStatement('DROP TABLE IF EXISTS $name');
+            }
+            await m.createTable(rawKanjiVgEntries);
+            await m.createTable(rawKanjidicEntries);
+            await m.createTable(rawJmdictEntries);
           }
         },
       );

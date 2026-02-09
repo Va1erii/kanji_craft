@@ -65,9 +65,7 @@ class DriftRawKanjiVgRepository implements RawKanjiVgRepository {
         b.insert(
           _db.rawKanjiVgEntries,
           row.toEntry(),
-          onConflict: DoUpdate(
-            (old) => row.toEntry().toCompanion(false),
-          ),
+          mode: InsertMode.insertOrReplace,
         );
       }
     });

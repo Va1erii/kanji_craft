@@ -64,9 +64,7 @@ class DriftRawKanjidicRepository implements RawKanjidicRepository {
         b.insert(
           _db.rawKanjidicEntries,
           row.toEntry(),
-          onConflict: DoUpdate(
-            (old) => row.toEntry().toCompanion(false),
-          ),
+          mode: InsertMode.insertOrReplace,
         );
       }
     });

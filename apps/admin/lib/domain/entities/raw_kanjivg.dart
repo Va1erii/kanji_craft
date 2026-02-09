@@ -5,7 +5,6 @@ part 'raw_kanjivg.freezed.dart';
 @freezed
 abstract class RawKanjiVg with _$RawKanjiVg {
   const factory RawKanjiVg({
-    required int id,
     required int importId,
     required String character,
     required String unicodeHex,

@@ -67,7 +67,6 @@ class KanjidicParser {
     final radicalNames = _parseRadicalNames(readingMeaning);
 
     return RawKanjidic(
-      id: 0,
       importId: importId,
       literal: literal,
       strokeCount: strokeCount,

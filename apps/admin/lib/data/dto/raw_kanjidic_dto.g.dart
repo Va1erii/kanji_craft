@@ -9,7 +9,6 @@ part of 'raw_kanjidic_dto.dart';
 _RawKanjidicDto _$RawKanjidicDtoFromJson(
   Map<String, dynamic> json,
 ) => _RawKanjidicDto(
-  id: (json['id'] as num).toInt(),
   importId: (json['import_id'] as num).toInt(),
   literal: json['literal'] as String,
   strokeCount: (json['stroke_count'] as num).toInt(),
@@ -52,7 +51,6 @@ _RawKanjidicDto _$RawKanjidicDtoFromJson(
 
 Map<String, dynamic> _$RawKanjidicDtoToJson(_RawKanjidicDto instance) =>
     <String, dynamic>{
-      'id': instance.id,
       'import_id': instance.importId,
       'literal': instance.literal,
       'stroke_count': instance.strokeCount,

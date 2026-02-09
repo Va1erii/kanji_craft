@@ -5,7 +5,6 @@ part 'raw_jmdict.freezed.dart';
 @freezed
 abstract class RawJmdict with _$RawJmdict {
   const factory RawJmdict({
-    required int id,
     required int importId,
     required int entSeq,
     required List<JmdictKanjiElement> kanjiElements,

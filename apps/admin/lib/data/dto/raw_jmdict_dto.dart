@@ -8,7 +8,6 @@ part 'raw_jmdict_dto.g.dart';
 @freezed
 abstract class RawJmdictDto with _$RawJmdictDto {
   const factory RawJmdictDto({
-    required int id,
     @JsonKey(name: 'import_id') required int importId,
     @JsonKey(name: 'ent_seq') required int entSeq,
     @JsonKey(name: 'kanji_elements')
@@ -25,7 +24,6 @@ abstract class RawJmdictDto with _$RawJmdictDto {
       _$RawJmdictDtoFromJson(json);
 
   factory RawJmdictDto.fromDomain(RawJmdict entity) => RawJmdictDto(
-        id: entity.id,
         importId: entity.importId,
         entSeq: entity.entSeq,
         kanjiElements: entity.kanjiElements
@@ -39,7 +37,6 @@ abstract class RawJmdictDto with _$RawJmdictDto {
       );
 
   RawJmdict toDomain() => RawJmdict(
-        id: id,
         importId: importId,
         entSeq: entSeq,
         kanjiElements: kanjiElements.map((e) => e.toDomain()).toList(),

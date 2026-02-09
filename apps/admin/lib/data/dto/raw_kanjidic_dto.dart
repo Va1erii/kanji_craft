@@ -8,7 +8,6 @@ part 'raw_kanjidic_dto.g.dart';
 @freezed
 abstract class RawKanjidicDto with _$RawKanjidicDto {
   const factory RawKanjidicDto({
-    required int id,
     @JsonKey(name: 'import_id') required int importId,
     required String literal,
     @JsonKey(name: 'stroke_count') required int strokeCount,
@@ -34,7 +33,6 @@ abstract class RawKanjidicDto with _$RawKanjidicDto {
       _$RawKanjidicDtoFromJson(json);
 
   factory RawKanjidicDto.fromDomain(RawKanjidic entity) => RawKanjidicDto(
-        id: entity.id,
         importId: entity.importId,
         literal: entity.literal,
         strokeCount: entity.strokeCount,
@@ -61,7 +59,6 @@ abstract class RawKanjidicDto with _$RawKanjidicDto {
       );
 
   RawKanjidic toDomain() => RawKanjidic(
-        id: id,
         importId: importId,
         literal: this.literal,
         strokeCount: strokeCount,

@@ -93,7 +93,6 @@ class JmdictParser {
         .toList();
 
     return RawJmdict(
-      id: 0,
       importId: importId,
       entSeq: entSeq,
       kanjiElements: kanjiElements,

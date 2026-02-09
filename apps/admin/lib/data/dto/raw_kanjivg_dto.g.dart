@@ -8,7 +8,6 @@ part of 'raw_kanjivg_dto.dart';
 
 _RawKanjiVgDto _$RawKanjiVgDtoFromJson(Map<String, dynamic> json) =>
     _RawKanjiVgDto(
-      id: (json['id'] as num).toInt(),
       importId: (json['import_id'] as num).toInt(),
       character: json['character'] as String,
       unicodeHex: json['unicode_hex'] as String,
@@ -25,7 +24,6 @@ _RawKanjiVgDto _$RawKanjiVgDtoFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$RawKanjiVgDtoToJson(_RawKanjiVgDto instance) =>
     <String, dynamic>{
-      'id': instance.id,
       'import_id': instance.importId,
       'character': instance.character,
       'unicode_hex': instance.unicodeHex,

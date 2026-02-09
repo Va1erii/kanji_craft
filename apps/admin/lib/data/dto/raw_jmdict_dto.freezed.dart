@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawJmdictDto {
 
- int get id;@JsonKey(name: 'import_id') int get importId;@JsonKey(name: 'ent_seq') int get entSeq;@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> get kanjiElements;@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> get readingElements; List<JmdictSenseDto> get senses;@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'import_id') int get importId;@JsonKey(name: 'ent_seq') int get entSeq;@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> get kanjiElements;@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> get readingElements; List<JmdictSenseDto> get senses;@JsonKey(name: 'created_at') DateTime get createdAt;
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RawJmdictDtoCopyWith<RawJmdictDto> get copyWith => _$RawJmdictDtoCopyWithImpl<R
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawJmdictDto&&(identical(other.id, id) || other.id == id)&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other.kanjiElements, kanjiElements)&&const DeepCollectionEquality().equals(other.readingElements, readingElements)&&const DeepCollectionEquality().equals(other.senses, senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other.kanjiElements, kanjiElements)&&const DeepCollectionEquality().equals(other.readingElements, readingElements)&&const DeepCollectionEquality().equals(other.senses, senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,importId,entSeq,const DeepCollectionEquality().hash(kanjiElements),const DeepCollectionEquality().hash(readingElements),const DeepCollectionEquality().hash(senses),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(kanjiElements),const DeepCollectionEquality().hash(readingElements),const DeepCollectionEquality().hash(senses),createdAt);
 
 @override
 String toString() {
-  return 'RawJmdictDto(id: $id, importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
+  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RawJmdictDtoCopyWith<$Res>  {
   factory $RawJmdictDtoCopyWith(RawJmdictDto value, $Res Function(RawJmdictDto) _then) = _$RawJmdictDtoCopyWithImpl;
 @useResult
 $Res call({
- int id,@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -65,10 +65,9 @@ class _$RawJmdictDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
   return _then(_self.copyWith(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
+importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,entSeq: null == entSeq ? _self.entSeq : entSeq // ignore: cast_nullable_to_non_nullable
 as int,kanjiElements: null == kanjiElements ? _self.kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
 as List<JmdictKanjiElementDto>,readingElements: null == readingElements ? _self.readingElements : readingElements // ignore: cast_nullable_to_non_nullable
@@ -159,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawJmdictDto() when $default != null:
-return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
   return orElse();
 
 }
@@ -180,10 +179,10 @@ return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id, @JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _RawJmdictDto():
-return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +199,10 @@ return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.r
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id, @JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _RawJmdictDto() when $default != null:
-return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
   return null;
 
 }
@@ -215,10 +214,9 @@ return $default(_that.id,_that.importId,_that.entSeq,_that.kanjiElements,_that.r
 @JsonSerializable()
 
 class _RawJmdictDto extends RawJmdictDto {
-  const _RawJmdictDto({required this.id, @JsonKey(name: 'import_id') required this.importId, @JsonKey(name: 'ent_seq') required this.entSeq, @JsonKey(name: 'kanji_elements') required final  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements') required final  List<JmdictReadingElementDto> readingElements, required final  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at') required this.createdAt}): _kanjiElements = kanjiElements,_readingElements = readingElements,_senses = senses,super._();
+  const _RawJmdictDto({@JsonKey(name: 'import_id') required this.importId, @JsonKey(name: 'ent_seq') required this.entSeq, @JsonKey(name: 'kanji_elements') required final  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements') required final  List<JmdictReadingElementDto> readingElements, required final  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at') required this.createdAt}): _kanjiElements = kanjiElements,_readingElements = readingElements,_senses = senses,super._();
   factory _RawJmdictDto.fromJson(Map<String, dynamic> json) => _$RawJmdictDtoFromJson(json);
 
-@override final  int id;
 @override@JsonKey(name: 'import_id') final  int importId;
 @override@JsonKey(name: 'ent_seq') final  int entSeq;
  final  List<JmdictKanjiElementDto> _kanjiElements;
@@ -257,16 +255,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawJmdictDto&&(identical(other.id, id) || other.id == id)&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other._kanjiElements, _kanjiElements)&&const DeepCollectionEquality().equals(other._readingElements, _readingElements)&&const DeepCollectionEquality().equals(other._senses, _senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other._kanjiElements, _kanjiElements)&&const DeepCollectionEquality().equals(other._readingElements, _readingElements)&&const DeepCollectionEquality().equals(other._senses, _senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,importId,entSeq,const DeepCollectionEquality().hash(_kanjiElements),const DeepCollectionEquality().hash(_readingElements),const DeepCollectionEquality().hash(_senses),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(_kanjiElements),const DeepCollectionEquality().hash(_readingElements),const DeepCollectionEquality().hash(_senses),createdAt);
 
 @override
 String toString() {
-  return 'RawJmdictDto(id: $id, importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
+  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
 }
 
 
@@ -277,7 +275,7 @@ abstract mixin class _$RawJmdictDtoCopyWith<$Res> implements $RawJmdictDtoCopyWi
   factory _$RawJmdictDtoCopyWith(_RawJmdictDto value, $Res Function(_RawJmdictDto) _then) = __$RawJmdictDtoCopyWithImpl;
 @override @useResult
 $Res call({
- int id,@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
 });
 
 
@@ -294,10 +292,9 @@ class __$RawJmdictDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
   return _then(_RawJmdictDto(
-id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int,importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
+importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,entSeq: null == entSeq ? _self.entSeq : entSeq // ignore: cast_nullable_to_non_nullable
 as int,kanjiElements: null == kanjiElements ? _self._kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
 as List<JmdictKanjiElementDto>,readingElements: null == readingElements ? _self._readingElements : readingElements // ignore: cast_nullable_to_non_nullable

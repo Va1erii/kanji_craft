@@ -1,13 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanji_craft_admin/data/datasources/supabase_data_import_datasource.dart';
 import 'package:kanji_craft_admin/data/datasources/supabase_kanji_component_review_datasource.dart';
-import 'package:kanji_craft_admin/data/datasources/supabase_raw_kanjidic_datasource.dart';
-import 'package:kanji_craft_admin/data/datasources/supabase_raw_kanjivg_datasource.dart';
 import 'package:kanji_craft_admin/data/local/admin_database.dart';
 import 'package:kanji_craft_admin/data/repositories/drift_data_import_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/drift_kanji_component_review_repository.dart';
-import 'package:kanji_craft_admin/data/repositories/drift_raw_kanjidic_repository.dart';
-import 'package:kanji_craft_admin/data/repositories/drift_raw_kanjivg_repository.dart';
 import 'package:kanji_craft_admin/data/services/admin_sync_service.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
@@ -20,24 +16,14 @@ import '../../helpers/admin_test_helpers.dart';
 class MockSupabaseDataImportDataSource extends Mock
     implements SupabaseDataImportDataSource {}
 
-class MockSupabaseRawKanjiVgDataSource extends Mock
-    implements SupabaseRawKanjiVgDataSource {}
-
-class MockSupabaseRawKanjidicDataSource extends Mock
-    implements SupabaseRawKanjidicDataSource {}
-
 class MockSupabaseKanjiComponentReviewDataSource extends Mock
     implements SupabaseKanjiComponentReviewDataSource {}
 
 void main() {
   late AdminDatabase db;
   late DriftDataImportRepository localImports;
-  late DriftRawKanjiVgRepository localKanjiVg;
-  late DriftRawKanjidicRepository localKanjidic;
   late DriftKanjiComponentReviewRepository localReviews;
   late MockSupabaseDataImportDataSource remoteImports;
-  late MockSupabaseRawKanjiVgDataSource remoteKanjiVg;
-  late MockSupabaseRawKanjidicDataSource remoteKanjidic;
   late MockSupabaseKanjiComponentReviewDataSource remoteReviews;
   late AdminSyncService service;
 
@@ -46,23 +32,15 @@ void main() {
     db = createTestDatabase();
     final repos = createReposFromDb(db);
     localImports = repos.imports;
-    localKanjiVg = repos.kanjiVg;
-    localKanjidic = repos.kanjidic;
     localReviews = repos.reviews;
 
     remoteImports = MockSupabaseDataImportDataSource();
-    remoteKanjiVg = MockSupabaseRawKanjiVgDataSource();
-    remoteKanjidic = MockSupabaseRawKanjidicDataSource();
     remoteReviews = MockSupabaseKanjiComponentReviewDataSource();
 
     service = AdminSyncService(
       db: db,
       remoteImports: remoteImports,
       localImports: localImports,
-      remoteKanjiVg: remoteKanjiVg,
-      localKanjiVg: localKanjiVg,
-      remoteKanjidic: remoteKanjidic,
-      localKanjidic: localKanjidic,
       remoteReviews: remoteReviews,
       localReviews: localReviews,
     );
@@ -147,120 +125,40 @@ void main() {
       });
     });
 
-    group('pullKanjiVg', () {
-      test('first call does full pull via getByImportId', () async {
-        // Seed a local import for FK
-        await localImports.upsertAll([fakeDataImport(id: 1)]);
-
-        final rows = [
-          fakeRawKanjiVg(importId: 1, character: '木'),
-        ];
-        when(() => remoteKanjiVg.getByImportId(1))
-            .thenAnswer((_) async => rows);
-
-        await service.pullKanjiVg(1);
-
-        verify(() => remoteKanjiVg.getByImportId(1)).called(1);
-        final count = await localKanjiVg.countByImportId(1);
-        expect(count, 1);
-      });
-
-      test('second call does incremental pull via getByImportIdCreatedSince',
-          () async {
-        await localImports.upsertAll([fakeDataImport(id: 1)]);
-
-        when(() => remoteKanjiVg.getByImportId(1))
-            .thenAnswer((_) async => []);
-
-        await service.pullKanjiVg(1);
-
-        final newRows = [
-          fakeRawKanjiVg(importId: 1, character: '水'),
-        ];
-        when(() => remoteKanjiVg.getByImportIdCreatedSince(1, any()))
-            .thenAnswer((_) async => newRows);
-
-        await service.pullKanjiVg(1);
-
-        verify(() => remoteKanjiVg.getByImportIdCreatedSince(1, any()))
-            .called(1);
-      });
-
-      test('different importIds have independent sync metadata', () async {
-        await localImports.upsertAll([
-          fakeDataImport(id: 1),
-          fakeDataImport(id: 2),
-        ]);
-
-        when(() => remoteKanjiVg.getByImportId(1))
-            .thenAnswer((_) async => []);
-        when(() => remoteKanjiVg.getByImportId(2))
-            .thenAnswer((_) async => []);
-
-        await service.pullKanjiVg(1);
-        // Import 2 hasn't been synced yet, so full pull
-        await service.pullKanjiVg(2);
-
-        verify(() => remoteKanjiVg.getByImportId(1)).called(1);
-        verify(() => remoteKanjiVg.getByImportId(2)).called(1);
-      });
-    });
-
-    group('pullKanjidic', () {
-      test('first call does full pull via getByImportId', () async {
-        await localImports.upsertAll([
-          fakeDataImport(id: 1, source: ImportSource.kanjidic),
-        ]);
-
-        final rows = [
-          fakeRawKanjidic(importId: 1, literal: '木'),
-        ];
-        when(() => remoteKanjidic.getByImportId(1))
-            .thenAnswer((_) async => rows);
-
-        await service.pullKanjidic(1);
-
-        verify(() => remoteKanjidic.getByImportId(1)).called(1);
-        final count = await localKanjidic.countByImportId(1);
-        expect(count, 1);
-      });
-
-      test('second call does incremental pull', () async {
-        await localImports.upsertAll([
-          fakeDataImport(id: 1, source: ImportSource.kanjidic),
-        ]);
-
-        when(() => remoteKanjidic.getByImportId(1))
-            .thenAnswer((_) async => []);
-
-        await service.pullKanjidic(1);
-
-        when(() => remoteKanjidic.getByImportIdCreatedSince(1, any()))
-            .thenAnswer((_) async => []);
-
-        await service.pullKanjidic(1);
-
-        verify(() => remoteKanjidic.getByImportIdCreatedSince(1, any()))
-            .called(1);
-      });
-    });
-
     group('pullReviews', () {
-      test('first call does full pull via getDraftReviews', () async {
+      test('first call does full pull via listAll', () async {
         final reviews = [
           fakeReview(id: 1, kanjiComponentId: 100, aiConfidence: 0.5),
         ];
-        when(() => remoteReviews.getDraftReviews())
+        when(() => remoteReviews.listAll())
             .thenAnswer((_) async => reviews);
 
         await service.pullReviews();
 
-        verify(() => remoteReviews.getDraftReviews()).called(1);
+        verify(() => remoteReviews.listAll()).called(1);
         verifyNever(() => remoteReviews.getUpdatedSince(any()));
       });
 
+      test('pulled reviews are written to local Drift', () async {
+        final reviews = [
+          fakeReview(id: 1, kanjiComponentId: 100, aiConfidence: 0.8),
+          fakeReview(id: 2, kanjiComponentId: 200, aiConfidence: 0.3),
+        ];
+        when(() => remoteReviews.listAll())
+            .thenAnswer((_) async => reviews);
+
+        await service.pullReviews();
+
+        final local1 = await localReviews.getByComponentId(100);
+        final local2 = await localReviews.getByComponentId(200);
+        expect(local1, isNotNull);
+        expect(local2, isNotNull);
+        expect(local1!.aiConfidence, 0.8);
+        expect(local2!.aiConfidence, 0.3);
+      });
+
       test('second call does incremental pull via getUpdatedSince', () async {
-        when(() => remoteReviews.getDraftReviews())
+        when(() => remoteReviews.listAll())
             .thenAnswer((_) async => []);
 
         await service.pullReviews();
@@ -271,31 +169,6 @@ void main() {
         await service.pullReviews();
 
         verify(() => remoteReviews.getUpdatedSince(any())).called(1);
-      });
-    });
-
-    group('pullAll', () {
-      test('orchestrates all pulls in correct order', () async {
-        final imp1 = fakeDataImport(id: 1, source: ImportSource.kanjivg);
-        final imp2 = fakeDataImport(id: 2, source: ImportSource.kanjidic);
-        when(() => remoteImports.listAll())
-            .thenAnswer((_) async => [imp1, imp2]);
-        when(() => remoteKanjiVg.getByImportId(any()))
-            .thenAnswer((_) async => []);
-        when(() => remoteKanjidic.getByImportId(any()))
-            .thenAnswer((_) async => []);
-        when(() => remoteReviews.getDraftReviews())
-            .thenAnswer((_) async => []);
-
-        await service.pullAll();
-
-        // Imports pulled first
-        verify(() => remoteImports.listAll()).called(1);
-        // Both imports get kanjiVg + kanjidic pulls
-        verify(() => remoteKanjiVg.getByImportId(any())).called(2);
-        verify(() => remoteKanjidic.getByImportId(any())).called(2);
-        // Reviews pulled last
-        verify(() => remoteReviews.getDraftReviews()).called(1);
       });
     });
 
@@ -359,10 +232,6 @@ void main() {
           db: db,
           remoteImports: remoteImports,
           localImports: localImports,
-          remoteKanjiVg: remoteKanjiVg,
-          localKanjiVg: localKanjiVg,
-          remoteKanjidic: remoteKanjidic,
-          localKanjidic: localKanjidic,
           remoteReviews: remoteReviews,
           localReviews: localReviews,
         );
@@ -379,7 +248,7 @@ void main() {
 
       test('independent keys do not interfere', () async {
         when(() => remoteImports.listAll()).thenAnswer((_) async => []);
-        when(() => remoteReviews.getDraftReviews())
+        when(() => remoteReviews.listAll())
             .thenAnswer((_) async => []);
 
         await service.pullImports();
@@ -387,7 +256,7 @@ void main() {
         await service.pullReviews();
 
         verify(() => remoteImports.listAll()).called(1);
-        verify(() => remoteReviews.getDraftReviews()).called(1);
+        verify(() => remoteReviews.listAll()).called(1);
       });
     });
   });

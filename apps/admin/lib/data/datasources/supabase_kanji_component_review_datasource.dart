@@ -40,6 +40,16 @@ class SupabaseKanjiComponentReviewDataSource {
     return KanjiComponentReviewDto.fromJson(response).toDomain();
   }
 
+  Future<List<KanjiComponentReview>> listAll() async {
+    final response = await _client
+        .from(_table)
+        .select()
+        .order('created_at', ascending: false);
+    return response
+        .map((json) => KanjiComponentReviewDto.fromJson(json).toDomain())
+        .toList();
+  }
+
   Future<List<KanjiComponentReview>> getDraftReviews({int? limit}) async {
     var query = _client
         .from(_table)

@@ -42,11 +42,11 @@ Used by: `KanjiReading.priority` (see kanji.md), `VocabularyReading.priority` (s
 
 ### Supported Languages
 
-The app supports two content languages. All localized data (meanings, glosses, example sentences) is stored and displayed only for these languages. During ingestion, parsers discard data for unsupported languages.
+The app supports two content languages for the client UI and production tables. Ingestion (Phase 1) stores **all** languages from source files in raw tables — filtering to supported languages happens during transformation (Phase 2) when creating `*_i18n` rows. This means adding a new language requires no re-ingestion.
 
 | Code | Language | Notes |
 |---|---|---|
 | `en` | English | Default/primary. KANJIDIC: `m_lang` absent = English. JMDict: `xml:lang` absent = English |
 | `es` | Spanish | KANJIDIC: `m_lang="es"`. JMDict: `xml:lang="spa"` |
 
-Used by: `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, ingestion parsers (language filtering).
+Used by: `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, transformation layer (language filtering).

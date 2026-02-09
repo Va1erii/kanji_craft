@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dart';
@@ -40,7 +42,8 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
         imports: imports,
         activeIngestions: activeIngestions,
       ));
-    } on Exception catch (e) {
+    } on Exception catch (e, st) {
+      log('Failed to load imports', error: e, stackTrace: st, name: 'DataImportBloc');
       emit(DataImportState.error(e.toString()));
     }
   }
@@ -96,7 +99,8 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
 
       // Ignore the result variable lint — we need the await.
       result;
-    } on Exception catch (e) {
+    } on Exception catch (e, st) {
+      log('Ingestion failed', error: e, stackTrace: st, name: 'DataImportBloc');
       // Reload to get the failed import record, clear progress.
       final imports = await _importRepository.listAll();
       final activeIngestions = state is DataImportLoaded

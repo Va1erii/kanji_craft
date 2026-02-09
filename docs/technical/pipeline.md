@@ -46,6 +46,35 @@ Downloaded from the [KanjiVG](https://kanjivg.tagaini.net/) project. Stroke orde
 | Vocabulary | 2 JSON ZIPs | EN (+ sentences), ES | Two-pass merge by `ent_seq` |
 | KanjiVG | 1 XML + 1 SVG ZIP | N/A | Single pass |
 
+### Folder Preparation
+
+The admin prepares source data by placing downloaded archives into correctly named folders under `sources/`. The pipeline operates on **folders, not individual files** — the admin selects a source folder, and the program validates its contents automatically.
+
+**Required folder naming:**
+
+| Source | Folder pattern | Example |
+|---|---|---|
+| KANJIDIC | `kanjidic-{version}/` | `kanjidic-20240401/` |
+| JMDict | `jmdict-{version}/` | `jmdict-20241201/` |
+| KanjiVG | `kanjivg-{version}/` | `kanjivg-20240401/` |
+
+The `{version}` segment becomes the `source_version` value in `data_imports`.
+
+**Required folder contents:**
+
+| Source | Required files | Optional files |
+|---|---|---|
+| KANJIDIC | `kanjidic2.xml.gz` | — |
+| JMDict | `JMdict_english_with_examples.zip`, `JMdict_spanish.zip` | — |
+| KanjiVG | `kanjivg-{version}.xml.gz` | `kanjivg-{version}-main.zip` (SVGs, used in Phase 2) |
+
+**Pre-ingestion validation:** Before any parsing begins, the pipeline runs a validation step that checks:
+1. Folder name matches the expected pattern for the selected source.
+2. All required files are present in the folder.
+3. No active (non-terminal) import exists for this source.
+
+If validation fails, the pipeline reports what is missing or incorrect and does not proceed. See [ingestion.md](ingestion.md) for the full set of correctness invariants.
+
 ## Architecture
 
 ```mermaid
@@ -94,7 +123,7 @@ graph TD
 
 ## Phase 1: Ingestion (Raw Staging)
 
-**Goal:** Load external file data into queryable SQL tables without data loss.
+**Goal:** Load external file data into queryable SQL tables without data loss. See [ingestion.md](ingestion.md) for the correctness invariants the ingestion layer must enforce.
 
 ### 1.1 Version Tracking
 
@@ -319,6 +348,7 @@ flutter run -d macos --target lib/pipeline/ingest_kanjivg.dart
 
 ## Related Docs
 
+- [ingestion.md](ingestion.md) — Phase 1 correctness invariants, known gaps, and recovery procedures
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table

@@ -30,7 +30,7 @@ _SourceConfig _sourceConfig(ImportSource source) => switch (source) {
               name.endsWith('.zip') && name.contains('main'),
         ),
       ImportSource.kanjidic => (
-          folderPattern: RegExp(r'kanjidic[_-]?(.+)'),
+          folderPattern: RegExp(r'kanjidic2?[_-](.+)'),
           isRequiredFile: (String name) => name.endsWith('.xml.gz'),
           isOptionalFile: null,
         ),

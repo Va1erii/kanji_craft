@@ -147,6 +147,36 @@ void main() {
             )).called(1);
       });
 
+      test('extracts version from kanjidic2 folder name', () async {
+        final dir = _createDir('kanjidic2-20260208');
+        File('${dir.path}/kanjidic2.xml.gz').writeAsBytesSync([]);
+        addTearDown(() => dir.parent.deleteSync(recursive: true));
+
+        final result = fakeDataImport(source: ImportSource.kanjidic);
+        when(() => mockImportRepo.getActiveBySource(ImportSource.kanjidic))
+            .thenAnswer((_) async => null);
+        when(() => mockImportRepo.hasProcessedVersion(
+              source: ImportSource.kanjidic,
+              sourceVersion: '20260208',
+            )).thenAnswer((_) async => false);
+        when(() => mockService.ingestKanjidic(
+              filePath: any(named: 'filePath'),
+              sourceVersion: '20260208',
+              onProgress: any(named: 'onProgress'),
+            )).thenAnswer((_) async => result);
+
+        await useCase.call(
+          folderPath: dir.path,
+          source: ImportSource.kanjidic,
+        );
+
+        verify(() => mockService.ingestKanjidic(
+              filePath: any(named: 'filePath'),
+              sourceVersion: '20260208',
+              onProgress: any(named: 'onProgress'),
+            )).called(1);
+      });
+
       test('extracts version from jmdict folder name', () async {
         final dir = _createDir('jmdict-2024.12.1');
         File('${dir.path}/jmdict-english.zip').writeAsBytesSync([]);
@@ -290,7 +320,7 @@ void main() {
       });
 
       test('KANJIDIC: delegates to ingestKanjidic', () async {
-        final dir = _createDir('kanjidic2024');
+        final dir = _createDir('kanjidic2-2024');
         final file = File('${dir.path}/kanjidic2.xml.gz');
         file.writeAsBytesSync([]);
         addTearDown(() => dir.parent.deleteSync(recursive: true));

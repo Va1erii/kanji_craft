@@ -26,17 +26,21 @@ import '../presentation/bloc/data_import_bloc.dart';
 import '../presentation/bloc/hydration_bloc.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+const _supabaseServiceRoleKey =
+    String.fromEnvironment('SUPABASE_SERVICE_ROLE_KEY');
 
 final getIt = GetIt.instance;
 
 Future<void> configureDependencies() async {
   assert(_supabaseUrl.isNotEmpty, 'SUPABASE_URL required via --dart-define');
   assert(
-    _supabaseAnonKey.isNotEmpty,
-    'SUPABASE_ANON_KEY required via --dart-define',
+    _supabaseServiceRoleKey.isNotEmpty,
+    'SUPABASE_SERVICE_ROLE_KEY required via --dart-define',
   );
-  await Supabase.initialize(url: _supabaseUrl, anonKey: _supabaseAnonKey);
+  await Supabase.initialize(
+    url: _supabaseUrl,
+    anonKey: _supabaseServiceRoleKey,
+  );
 
   // -- Database --
   getIt.registerLazySingleton<AdminDatabase>(() => AdminDatabase());

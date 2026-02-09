@@ -26,10 +26,10 @@ dart pub get
 ### 2. Start local Supabase
 
 ```bash
-npx supabase start
+supabase start
 ```
 
-Note the **Publishable** key from the output.
+Note the **Secret** key from the output.
 
 ### 3. Configure environment
 
@@ -37,7 +37,7 @@ Note the **Publishable** key from the output.
 cp apps/admin/.env.example apps/admin/.env
 ```
 
-Edit `apps/admin/.env` and set `SUPABASE_ANON_KEY` to the Publishable key from step 2.
+Edit `apps/admin/.env` and set `SUPABASE_SERVICE_ROLE_KEY` to the Secret key from step 2.
 
 ### 4. Run the admin app
 

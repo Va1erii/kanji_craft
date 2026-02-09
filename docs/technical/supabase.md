@@ -141,17 +141,40 @@ Seed data is **content only** — never seed user tables (users, srs_cards, user
 # Start local Supabase (runs migrations automatically)
 supabase start
 
-# Apply migrations to local DB
+# Apply all migrations from scratch (resets local DB)
 supabase db reset
 
 # Create a new migration
 supabase migration new <name>
 
-# Push migrations to remote project
+# Push local migrations to remote
 supabase db push
 
-# Seed the database (after migrations)
-supabase db reset   # runs migrations + seed.sql
+# Check remote status
+supabase status
+```
+
+### Workflow
+
+All schema changes are made locally via migration files, then pushed to remote.
+
+**Day-to-day development:**
+
+1. Write a new migration: `supabase migration new <name>`
+2. Write SQL in the generated file
+3. Test locally: `supabase db reset`
+4. Push to remote: `supabase db push`
+
+**Do not use `supabase db pull`** for regular development. `db pull` generates a diff of remote vs local and creates a `remote_schema.sql` migration. It picks up internal Supabase system objects (realtime triggers, storage triggers, `pg_net` extension) that create noise. Since all our schema changes originate locally, `db pull` is unnecessary.
+
+**If migration history gets out of sync** (e.g. after a failed push), use `migration repair`:
+
+```bash
+# Mark a migration as already applied on remote (skip it)
+supabase migration repair --status applied <timestamp>
+
+# Mark a migration as not applied (so db push will run it)
+supabase migration repair --status reverted <timestamp>
 ```
 
 ### Rules
@@ -161,6 +184,7 @@ supabase db reset   # runs migrations + seed.sql
 3. Migration filenames use the format `YYYYMMDDHHMMSS_description.sql`.
 4. `seed.sql` must be idempotent — use `INSERT ... ON CONFLICT DO NOTHING` or `TRUNCATE` + `INSERT`.
 5. Test migrations locally with `supabase db reset` before pushing to remote.
+6. Always push from local to remote. Never edit schema directly on the remote dashboard.
 
 ## Offline-First Architecture
 

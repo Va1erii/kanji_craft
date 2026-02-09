@@ -46,6 +46,19 @@ cd apps/admin
 flutter run -d macos --dart-define-from-file=.env
 ```
 
+## Database Migrations
+
+Schema changes flow **local → remote** only. Never edit schema on the remote dashboard.
+
+```bash
+supabase migration new <name>     # Create migration file
+# Write SQL in the generated file
+supabase db reset                  # Test locally
+supabase db push                   # Push to remote
+```
+
+See [docs/technical/supabase.md](docs/technical/supabase.md#workflow) for the full workflow.
+
 ## Code Generation
 
 ```bash

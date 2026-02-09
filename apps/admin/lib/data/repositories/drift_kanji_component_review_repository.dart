@@ -96,6 +96,7 @@ class DriftKanjiComponentReviewRepository
     return count;
   }
 
+  @override
   Future<void> upsertAll(List<KanjiComponentReview> reviews) async {
     await _db.batch((b) {
       for (final review in reviews) {

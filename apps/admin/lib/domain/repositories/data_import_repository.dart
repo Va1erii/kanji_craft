@@ -34,4 +34,7 @@ abstract class DataImportRepository {
 
   /// Lists all imports, most recent first.
   Future<List<DataImport>> listAll();
+
+  /// Bulk upserts imports (insert or replace on conflict).
+  Future<void> upsertAll(List<DataImport> imports);
 }

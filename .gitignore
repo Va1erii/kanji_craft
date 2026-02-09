@@ -45,5 +45,8 @@ tools/parser/.venv/
 tools/parser/output/*.json
 sources/*/.unpacked/
 
+# Environment files
+.env
+
 # Generated metadata
 .metadata

@@ -109,6 +109,7 @@ class DriftDataImportRepository implements DataImportRepository {
     return entries.map((e) => e.toDomain()).toList();
   }
 
+  @override
   Future<void> upsertAll(List<DataImport> imports) async {
     await _db.batch((b) {
       for (final item in imports) {

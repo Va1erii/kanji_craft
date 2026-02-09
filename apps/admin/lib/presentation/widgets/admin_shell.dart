@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../bloc/data_import_bloc.dart';
+import '../bloc/data_import_event.dart';
+import '../bloc/hydration_bloc.dart';
+import '../bloc/hydration_event.dart';
+import '../bloc/hydration_state.dart';
 
 class AdminShell extends StatelessWidget {
   const AdminShell({required this.child, super.key});
@@ -26,6 +33,59 @@ class AdminShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<HydrationBloc, HydrationState>(
+      listener: (context, state) {
+        state.whenOrNull(
+          completed: () =>
+              context.read<DataImportBloc>().add(const DataImportEvent.load()),
+        );
+      },
+      listenWhen: (previous, current) =>
+          current.map(
+            inProgress: (_) => false,
+            completed: (_) => true,
+            failed: (_) => false,
+          ),
+      builder: (context, state) {
+        return state.map(
+          inProgress: (s) => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(s.step),
+                ],
+              ),
+            ),
+          ),
+          failed: (s) => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 48),
+                  const SizedBox(height: 16),
+                  Text('Hydration failed: ${s.message}'),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => context
+                        .read<HydrationBloc>()
+                        .add(const HydrationEvent.started()),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          completed: (_) => _buildShell(context),
+        );
+      },
+    );
+  }
+
+  Widget _buildShell(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final selectedIndex = _selectedIndex(context);
 

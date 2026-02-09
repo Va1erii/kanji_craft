@@ -24,4 +24,7 @@ abstract class KanjiComponentReviewRepository {
 
   /// Bulk-verify all draft reviews with ai_confidence >= [threshold].
   Future<int> bulkVerify({required double threshold});
+
+  /// Bulk upserts reviews (insert or replace on conflict).
+  Future<void> upsertAll(List<KanjiComponentReview> reviews);
 }

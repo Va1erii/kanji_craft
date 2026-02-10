@@ -264,6 +264,102 @@ void main() {
       expect(children[2].part, 2);
     });
 
+    test('parses number attribute for disambiguating split parts', () {
+      final xml = '''
+<kanjivg>
+  <kanji id="kvg:kanji_05716">
+    <g id="kvg:05716" kvg:element="圖"
+       xmlns:kvg="http://kanjivg.tagaini.net">
+      <g id="kvg:05716-g1" kvg:element="口" kvg:number="1" kvg:part="1">
+        <path d="M 10,10 L 20,20"/>
+      </g>
+      <g id="kvg:05716-g2" kvg:element="口" kvg:number="2" kvg:part="1">
+        <path d="M 30,10 L 40,20"/>
+      </g>
+      <g id="kvg:05716-g3" kvg:element="口" kvg:number="1" kvg:part="2">
+        <path d="M 10,50 L 20,60"/>
+      </g>
+      <g id="kvg:05716-g4" kvg:element="口" kvg:number="2" kvg:part="2">
+        <path d="M 30,50 L 40,60"/>
+      </g>
+    </g>
+  </kanji>
+</kanjivg>
+''';
+
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
+      final children = results.first.components.children;
+      expect(children[0].number, 1);
+      expect(children[0].part, 1);
+      expect(children[1].number, 2);
+      expect(children[1].part, 1);
+      expect(children[2].number, 1);
+      expect(children[2].part, 2);
+      expect(children[3].number, 2);
+      expect(children[3].part, 2);
+    });
+
+    test('parses partial attribute', () {
+      final xml = '''
+<kanjivg>
+  <kanji id="kvg:kanji_06728">
+    <g id="kvg:06728" kvg:element="木"
+       xmlns:kvg="http://kanjivg.tagaini.net">
+      <g id="kvg:06728-g1" kvg:element="十" kvg:partial="true">
+        <path d="M 50,10 L 50,90"/>
+      </g>
+    </g>
+  </kanji>
+</kanjivg>
+''';
+
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
+      final child = results.first.components.children[0];
+      expect(child.element, '十');
+      expect(child.partial, true);
+    });
+
+    test('parses radicalForm attribute', () {
+      final xml = '''
+<kanjivg>
+  <kanji id="kvg:kanji_06c34">
+    <g id="kvg:06c34" kvg:element="水"
+       xmlns:kvg="http://kanjivg.tagaini.net">
+      <g id="kvg:06c34-g1" kvg:element="⺡"
+         kvg:radicalForm="true" kvg:original="水">
+        <path d="M 10,30 L 10,80"/>
+      </g>
+    </g>
+  </kanji>
+</kanjivg>
+''';
+
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
+      final child = results.first.components.children[0];
+      expect(child.element, '⺡');
+      expect(child.radicalForm, true);
+      expect(child.original, '水');
+    });
+
+    test('missing number, partial, radicalForm default to null', () {
+      final xml = '''
+<kanjivg>
+  <kanji id="kvg:kanji_04e00">
+    <g id="kvg:04e00" kvg:element="一"
+       xmlns:kvg="http://kanjivg.tagaini.net">
+      <path d="M 10,50 L 100,50"/>
+    </g>
+  </kanji>
+</kanjivg>
+''';
+
+      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
+      final root = results.first.components;
+      expect(root.number, isNull);
+      expect(root.partial, isNull);
+      expect(root.radicalForm, isNull);
+    });
+
     test('handles multiple kanji entries', () {
       final xml = '''
 <kanjivg>

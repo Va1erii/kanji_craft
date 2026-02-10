@@ -579,7 +579,7 @@ as String,
 /// @nodoc
 mixin _$KanjiVgComponent {
 
- String get element; String? get position; bool? get variant; String? get original; int? get part; String? get radical; String? get phon; String? get tradForm; List<int> get strokeIndices; List<KanjiVgComponent> get children;
+ String get element; String? get position; bool? get variant; String? get original; int? get part; int? get number; String? get radical; String? get phon; String? get tradForm; bool? get partial; bool? get radicalForm; List<int> get strokeIndices; List<KanjiVgComponent> get children;
 /// Create a copy of KanjiVgComponent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -590,16 +590,16 @@ $KanjiVgComponentCopyWith<KanjiVgComponent> get copyWith => _$KanjiVgComponentCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is KanjiVgComponent&&(identical(other.element, element) || other.element == element)&&(identical(other.position, position) || other.position == position)&&(identical(other.variant, variant) || other.variant == variant)&&(identical(other.original, original) || other.original == original)&&(identical(other.part, part) || other.part == part)&&(identical(other.radical, radical) || other.radical == radical)&&(identical(other.phon, phon) || other.phon == phon)&&(identical(other.tradForm, tradForm) || other.tradForm == tradForm)&&const DeepCollectionEquality().equals(other.strokeIndices, strokeIndices)&&const DeepCollectionEquality().equals(other.children, children));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is KanjiVgComponent&&(identical(other.element, element) || other.element == element)&&(identical(other.position, position) || other.position == position)&&(identical(other.variant, variant) || other.variant == variant)&&(identical(other.original, original) || other.original == original)&&(identical(other.part, part) || other.part == part)&&(identical(other.number, number) || other.number == number)&&(identical(other.radical, radical) || other.radical == radical)&&(identical(other.phon, phon) || other.phon == phon)&&(identical(other.tradForm, tradForm) || other.tradForm == tradForm)&&(identical(other.partial, partial) || other.partial == partial)&&(identical(other.radicalForm, radicalForm) || other.radicalForm == radicalForm)&&const DeepCollectionEquality().equals(other.strokeIndices, strokeIndices)&&const DeepCollectionEquality().equals(other.children, children));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,element,position,variant,original,part,radical,phon,tradForm,const DeepCollectionEquality().hash(strokeIndices),const DeepCollectionEquality().hash(children));
+int get hashCode => Object.hash(runtimeType,element,position,variant,original,part,number,radical,phon,tradForm,partial,radicalForm,const DeepCollectionEquality().hash(strokeIndices),const DeepCollectionEquality().hash(children));
 
 @override
 String toString() {
-  return 'KanjiVgComponent(element: $element, position: $position, variant: $variant, original: $original, part: $part, radical: $radical, phon: $phon, tradForm: $tradForm, strokeIndices: $strokeIndices, children: $children)';
+  return 'KanjiVgComponent(element: $element, position: $position, variant: $variant, original: $original, part: $part, number: $number, radical: $radical, phon: $phon, tradForm: $tradForm, partial: $partial, radicalForm: $radicalForm, strokeIndices: $strokeIndices, children: $children)';
 }
 
 
@@ -610,7 +610,7 @@ abstract mixin class $KanjiVgComponentCopyWith<$Res>  {
   factory $KanjiVgComponentCopyWith(KanjiVgComponent value, $Res Function(KanjiVgComponent) _then) = _$KanjiVgComponentCopyWithImpl;
 @useResult
 $Res call({
- String element, String? position, bool? variant, String? original, int? part, String? radical, String? phon, String? tradForm, List<int> strokeIndices, List<KanjiVgComponent> children
+ String element, String? position, bool? variant, String? original, int? part, int? number, String? radical, String? phon, String? tradForm, bool? partial, bool? radicalForm, List<int> strokeIndices, List<KanjiVgComponent> children
 });
 
 
@@ -627,17 +627,20 @@ class _$KanjiVgComponentCopyWithImpl<$Res>
 
 /// Create a copy of KanjiVgComponent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? element = null,Object? position = freezed,Object? variant = freezed,Object? original = freezed,Object? part = freezed,Object? radical = freezed,Object? phon = freezed,Object? tradForm = freezed,Object? strokeIndices = null,Object? children = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? element = null,Object? position = freezed,Object? variant = freezed,Object? original = freezed,Object? part = freezed,Object? number = freezed,Object? radical = freezed,Object? phon = freezed,Object? tradForm = freezed,Object? partial = freezed,Object? radicalForm = freezed,Object? strokeIndices = null,Object? children = null,}) {
   return _then(_self.copyWith(
 element: null == element ? _self.element : element // ignore: cast_nullable_to_non_nullable
 as String,position: freezed == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
 as String?,variant: freezed == variant ? _self.variant : variant // ignore: cast_nullable_to_non_nullable
 as bool?,original: freezed == original ? _self.original : original // ignore: cast_nullable_to_non_nullable
 as String?,part: freezed == part ? _self.part : part // ignore: cast_nullable_to_non_nullable
+as int?,number: freezed == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
 as int?,radical: freezed == radical ? _self.radical : radical // ignore: cast_nullable_to_non_nullable
 as String?,phon: freezed == phon ? _self.phon : phon // ignore: cast_nullable_to_non_nullable
 as String?,tradForm: freezed == tradForm ? _self.tradForm : tradForm // ignore: cast_nullable_to_non_nullable
-as String?,strokeIndices: null == strokeIndices ? _self.strokeIndices : strokeIndices // ignore: cast_nullable_to_non_nullable
+as String?,partial: freezed == partial ? _self.partial : partial // ignore: cast_nullable_to_non_nullable
+as bool?,radicalForm: freezed == radicalForm ? _self.radicalForm : radicalForm // ignore: cast_nullable_to_non_nullable
+as bool?,strokeIndices: null == strokeIndices ? _self.strokeIndices : strokeIndices // ignore: cast_nullable_to_non_nullable
 as List<int>,children: null == children ? _self.children : children // ignore: cast_nullable_to_non_nullable
 as List<KanjiVgComponent>,
   ));
@@ -724,10 +727,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String element,  String? position,  bool? variant,  String? original,  int? part,  String? radical,  String? phon,  String? tradForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String element,  String? position,  bool? variant,  String? original,  int? part,  int? number,  String? radical,  String? phon,  String? tradForm,  bool? partial,  bool? radicalForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _KanjiVgComponent() when $default != null:
-return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.radical,_that.phon,_that.tradForm,_that.strokeIndices,_that.children);case _:
+return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.number,_that.radical,_that.phon,_that.tradForm,_that.partial,_that.radicalForm,_that.strokeIndices,_that.children);case _:
   return orElse();
 
 }
@@ -745,10 +748,10 @@ return $default(_that.element,_that.position,_that.variant,_that.original,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String element,  String? position,  bool? variant,  String? original,  int? part,  String? radical,  String? phon,  String? tradForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String element,  String? position,  bool? variant,  String? original,  int? part,  int? number,  String? radical,  String? phon,  String? tradForm,  bool? partial,  bool? radicalForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)  $default,) {final _that = this;
 switch (_that) {
 case _KanjiVgComponent():
-return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.radical,_that.phon,_that.tradForm,_that.strokeIndices,_that.children);case _:
+return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.number,_that.radical,_that.phon,_that.tradForm,_that.partial,_that.radicalForm,_that.strokeIndices,_that.children);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -765,10 +768,10 @@ return $default(_that.element,_that.position,_that.variant,_that.original,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String element,  String? position,  bool? variant,  String? original,  int? part,  String? radical,  String? phon,  String? tradForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String element,  String? position,  bool? variant,  String? original,  int? part,  int? number,  String? radical,  String? phon,  String? tradForm,  bool? partial,  bool? radicalForm,  List<int> strokeIndices,  List<KanjiVgComponent> children)?  $default,) {final _that = this;
 switch (_that) {
 case _KanjiVgComponent() when $default != null:
-return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.radical,_that.phon,_that.tradForm,_that.strokeIndices,_that.children);case _:
+return $default(_that.element,_that.position,_that.variant,_that.original,_that.part,_that.number,_that.radical,_that.phon,_that.tradForm,_that.partial,_that.radicalForm,_that.strokeIndices,_that.children);case _:
   return null;
 
 }
@@ -780,7 +783,7 @@ return $default(_that.element,_that.position,_that.variant,_that.original,_that.
 
 
 class _KanjiVgComponent implements KanjiVgComponent {
-  const _KanjiVgComponent({required this.element, this.position, this.variant, this.original, this.part, this.radical, this.phon, this.tradForm, required final  List<int> strokeIndices, required final  List<KanjiVgComponent> children}): _strokeIndices = strokeIndices,_children = children;
+  const _KanjiVgComponent({required this.element, this.position, this.variant, this.original, this.part, this.number, this.radical, this.phon, this.tradForm, this.partial, this.radicalForm, required final  List<int> strokeIndices, required final  List<KanjiVgComponent> children}): _strokeIndices = strokeIndices,_children = children;
   
 
 @override final  String element;
@@ -788,9 +791,12 @@ class _KanjiVgComponent implements KanjiVgComponent {
 @override final  bool? variant;
 @override final  String? original;
 @override final  int? part;
+@override final  int? number;
 @override final  String? radical;
 @override final  String? phon;
 @override final  String? tradForm;
+@override final  bool? partial;
+@override final  bool? radicalForm;
  final  List<int> _strokeIndices;
 @override List<int> get strokeIndices {
   if (_strokeIndices is EqualUnmodifiableListView) return _strokeIndices;
@@ -816,16 +822,16 @@ _$KanjiVgComponentCopyWith<_KanjiVgComponent> get copyWith => __$KanjiVgComponen
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KanjiVgComponent&&(identical(other.element, element) || other.element == element)&&(identical(other.position, position) || other.position == position)&&(identical(other.variant, variant) || other.variant == variant)&&(identical(other.original, original) || other.original == original)&&(identical(other.part, part) || other.part == part)&&(identical(other.radical, radical) || other.radical == radical)&&(identical(other.phon, phon) || other.phon == phon)&&(identical(other.tradForm, tradForm) || other.tradForm == tradForm)&&const DeepCollectionEquality().equals(other._strokeIndices, _strokeIndices)&&const DeepCollectionEquality().equals(other._children, _children));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KanjiVgComponent&&(identical(other.element, element) || other.element == element)&&(identical(other.position, position) || other.position == position)&&(identical(other.variant, variant) || other.variant == variant)&&(identical(other.original, original) || other.original == original)&&(identical(other.part, part) || other.part == part)&&(identical(other.number, number) || other.number == number)&&(identical(other.radical, radical) || other.radical == radical)&&(identical(other.phon, phon) || other.phon == phon)&&(identical(other.tradForm, tradForm) || other.tradForm == tradForm)&&(identical(other.partial, partial) || other.partial == partial)&&(identical(other.radicalForm, radicalForm) || other.radicalForm == radicalForm)&&const DeepCollectionEquality().equals(other._strokeIndices, _strokeIndices)&&const DeepCollectionEquality().equals(other._children, _children));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,element,position,variant,original,part,radical,phon,tradForm,const DeepCollectionEquality().hash(_strokeIndices),const DeepCollectionEquality().hash(_children));
+int get hashCode => Object.hash(runtimeType,element,position,variant,original,part,number,radical,phon,tradForm,partial,radicalForm,const DeepCollectionEquality().hash(_strokeIndices),const DeepCollectionEquality().hash(_children));
 
 @override
 String toString() {
-  return 'KanjiVgComponent(element: $element, position: $position, variant: $variant, original: $original, part: $part, radical: $radical, phon: $phon, tradForm: $tradForm, strokeIndices: $strokeIndices, children: $children)';
+  return 'KanjiVgComponent(element: $element, position: $position, variant: $variant, original: $original, part: $part, number: $number, radical: $radical, phon: $phon, tradForm: $tradForm, partial: $partial, radicalForm: $radicalForm, strokeIndices: $strokeIndices, children: $children)';
 }
 
 
@@ -836,7 +842,7 @@ abstract mixin class _$KanjiVgComponentCopyWith<$Res> implements $KanjiVgCompone
   factory _$KanjiVgComponentCopyWith(_KanjiVgComponent value, $Res Function(_KanjiVgComponent) _then) = __$KanjiVgComponentCopyWithImpl;
 @override @useResult
 $Res call({
- String element, String? position, bool? variant, String? original, int? part, String? radical, String? phon, String? tradForm, List<int> strokeIndices, List<KanjiVgComponent> children
+ String element, String? position, bool? variant, String? original, int? part, int? number, String? radical, String? phon, String? tradForm, bool? partial, bool? radicalForm, List<int> strokeIndices, List<KanjiVgComponent> children
 });
 
 
@@ -853,17 +859,20 @@ class __$KanjiVgComponentCopyWithImpl<$Res>
 
 /// Create a copy of KanjiVgComponent
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? element = null,Object? position = freezed,Object? variant = freezed,Object? original = freezed,Object? part = freezed,Object? radical = freezed,Object? phon = freezed,Object? tradForm = freezed,Object? strokeIndices = null,Object? children = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? element = null,Object? position = freezed,Object? variant = freezed,Object? original = freezed,Object? part = freezed,Object? number = freezed,Object? radical = freezed,Object? phon = freezed,Object? tradForm = freezed,Object? partial = freezed,Object? radicalForm = freezed,Object? strokeIndices = null,Object? children = null,}) {
   return _then(_KanjiVgComponent(
 element: null == element ? _self.element : element // ignore: cast_nullable_to_non_nullable
 as String,position: freezed == position ? _self.position : position // ignore: cast_nullable_to_non_nullable
 as String?,variant: freezed == variant ? _self.variant : variant // ignore: cast_nullable_to_non_nullable
 as bool?,original: freezed == original ? _self.original : original // ignore: cast_nullable_to_non_nullable
 as String?,part: freezed == part ? _self.part : part // ignore: cast_nullable_to_non_nullable
+as int?,number: freezed == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
 as int?,radical: freezed == radical ? _self.radical : radical // ignore: cast_nullable_to_non_nullable
 as String?,phon: freezed == phon ? _self.phon : phon // ignore: cast_nullable_to_non_nullable
 as String?,tradForm: freezed == tradForm ? _self.tradForm : tradForm // ignore: cast_nullable_to_non_nullable
-as String?,strokeIndices: null == strokeIndices ? _self._strokeIndices : strokeIndices // ignore: cast_nullable_to_non_nullable
+as String?,partial: freezed == partial ? _self.partial : partial // ignore: cast_nullable_to_non_nullable
+as bool?,radicalForm: freezed == radicalForm ? _self.radicalForm : radicalForm // ignore: cast_nullable_to_non_nullable
+as bool?,strokeIndices: null == strokeIndices ? _self._strokeIndices : strokeIndices // ignore: cast_nullable_to_non_nullable
 as List<int>,children: null == children ? _self._children : children // ignore: cast_nullable_to_non_nullable
 as List<KanjiVgComponent>,
   ));

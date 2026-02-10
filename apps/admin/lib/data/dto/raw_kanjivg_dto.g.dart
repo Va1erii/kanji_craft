@@ -55,9 +55,12 @@ _KanjiVgComponentDto _$KanjiVgComponentDtoFromJson(Map<String, dynamic> json) =>
       variant: json['variant'] as bool?,
       original: json['original'] as String?,
       part: (json['part'] as num?)?.toInt(),
+      number: (json['number'] as num?)?.toInt(),
       radical: json['radical'] as String?,
       phon: json['phon'] as String?,
       tradForm: json['trad_form'] as String?,
+      partial: json['partial'] as bool?,
+      radicalForm: json['radical_form'] as bool?,
       strokeIndices: (json['stroke_indices'] as List<dynamic>)
           .map((e) => (e as num).toInt())
           .toList(),
@@ -74,9 +77,12 @@ Map<String, dynamic> _$KanjiVgComponentDtoToJson(
   'variant': instance.variant,
   'original': instance.original,
   'part': instance.part,
+  'number': instance.number,
   'radical': instance.radical,
   'phon': instance.phon,
   'trad_form': instance.tradForm,
+  'partial': instance.partial,
+  'radical_form': instance.radicalForm,
   'stroke_indices': instance.strokeIndices,
   'children': instance.children,
 };

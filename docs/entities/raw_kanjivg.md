@@ -107,9 +107,12 @@ A recursive tree describing how the kanji decomposes into radical/element groups
 | `variant` | `bool?` | `true` if this is a positional variant of another element (e.g. 亻 is a variant of 人) |
 | `original` | `String?` | The base form this variant derives from, e.g. "人" for 亻. Null if not a variant |
 | `part` | `int?` | Part number when an element is split across non-contiguous strokes |
-| `radical` | `String?` | Radical classification marker from KanjiVG: "s" (standard Kangxi), "n" (Nelson), or null |
-| `phon` | `String?` | Phonetic marker — the on'yomi reading this component contributes, if any |
+| `number` | `int?` | Disambiguates when the same element is split into parts multiple times within one kanji (e.g. 圖 has four 口, two of which are split). Pairs with `part` to uniquely identify each fragment |
+| `radical` | `String?` | Radical classification marker from KanjiVG: `"general"`, `"tradit"`, `"nelson"`, `"jis"`, or null. See [kanjivg_format.md](../technical/kanjivg_format.md#radical-values) |
+| `phon` | `String?` | Phonetic marker — the on'yomi reading this component contributes, if any. Values are inconsistent in KanjiVG |
 | `trad_form` | `String?` | Traditional (kyuujitai) form of the element, if different from the modern form |
+| `partial` | `bool?` | `true` if this group represents the element only partially (not all strokes present). Rare |
+| `radical_form` | `bool?` | `true` if `element` is a radical-specific Unicode character and `original` holds the standard CJK ideograph. Rare |
 | `stroke_indices` | `JsonList` | 0-based indexes into the parent `strokes` array, identifying which strokes belong to this component. Derived from `<path>` nesting inside `<g>` groups in the source SVG |
 | `children` | `JsonList` | Nested child components (recursive). Empty array for leaf nodes |
 

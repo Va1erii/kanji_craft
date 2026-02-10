@@ -33,9 +33,12 @@ abstract class KanjiVgComponent with _$KanjiVgComponent {
     bool? variant,
     String? original,
     int? part,
+    int? number,
     String? radical,
     String? phon,
     String? tradForm,
+    bool? partial,
+    bool? radicalForm,
     required List<int> strokeIndices,
     required List<KanjiVgComponent> children,
   }) = _KanjiVgComponent;

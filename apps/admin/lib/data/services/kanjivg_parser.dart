@@ -113,15 +113,26 @@ class KanjiVgParser {
     final original =
         g.getAttributeNamed('original', namespace: _kvgNamespace);
     final partStr = g.getAttributeNamed('part', namespace: _kvgNamespace);
+    final numberStr =
+        g.getAttributeNamed('number', namespace: _kvgNamespace);
     final radical =
         g.getAttributeNamed('radical', namespace: _kvgNamespace);
     final phon = g.getAttributeNamed('phon', namespace: _kvgNamespace);
     final tradForm =
         g.getAttributeNamed('tradForm', namespace: _kvgNamespace);
+    final partialStr =
+        g.getAttributeNamed('partial', namespace: _kvgNamespace);
+    final radicalFormStr =
+        g.getAttributeNamed('radicalForm', namespace: _kvgNamespace);
 
     final bool? variant =
         variantStr != null ? variantStr == 'true' : null;
     final int? part = partStr != null ? int.tryParse(partStr) : null;
+    final int? number = numberStr != null ? int.tryParse(numberStr) : null;
+    final bool? partial =
+        partialStr != null ? partialStr == 'true' : null;
+    final bool? radicalForm =
+        radicalFormStr != null ? radicalFormStr == 'true' : null;
 
     // Collect stroke indices for paths directly or nested in this <g>
     final nestedPaths = g.findAllElements('path').toList();
@@ -147,9 +158,12 @@ class KanjiVgParser {
       variant: variant,
       original: original,
       part: part,
+      number: number,
       radical: radical,
       phon: phon,
       tradForm: tradForm,
+      partial: partial,
+      radicalForm: radicalForm,
       strokeIndices: strokeIndices,
       children: children,
     );

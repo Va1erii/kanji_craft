@@ -71,25 +71,42 @@ Localized meanings, system mnemonic, and search data for a vocabulary word. One 
 
 ### VocabularySentence (Entity)
 
-An example sentence that uses the vocabulary word in context. Helps the user see how the word is used naturally. One sentence can exist per language.
+An example sentence that uses the vocabulary word in context. Helps the user see how the word is used naturally. One sentence per vocabulary word; translations live in `VocabularySentenceI18n`.
 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `vocabulary_id` | `int` | FK to the parent Vocabulary |
-| `lang_code` | `String` | ISO 639-1 language code for the translation |
+| `vocabulary_id` | `int` | FK to the parent Vocabulary. Unique — one sentence per word |
 | `sentence_ja` | `String` | The Japanese sentence in plain text, e.g. "日本に行きたい。" |
 | `sentence_furigana` | `String` | The same sentence with inline furigana using `[kanji|reading]` notation, e.g. "[日本|にほん]に[行|い]きたい。" |
-| `sentence_translated` | `String` | Translated sentence, e.g. "I want to go to Japan." |
-| `verification_status` | `VerificationStatus` | `verified` for source-extracted sentences (e.g. English from JMdict), `draft` for AI-generated translations (e.g. Spanish). Only `verified` sentences sync to remote. See [pipeline.md](../technical/pipeline.md) |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
 **Why separate `sentence_ja` and `sentence_furigana`?**
 
 `sentence_ja` is clean text — useful for display without furigana, search indexing, and text-to-speech. `sentence_furigana` carries `[kanji|reading]` annotations that the app parses for rendering small kana above kanji. Keeping them separate avoids parsing when furigana isn't needed.
 
-**Why store `sentence_ja` separately from `sentence_translated`?**
+### VocabularySentenceI18n (Value Object)
 
-The Japanese sentence is the same regardless of translation language — only the translation changes. Storing them together per language row keeps each row self-contained and avoids a separate join for the Japanese text.
+Localized translation of an example sentence. One row per sentence per language. Follows the same pattern as `VocabularyI18n`.
+
+| Field | Type | Description |
+|---|---|---|
+| `vocabulary_sentence_id` | `int` | FK to VocabularySentence |
+| `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es" |
+| `sentence_translated` | `String` | Translated sentence, e.g. "I want to go to Japan." |
+
+### VocabularySentenceReview (Entity)
+
+Admin-only review state for each `VocabularySentence`. This table lives in the **Remote `admin` schema** as the authoritative source of truth, surviving device loss. It is **not present in the client Drift schema** — clients never see review data; they only receive sentences that have been verified and synced to production. Access is restricted to the `service_role` key (which bypasses RLS). Follows the same pattern as `KanjiComponentReview` (see kanji_component.md).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | `int` | Unique identifier |
+| `vocabulary_sentence_id` | `int` | FK to `vocabulary_sentences(id)`. One review row per sentence (unique constraint) |
+| `verification_status` | `VerificationStatus` | Review state for this sentence. Defaults to `draft`. Only `verified` rows are eligible for remote sync. See `VerificationStatus` enum in kanji_component.md |
+| `created_at` | `DateTime` | Row creation timestamp (auto-set) |
+| `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
 ## Relationships
 
@@ -97,7 +114,9 @@ The Japanese sentence is the same regardless of translation language — only th
 Vocabulary  ──1:N──→ VocabularyReading    (one word, many pronunciations)
 Vocabulary  ──1:N──→ VocabularyI18n       (one word, one row per language)
 Vocabulary  ──1:N──→ VocabularyKanji      (one word, many kanji in order)
-Vocabulary  ──1:N──→ VocabularySentence   (one word, example sentences per language)
+Vocabulary  ──1:1──→ VocabularySentence   (one word, one example sentence)
+VocabularySentence ──1:N──→ VocabularySentenceI18n   (one sentence, translations per language)
+VocabularySentence ──1:1──→ VocabularySentenceReview (one review row per sentence; admin-only)
 Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kanji.md)
 ```
 
@@ -115,8 +134,12 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 10. `vocabulary_id` + `lang_code` must be unique in `VocabularyI18n` — one translation per language.
 11. `frequency_rank` must be a positive integer (1 = most common).
 12. `min_jlpt_level`, when present, must be in the range 1–5.
-13. `vocabulary_id` + `lang_code` must be unique in `VocabularySentence` — one sentence per language per word.
-14. Source-extracted sentences (English from JMdict) are created with `verification_status = 'verified'`. AI-generated translations are created with `verification_status = 'draft'`. Only `verified` sentences are synced to the remote database.
+13. `vocabulary_id` must be unique in `VocabularySentence` — one sentence per word.
+14. `vocabulary_sentence_id` + `lang_code` must be unique in `VocabularySentenceI18n` — one translation per language per sentence.
+15. New sentences created by the pipeline must have a corresponding `VocabularySentenceReview` row with `verification_status = draft`.
+16. Only sentences whose review row has `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
+17. There is exactly one `VocabularySentenceReview` per `VocabularySentence` (enforced by unique constraint on `vocabulary_sentence_id`).
+18. Deleting a `VocabularySentence` must cascade-delete its `VocabularySentenceReview` row and all `VocabularySentenceI18n` rows.
 
 ## Edge Cases
 
@@ -126,5 +149,7 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 - **Multiple primary readings:** Some words genuinely have two primary readings (e.g. 明日: あした and あす are both common). SRS should test all primary readings.
 - **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana.
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
-- **Missing sentences:** Not every vocabulary word will have example sentences for every language. The UI should gracefully hide the sentence section when none exist. On the remote DB, a Spanish sentence may not yet be available if the AI translation is still in `draft` status awaiting review.
-- **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence, and associated SrsCard/ReviewLog rows.
+- **Missing sentences:** Not every vocabulary word will have an example sentence. The UI should gracefully hide the sentence section when none exist.
+- **Missing sentence translations:** A sentence may exist but lack a translation in the user's language. Fall back to "en". If no translations exist at all, hide the sentence section.
+- **Unverified sentences:** A sentence whose `VocabularySentenceReview` is `draft` or `flagged` will not sync to remote. Clients never see it.
+- **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n and VocabularySentenceReview), and associated SrsCard/ReviewLog rows.

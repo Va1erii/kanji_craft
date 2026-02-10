@@ -62,14 +62,15 @@ Output: Set<RadicalCandidate>
 
 For each `raw_kanjivg` row:
 1. Get the root node's `children` array.
-2. For each direct child node with a non-empty `element`:
+2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element` or are leaves.
+3. For each direct child node with a non-empty `element`:
    - Record the `element` as a radical candidate.
    - If `variant == true` and `original` is present, record the variant relationship: `element` is a shape of `original`.
    - If `radical == 'general'`, mark as official Kangxi radical.
    - Record any `position` values seen for this element across all kanji trees.
-3. **Merge split parts:** If multiple children share the same `element` with different `part` values (e.g. 辶 part=1 and 辶 part=2 in 道), treat them as a **single component**. Merge their `stroke_indices` and use the `position` from the first part (or the part that carries the `position` attribute).
+4. **Merge split parts:** If multiple children share the same `element` with different `part` values (e.g. 辶 part=1 and 辶 part=2 in 道), treat them as a **single component**. Merge their `stroke_indices` and use the `position` from the first part (or the part that carries the `position` attribute).
 
-**Important:** Only process direct children of the root — do not recurse deeper. Sub-components of a child (e.g. 五 and 口 inside 吾) are handled when that child's own `raw_kanjivg` entry is processed.
+**Important:** Only process direct children of the root (after flattening) — do not recurse deeper. Sub-components of a child (e.g. 五 and 口 inside 吾) are handled when that child's own `raw_kanjivg` entry is processed.
 
 ### Pass 2: Register — Create Radical Rows
 
@@ -87,8 +88,10 @@ For each unique element from Pass 1:
    - `master_symbol` — as determined above.
    - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
    - `stroke_count` — looked up from `raw_kanjivg` where `character == master_symbol` (the master's own entry).
-   - `svg_file_name`, `svg_file_url`, `svg_hash` — populated later in SVG Processing (pipeline Phase 2.4).
-   - `min_grade`, `min_jlpt_level`, `impact_score` — populated in Pass 4 (metadata derivation).
+   - `svg_file_name`, `svg_file_url`, `svg_hash` — `null` at creation. Populated in SVG Processing (pipeline Phase 2.4).
+   - `min_grade`, `min_jlpt_level`, `impact_score` — `null` at creation. Populated in Pass 4 (metadata derivation).
+
+   **Schema note:** These deferred fields are **nullable** in the database schema to support multi-pass pipeline population. The domain entity ([radical.md](../entities/radical.md)) defines the complete radical — all fields populated. The Release Builder (Phase 4) rejects rows with null SVG or metadata fields — only fully-populated radicals are eligible for remote sync.
 
 3. **Upsert `radical_variants`:**
    - For every element seen with `variant == true`:
@@ -96,7 +99,7 @@ For each unique element from Pass 1:
      - `shape` — the variant element (e.g. 氵).
      - `position` — the most common `position` value seen for this variant across all trees.
      - `is_locked` — `true` if this variant was **only** ever seen in a single position across all kanji trees.
-     - SVG fields — populated later in SVG Processing.
+     - SVG fields — `null` at creation. Populated in SVG Processing.
    - For every radical whose `master_symbol` was NOT seen as a variant of anything (it is its own canonical form):
      - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../entities/radical.md): every radical has at least one variant.)
 
@@ -109,7 +112,21 @@ For each `raw_kanjivg` row:
 2. Get the root node's direct children.
 3. For each child (after merging split parts):
    - **Resolve the radical:** If `variant == true` and `original` is present, look up the radical by `master_symbol == original`. Otherwise, look up by `master_symbol == element`.
-   - **Determine position:** Use the child's `position` attribute. If null, default to `unknown`.
+   - **Determine position:** Map the child's `position` attribute from KanjiVG values to `position_type`:
+
+     | KanjiVG value | `position_type` |
+     |---|---|
+     | `left` | `hen` |
+     | `right` | `tsukuri` |
+     | `top` | `kanmuri` |
+     | `bottom` | `ashi` |
+     | `kamae` | `kamae` |
+     | `tare` | `tare` |
+     | `nyo` | `nyo` |
+     | `tarec` | `unknown` |
+     | `nyoc` | `unknown` |
+     | `null` | `unknown` |
+
    - **Determine radical_type:** Map the child's `radical` attribute to `RadicalType`:
      - `"general"` → `general`
      - `"tradit"` → `tradit`
@@ -119,14 +136,13 @@ For each `raw_kanjivg` row:
    - **Upsert `kanji_components`:** unique on `(kanji_id, radical_id, position)`.
      - `kanji_id` — from step 1.
      - `radical_id` — from the resolved radical.
-     - `position` — from the child node (mapped from KanjiVG values: `left`→`hen`, `right`→`tsukuri`, etc.).
+     - `position` — from the mapping above.
      - `logic_hint` — defaults to `semantic`. Refined in pipeline Phase 2.5 (AI Heuristics).
      - `radical_type` — from the child's `radical` attribute (see above). Most components will be `component`; only 1–2 per kanji carry a dictionary radical designation.
-     - `is_primary` — Computed during extraction:
+     - `is_primary` — Computed, not set during extraction:
        - `true` if `radical_type == general`.
-       - (Optional) `true` if `radical_type == tradit` **and** no `general` exists for this kanji.
        - `false` for everything else.
-       - In PostgreSQL this is a generated column; in Dart it is a getter on `KanjiComponent` (see [kanji_component.md rule #5](../entities/kanji_component.md)).
+       - In PostgreSQL this is a generated column (`GENERATED ALWAYS AS (radical_type = 'general') STORED`); in Dart it is a getter on `KanjiComponent` (see [kanji_component.md rule #5](../entities/kanji_component.md)).
 
 **Skip condition:** If a child's `element` cannot be resolved to a radical (e.g. it was filtered out or the element is empty), log a warning and skip. This should not happen if Pass 1 and Pass 2 ran correctly.
 
@@ -148,9 +164,9 @@ After all kanji and components are linked, compute derived fields on each radica
 
    The buckets are approximate and may need tuning after processing real data. The goal: score 10 radicals (like 口, 木) appear in hundreds of kanji; score 1 radicals appear in a handful.
 
-2. **`min_grade`** — `SELECT MIN(k.min_grade) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. The earliest school grade any kanji containing this radical appears in.
+2. **`min_grade`** — `SELECT MIN(k.min_grade) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. The earliest school grade any kanji containing this radical appears in. Returns `null` if all containing kanji have null grade (see "Radical with no graded kanji" edge case below).
 
-3. **`min_jlpt_level`** — `SELECT MAX(k.min_jlpt_level) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. Note: MAX because JLPT 5 is easiest, 1 is hardest — `MAX` returns the easiest level. This assumes `kanji.min_jlpt_level` stores N5 as `5` and N1 as `1` (the raw JLPT integer, not an inverted difficulty scale). Verify your KANJIDIC ingestion follows this convention — KANJIDIC2 uses the old 1–4 scale, so the pipeline must map to current N1–N5 before this query is meaningful.
+3. **`min_jlpt_level`** — `SELECT MAX(k.min_jlpt_level) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. Note: MAX because JLPT 5 is easiest, 1 is hardest — `MAX` returns the easiest level. Returns `null` if all containing kanji have null JLPT (see "Radical with no graded kanji" edge case below). This assumes `kanji.min_jlpt_level` stores N5 as `5` and N1 as `1` (the raw JLPT integer, not an inverted difficulty scale). Verify your KANJIDIC ingestion follows this convention — KANJIDIC2 uses the old 1–4 scale, so the pipeline must map to current N1–N5 before this query is meaningful.
 
 ## Worked Examples
 
@@ -278,6 +294,10 @@ A kanji's `master_symbol` in `radicals` may equal its `character` in `kanji`. Fo
 ### Duplicate component positions
 
 If the same radical appears at the same position in the same kanji (after part merging), the unique constraint `(kanji_id, radical_id, position)` prevents duplicates. The upsert is a no-op.
+
+### Radical with no graded kanji
+
+If all kanji containing a radical have `null` for `min_grade` or `min_jlpt_level` (e.g. the radical only appears in rare, ungraded kanji), the Pass 4 queries return `null`. These fields stay `null` on the radical — it won't appear in JLPT-based or grade-based study paths. The Release Builder accepts null metadata fields; the client app filters these radicals out of structured study paths but they remain accessible via search/browse.
 
 ### Component not in KANJIDIC
 

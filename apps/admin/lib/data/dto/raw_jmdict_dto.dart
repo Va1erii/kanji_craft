@@ -11,11 +11,11 @@ abstract class RawJmdictDto with _$RawJmdictDto {
     @JsonKey(name: 'import_id') required int importId,
     @JsonKey(name: 'ent_seq') required int entSeq,
     @JsonKey(name: 'kanji_elements')
-    required List<JmdictKanjiElementDto> kanjiElements,
+    List<JmdictKanjiElementDto>? kanjiElements,
     @JsonKey(name: 'reading_elements')
     required List<JmdictReadingElementDto> readingElements,
     required List<JmdictSenseDto> senses,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    List<JmdictExampleDto>? examples,
   }) = _RawJmdictDto;
 
   const RawJmdictDto._();
@@ -27,22 +27,24 @@ abstract class RawJmdictDto with _$RawJmdictDto {
         importId: entity.importId,
         entSeq: entity.entSeq,
         kanjiElements: entity.kanjiElements
-            .map(JmdictKanjiElementDto.fromDomain)
+            ?.map(JmdictKanjiElementDto.fromDomain)
             .toList(),
         readingElements: entity.readingElements
             .map(JmdictReadingElementDto.fromDomain)
             .toList(),
         senses: entity.senses.map(JmdictSenseDto.fromDomain).toList(),
-        createdAt: entity.createdAt,
+        examples: entity.examples
+            ?.map(JmdictExampleDto.fromDomain)
+            .toList(),
       );
 
   RawJmdict toDomain() => RawJmdict(
         importId: importId,
         entSeq: entSeq,
-        kanjiElements: kanjiElements.map((e) => e.toDomain()).toList(),
+        kanjiElements: kanjiElements?.map((e) => e.toDomain()).toList(),
         readingElements: readingElements.map((e) => e.toDomain()).toList(),
         senses: senses.map((e) => e.toDomain()).toList(),
-        createdAt: createdAt,
+        examples: examples?.map((e) => e.toDomain()).toList(),
       );
 }
 
@@ -163,7 +165,7 @@ abstract class JmdictLsourceDto with _$JmdictLsourceDto {
   const factory JmdictLsourceDto({
     required String lang,
     String? value,
-    @JsonKey(name: 'ls_type') String? lsType,
+    @JsonKey(name: 'ls_type') @Default('full') String lsType,
     @JsonKey(name: 'ls_wasei') @Default(false) bool lsWasei,
   }) = _JmdictLsourceDto;
 
@@ -185,5 +187,29 @@ abstract class JmdictLsourceDto with _$JmdictLsourceDto {
         value: value,
         lsType: lsType,
         lsWasei: lsWasei,
+      );
+}
+
+@freezed
+abstract class JmdictExampleDto with _$JmdictExampleDto {
+  const factory JmdictExampleDto({
+    @JsonKey(name: 'sentence_ja') required String sentenceJa,
+    @JsonKey(name: 'sentence_en') required String sentenceEn,
+  }) = _JmdictExampleDto;
+
+  const JmdictExampleDto._();
+
+  factory JmdictExampleDto.fromJson(Map<String, Object?> json) =>
+      _$JmdictExampleDtoFromJson(json);
+
+  factory JmdictExampleDto.fromDomain(JmdictExample entity) =>
+      JmdictExampleDto(
+        sentenceJa: entity.sentenceJa,
+        sentenceEn: entity.sentenceEn,
+      );
+
+  JmdictExample toDomain() => JmdictExample(
+        sentenceJa: sentenceJa,
+        sentenceEn: sentenceEn,
       );
 }

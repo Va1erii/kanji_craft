@@ -8,11 +8,14 @@ class RawJmdictEntries extends Table {
       integer().references(DataImportEntries, #id)();
   IntColumn get entSeq => integer()();
   TextColumn get kanjiElements =>
-      text().map(const JmdictKanjiElementsConverter())();
+      text().map(const JmdictKanjiElementsConverter()).nullable()();
   TextColumn get readingElements =>
       text().map(const JmdictReadingElementsConverter())();
   TextColumn get senses => text().map(const JmdictSensesConverter())();
-  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get examples =>
+      text().map(const JmdictExamplesConverter()).nullable()();
+  DateTimeColumn get createdAt =>
+      dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {importId, entSeq};

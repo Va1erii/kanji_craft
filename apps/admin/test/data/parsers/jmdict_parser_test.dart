@@ -58,12 +58,14 @@ void main() {
 
       expect(entry.importId, 42);
       expect(entry.entSeq, 1358280);
+      expect(entry.kanjiElements, isNotNull);
       expect(entry.kanjiElements, hasLength(1));
-      expect(entry.kanjiElements.first.keb, '食べる');
-      expect(entry.kanjiElements.first.kePri, ['ichi1', 'news2']);
+      expect(entry.kanjiElements!.first.keb, '食べる');
+      expect(entry.kanjiElements!.first.kePri, ['ichi1', 'news2']);
       expect(entry.readingElements, hasLength(1));
       expect(entry.readingElements.first.reb, 'たべる');
       expect(entry.senses, hasLength(1));
+      expect(entry.examples, isNull);
     });
 
     test('parses multi-language glosses (xml:lang defaults to "eng")', () {
@@ -90,12 +92,12 @@ void main() {
 ''');
 
       final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
-      expect(entry.kanjiElements, isEmpty);
+      expect(entry.kanjiElements, isNull);
       expect(entry.readingElements, hasLength(1));
       expect(entry.readingElements.first.reb, 'おはよう');
     });
 
-    test('resolves DTD entity references', () {
+    test('resolves DTD entity references to entity codes', () {
       final xml = _wrapWithDtd(
         '''
 <entry>
@@ -104,7 +106,7 @@ void main() {
     <reb>すし</reb>
   </r_ele>
   <sense>
-    <pos>noun (common) (futsuumeishi)</pos>
+    <pos>&n;</pos>
     <gloss>sushi</gloss>
   </sense>
 </entry>
@@ -117,10 +119,11 @@ void main() {
 
       final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results, hasLength(1));
-      expect(results.first.senses.first.pos, ['noun (common) (futsuumeishi)']);
+      // Stores the entity code, not the expanded text.
+      expect(results.first.senses.first.pos, ['n']);
     });
 
-    test('resolves entity references in element text', () {
+    test('resolves entity references in misc and other fields', () {
       final xml = _wrapWithDtd(
         '''
 <entry>
@@ -142,10 +145,8 @@ void main() {
       );
 
       final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      expect(results.first.senses.first.pos,
-          ['noun (common) (futsuumeishi)']);
-      expect(results.first.senses.first.misc,
-          ['word usually written using kana alone']);
+      expect(results.first.senses.first.pos, ['n']);
+      expect(results.first.senses.first.misc, ['uk']);
     });
 
     test('parses multiple senses per entry', () {
@@ -228,6 +229,7 @@ void main() {
       expect(entry.senses.first.lsource, hasLength(1));
       expect(entry.senses.first.lsource!.first.lang, 'dut');
       expect(entry.senses.first.lsource!.first.value, 'koffie');
+      expect(entry.senses.first.lsource!.first.lsType, 'full');
     });
 
     test('parses lsource with ls_type and ls_wasei attributes', () {
@@ -250,6 +252,24 @@ void main() {
       expect(ls.value, 'salary');
       expect(ls.lsType, 'part');
       expect(ls.lsWasei, isTrue);
+    });
+
+    test('lsource defaults lsType to "full" when absent', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1000071</ent_seq>
+  <r_ele>
+    <reb>パン</reb>
+  </r_ele>
+  <sense>
+    <lsource xml:lang="por">pão</lsource>
+    <gloss>bread</gloss>
+  </sense>
+</entry>
+''');
+
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
+      expect(entry.senses.first.lsource!.first.lsType, 'full');
     });
 
     test('parses multiple entries', () {
@@ -320,7 +340,7 @@ void main() {
 ''');
 
       final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
-      expect(entry.kanjiElements.first.keInf, ['irregular kanji usage']);
+      expect(entry.kanjiElements!.first.keInf, ['irregular kanji usage']);
     });
 
     test('parses re_nokanji flag', () {
@@ -429,6 +449,95 @@ void main() {
 
       final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
       expect(results.first.senses.first.glosses['eng'], ['Smith & Jones']);
+    });
+
+    test('parses example sentences from JMdict_e_examp format', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1594720</ent_seq>
+  <k_ele><keb>収集</keb></k_ele>
+  <r_ele><reb>しゅうしゅう</reb></r_ele>
+  <sense>
+    <gloss>collection</gloss>
+    <example>
+      <ex_srce exsrc_type="tat">77194</ex_srce>
+      <ex_text>収集</ex_text>
+      <ex_sent xml:lang="jpn">切手を収集しています。</ex_sent>
+      <ex_sent xml:lang="eng">I collect stamps.</ex_sent>
+    </example>
+  </sense>
+</entry>
+''');
+
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
+      expect(entry.examples, isNotNull);
+      expect(entry.examples, hasLength(1));
+      expect(entry.examples!.first.sentenceJa, '切手を収集しています。');
+      expect(entry.examples!.first.sentenceEn, 'I collect stamps.');
+    });
+
+    test('collects examples from multiple senses', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1000200</ent_seq>
+  <r_ele><reb>テスト</reb></r_ele>
+  <sense>
+    <gloss>test</gloss>
+    <example>
+      <ex_sent xml:lang="jpn">テストに合格した。</ex_sent>
+      <ex_sent xml:lang="eng">I passed the test.</ex_sent>
+    </example>
+  </sense>
+  <sense>
+    <gloss xml:lang="fre">test</gloss>
+    <example>
+      <ex_sent xml:lang="jpn">テストを受ける。</ex_sent>
+      <ex_sent xml:lang="eng">To take a test.</ex_sent>
+    </example>
+  </sense>
+</entry>
+''');
+
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
+      expect(entry.examples, hasLength(2));
+      expect(entry.examples![0].sentenceJa, 'テストに合格した。');
+      expect(entry.examples![1].sentenceJa, 'テストを受ける。');
+    });
+
+    test('examples is null for base JMdict entries (no example elements)', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1000210</ent_seq>
+  <r_ele><reb>テスト</reb></r_ele>
+  <sense><gloss>test</gloss></sense>
+</entry>
+''');
+
+      final entry = parser.parseXmlString(xmlString: xml, importId: 1).entries.first;
+      expect(entry.examples, isNull);
+    });
+
+    test('same source produces identical parse results (deterministic)', () {
+      final xml = _wrap('''
+<entry>
+  <ent_seq>1000300</ent_seq>
+  <k_ele><keb>日本</keb></k_ele>
+  <r_ele><reb>にほん</reb></r_ele>
+  <sense><gloss>Japan</gloss></sense>
+</entry>
+''');
+
+      final result1 = parser.parseXmlString(xmlString: xml, importId: 5);
+      final result2 = parser.parseXmlString(xmlString: xml, importId: 5);
+
+      expect(result1.entries.length, result2.entries.length);
+      final e1 = result1.entries.first;
+      final e2 = result2.entries.first;
+      expect(e1.importId, e2.importId);
+      expect(e1.entSeq, e2.entSeq);
+      expect(e1.kanjiElements!.first.keb, e2.kanjiElements!.first.keb);
+      expect(e1.readingElements.first.reb, e2.readingElements.first.reb);
+      expect(e1.senses.first.glosses, e2.senses.first.glosses);
     });
   });
 }

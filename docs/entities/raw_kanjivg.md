@@ -14,8 +14,7 @@ One row per kanji character. Flat scalar fields for queryable data; JSONB column
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | `int` | Unique identifier |
-| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `character`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
+| `import_id` | `int` | FK to `data_imports`. Part of composite PK with `character`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
 | `character` | `String` | The kanji character, e.g. "休" |
 | `unicode_hex` | `String` | 5-char zero-padded hex code point, e.g. "04f11" |
 | `view_box` | `String` | The SVG `viewBox` attribute, typically "0 0 109 109". Stored explicitly so the renderer never assumes a fixed canvas size |
@@ -139,7 +138,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 
 1. `character` must be a single Unicode code point.
 2. `unicode_hex` must be exactly 5 characters, zero-padded, lowercase hex.
-3. **Composite unique constraint:** `import_id` + `character` must be unique. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
+3. **Composite primary key:** `import_id` + `character`. No auto-increment id — the same source file with the same `import_id` always produces identical rows. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
 4. `stroke_count` must equal the length of the `strokes` array.
 5. `strokes` must be ordered by `number` (1-based, contiguous, no gaps).
 6. **RLS:** RLS is enabled with zero policies for `authenticated` or `anon` roles. Only `service_role` (which bypasses RLS) can read or write this table.

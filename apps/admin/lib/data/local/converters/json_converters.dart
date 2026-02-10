@@ -218,11 +218,12 @@ class MeaningsConverter
 // ---------------------------------------------------------------------------
 
 class JmdictKanjiElementsConverter
-    extends TypeConverter<List<JmdictKanjiElement>, String> {
+    extends TypeConverter<List<JmdictKanjiElement>?, String?> {
   const JmdictKanjiElementsConverter();
 
   @override
-  List<JmdictKanjiElement> fromSql(String fromDb) {
+  List<JmdictKanjiElement>? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
     final list = jsonDecode(fromDb) as List;
     return list
         .map((e) => JmdictKanjiElementDto.fromJson(e as Map<String, Object?>)
@@ -231,7 +232,8 @@ class JmdictKanjiElementsConverter
   }
 
   @override
-  String toSql(List<JmdictKanjiElement> value) {
+  String? toSql(List<JmdictKanjiElement>? value) {
+    if (value == null) return null;
     final dtos = value.map(JmdictKanjiElementDto.fromDomain).toList();
     return jsonEncode(dtos.map((d) => d.toJson()).toList());
   }
@@ -274,6 +276,28 @@ class JmdictSensesConverter
   @override
   String toSql(List<JmdictSense> value) {
     final dtos = value.map(JmdictSenseDto.fromDomain).toList();
+    return jsonEncode(dtos.map((d) => d.toJson()).toList());
+  }
+}
+
+class JmdictExamplesConverter
+    extends TypeConverter<List<JmdictExample>?, String?> {
+  const JmdictExamplesConverter();
+
+  @override
+  List<JmdictExample>? fromSql(String? fromDb) {
+    if (fromDb == null) return null;
+    final list = jsonDecode(fromDb) as List;
+    return list
+        .map((e) =>
+            JmdictExampleDto.fromJson(e as Map<String, Object?>).toDomain())
+        .toList();
+  }
+
+  @override
+  String? toSql(List<JmdictExample>? value) {
+    if (value == null) return null;
+    final dtos = value.map(JmdictExampleDto.fromDomain).toList();
     return jsonEncode(dtos.map((d) => d.toJson()).toList());
   }
 }

@@ -20,14 +20,13 @@ One row per `<entry>` element in JMdict. JSONB columns preserve the full nested 
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | `int` | Unique identifier |
-| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `ent_seq`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
+| `import_id` | `int` | FK to `data_imports`. Part of composite PK with `ent_seq`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
 | `ent_seq` | `int` | JMdict entry sequence number — stable across releases, used for cross-referencing between formats |
 | `kanji_elements` | `JsonList?` | Array of kanji element objects (see Kanji Element Shape below). Null for kana-only entries (DTD: `k_ele*`) |
 | `reading_elements` | `JsonList` | Array of reading element objects (see Reading Element Shape below). Always non-empty (DTD: `r_ele+`) |
 | `senses` | `JsonList` | Array of sense objects (see Sense Shape below). Always non-empty (DTD: `sense+`) |
 | `examples` | `JsonList?` | Tanaka Corpus sentence pairs (see Example Shape below). Only populated from JMdict_e_examp; null when imported from base JMdict |
-| `created_at` | `DateTime` | Row creation timestamp |
+| `created_at` | `DateTime` | Row creation timestamp. Auto-set by the database — not part of parsed data |
 
 **Why JSONB for all structural fields?**
 
@@ -113,7 +112,7 @@ Each element in the `senses` array represents a distinct meaning or translationa
 | `ant` | `List<String>?` | Antonym cross-references. Content must match a `keb` or `reb` in another entry. Null if none |
 | `field` | `List<String>?` | Field of application codes (e.g. `"comp"`, `"med"`, `"ling"`). Uses DTD entity codes. Null for general application |
 | `misc` | `List<String>?` | Miscellaneous information codes (e.g. `"col"`, `"id"`, `"uk"`). Uses DTD entity codes. Null if none |
-| `s_inf` | `String?` | Free-text additional sense information (level of currency, regional variations, etc.). Null if none |
+| `s_inf` | `List<String>?` | Free-text additional sense information (level of currency, regional variations, etc.). DTD allows multiple `s_inf` per sense. Null if none |
 | `lsource` | `List<LsourceObject>?` | Loan-word source language information (see Lsource Shape below). Null for native Japanese words |
 | `dial` | `List<String>?` | Dialect codes (e.g. `"ksb"`, `"ktb"`). Uses DTD entity codes. Null for standard Japanese |
 | `glosses` | `Map<String, List<String>>` | Translations grouped by ISO 639-2 language code. Keys are language codes (e.g. `"eng"`, `"fre"`, `"ger"`); values are ordered gloss arrays. Always present — at minimum contains `"eng"` (except pure cross-reference entries) |
@@ -135,7 +134,7 @@ Each element in the `lsource` array describes the source language of a loan word
 |---|---|---|
 | `lang` | `String` | ISO 639-2 language code (defaults to `"eng"` in source XML). Uses bibliographic B codes |
 | `value` | `String?` | The source word or phrase in the originating language. Null if the element is empty in the source XML |
-| `ls_type` | `String` | `"full"` if the entry is fully derived from the source, `"part"` if only partially borrowed. Defaults to `"full"` |
+| `ls_type` | `String` | `"full"` if the entry is fully derived from the source, `"part"` if only partially borrowed. Always present — defaults to `"full"` when absent in source XML |
 | `ls_wasei` | `bool` | `true` if the Japanese word is constructed from source-language words rather than being an actual phrase (wasei-eigo). `false` otherwise |
 
 ### Example Shape
@@ -168,7 +167,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 
 ## Business Rules
 
-1. **Composite unique constraint:** `import_id` + `ent_seq` must be unique. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
+1. **Composite primary key:** `import_id` + `ent_seq`. No auto-increment id — the same source file with the same `import_id` always produces identical rows. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
 2. `ent_seq` must be a positive integer.
 3. `reading_elements` must be a non-empty array (DTD: `r_ele+`). Every entry has at least one reading.
 4. `senses` must be a non-empty array (DTD: `sense+`). Every entry has at least one sense.

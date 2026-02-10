@@ -7,10 +7,10 @@ abstract class RawJmdict with _$RawJmdict {
   const factory RawJmdict({
     required int importId,
     required int entSeq,
-    required List<JmdictKanjiElement> kanjiElements,
+    List<JmdictKanjiElement>? kanjiElements,
     required List<JmdictReadingElement> readingElements,
     required List<JmdictSense> senses,
-    required DateTime createdAt,
+    List<JmdictExample>? examples,
   }) = _RawJmdict;
 }
 
@@ -56,7 +56,15 @@ abstract class JmdictLsource with _$JmdictLsource {
   const factory JmdictLsource({
     required String lang,
     String? value,
-    String? lsType,
+    @Default('full') String lsType,
     @Default(false) bool lsWasei,
   }) = _JmdictLsource;
+}
+
+@freezed
+abstract class JmdictExample with _$JmdictExample {
+  const factory JmdictExample({
+    required String sentenceJa,
+    required String sentenceEn,
+  }) = _JmdictExample;
 }

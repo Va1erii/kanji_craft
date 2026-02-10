@@ -14,7 +14,7 @@ class DriftRawJmdictRepository implements RawJmdictRepository {
   Future<void> insertBatch(List<RawJmdict> rows) async {
     await _db.batch((b) {
       for (final row in rows) {
-        b.insert(_db.rawJmdictEntries, row.toEntry());
+        b.insert(_db.rawJmdictEntries, row.toCompanion());
       }
     });
   }

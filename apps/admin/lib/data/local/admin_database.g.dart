@@ -2311,15 +2311,15 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
     requiredDuringInsert: true,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<List<JmdictKanjiElement>, String>
+  late final GeneratedColumnWithTypeConverter<List<JmdictKanjiElement>?, String>
   kanjiElements =
       GeneratedColumn<String>(
         'kanji_elements',
         aliasedName,
-        false,
+        true,
         type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<List<JmdictKanjiElement>>(
+        requiredDuringInsert: false,
+      ).withConverter<List<JmdictKanjiElement>?>(
         $RawJmdictEntriesTable.$converterkanjiElements,
       );
   @override
@@ -2346,6 +2346,18 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   ).withConverter<List<JmdictSense>>($RawJmdictEntriesTable.$convertersenses);
+  @override
+  late final GeneratedColumnWithTypeConverter<List<JmdictExample>?, String>
+  examples =
+      GeneratedColumn<String>(
+        'examples',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<List<JmdictExample>?>(
+        $RawJmdictEntriesTable.$converterexamples,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2355,7 +2367,8 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -2364,6 +2377,7 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
     kanjiElements,
     readingElements,
     senses,
+    examples,
     createdAt,
   ];
   @override
@@ -2399,8 +2413,6 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -2423,7 +2435,7 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}kanji_elements'],
-        )!,
+        ),
       ),
       readingElements: $RawJmdictEntriesTable.$converterreadingElements.fromSql(
         attachedDatabase.typeMapping.read(
@@ -2437,6 +2449,12 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
           data['${effectivePrefix}senses'],
         )!,
       ),
+      examples: $RawJmdictEntriesTable.$converterexamples.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}examples'],
+        ),
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2449,27 +2467,31 @@ class $RawJmdictEntriesTable extends RawJmdictEntries
     return $RawJmdictEntriesTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<List<JmdictKanjiElement>, String>
+  static TypeConverter<List<JmdictKanjiElement>?, String?>
   $converterkanjiElements = const JmdictKanjiElementsConverter();
   static TypeConverter<List<JmdictReadingElement>, String>
   $converterreadingElements = const JmdictReadingElementsConverter();
   static TypeConverter<List<JmdictSense>, String> $convertersenses =
       const JmdictSensesConverter();
+  static TypeConverter<List<JmdictExample>?, String?> $converterexamples =
+      const JmdictExamplesConverter();
 }
 
 class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   final int importId;
   final int entSeq;
-  final List<JmdictKanjiElement> kanjiElements;
+  final List<JmdictKanjiElement>? kanjiElements;
   final List<JmdictReadingElement> readingElements;
   final List<JmdictSense> senses;
+  final List<JmdictExample>? examples;
   final DateTime createdAt;
   const RawJmdictEntry({
     required this.importId,
     required this.entSeq,
-    required this.kanjiElements,
+    this.kanjiElements,
     required this.readingElements,
     required this.senses,
+    this.examples,
     required this.createdAt,
   });
   @override
@@ -2477,7 +2499,7 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     final map = <String, Expression>{};
     map['import_id'] = Variable<int>(importId);
     map['ent_seq'] = Variable<int>(entSeq);
-    {
+    if (!nullToAbsent || kanjiElements != null) {
       map['kanji_elements'] = Variable<String>(
         $RawJmdictEntriesTable.$converterkanjiElements.toSql(kanjiElements),
       );
@@ -2492,6 +2514,11 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
         $RawJmdictEntriesTable.$convertersenses.toSql(senses),
       );
     }
+    if (!nullToAbsent || examples != null) {
+      map['examples'] = Variable<String>(
+        $RawJmdictEntriesTable.$converterexamples.toSql(examples),
+      );
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -2500,9 +2527,14 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     return RawJmdictEntriesCompanion(
       importId: Value(importId),
       entSeq: Value(entSeq),
-      kanjiElements: Value(kanjiElements),
+      kanjiElements: kanjiElements == null && nullToAbsent
+          ? const Value.absent()
+          : Value(kanjiElements),
       readingElements: Value(readingElements),
       senses: Value(senses),
+      examples: examples == null && nullToAbsent
+          ? const Value.absent()
+          : Value(examples),
       createdAt: Value(createdAt),
     );
   }
@@ -2515,13 +2547,14 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     return RawJmdictEntry(
       importId: serializer.fromJson<int>(json['importId']),
       entSeq: serializer.fromJson<int>(json['entSeq']),
-      kanjiElements: serializer.fromJson<List<JmdictKanjiElement>>(
+      kanjiElements: serializer.fromJson<List<JmdictKanjiElement>?>(
         json['kanjiElements'],
       ),
       readingElements: serializer.fromJson<List<JmdictReadingElement>>(
         json['readingElements'],
       ),
       senses: serializer.fromJson<List<JmdictSense>>(json['senses']),
+      examples: serializer.fromJson<List<JmdictExample>?>(json['examples']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -2531,13 +2564,14 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     return <String, dynamic>{
       'importId': serializer.toJson<int>(importId),
       'entSeq': serializer.toJson<int>(entSeq),
-      'kanjiElements': serializer.toJson<List<JmdictKanjiElement>>(
+      'kanjiElements': serializer.toJson<List<JmdictKanjiElement>?>(
         kanjiElements,
       ),
       'readingElements': serializer.toJson<List<JmdictReadingElement>>(
         readingElements,
       ),
       'senses': serializer.toJson<List<JmdictSense>>(senses),
+      'examples': serializer.toJson<List<JmdictExample>?>(examples),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -2545,16 +2579,20 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
   RawJmdictEntry copyWith({
     int? importId,
     int? entSeq,
-    List<JmdictKanjiElement>? kanjiElements,
+    Value<List<JmdictKanjiElement>?> kanjiElements = const Value.absent(),
     List<JmdictReadingElement>? readingElements,
     List<JmdictSense>? senses,
+    Value<List<JmdictExample>?> examples = const Value.absent(),
     DateTime? createdAt,
   }) => RawJmdictEntry(
     importId: importId ?? this.importId,
     entSeq: entSeq ?? this.entSeq,
-    kanjiElements: kanjiElements ?? this.kanjiElements,
+    kanjiElements: kanjiElements.present
+        ? kanjiElements.value
+        : this.kanjiElements,
     readingElements: readingElements ?? this.readingElements,
     senses: senses ?? this.senses,
+    examples: examples.present ? examples.value : this.examples,
     createdAt: createdAt ?? this.createdAt,
   );
   RawJmdictEntry copyWithCompanion(RawJmdictEntriesCompanion data) {
@@ -2568,6 +2606,7 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
           ? data.readingElements.value
           : this.readingElements,
       senses: data.senses.present ? data.senses.value : this.senses,
+      examples: data.examples.present ? data.examples.value : this.examples,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -2580,6 +2619,7 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
           ..write('kanjiElements: $kanjiElements, ')
           ..write('readingElements: $readingElements, ')
           ..write('senses: $senses, ')
+          ..write('examples: $examples, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -2592,6 +2632,7 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
     kanjiElements,
     readingElements,
     senses,
+    examples,
     createdAt,
   );
   @override
@@ -2603,15 +2644,17 @@ class RawJmdictEntry extends DataClass implements Insertable<RawJmdictEntry> {
           other.kanjiElements == this.kanjiElements &&
           other.readingElements == this.readingElements &&
           other.senses == this.senses &&
+          other.examples == this.examples &&
           other.createdAt == this.createdAt);
 }
 
 class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
   final Value<int> importId;
   final Value<int> entSeq;
-  final Value<List<JmdictKanjiElement>> kanjiElements;
+  final Value<List<JmdictKanjiElement>?> kanjiElements;
   final Value<List<JmdictReadingElement>> readingElements;
   final Value<List<JmdictSense>> senses;
+  final Value<List<JmdictExample>?> examples;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const RawJmdictEntriesCompanion({
@@ -2620,29 +2663,30 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
     this.kanjiElements = const Value.absent(),
     this.readingElements = const Value.absent(),
     this.senses = const Value.absent(),
+    this.examples = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RawJmdictEntriesCompanion.insert({
     required int importId,
     required int entSeq,
-    required List<JmdictKanjiElement> kanjiElements,
+    this.kanjiElements = const Value.absent(),
     required List<JmdictReadingElement> readingElements,
     required List<JmdictSense> senses,
-    required DateTime createdAt,
+    this.examples = const Value.absent(),
+    this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        entSeq = Value(entSeq),
-       kanjiElements = Value(kanjiElements),
        readingElements = Value(readingElements),
-       senses = Value(senses),
-       createdAt = Value(createdAt);
+       senses = Value(senses);
   static Insertable<RawJmdictEntry> custom({
     Expression<int>? importId,
     Expression<int>? entSeq,
     Expression<String>? kanjiElements,
     Expression<String>? readingElements,
     Expression<String>? senses,
+    Expression<String>? examples,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -2652,6 +2696,7 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
       if (kanjiElements != null) 'kanji_elements': kanjiElements,
       if (readingElements != null) 'reading_elements': readingElements,
       if (senses != null) 'senses': senses,
+      if (examples != null) 'examples': examples,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2660,9 +2705,10 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
   RawJmdictEntriesCompanion copyWith({
     Value<int>? importId,
     Value<int>? entSeq,
-    Value<List<JmdictKanjiElement>>? kanjiElements,
+    Value<List<JmdictKanjiElement>?>? kanjiElements,
     Value<List<JmdictReadingElement>>? readingElements,
     Value<List<JmdictSense>>? senses,
+    Value<List<JmdictExample>?>? examples,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -2672,6 +2718,7 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
       kanjiElements: kanjiElements ?? this.kanjiElements,
       readingElements: readingElements ?? this.readingElements,
       senses: senses ?? this.senses,
+      examples: examples ?? this.examples,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -2705,6 +2752,11 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
         $RawJmdictEntriesTable.$convertersenses.toSql(senses.value),
       );
     }
+    if (examples.present) {
+      map['examples'] = Variable<String>(
+        $RawJmdictEntriesTable.$converterexamples.toSql(examples.value),
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2722,6 +2774,7 @@ class RawJmdictEntriesCompanion extends UpdateCompanion<RawJmdictEntry> {
           ..write('kanjiElements: $kanjiElements, ')
           ..write('readingElements: $readingElements, ')
           ..write('senses: $senses, ')
+          ..write('examples: $examples, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))

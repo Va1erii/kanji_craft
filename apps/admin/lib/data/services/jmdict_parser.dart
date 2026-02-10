@@ -45,7 +45,9 @@ class JmdictParser {
   }
 
   /// Extracts entity definitions from the DTD, strips the DTD, and replaces
-  /// all `&entity;` references with their resolved text values.
+  /// all `&entity;` references with their **entity code** (not the expanded
+  /// text). This preserves the short DTD codes (e.g. `n`, `vs`, `comp`) in
+  /// fields like `pos`, `field`, `misc`, `dial`, `ke_inf`, and `re_inf`.
   String _resolveEntities(String xml) {
     final entityPattern = RegExp(r'<!ENTITY\s+(\S+)\s+"([^"]*)"');
     final entities = <String, String>{};
@@ -62,7 +64,7 @@ class JmdictParser {
       '',
     );
 
-    // Replace entity references with their values.
+    // Replace entity references with entity codes (not expanded text).
     result = result.replaceAllMapped(
       RegExp(r'&(\w+);'),
       (match) {
@@ -71,7 +73,8 @@ class JmdictParser {
         if (const {'amp', 'lt', 'gt', 'apos', 'quot'}.contains(name)) {
           return match.group(0)!;
         }
-        return entities[name] ?? match.group(0)!;
+        // Known DTD entity → store the code name.
+        return entities.containsKey(name) ? name : match.group(0)!;
       },
     );
 
@@ -81,10 +84,10 @@ class JmdictParser {
   RawJmdict _parseEntry(XmlElement entry, int importId) {
     final entSeq = int.parse(entry.findElements('ent_seq').first.innerText);
 
-    final kanjiElements = entry
-        .findElements('k_ele')
-        .map(_parseKanjiElement)
-        .toList();
+    final kanjiXml = entry.findElements('k_ele').toList();
+    final kanjiElements = kanjiXml.isNotEmpty
+        ? kanjiXml.map(_parseKanjiElement).toList()
+        : null;
 
     final readingElements = entry
         .findElements('r_ele')
@@ -96,13 +99,33 @@ class JmdictParser {
         .map(_parseSense)
         .toList();
 
+    // Collect example sentence pairs from all senses (JMdict_e_examp only).
+    final examples = <JmdictExample>[];
+    for (final sense in entry.findElements('sense')) {
+      for (final ex in sense.findElements('example')) {
+        final ja = ex
+            .findElements('ex_sent')
+            .where((e) => e.getAttribute('xml:lang') == 'jpn')
+            .firstOrNull
+            ?.innerText;
+        final en = ex
+            .findElements('ex_sent')
+            .where((e) => e.getAttribute('xml:lang') == 'eng')
+            .firstOrNull
+            ?.innerText;
+        if (ja != null && en != null) {
+          examples.add(JmdictExample(sentenceJa: ja, sentenceEn: en));
+        }
+      }
+    }
+
     return RawJmdict(
       importId: importId,
       entSeq: entSeq,
       kanjiElements: kanjiElements,
       readingElements: readingElements,
       senses: senses,
-      createdAt: DateTime.now(),
+      examples: examples.isNotEmpty ? examples : null,
     );
   }
 
@@ -174,7 +197,7 @@ class JmdictParser {
   JmdictLsource _parseLsource(XmlElement el) {
     final lang = el.getAttribute('xml:lang') ?? 'eng';
     final value = el.innerText.isEmpty ? null : el.innerText;
-    final lsType = el.getAttribute('ls_type');
+    final lsType = el.getAttribute('ls_type') ?? 'full';
     final lsWasei = el.getAttribute('ls_wasei') == 'y';
 
     return JmdictLsource(

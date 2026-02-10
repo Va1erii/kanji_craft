@@ -14,8 +14,7 @@ One row per character entry in KANJIDIC2. Scalar fields for commonly queried dat
 
 | Field | Type | Description |
 |---|---|---|
-| `id` | `int` | Unique identifier |
-| `import_id` | `int` | FK to `data_imports`. Part of composite unique constraint with `literal`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
+| `import_id` | `int` | FK to `data_imports`. Part of composite PK with `literal`. Each re-import creates new rows under a new `import_id`, preserving old rows for diffing and rollback. Source version is derived via join to `data_imports.source_version` |
 | `literal` | `String` | The character, e.g. "日" |
 | `stroke_count` | `int` | Primary stroke count |
 | `stroke_count_misstrokes` | `JsonList?` | Alternative stroke counts from common miscounts, e.g. `[5, 7]`. Null if none |
@@ -236,7 +235,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 ## Business Rules
 
 1. `literal` must be a single Unicode code point.
-2. **Composite unique constraint:** `import_id` + `literal` must be unique. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
+2. **Composite primary key:** `import_id` + `literal`. No auto-increment id — the same source file with the same `import_id` always produces identical rows. Re-imports create new rows with a new `import_id`, leaving old rows for diffing and rollback.
 3. `stroke_count` must be a positive integer.
 4. `readings` must contain at least `ja_on` or `ja_kun` with a non-empty array (a character always has at least one Japanese reading). The other may be an empty list.
 5. `meanings.en` must be a non-empty array (KANJIDIC2 always includes English meanings).

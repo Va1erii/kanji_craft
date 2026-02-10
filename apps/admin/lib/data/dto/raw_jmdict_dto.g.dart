@@ -6,23 +6,24 @@ part of 'raw_jmdict_dto.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_RawJmdictDto _$RawJmdictDtoFromJson(Map<String, dynamic> json) =>
-    _RawJmdictDto(
-      importId: (json['import_id'] as num).toInt(),
-      entSeq: (json['ent_seq'] as num).toInt(),
-      kanjiElements: (json['kanji_elements'] as List<dynamic>)
-          .map((e) => JmdictKanjiElementDto.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      readingElements: (json['reading_elements'] as List<dynamic>)
-          .map(
-            (e) => JmdictReadingElementDto.fromJson(e as Map<String, dynamic>),
-          )
-          .toList(),
-      senses: (json['senses'] as List<dynamic>)
-          .map((e) => JmdictSenseDto.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      createdAt: DateTime.parse(json['created_at'] as String),
-    );
+_RawJmdictDto _$RawJmdictDtoFromJson(
+  Map<String, dynamic> json,
+) => _RawJmdictDto(
+  importId: (json['import_id'] as num).toInt(),
+  entSeq: (json['ent_seq'] as num).toInt(),
+  kanjiElements: (json['kanji_elements'] as List<dynamic>?)
+      ?.map((e) => JmdictKanjiElementDto.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  readingElements: (json['reading_elements'] as List<dynamic>)
+      .map((e) => JmdictReadingElementDto.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  senses: (json['senses'] as List<dynamic>)
+      .map((e) => JmdictSenseDto.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  examples: (json['examples'] as List<dynamic>?)
+      ?.map((e) => JmdictExampleDto.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
 
 Map<String, dynamic> _$RawJmdictDtoToJson(_RawJmdictDto instance) =>
     <String, dynamic>{
@@ -31,7 +32,7 @@ Map<String, dynamic> _$RawJmdictDtoToJson(_RawJmdictDto instance) =>
       'kanji_elements': instance.kanjiElements,
       'reading_elements': instance.readingElements,
       'senses': instance.senses,
-      'created_at': instance.createdAt.toIso8601String(),
+      'examples': instance.examples,
     };
 
 _JmdictKanjiElementDto _$JmdictKanjiElementDtoFromJson(
@@ -112,7 +113,7 @@ _JmdictLsourceDto _$JmdictLsourceDtoFromJson(Map<String, dynamic> json) =>
     _JmdictLsourceDto(
       lang: json['lang'] as String,
       value: json['value'] as String?,
-      lsType: json['ls_type'] as String?,
+      lsType: json['ls_type'] as String? ?? 'full',
       lsWasei: json['ls_wasei'] as bool? ?? false,
     );
 
@@ -122,4 +123,16 @@ Map<String, dynamic> _$JmdictLsourceDtoToJson(_JmdictLsourceDto instance) =>
       'value': instance.value,
       'ls_type': instance.lsType,
       'ls_wasei': instance.lsWasei,
+    };
+
+_JmdictExampleDto _$JmdictExampleDtoFromJson(Map<String, dynamic> json) =>
+    _JmdictExampleDto(
+      sentenceJa: json['sentence_ja'] as String,
+      sentenceEn: json['sentence_en'] as String,
+    );
+
+Map<String, dynamic> _$JmdictExampleDtoToJson(_JmdictExampleDto instance) =>
+    <String, dynamic>{
+      'sentence_ja': instance.sentenceJa,
+      'sentence_en': instance.sentenceEn,
     };

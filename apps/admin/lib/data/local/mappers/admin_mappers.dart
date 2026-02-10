@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/kanji_component_review.dart';
 import '../../../domain/entities/raw_jmdict.dart';
@@ -117,14 +119,15 @@ extension RawKanjidicEntryToDomain on RawKanjidicEntry {
 
 // -- RawJmdict ↔ RawJmdictEntry --
 
-extension RawJmdictToEntry on RawJmdict {
-  RawJmdictEntry toEntry() => RawJmdictEntry(
-        importId: importId,
-        entSeq: entSeq,
-        kanjiElements: kanjiElements,
-        readingElements: readingElements,
-        senses: senses,
-        createdAt: createdAt,
+extension RawJmdictToCompanion on RawJmdict {
+  RawJmdictEntriesCompanion toCompanion() => RawJmdictEntriesCompanion(
+        importId: Value(importId),
+        entSeq: Value(entSeq),
+        kanjiElements: Value(kanjiElements),
+        readingElements: Value(readingElements),
+        senses: Value(senses),
+        examples: Value(examples),
+        // createdAt omitted — uses DB default (currentDateAndTime).
       );
 }
 
@@ -135,7 +138,7 @@ extension RawJmdictEntryToDomain on RawJmdictEntry {
         kanjiElements: kanjiElements,
         readingElements: readingElements,
         senses: senses,
-        createdAt: createdAt,
+        examples: examples,
       );
 }
 

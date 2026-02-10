@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawJmdictDto {
 
-@JsonKey(name: 'import_id') int get importId;@JsonKey(name: 'ent_seq') int get entSeq;@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> get kanjiElements;@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> get readingElements; List<JmdictSenseDto> get senses;@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'import_id') int get importId;@JsonKey(name: 'ent_seq') int get entSeq;@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto>? get kanjiElements;@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> get readingElements; List<JmdictSenseDto> get senses; List<JmdictExampleDto>? get examples;
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RawJmdictDtoCopyWith<RawJmdictDto> get copyWith => _$RawJmdictDtoCopyWithImpl<R
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other.kanjiElements, kanjiElements)&&const DeepCollectionEquality().equals(other.readingElements, readingElements)&&const DeepCollectionEquality().equals(other.senses, senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other.kanjiElements, kanjiElements)&&const DeepCollectionEquality().equals(other.readingElements, readingElements)&&const DeepCollectionEquality().equals(other.senses, senses)&&const DeepCollectionEquality().equals(other.examples, examples));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(kanjiElements),const DeepCollectionEquality().hash(readingElements),const DeepCollectionEquality().hash(senses),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(kanjiElements),const DeepCollectionEquality().hash(readingElements),const DeepCollectionEquality().hash(senses),const DeepCollectionEquality().hash(examples));
 
 @override
 String toString() {
-  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
+  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, examples: $examples)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RawJmdictDtoCopyWith<$Res>  {
   factory $RawJmdictDtoCopyWith(RawJmdictDto value, $Res Function(RawJmdictDto) _then) = _$RawJmdictDtoCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto>? kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses, List<JmdictExampleDto>? examples
 });
 
 
@@ -65,15 +65,15 @@ class _$RawJmdictDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = freezed,Object? readingElements = null,Object? senses = null,Object? examples = freezed,}) {
   return _then(_self.copyWith(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,entSeq: null == entSeq ? _self.entSeq : entSeq // ignore: cast_nullable_to_non_nullable
-as int,kanjiElements: null == kanjiElements ? _self.kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
-as List<JmdictKanjiElementDto>,readingElements: null == readingElements ? _self.readingElements : readingElements // ignore: cast_nullable_to_non_nullable
+as int,kanjiElements: freezed == kanjiElements ? _self.kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
+as List<JmdictKanjiElementDto>?,readingElements: null == readingElements ? _self.readingElements : readingElements // ignore: cast_nullable_to_non_nullable
 as List<JmdictReadingElementDto>,senses: null == senses ? _self.senses : senses // ignore: cast_nullable_to_non_nullable
-as List<JmdictSenseDto>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as List<JmdictSenseDto>,examples: freezed == examples ? _self.examples : examples // ignore: cast_nullable_to_non_nullable
+as List<JmdictExampleDto>?,
   ));
 }
 
@@ -158,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto>? kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses,  List<JmdictExampleDto>? examples)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawJmdictDto() when $default != null:
-return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.examples);case _:
   return orElse();
 
 }
@@ -179,10 +179,10 @@ return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingEle
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto>? kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses,  List<JmdictExampleDto>? examples)  $default,) {final _that = this;
 switch (_that) {
 case _RawJmdictDto():
-return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.examples);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +199,10 @@ return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingEle
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId, @JsonKey(name: 'ent_seq')  int entSeq, @JsonKey(name: 'kanji_elements')  List<JmdictKanjiElementDto>? kanjiElements, @JsonKey(name: 'reading_elements')  List<JmdictReadingElementDto> readingElements,  List<JmdictSenseDto> senses,  List<JmdictExampleDto>? examples)?  $default,) {final _that = this;
 switch (_that) {
 case _RawJmdictDto() when $default != null:
-return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.createdAt);case _:
+return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingElements,_that.senses,_that.examples);case _:
   return null;
 
 }
@@ -214,16 +214,18 @@ return $default(_that.importId,_that.entSeq,_that.kanjiElements,_that.readingEle
 @JsonSerializable()
 
 class _RawJmdictDto extends RawJmdictDto {
-  const _RawJmdictDto({@JsonKey(name: 'import_id') required this.importId, @JsonKey(name: 'ent_seq') required this.entSeq, @JsonKey(name: 'kanji_elements') required final  List<JmdictKanjiElementDto> kanjiElements, @JsonKey(name: 'reading_elements') required final  List<JmdictReadingElementDto> readingElements, required final  List<JmdictSenseDto> senses, @JsonKey(name: 'created_at') required this.createdAt}): _kanjiElements = kanjiElements,_readingElements = readingElements,_senses = senses,super._();
+  const _RawJmdictDto({@JsonKey(name: 'import_id') required this.importId, @JsonKey(name: 'ent_seq') required this.entSeq, @JsonKey(name: 'kanji_elements') final  List<JmdictKanjiElementDto>? kanjiElements, @JsonKey(name: 'reading_elements') required final  List<JmdictReadingElementDto> readingElements, required final  List<JmdictSenseDto> senses, final  List<JmdictExampleDto>? examples}): _kanjiElements = kanjiElements,_readingElements = readingElements,_senses = senses,_examples = examples,super._();
   factory _RawJmdictDto.fromJson(Map<String, dynamic> json) => _$RawJmdictDtoFromJson(json);
 
 @override@JsonKey(name: 'import_id') final  int importId;
 @override@JsonKey(name: 'ent_seq') final  int entSeq;
- final  List<JmdictKanjiElementDto> _kanjiElements;
-@override@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> get kanjiElements {
+ final  List<JmdictKanjiElementDto>? _kanjiElements;
+@override@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto>? get kanjiElements {
+  final value = _kanjiElements;
+  if (value == null) return null;
   if (_kanjiElements is EqualUnmodifiableListView) return _kanjiElements;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_kanjiElements);
+  return EqualUnmodifiableListView(value);
 }
 
  final  List<JmdictReadingElementDto> _readingElements;
@@ -240,7 +242,15 @@ class _RawJmdictDto extends RawJmdictDto {
   return EqualUnmodifiableListView(_senses);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
+ final  List<JmdictExampleDto>? _examples;
+@override List<JmdictExampleDto>? get examples {
+  final value = _examples;
+  if (value == null) return null;
+  if (_examples is EqualUnmodifiableListView) return _examples;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
@@ -255,16 +265,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other._kanjiElements, _kanjiElements)&&const DeepCollectionEquality().equals(other._readingElements, _readingElements)&&const DeepCollectionEquality().equals(other._senses, _senses)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawJmdictDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.entSeq, entSeq) || other.entSeq == entSeq)&&const DeepCollectionEquality().equals(other._kanjiElements, _kanjiElements)&&const DeepCollectionEquality().equals(other._readingElements, _readingElements)&&const DeepCollectionEquality().equals(other._senses, _senses)&&const DeepCollectionEquality().equals(other._examples, _examples));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(_kanjiElements),const DeepCollectionEquality().hash(_readingElements),const DeepCollectionEquality().hash(_senses),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,entSeq,const DeepCollectionEquality().hash(_kanjiElements),const DeepCollectionEquality().hash(_readingElements),const DeepCollectionEquality().hash(_senses),const DeepCollectionEquality().hash(_examples));
 
 @override
 String toString() {
-  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, createdAt: $createdAt)';
+  return 'RawJmdictDto(importId: $importId, entSeq: $entSeq, kanjiElements: $kanjiElements, readingElements: $readingElements, senses: $senses, examples: $examples)';
 }
 
 
@@ -275,7 +285,7 @@ abstract mixin class _$RawJmdictDtoCopyWith<$Res> implements $RawJmdictDtoCopyWi
   factory _$RawJmdictDtoCopyWith(_RawJmdictDto value, $Res Function(_RawJmdictDto) _then) = __$RawJmdictDtoCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto> kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId,@JsonKey(name: 'ent_seq') int entSeq,@JsonKey(name: 'kanji_elements') List<JmdictKanjiElementDto>? kanjiElements,@JsonKey(name: 'reading_elements') List<JmdictReadingElementDto> readingElements, List<JmdictSenseDto> senses, List<JmdictExampleDto>? examples
 });
 
 
@@ -292,15 +302,15 @@ class __$RawJmdictDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawJmdictDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = null,Object? readingElements = null,Object? senses = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? entSeq = null,Object? kanjiElements = freezed,Object? readingElements = null,Object? senses = null,Object? examples = freezed,}) {
   return _then(_RawJmdictDto(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,entSeq: null == entSeq ? _self.entSeq : entSeq // ignore: cast_nullable_to_non_nullable
-as int,kanjiElements: null == kanjiElements ? _self._kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
-as List<JmdictKanjiElementDto>,readingElements: null == readingElements ? _self._readingElements : readingElements // ignore: cast_nullable_to_non_nullable
+as int,kanjiElements: freezed == kanjiElements ? _self._kanjiElements : kanjiElements // ignore: cast_nullable_to_non_nullable
+as List<JmdictKanjiElementDto>?,readingElements: null == readingElements ? _self._readingElements : readingElements // ignore: cast_nullable_to_non_nullable
 as List<JmdictReadingElementDto>,senses: null == senses ? _self._senses : senses // ignore: cast_nullable_to_non_nullable
-as List<JmdictSenseDto>,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as List<JmdictSenseDto>,examples: freezed == examples ? _self._examples : examples // ignore: cast_nullable_to_non_nullable
+as List<JmdictExampleDto>?,
   ));
 }
 
@@ -1274,7 +1284,7 @@ as Map<String, List<String>>,
 /// @nodoc
 mixin _$JmdictLsourceDto {
 
- String get lang; String? get value;@JsonKey(name: 'ls_type') String? get lsType;@JsonKey(name: 'ls_wasei') bool get lsWasei;
+ String get lang; String? get value;@JsonKey(name: 'ls_type') String get lsType;@JsonKey(name: 'ls_wasei') bool get lsWasei;
 /// Create a copy of JmdictLsourceDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1307,7 +1317,7 @@ abstract mixin class $JmdictLsourceDtoCopyWith<$Res>  {
   factory $JmdictLsourceDtoCopyWith(JmdictLsourceDto value, $Res Function(JmdictLsourceDto) _then) = _$JmdictLsourceDtoCopyWithImpl;
 @useResult
 $Res call({
- String lang, String? value,@JsonKey(name: 'ls_type') String? lsType,@JsonKey(name: 'ls_wasei') bool lsWasei
+ String lang, String? value,@JsonKey(name: 'ls_type') String lsType,@JsonKey(name: 'ls_wasei') bool lsWasei
 });
 
 
@@ -1324,12 +1334,12 @@ class _$JmdictLsourceDtoCopyWithImpl<$Res>
 
 /// Create a copy of JmdictLsourceDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? lang = null,Object? value = freezed,Object? lsType = freezed,Object? lsWasei = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? lang = null,Object? value = freezed,Object? lsType = null,Object? lsWasei = null,}) {
   return _then(_self.copyWith(
 lang: null == lang ? _self.lang : lang // ignore: cast_nullable_to_non_nullable
 as String,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as String?,lsType: freezed == lsType ? _self.lsType : lsType // ignore: cast_nullable_to_non_nullable
-as String?,lsWasei: null == lsWasei ? _self.lsWasei : lsWasei // ignore: cast_nullable_to_non_nullable
+as String?,lsType: null == lsType ? _self.lsType : lsType // ignore: cast_nullable_to_non_nullable
+as String,lsWasei: null == lsWasei ? _self.lsWasei : lsWasei // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -1415,7 +1425,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String? lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JmdictLsourceDto() when $default != null:
 return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
@@ -1436,7 +1446,7 @@ return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String? lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)  $default,) {final _that = this;
 switch (_that) {
 case _JmdictLsourceDto():
 return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
@@ -1456,7 +1466,7 @@ return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String? lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String lang,  String? value, @JsonKey(name: 'ls_type')  String lsType, @JsonKey(name: 'ls_wasei')  bool lsWasei)?  $default,) {final _that = this;
 switch (_that) {
 case _JmdictLsourceDto() when $default != null:
 return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
@@ -1471,12 +1481,12 @@ return $default(_that.lang,_that.value,_that.lsType,_that.lsWasei);case _:
 @JsonSerializable()
 
 class _JmdictLsourceDto extends JmdictLsourceDto {
-  const _JmdictLsourceDto({required this.lang, this.value, @JsonKey(name: 'ls_type') this.lsType, @JsonKey(name: 'ls_wasei') this.lsWasei = false}): super._();
+  const _JmdictLsourceDto({required this.lang, this.value, @JsonKey(name: 'ls_type') this.lsType = 'full', @JsonKey(name: 'ls_wasei') this.lsWasei = false}): super._();
   factory _JmdictLsourceDto.fromJson(Map<String, dynamic> json) => _$JmdictLsourceDtoFromJson(json);
 
 @override final  String lang;
 @override final  String? value;
-@override@JsonKey(name: 'ls_type') final  String? lsType;
+@override@JsonKey(name: 'ls_type') final  String lsType;
 @override@JsonKey(name: 'ls_wasei') final  bool lsWasei;
 
 /// Create a copy of JmdictLsourceDto
@@ -1512,7 +1522,7 @@ abstract mixin class _$JmdictLsourceDtoCopyWith<$Res> implements $JmdictLsourceD
   factory _$JmdictLsourceDtoCopyWith(_JmdictLsourceDto value, $Res Function(_JmdictLsourceDto) _then) = __$JmdictLsourceDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String lang, String? value,@JsonKey(name: 'ls_type') String? lsType,@JsonKey(name: 'ls_wasei') bool lsWasei
+ String lang, String? value,@JsonKey(name: 'ls_type') String lsType,@JsonKey(name: 'ls_wasei') bool lsWasei
 });
 
 
@@ -1529,13 +1539,279 @@ class __$JmdictLsourceDtoCopyWithImpl<$Res>
 
 /// Create a copy of JmdictLsourceDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? lang = null,Object? value = freezed,Object? lsType = freezed,Object? lsWasei = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? lang = null,Object? value = freezed,Object? lsType = null,Object? lsWasei = null,}) {
   return _then(_JmdictLsourceDto(
 lang: null == lang ? _self.lang : lang // ignore: cast_nullable_to_non_nullable
 as String,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as String?,lsType: freezed == lsType ? _self.lsType : lsType // ignore: cast_nullable_to_non_nullable
-as String?,lsWasei: null == lsWasei ? _self.lsWasei : lsWasei // ignore: cast_nullable_to_non_nullable
+as String?,lsType: null == lsType ? _self.lsType : lsType // ignore: cast_nullable_to_non_nullable
+as String,lsWasei: null == lsWasei ? _self.lsWasei : lsWasei // ignore: cast_nullable_to_non_nullable
 as bool,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$JmdictExampleDto {
+
+@JsonKey(name: 'sentence_ja') String get sentenceJa;@JsonKey(name: 'sentence_en') String get sentenceEn;
+/// Create a copy of JmdictExampleDto
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$JmdictExampleDtoCopyWith<JmdictExampleDto> get copyWith => _$JmdictExampleDtoCopyWithImpl<JmdictExampleDto>(this as JmdictExampleDto, _$identity);
+
+  /// Serializes this JmdictExampleDto to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JmdictExampleDto&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceEn, sentenceEn) || other.sentenceEn == sentenceEn));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sentenceJa,sentenceEn);
+
+@override
+String toString() {
+  return 'JmdictExampleDto(sentenceJa: $sentenceJa, sentenceEn: $sentenceEn)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $JmdictExampleDtoCopyWith<$Res>  {
+  factory $JmdictExampleDtoCopyWith(JmdictExampleDto value, $Res Function(JmdictExampleDto) _then) = _$JmdictExampleDtoCopyWithImpl;
+@useResult
+$Res call({
+@JsonKey(name: 'sentence_ja') String sentenceJa,@JsonKey(name: 'sentence_en') String sentenceEn
+});
+
+
+
+
+}
+/// @nodoc
+class _$JmdictExampleDtoCopyWithImpl<$Res>
+    implements $JmdictExampleDtoCopyWith<$Res> {
+  _$JmdictExampleDtoCopyWithImpl(this._self, this._then);
+
+  final JmdictExampleDto _self;
+  final $Res Function(JmdictExampleDto) _then;
+
+/// Create a copy of JmdictExampleDto
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? sentenceJa = null,Object? sentenceEn = null,}) {
+  return _then(_self.copyWith(
+sentenceJa: null == sentenceJa ? _self.sentenceJa : sentenceJa // ignore: cast_nullable_to_non_nullable
+as String,sentenceEn: null == sentenceEn ? _self.sentenceEn : sentenceEn // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [JmdictExampleDto].
+extension JmdictExampleDtoPatterns on JmdictExampleDto {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _JmdictExampleDto value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _JmdictExampleDto() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _JmdictExampleDto value)  $default,){
+final _that = this;
+switch (_that) {
+case _JmdictExampleDto():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _JmdictExampleDto value)?  $default,){
+final _that = this;
+switch (_that) {
+case _JmdictExampleDto() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'sentence_ja')  String sentenceJa, @JsonKey(name: 'sentence_en')  String sentenceEn)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _JmdictExampleDto() when $default != null:
+return $default(_that.sentenceJa,_that.sentenceEn);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'sentence_ja')  String sentenceJa, @JsonKey(name: 'sentence_en')  String sentenceEn)  $default,) {final _that = this;
+switch (_that) {
+case _JmdictExampleDto():
+return $default(_that.sentenceJa,_that.sentenceEn);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'sentence_ja')  String sentenceJa, @JsonKey(name: 'sentence_en')  String sentenceEn)?  $default,) {final _that = this;
+switch (_that) {
+case _JmdictExampleDto() when $default != null:
+return $default(_that.sentenceJa,_that.sentenceEn);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _JmdictExampleDto extends JmdictExampleDto {
+  const _JmdictExampleDto({@JsonKey(name: 'sentence_ja') required this.sentenceJa, @JsonKey(name: 'sentence_en') required this.sentenceEn}): super._();
+  factory _JmdictExampleDto.fromJson(Map<String, dynamic> json) => _$JmdictExampleDtoFromJson(json);
+
+@override@JsonKey(name: 'sentence_ja') final  String sentenceJa;
+@override@JsonKey(name: 'sentence_en') final  String sentenceEn;
+
+/// Create a copy of JmdictExampleDto
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$JmdictExampleDtoCopyWith<_JmdictExampleDto> get copyWith => __$JmdictExampleDtoCopyWithImpl<_JmdictExampleDto>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$JmdictExampleDtoToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JmdictExampleDto&&(identical(other.sentenceJa, sentenceJa) || other.sentenceJa == sentenceJa)&&(identical(other.sentenceEn, sentenceEn) || other.sentenceEn == sentenceEn));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,sentenceJa,sentenceEn);
+
+@override
+String toString() {
+  return 'JmdictExampleDto(sentenceJa: $sentenceJa, sentenceEn: $sentenceEn)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$JmdictExampleDtoCopyWith<$Res> implements $JmdictExampleDtoCopyWith<$Res> {
+  factory _$JmdictExampleDtoCopyWith(_JmdictExampleDto value, $Res Function(_JmdictExampleDto) _then) = __$JmdictExampleDtoCopyWithImpl;
+@override @useResult
+$Res call({
+@JsonKey(name: 'sentence_ja') String sentenceJa,@JsonKey(name: 'sentence_en') String sentenceEn
+});
+
+
+
+
+}
+/// @nodoc
+class __$JmdictExampleDtoCopyWithImpl<$Res>
+    implements _$JmdictExampleDtoCopyWith<$Res> {
+  __$JmdictExampleDtoCopyWithImpl(this._self, this._then);
+
+  final _JmdictExampleDto _self;
+  final $Res Function(_JmdictExampleDto) _then;
+
+/// Create a copy of JmdictExampleDto
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? sentenceJa = null,Object? sentenceEn = null,}) {
+  return _then(_JmdictExampleDto(
+sentenceJa: null == sentenceJa ? _self.sentenceJa : sentenceJa // ignore: cast_nullable_to_non_nullable
+as String,sentenceEn: null == sentenceEn ? _self.sentenceEn : sentenceEn // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

@@ -115,7 +115,7 @@ Dictionary and reference book indexes. All values are strings except `moro` whic
 | `nelson_c` | `String?` | Classic Nelson index |
 | `nelson_n` | `String?` | New Nelson index |
 | `halpern_njecd` | `String?` | New Japanese-English Character Dictionary |
-| `halpern_kkd` | `String?` | Kanji & Kana Dictionary (Halpern) |
+| `halpern_kkd` | `String?` | Kodansha Kanji Dictionary (Halpern) |
 | `halpern_kkld` | `String?` | Kanji Learners Dictionary (1st ed.) |
 | `halpern_kkld_2ed` | `String?` | Kanji Learners Dictionary (2nd ed.) |
 | `heisig` | `String?` | Remembering the Kanji (original) |
@@ -149,8 +149,8 @@ Codes used for character lookup by structural features.
   "sh_desc": "2a2.4",
   "deroo": "1463",
   "misclass": [
-    { "type": "skip_position", "value": "2-2-2" },
-    { "type": "skip_stroke_count", "value": "2-1-3" }
+    { "type": "posn", "value": "2-2-2" },
+    { "type": "stroke_count", "value": "2-1-3" }
   ]
 }
 ```
@@ -180,7 +180,7 @@ Pronunciations grouped by reading system.
 | Key | Type | Description |
 |---|---|---|
 | `ja_on` | `JsonList` | On'yomi (Sino-Japanese) readings — always in katakana (e.g. "ニチ"). May be empty if the character has only kun'yomi |
-| `ja_kun` | `JsonList` | Kun'yomi (native Japanese) readings — always in hiragana (e.g. "ひ"). Prefix `-` indicates okurigana boundary. May be empty if the character has only on'yomi |
+| `ja_kun` | `JsonList` | Kun'yomi (native Japanese) readings — always in hiragana (e.g. "ひ"). A dot `.` separates the kanji reading from okurigana (e.g. "やす.む"); a leading `-` indicates a suffix/prefix (e.g. "-び"). May be empty if the character has only on'yomi |
 | `pinyin` | `JsonList?` | Chinese pinyin reading(s) |
 | `korean_r` | `JsonList?` | Korean romanized reading(s) |
 | `korean_h` | `JsonList?` | Korean hangul reading(s) |
@@ -251,7 +251,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 - **Character with no grade:** Many characters in KANJIDIC2 are outside the jouyou/jinmeiyou sets. `grade` is null — the pipeline must handle this when deciding whether to import into the `kanji` table.
 - **Character with no JLPT level:** KANJIDIC2's JLPT field covers the old 4-level system only. Characters added to JLPT N5 after the 2010 restructuring may have `jlpt: null`. The pipeline uses a separate JLPT N1–N5 mapping table for current level assignment.
 - **Character with no frequency:** Rare characters have no newspaper frequency rank. `frequency` is null — the pipeline assigns a synthetic rank or excludes them from lesson ordering.
-- **Readings with okurigana markers:** Kun'yomi readings use `-` to mark okurigana boundaries (e.g. "やす-む" for 休む). The raw value preserves this marker; the pipeline strips it when populating `kanji_readings`.
+- **Readings with okurigana markers:** Kun'yomi readings use `.` to separate the kanji reading from okurigana (e.g. "やす.む" for 休む) and `-` for prefix/suffix forms (e.g. "-び"). The raw values preserve these markers; the pipeline strips them when populating `kanji_readings`.
 - **Moro dict_ref as object:** Unlike all other dictionary references (flat strings), `moro` is `{volume, page}`. The pipeline must handle this structural difference when extracting dict_refs.
 - **Multiple misclass entries:** A single character can have several common misclassifications in `query_codes.misclass`. All are preserved as an array.
 - **Empty optional JSONB fields:** `dict_refs`, `query_codes`, `variants`, `nanori`, `radical_names`, and `stroke_count_misstrokes` can all be null. The pipeline must not assume their presence.

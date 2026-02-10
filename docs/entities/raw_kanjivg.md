@@ -67,9 +67,12 @@ A recursive tree describing how the kanji decomposes into radical/element groups
   "variant": null,
   "original": null,
   "part": null,
+  "number": null,
   "radical": null,
   "phon": null,
   "trad_form": null,
+  "partial": null,
+  "radical_form": null,
   "stroke_indices": [0, 1, 2, 3, 4, 5],
   "children": [
     {
@@ -78,9 +81,12 @@ A recursive tree describing how the kanji decomposes into radical/element groups
       "variant": true,
       "original": "人",
       "part": null,
+      "number": null,
       "radical": "general",
       "phon": null,
       "trad_form": null,
+      "partial": null,
+      "radical_form": null,
       "stroke_indices": [0, 1],
       "children": []
     },
@@ -90,9 +96,12 @@ A recursive tree describing how the kanji decomposes into radical/element groups
       "variant": null,
       "original": null,
       "part": null,
+      "number": null,
       "radical": null,
       "phon": null,
       "trad_form": null,
+      "partial": null,
+      "radical_form": null,
       "stroke_indices": [2, 3, 4, 5],
       "children": []
     }

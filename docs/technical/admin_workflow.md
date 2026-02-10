@@ -49,8 +49,8 @@ Three sequential stages, presented as tabs or an accordion. Each stage correspon
 - **"New Import"** button opens a dialog:
   1. Select `import_source` from a dropdown (`kanjidic`, `kanjivg`, `jmdict`).
   2. Enter `source_version` (free text, e.g. "2024-04-01").
-  3. Pick the source file via native file picker (`.xml.gz` for kanjidic/kanjivg, `.zip` for jmdict).
-  4. For `jmdict`: two file pickers appear — one for `JMdict_english_with_examples.zip`, one for `JMdict_spanish.zip`.
+  3. Pick the source file via native file picker (`.xml.gz` for kanjidic/kanjivg/jmdict).
+  4. For `jmdict`: two file pickers appear — one for `JMdict.gz` (main dictionary), one for `JMdict_e_examp.gz` (English + examples).
   5. Click **"Start Ingestion"**. A progress bar shows records inserted. On completion the row status updates to `ingested`.
 
 - **Row actions** (context menu or inline buttons):

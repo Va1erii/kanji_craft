@@ -19,7 +19,7 @@ Exact prices TBD after validation.
 | Study Path | Free Content | Paid Content |
 |---|---|---|
 | JLPT | N5 | N4–N1 |
-| Grade | Grade 1 | Grades 2–6 |
+| Grade | Grade 1 | Grades 2–6, Secondary (8) |
 
 Filtered via `min_jlpt_level` and `min_grade` on entity specs.
 

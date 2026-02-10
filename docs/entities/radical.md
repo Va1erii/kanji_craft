@@ -52,7 +52,7 @@ Localized name, system mnemonic, and search data for a radical. One row per radi
 | Field | Type | Description |
 |---|---|---|
 | `radical_id` | `int` | FK to the parent Radical |
-| `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es", "fr" |
+| `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es" |
 | `name` | `String` | Localized name, e.g. "Water" (en), "Agua" (es) |
 | `system_mnemonic` | `String` | The app-provided learning story to help remember the shape (see mnemonic.md) |
 | `search_tags` | `List<String>` | Synonyms for search, e.g. ["liquid", "splash", "ocean"] |

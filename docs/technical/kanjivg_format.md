@@ -135,7 +135,7 @@ This encodes:
 | `nelson` | Nelson dictionary radical |
 | `jis` | JIS Kanji Jiten radical (used by KANJIDIC, sometimes differs from general/tradit) |
 
-**Mapping to our schema:** Our `radicals.is_official` is `true` if any occurrence carries `radical` with value `general`, `tradit`, or `jis`. The `nelson` value is preserved but does not solely set `is_official`.
+**Mapping to our schema:** Our `radicals.is_official` is `true` only when any occurrence carries `radical` with value `general` (the consensus Kangxi radical). The `tradit`, `nelson`, and `jis` values are preserved as `radical_type` on `kanji_components` but do not set `is_official` on the radical itself.
 
 **Note on radical code points:** Unicode has multiple code points for the same radical (e.g. Kangxi Radicals block U+2F00–U+2FD5 vs CJK Unified Ideographs). KanjiVG chooses specific code points for each radical — see the [KanjiVG Radicals page](https://github.com/KanjiVG/kanjivg/wiki/Radicals) for the full mapping.
 

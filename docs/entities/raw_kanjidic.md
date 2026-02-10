@@ -4,7 +4,7 @@
 
 Raw staging table for data imported from [KANJIDIC2](http://www.edrdg.org/wiki/index.php/KANJIDIC_Project) — the comprehensive kanji dictionary maintained by the Electronic Dictionary Research and Development Group. Each row stores the complete KANJIDIC2 representation of a single character as structured JSONB, preserving the original XML data exactly as parsed.
 
-This is an **admin-only table** — not used by the client app. This table lives in the **Supabase Staging Database** (Postgres) as the source of truth. The Admin Tool (Flutter/Drift) fetches this data into a local Drift database for processing/transformation before writing to the production tables. Access is restricted to the `service_role` key (which bypasses RLS).
+This is an **admin-only table** — not used by the client app. This table lives in the **Local Supabase** instance (Postgres) and is **ephemeral** — it can be rebuilt by re-ingesting the same source files (idempotent). Raw tables are local-only and disposable; they are not synced to Remote. Access is restricted to the `service_role` key (which bypasses RLS). See [pipeline.md](../technical/pipeline.md) for the stateless admin architecture.
 
 ## Entities
 

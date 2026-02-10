@@ -4,7 +4,7 @@
 
 Raw staging table for data imported from the [KanjiVG](https://kanjivg.tagaini.net/) project — an open-source dataset of stroke and component decomposition data for kanji characters. Each row stores the complete KanjiVG representation of a single kanji as structured JSONB, preserving the original data exactly as parsed from the source SVG files.
 
-This is an **admin-only table** — not used by the client app. This table lives in the **Supabase Staging Database** (Postgres) as the source of truth. The Admin Tool (Flutter/Drift) fetches this data into a local Drift database for processing/transformation before writing to the production tables. Access is restricted to the `service_role` key (which bypasses RLS).
+This is an **admin-only table** — not used by the client app. This table lives in the **Local Supabase** instance (Postgres) and is **ephemeral** — it can be rebuilt by re-ingesting the same source files (idempotent). Raw tables are local-only and disposable; they are not synced to Remote. Access is restricted to the `service_role` key (which bypasses RLS). See [pipeline.md](../technical/pipeline.md) for the stateless admin architecture.
 
 ## Entities
 
@@ -78,7 +78,7 @@ A recursive tree describing how the kanji decomposes into radical/element groups
       "variant": true,
       "original": "人",
       "part": null,
-      "radical": "s",
+      "radical": "general",
       "phon": null,
       "trad_form": null,
       "stroke_indices": [0, 1],

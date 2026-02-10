@@ -11,7 +11,7 @@ Quick reference for domain terms, Japanese concepts, and abbreviations used acro
 | **onyomi** | 音読み | Sino-Japanese reading — pronunciation derived from Chinese. Written in katakana. e.g. ニチ for 日 |
 | **kunyomi** | 訓読み | Native Japanese reading. Written in hiragana. e.g. ひ for 日 |
 | **kana** | 仮名 | Japanese phonetic writing systems: hiragana (ひらがな) and katakana (カタカナ) |
-| **jouyou kanji** | 常用漢字 | The ~2,136 kanji designated for everyday use, taught in Japanese schools across grades 1–6 |
+| **jouyou kanji** | 常用漢字 | The ~2,136 kanji designated for everyday use, taught in Japanese schools across grades 1–6 (elementary, ~1,026 kyouiku kanji) and secondary school (~1,130 additional) |
 | **stroke count** | 画数 | Number of brush strokes needed to write a character. Determines writing order |
 | **stroke order** | 筆順 | The prescribed sequence of strokes when writing a character |
 
@@ -41,7 +41,7 @@ Traditional names for where a radical sits inside a kanji character (see radical
 | **impact score** | 1–10 rating of how many kanji use a radical. Higher = more valuable to learn early. On `Radical` |
 | **vocabulary** | A Japanese word or compound using one or more kanji (e.g. 日本). Final stage of the SRS progression. Modeled as `Vocabulary` (see vocabulary.md) |
 | **frequency rank** | Integer rank of usage frequency (1 = most common). On both `Kanji` (newspaper corpus) and `Vocabulary` |
-| **study path** | The curriculum path a user follows: JLPT-based (N5 → N1) or grade-based (1 → 6). Stored in `UserSettings` (see user.md) |
+| **study path** | The curriculum path a user follows: JLPT-based (N5 → N1) or grade-based (1 → 8, where 8 = secondary school). Stored in `UserSettings` (see user.md) |
 | **daily lesson limit** | Max new items the app presents per day. User-configurable in `UserSettings`. Default: 10 |
 | **unlock gate** | A radical must reach stability >= 7.0 days before kanji containing it enter the lesson queue. See srs.md rule #7 |
 | **lesson queue** | The queue of new items waiting for their first review. Items enter after prerequisites are met |

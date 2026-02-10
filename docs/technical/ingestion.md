@@ -10,7 +10,7 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 ### Pre-Ingestion Guards
 
-1. **Single active import per source.** Only one import per `ImportSource` can be in a non-terminal status (`pending`, `ingested`, `processing`, `processed`) at a time. Starting a second concurrent import for the same source must throw immediately. *(Implemented: `getActiveBySource` check in `IngestionService`.)*
+1. **Single active import per source.** Only one import per `ImportSource` can be in a non-terminal status (`pending`, `ingested`, `processing`) at a time. Starting a second concurrent import for the same source must throw immediately. Terminal statuses (`processed`, `failed`) do not block new imports. *(Implemented: `getActiveBySource` check in `IngestionService`.)*
 
 2. **Version uniqueness against processed imports.** The same `(source, source_version)` pair must not be re-ingested if a `processed` import with that version already exists ([data_import.md](../entities/data_import.md) rule #2). A failed import of the same version may be retried. *(Implemented: `hasProcessedVersion` check in `IngestSourceData` use case.)*
 
@@ -73,8 +73,8 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 | Aspect | Value |
 |---|---|
-| Primary file | `JMdict_english_with_examples.zip` |
-| Primary file | `JMdict_spanish.zip` (Spanish, separate import) |
+| Primary file | `JMdict.gz` (all languages) |
+| Secondary file | `JMdict_e_examp.gz` (English + Tanaka Corpus examples) |
 | Raw table | `raw_jmdict` |
 | Unique constraint | `(import_id, ent_seq)` |
 

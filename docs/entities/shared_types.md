@@ -49,4 +49,4 @@ The app supports two content languages for the client UI and production tables. 
 | `en` | English | Default/primary. KANJIDIC: `m_lang` absent = English. JMDict: `xml:lang` absent = English |
 | `es` | Spanish | KANJIDIC: `m_lang="es"`. JMDict: `xml:lang="spa"` |
 
-Used by: `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, transformation layer (language filtering).
+Used by: `RadicalI18n.lang_code`, `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, transformation layer (language filtering).

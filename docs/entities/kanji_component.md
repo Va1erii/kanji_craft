@@ -15,6 +15,20 @@ Describes the role a radical plays inside a specific kanji.
 | `semantic` | The radical contributes to the kanji's meaning. e.g. 氵 (Water) + 目 (Eye) = 涙 (Tear) |
 | `phonetic` | The radical contributes to the kanji's reading (pronunciation), not its meaning. e.g. 亡 (BOU) in 忙 (BOU) |
 
+### RadicalType (Enum)
+
+Classifies the role a component plays within a specific kanji, based on KanjiVG's `kvg:radical` attribute. This is a **per-component-per-kanji** property — the same radical can be `general` in one kanji and `component` in another.
+
+| Value | Description |
+|---|---|
+| `general` | The generally accepted dictionary radical for this kanji. This is "the boss" — the one used to look up the character in a dictionary |
+| `tradit` | The traditional Kangxi radical, when it differs from the general consensus |
+| `nelson` | The Nelson dictionary radical, when it differs from the general/tradit assignment |
+| `jis` | The JIS Kanji Jiten radical (used by KANJIDIC), when it differs from other references |
+| `component` | A normal building block with no radical designation. Default value |
+
+**Note:** `RadicalType` on KanjiComponent is distinct from `is_official` on Radical. `is_official` is a **static property** of the radical itself ("Is 亻 one of the 214 Kangxi radicals?" — always true). `radical_type` is a **contextual role** ("Is 亻 the dictionary radical *for this specific kanji*?" — varies per kanji).
+
 ### KanjiComponent (Entity)
 
 Each row represents one radical appearing inside one kanji. It carries metadata that belongs to neither the radical nor the kanji individually.
@@ -26,6 +40,8 @@ Each row represents one radical appearing inside one kanji. It carries metadata 
 | `radical_id` | `int` | FK to the Radical (see radical.md) |
 | `position` | `Position` | Where this radical sits inside this kanji (see radical.md Position enum) |
 | `logic_hint` | `LogicHint` | Whether this radical contributes meaning or sound in this specific kanji |
+| `radical_type` | `RadicalType` | The dictionary classification role of this component within this kanji. Defaults to `component` |
+| `is_primary` | `bool` | Computed. `true` only when `radical_type == general`. Used for dictionary/reference mode lookups |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
@@ -38,6 +54,14 @@ Each row represents one radical appearing inside one kanji. It carries metadata 
 The same radical can play different roles in different kanji. For example, 亡 is **phonetic** in 忙 (busy) — it's only there because its Chinese reading BOU matches the kanji's reading. But 亡 is **semantic** in 死 (death) — it directly contributes to the meaning. Placing `logic_hint` per radical-kanji pair captures this accurately.
 
 This field is critical for teaching. Without it, a user sees 忄 (Heart) + 亡 (Death) = 忙 (Busy) and thinks the system is broken. With a phonetic hint, the app can explain: "亡 is here for its sound (BOU), not its meaning."
+
+**Why `radical_type` on KanjiComponent, not on Radical?**
+
+The same radical can be the dictionary radical in one kanji and just a building block in another. For example, 心 (Heart) is `general` in 想 (Thought) — it's the radical you'd use to look up 想 in a dictionary. But in 忙 (Busy), 心 appears as 忄 and is still `general`. Meanwhile 木 (Tree) is `component` in 想 — it's essential for the mnemonic decomposition but not the dictionary index.
+
+The app uses this distinction in two modes:
+- **Lesson mode (Lego):** Shows all components regardless of `radical_type`. "Build 想 from 木 + 目 + 心."
+- **Dictionary mode:** Filters to `is_primary == true`. "Radical: 心 (Heart)."
 
 ### VerificationStatus (Enum)
 
@@ -74,12 +98,16 @@ KanjiComponent ──1:1──→ KanjiComponentReview  (one review row per comp
 
 1. `kanji_id` + `radical_id` + `position` must be unique — a radical appears at a given position in a given kanji exactly once.
 2. Every `KanjiComponent` must have a `logic_hint` value. Default to `semantic` if unknown during content seeding.
-3. Deleting a Radical or Kanji must cascade-delete its `KanjiComponent` rows.
-4. New components created by the transformation pipeline must have a corresponding `KanjiComponentReview` row with `verification_status = draft`.
-5. Only components whose review row has `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
-6. `ai_confidence`, when present, must be in the range 0.0–1.0.
-7. There is exactly one `KanjiComponentReview` per `KanjiComponent` (enforced by unique constraint on `kanji_component_id`).
-8. Deleting a `KanjiComponent` must cascade-delete its `KanjiComponentReview` row.
+3. Every `KanjiComponent` must have a `radical_type` value. Default to `component`.
+4. `radical_type` is sourced from the KanjiVG `kvg:radical` attribute during extraction. Components without a `kvg:radical` attribute receive `component`.
+5. `is_primary` is a computed property: `true` only when `radical_type == general`. It is not stored as a separate column — in PostgreSQL it is a generated column; in Dart it is a getter.
+6. A kanji should have at most one component with `radical_type = general`. Multiple `tradit` or `nelson` entries are possible when references disagree.
+7. Deleting a Radical or Kanji must cascade-delete its `KanjiComponent` rows.
+8. New components created by the transformation pipeline must have a corresponding `KanjiComponentReview` row with `verification_status = draft`.
+9. Only components whose review row has `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
+10. `ai_confidence`, when present, must be in the range 0.0–1.0.
+11. There is exactly one `KanjiComponentReview` per `KanjiComponent` (enforced by unique constraint on `kanji_component_id`).
+12. Deleting a `KanjiComponent` must cascade-delete its `KanjiComponentReview` row.
 
 ## Edge Cases
 
@@ -90,3 +118,5 @@ KanjiComponent ──1:1──→ KanjiComponentReview  (one review row per comp
 - **Flagged components:** A `flagged` review row excludes the component from sync but does not delete either the component or the review row — they stay in the local database for re-review. An admin can change the status to `verified` or `draft` after correction.
 - **Orphan reviews on component delete:** When a `KanjiComponent` is deleted, its `KanjiComponentReview` row is cascade-deleted automatically via the FK constraint.
 - **Radical duplicates a kanji character:** Some `radical_id` entries in `kanji_components` point to radicals whose `master_symbol` matches a kanji `character` (e.g., 木 as radical and kanji). This is by design — see radical.md. The `kanji_components` FK always points to `radicals.id`, never to `kanji.id`.
+- **Multiple radical classifications in one kanji:** KanjiVG may mark one component as `general` and another as `nelson` in the same kanji (when references disagree on which component is "the" radical). Both are stored. `is_primary` only matches `general`.
+- **No `general` radical in a kanji:** Some kanji in KanjiVG have no component marked with `kvg:radical="general"`. All components default to `component`. The app's dictionary mode falls back to showing no radical rather than guessing.

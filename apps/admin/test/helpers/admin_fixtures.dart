@@ -81,7 +81,6 @@ RawKanjiVg fakeRawKanjiVg({
   int strokeCount = 4,
   List<KanjiVgStroke>? strokes,
   KanjiVgComponent? components,
-  DateTime? createdAt,
 }) =>
     RawKanjiVg(
       importId: importId,
@@ -95,7 +94,6 @@ RawKanjiVg fakeRawKanjiVg({
             fakeStroke(number: 2, type: 'press', pathData: 'M20,30 L40,50'),
           ],
       components: components ?? fakeComponent(),
-      createdAt: createdAt ?? _epoch,
     );
 
 KanjidicCodepoints fakeCodepoints({
@@ -149,7 +147,6 @@ RawKanjidic fakeRawKanjidic({
   Map<String, List<String>>? meanings,
   List<KanjidicVariant>? variants,
   List<String>? radicalNames,
-  DateTime? createdAt,
 }) =>
     RawKanjidic(
       importId: importId,
@@ -168,7 +165,6 @@ RawKanjidic fakeRawKanjidic({
       meanings: meanings ?? {'en': ['tree', 'wood']},
       variants: variants,
       radicalNames: radicalNames,
-      createdAt: createdAt ?? _epoch,
     );
 
 KanjiComponentReview fakeReview({

@@ -96,7 +96,6 @@ class KanjiVgParser {
       strokeCount: strokes.length,
       strokes: strokes,
       components: components,
-      createdAt: DateTime.now(),
     );
   }
 

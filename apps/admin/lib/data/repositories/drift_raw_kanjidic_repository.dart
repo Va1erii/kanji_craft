@@ -14,7 +14,7 @@ class DriftRawKanjidicRepository implements RawKanjidicRepository {
   Future<void> insertBatch(List<RawKanjidic> rows) async {
     await _db.batch((b) {
       for (final row in rows) {
-        b.insert(_db.rawKanjidicEntries, row.toEntry());
+        b.insert(_db.rawKanjidicEntries, row.toCompanion());
       }
     });
   }
@@ -63,7 +63,7 @@ class DriftRawKanjidicRepository implements RawKanjidicRepository {
       for (final row in rows) {
         b.insert(
           _db.rawKanjidicEntries,
-          row.toEntry(),
+          row.toCompanion(),
           mode: InsertMode.insertOrReplace,
         );
       }

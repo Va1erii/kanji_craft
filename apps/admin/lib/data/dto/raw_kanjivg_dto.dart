@@ -15,7 +15,6 @@ abstract class RawKanjiVgDto with _$RawKanjiVgDto {
     @JsonKey(name: 'stroke_count') required int strokeCount,
     required List<KanjiVgStrokeDto> strokes,
     required KanjiVgComponentDto components,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _RawKanjiVgDto;
 
   const RawKanjiVgDto._();
@@ -31,7 +30,6 @@ abstract class RawKanjiVgDto with _$RawKanjiVgDto {
         strokeCount: entity.strokeCount,
         strokes: entity.strokes.map(KanjiVgStrokeDto.fromDomain).toList(),
         components: KanjiVgComponentDto.fromDomain(entity.components),
-        createdAt: entity.createdAt,
       );
 
   RawKanjiVg toDomain() => RawKanjiVg(
@@ -42,7 +40,6 @@ abstract class RawKanjiVgDto with _$RawKanjiVgDto {
         strokeCount: strokeCount,
         strokes: strokes.map((s) => s.toDomain()).toList(),
         components: components.toDomain(),
-        createdAt: createdAt,
       );
 }
 

@@ -46,7 +46,6 @@ _RawKanjidicDto _$RawKanjidicDtoFromJson(
   radicalNames: (json['radical_names'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),
-  createdAt: DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$RawKanjidicDtoToJson(_RawKanjidicDto instance) =>
@@ -67,7 +66,6 @@ Map<String, dynamic> _$RawKanjidicDtoToJson(_RawKanjidicDto instance) =>
       'meanings': instance.meanings,
       'variants': instance.variants,
       'radical_names': instance.radicalNames,
-      'created_at': instance.createdAt.toIso8601String(),
     };
 
 _KanjidicCodepointsDto _$KanjidicCodepointsDtoFromJson(

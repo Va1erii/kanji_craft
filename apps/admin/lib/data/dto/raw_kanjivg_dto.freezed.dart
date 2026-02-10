@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawKanjiVgDto {
 
-@JsonKey(name: 'import_id') int get importId; String get character;@JsonKey(name: 'unicode_hex') String get unicodeHex;@JsonKey(name: 'view_box') String get viewBox;@JsonKey(name: 'stroke_count') int get strokeCount; List<KanjiVgStrokeDto> get strokes; KanjiVgComponentDto get components;@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'import_id') int get importId; String get character;@JsonKey(name: 'unicode_hex') String get unicodeHex;@JsonKey(name: 'view_box') String get viewBox;@JsonKey(name: 'stroke_count') int get strokeCount; List<KanjiVgStrokeDto> get strokes; KanjiVgComponentDto get components;
 /// Create a copy of RawKanjiVgDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RawKanjiVgDtoCopyWith<RawKanjiVgDto> get copyWith => _$RawKanjiVgDtoCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjiVgDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.character, character) || other.character == character)&&(identical(other.unicodeHex, unicodeHex) || other.unicodeHex == unicodeHex)&&(identical(other.viewBox, viewBox) || other.viewBox == viewBox)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokes, strokes)&&(identical(other.components, components) || other.components == components)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjiVgDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.character, character) || other.character == character)&&(identical(other.unicodeHex, unicodeHex) || other.unicodeHex == unicodeHex)&&(identical(other.viewBox, viewBox) || other.viewBox == viewBox)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokes, strokes)&&(identical(other.components, components) || other.components == components));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,character,unicodeHex,viewBox,strokeCount,const DeepCollectionEquality().hash(strokes),components,createdAt);
+int get hashCode => Object.hash(runtimeType,importId,character,unicodeHex,viewBox,strokeCount,const DeepCollectionEquality().hash(strokes),components);
 
 @override
 String toString() {
-  return 'RawKanjiVgDto(importId: $importId, character: $character, unicodeHex: $unicodeHex, viewBox: $viewBox, strokeCount: $strokeCount, strokes: $strokes, components: $components, createdAt: $createdAt)';
+  return 'RawKanjiVgDto(importId: $importId, character: $character, unicodeHex: $unicodeHex, viewBox: $viewBox, strokeCount: $strokeCount, strokes: $strokes, components: $components)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RawKanjiVgDtoCopyWith<$Res>  {
   factory $RawKanjiVgDtoCopyWith(RawKanjiVgDto value, $Res Function(RawKanjiVgDto) _then) = _$RawKanjiVgDtoCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId, String character,@JsonKey(name: 'unicode_hex') String unicodeHex,@JsonKey(name: 'view_box') String viewBox,@JsonKey(name: 'stroke_count') int strokeCount, List<KanjiVgStrokeDto> strokes, KanjiVgComponentDto components,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId, String character,@JsonKey(name: 'unicode_hex') String unicodeHex,@JsonKey(name: 'view_box') String viewBox,@JsonKey(name: 'stroke_count') int strokeCount, List<KanjiVgStrokeDto> strokes, KanjiVgComponentDto components
 });
 
 
@@ -65,7 +65,7 @@ class _$RawKanjiVgDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjiVgDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? character = null,Object? unicodeHex = null,Object? viewBox = null,Object? strokeCount = null,Object? strokes = null,Object? components = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? character = null,Object? unicodeHex = null,Object? viewBox = null,Object? strokeCount = null,Object? strokes = null,Object? components = null,}) {
   return _then(_self.copyWith(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,character: null == character ? _self.character : character // ignore: cast_nullable_to_non_nullable
@@ -74,8 +74,7 @@ as String,viewBox: null == viewBox ? _self.viewBox : viewBox // ignore: cast_nul
 as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,strokes: null == strokes ? _self.strokes : strokes // ignore: cast_nullable_to_non_nullable
 as List<KanjiVgStrokeDto>,components: null == components ? _self.components : components // ignore: cast_nullable_to_non_nullable
-as KanjiVgComponentDto,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as KanjiVgComponentDto,
   ));
 }
 /// Create a copy of RawKanjiVgDto
@@ -169,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawKanjiVgDto() when $default != null:
-return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components,_that.createdAt);case _:
+return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components);case _:
   return orElse();
 
 }
@@ -190,10 +189,10 @@ return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components)  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjiVgDto():
-return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components,_that.createdAt);case _:
+return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -210,10 +209,10 @@ return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId,  String character, @JsonKey(name: 'unicode_hex')  String unicodeHex, @JsonKey(name: 'view_box')  String viewBox, @JsonKey(name: 'stroke_count')  int strokeCount,  List<KanjiVgStrokeDto> strokes,  KanjiVgComponentDto components)?  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjiVgDto() when $default != null:
-return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components,_that.createdAt);case _:
+return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_that.strokeCount,_that.strokes,_that.components);case _:
   return null;
 
 }
@@ -225,7 +224,7 @@ return $default(_that.importId,_that.character,_that.unicodeHex,_that.viewBox,_t
 @JsonSerializable()
 
 class _RawKanjiVgDto extends RawKanjiVgDto {
-  const _RawKanjiVgDto({@JsonKey(name: 'import_id') required this.importId, required this.character, @JsonKey(name: 'unicode_hex') required this.unicodeHex, @JsonKey(name: 'view_box') required this.viewBox, @JsonKey(name: 'stroke_count') required this.strokeCount, required final  List<KanjiVgStrokeDto> strokes, required this.components, @JsonKey(name: 'created_at') required this.createdAt}): _strokes = strokes,super._();
+  const _RawKanjiVgDto({@JsonKey(name: 'import_id') required this.importId, required this.character, @JsonKey(name: 'unicode_hex') required this.unicodeHex, @JsonKey(name: 'view_box') required this.viewBox, @JsonKey(name: 'stroke_count') required this.strokeCount, required final  List<KanjiVgStrokeDto> strokes, required this.components}): _strokes = strokes,super._();
   factory _RawKanjiVgDto.fromJson(Map<String, dynamic> json) => _$RawKanjiVgDtoFromJson(json);
 
 @override@JsonKey(name: 'import_id') final  int importId;
@@ -241,7 +240,6 @@ class _RawKanjiVgDto extends RawKanjiVgDto {
 }
 
 @override final  KanjiVgComponentDto components;
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
 /// Create a copy of RawKanjiVgDto
 /// with the given fields replaced by the non-null parameter values.
@@ -256,16 +254,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjiVgDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.character, character) || other.character == character)&&(identical(other.unicodeHex, unicodeHex) || other.unicodeHex == unicodeHex)&&(identical(other.viewBox, viewBox) || other.viewBox == viewBox)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokes, _strokes)&&(identical(other.components, components) || other.components == components)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjiVgDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.character, character) || other.character == character)&&(identical(other.unicodeHex, unicodeHex) || other.unicodeHex == unicodeHex)&&(identical(other.viewBox, viewBox) || other.viewBox == viewBox)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokes, _strokes)&&(identical(other.components, components) || other.components == components));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,character,unicodeHex,viewBox,strokeCount,const DeepCollectionEquality().hash(_strokes),components,createdAt);
+int get hashCode => Object.hash(runtimeType,importId,character,unicodeHex,viewBox,strokeCount,const DeepCollectionEquality().hash(_strokes),components);
 
 @override
 String toString() {
-  return 'RawKanjiVgDto(importId: $importId, character: $character, unicodeHex: $unicodeHex, viewBox: $viewBox, strokeCount: $strokeCount, strokes: $strokes, components: $components, createdAt: $createdAt)';
+  return 'RawKanjiVgDto(importId: $importId, character: $character, unicodeHex: $unicodeHex, viewBox: $viewBox, strokeCount: $strokeCount, strokes: $strokes, components: $components)';
 }
 
 
@@ -276,7 +274,7 @@ abstract mixin class _$RawKanjiVgDtoCopyWith<$Res> implements $RawKanjiVgDtoCopy
   factory _$RawKanjiVgDtoCopyWith(_RawKanjiVgDto value, $Res Function(_RawKanjiVgDto) _then) = __$RawKanjiVgDtoCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId, String character,@JsonKey(name: 'unicode_hex') String unicodeHex,@JsonKey(name: 'view_box') String viewBox,@JsonKey(name: 'stroke_count') int strokeCount, List<KanjiVgStrokeDto> strokes, KanjiVgComponentDto components,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId, String character,@JsonKey(name: 'unicode_hex') String unicodeHex,@JsonKey(name: 'view_box') String viewBox,@JsonKey(name: 'stroke_count') int strokeCount, List<KanjiVgStrokeDto> strokes, KanjiVgComponentDto components
 });
 
 
@@ -293,7 +291,7 @@ class __$RawKanjiVgDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjiVgDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? character = null,Object? unicodeHex = null,Object? viewBox = null,Object? strokeCount = null,Object? strokes = null,Object? components = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? character = null,Object? unicodeHex = null,Object? viewBox = null,Object? strokeCount = null,Object? strokes = null,Object? components = null,}) {
   return _then(_RawKanjiVgDto(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,character: null == character ? _self.character : character // ignore: cast_nullable_to_non_nullable
@@ -302,8 +300,7 @@ as String,viewBox: null == viewBox ? _self.viewBox : viewBox // ignore: cast_nul
 as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,strokes: null == strokes ? _self._strokes : strokes // ignore: cast_nullable_to_non_nullable
 as List<KanjiVgStrokeDto>,components: null == components ? _self.components : components // ignore: cast_nullable_to_non_nullable
-as KanjiVgComponentDto,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as KanjiVgComponentDto,
   ));
 }
 

@@ -12,7 +12,6 @@ abstract class RawKanjiVg with _$RawKanjiVg {
     required int strokeCount,
     required List<KanjiVgStroke> strokes,
     required KanjiVgComponent components,
-    required DateTime createdAt,
   }) = _RawKanjiVg;
 }
 

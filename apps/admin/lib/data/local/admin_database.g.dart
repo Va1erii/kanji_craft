@@ -827,7 +827,8 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -900,8 +901,6 @@ class $RawKanjiVgEntriesTable extends RawKanjiVgEntries
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -1154,7 +1153,7 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
     required int strokeCount,
     required List<KanjiVgStroke> strokes,
     required KanjiVgComponent components,
-    required DateTime createdAt,
+    this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        character = Value(character),
@@ -1162,8 +1161,7 @@ class RawKanjiVgEntriesCompanion extends UpdateCompanion<RawKanjiVgEntry> {
        viewBox = Value(viewBox),
        strokeCount = Value(strokeCount),
        strokes = Value(strokes),
-       components = Value(components),
-       createdAt = Value(createdAt);
+       components = Value(components);
   static Insertable<RawKanjiVgEntry> custom({
     Expression<int>? importId,
     Expression<String>? character,
@@ -1463,7 +1461,8 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -1547,8 +1546,6 @@ class $RawKanjidicEntriesTable extends RawKanjidicEntries
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
     }
     return context;
   }
@@ -2075,7 +2072,7 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
     required Map<String, List<String>> meanings,
     this.variants = const Value.absent(),
     this.radicalNames = const Value.absent(),
-    required DateTime createdAt,
+    this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : importId = Value(importId),
        literal = Value(literal),
@@ -2083,8 +2080,7 @@ class RawKanjidicEntriesCompanion extends UpdateCompanion<RawKanjidicEntry> {
        codepoints = Value(codepoints),
        radicals = Value(radicals),
        readings = Value(readings),
-       meanings = Value(meanings),
-       createdAt = Value(createdAt);
+       meanings = Value(meanings);
   static Insertable<RawKanjidicEntry> custom({
     Expression<int>? importId,
     Expression<String>? literal,

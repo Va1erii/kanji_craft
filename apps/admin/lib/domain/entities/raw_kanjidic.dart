@@ -21,7 +21,6 @@ abstract class RawKanjidic with _$RawKanjidic {
     required Map<String, List<String>> meanings,
     List<KanjidicVariant>? variants,
     List<String>? radicalNames,
-    required DateTime createdAt,
   }) = _RawKanjidic;
 }
 

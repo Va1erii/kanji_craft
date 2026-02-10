@@ -13,7 +13,7 @@ class RawKanjiVgEntries extends Table {
   TextColumn get strokes => text().map(const KanjiVgStrokesConverter())();
   TextColumn get components =>
       text().map(const KanjiVgComponentConverter())();
-  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {importId, character};

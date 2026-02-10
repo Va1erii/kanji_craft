@@ -14,7 +14,7 @@ class DriftRawKanjiVgRepository implements RawKanjiVgRepository {
   Future<void> insertBatch(List<RawKanjiVg> rows) async {
     await _db.batch((b) {
       for (final row in rows) {
-        b.insert(_db.rawKanjiVgEntries, row.toEntry());
+        b.insert(_db.rawKanjiVgEntries, row.toCompanion());
       }
     });
   }
@@ -64,7 +64,7 @@ class DriftRawKanjiVgRepository implements RawKanjiVgRepository {
       for (final row in rows) {
         b.insert(
           _db.rawKanjiVgEntries,
-          row.toEntry(),
+          row.toCompanion(),
           mode: InsertMode.insertOrReplace,
         );
       }

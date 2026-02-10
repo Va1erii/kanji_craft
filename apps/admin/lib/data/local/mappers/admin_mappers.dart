@@ -45,16 +45,16 @@ extension DataImportEntryToDomain on DataImportEntry {
 
 // -- RawKanjiVg ↔ RawKanjiVgEntry --
 
-extension RawKanjiVgToEntry on RawKanjiVg {
-  RawKanjiVgEntry toEntry() => RawKanjiVgEntry(
-        importId: importId,
-        character: character,
-        unicodeHex: unicodeHex,
-        viewBox: viewBox,
-        strokeCount: strokeCount,
-        strokes: strokes,
-        components: components,
-        createdAt: createdAt,
+extension RawKanjiVgToCompanion on RawKanjiVg {
+  RawKanjiVgEntriesCompanion toCompanion() => RawKanjiVgEntriesCompanion(
+        importId: Value(importId),
+        character: Value(character),
+        unicodeHex: Value(unicodeHex),
+        viewBox: Value(viewBox),
+        strokeCount: Value(strokeCount),
+        strokes: Value(strokes),
+        components: Value(components),
+        // createdAt omitted — uses DB default (currentDateAndTime).
       );
 }
 
@@ -67,31 +67,30 @@ extension RawKanjiVgEntryToDomain on RawKanjiVgEntry {
         strokeCount: strokeCount,
         strokes: strokes,
         components: components,
-        createdAt: createdAt,
       );
 }
 
 // -- RawKanjidic ↔ RawKanjidicEntry --
 
-extension RawKanjidicToEntry on RawKanjidic {
-  RawKanjidicEntry toEntry() => RawKanjidicEntry(
-        importId: importId,
-        literal: literal,
-        strokeCount: strokeCount,
-        strokeCountMisstrokes: strokeCountMisstrokes,
-        grade: grade,
-        jlpt: jlpt,
-        frequency: frequency,
-        codepoints: codepoints,
-        radicals: radicals,
-        dictRefs: dictRefs,
-        queryCodes: queryCodes,
-        readings: readings,
-        nanori: nanori,
-        meanings: meanings,
-        variants: variants,
-        radicalNames: radicalNames,
-        createdAt: createdAt,
+extension RawKanjidicToCompanion on RawKanjidic {
+  RawKanjidicEntriesCompanion toCompanion() => RawKanjidicEntriesCompanion(
+        importId: Value(importId),
+        literal: Value(literal),
+        strokeCount: Value(strokeCount),
+        strokeCountMisstrokes: Value(strokeCountMisstrokes),
+        grade: Value(grade),
+        jlpt: Value(jlpt),
+        frequency: Value(frequency),
+        codepoints: Value(codepoints),
+        radicals: Value(radicals),
+        dictRefs: Value(dictRefs),
+        queryCodes: Value(queryCodes),
+        readings: Value(readings),
+        nanori: Value(nanori),
+        meanings: Value(meanings),
+        variants: Value(variants),
+        radicalNames: Value(radicalNames),
+        // createdAt omitted — uses DB default (currentDateAndTime).
       );
 }
 
@@ -113,7 +112,6 @@ extension RawKanjidicEntryToDomain on RawKanjidicEntry {
         meanings: meanings,
         variants: variants,
         radicalNames: radicalNames,
-        createdAt: createdAt,
       );
 }
 

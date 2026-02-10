@@ -19,7 +19,6 @@ _RawKanjiVgDto _$RawKanjiVgDtoFromJson(Map<String, dynamic> json) =>
       components: KanjiVgComponentDto.fromJson(
         json['components'] as Map<String, dynamic>,
       ),
-      createdAt: DateTime.parse(json['created_at'] as String),
     );
 
 Map<String, dynamic> _$RawKanjiVgDtoToJson(_RawKanjiVgDto instance) =>
@@ -31,7 +30,6 @@ Map<String, dynamic> _$RawKanjiVgDtoToJson(_RawKanjiVgDto instance) =>
       'stroke_count': instance.strokeCount,
       'strokes': instance.strokes,
       'components': instance.components,
-      'created_at': instance.createdAt.toIso8601String(),
     };
 
 _KanjiVgStrokeDto _$KanjiVgStrokeDtoFromJson(Map<String, dynamic> json) =>

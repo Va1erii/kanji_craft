@@ -87,7 +87,6 @@ class KanjidicParser {
       meanings: meanings,
       variants: variants,
       radicalNames: radicalNames,
-      createdAt: DateTime.now(),
     );
   }
 

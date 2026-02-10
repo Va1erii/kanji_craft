@@ -432,7 +432,7 @@ void main() {
       expect(result.skipped.first.reason, 'missing root <g>');
     });
 
-    test('sets createdAt to now', () {
+    test('produces deterministic output (no createdAt in domain)', () {
       final xml = '''
 <kanjivg>
   <kanji id="kvg:kanji_04e00">
@@ -443,18 +443,12 @@ void main() {
 </kanjivg>
 ''';
 
-      final before = DateTime.now();
-      final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      final after = DateTime.now();
+      final result1 =
+          parser.parseXmlString(xmlString: xml, importId: 1).entries;
+      final result2 =
+          parser.parseXmlString(xmlString: xml, importId: 1).entries;
 
-      expect(
-        results.first.createdAt.isAfter(before.subtract(Duration(seconds: 1))),
-        isTrue,
-      );
-      expect(
-        results.first.createdAt.isBefore(after.add(Duration(seconds: 1))),
-        isTrue,
-      );
+      expect(result1.first, equals(result2.first));
     });
 
     test('leaf component has empty children list', () {

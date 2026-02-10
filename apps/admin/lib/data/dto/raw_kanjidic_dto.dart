@@ -24,7 +24,6 @@ abstract class RawKanjidicDto with _$RawKanjidicDto {
     required Map<String, List<String>> meanings,
     List<KanjidicVariantDto>? variants,
     @JsonKey(name: 'radical_names') List<String>? radicalNames,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _RawKanjidicDto;
 
   const RawKanjidicDto._();
@@ -55,7 +54,6 @@ abstract class RawKanjidicDto with _$RawKanjidicDto {
             ?.map(KanjidicVariantDto.fromDomain)
             .toList(),
         radicalNames: entity.radicalNames,
-        createdAt: entity.createdAt,
       );
 
   RawKanjidic toDomain() => RawKanjidic(
@@ -75,7 +73,6 @@ abstract class RawKanjidicDto with _$RawKanjidicDto {
         meanings: meanings,
         variants: variants?.map((v) => v.toDomain()).toList(),
         radicalNames: radicalNames,
-        createdAt: createdAt,
       );
 }
 

@@ -30,7 +30,7 @@ class RawKanjidicEntries extends Table {
       text().map(const KanjidicVariantsConverter()).nullable()();
   TextColumn get radicalNames =>
       text().map(const StringListConverter()).nullable()();
-  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {importId, literal};

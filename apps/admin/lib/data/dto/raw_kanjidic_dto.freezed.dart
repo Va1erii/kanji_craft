@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RawKanjidicDto {
 
-@JsonKey(name: 'import_id') int get importId; String get literal;@JsonKey(name: 'stroke_count') int get strokeCount;@JsonKey(name: 'stroke_count_misstrokes') List<int>? get strokeCountMisstrokes; int? get grade; int? get jlpt; int? get frequency; KanjidicCodepointsDto get codepoints; KanjidicRadicalsDto get radicals;@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? get dictRefs;@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? get queryCodes; KanjidicReadingsDto get readings; List<String>? get nanori; Map<String, List<String>> get meanings; List<KanjidicVariantDto>? get variants;@JsonKey(name: 'radical_names') List<String>? get radicalNames;@JsonKey(name: 'created_at') DateTime get createdAt;
+@JsonKey(name: 'import_id') int get importId; String get literal;@JsonKey(name: 'stroke_count') int get strokeCount;@JsonKey(name: 'stroke_count_misstrokes') List<int>? get strokeCountMisstrokes; int? get grade; int? get jlpt; int? get frequency; KanjidicCodepointsDto get codepoints; KanjidicRadicalsDto get radicals;@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? get dictRefs;@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? get queryCodes; KanjidicReadingsDto get readings; List<String>? get nanori; Map<String, List<String>> get meanings; List<KanjidicVariantDto>? get variants;@JsonKey(name: 'radical_names') List<String>? get radicalNames;
 /// Create a copy of RawKanjidicDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RawKanjidicDtoCopyWith<RawKanjidicDto> get copyWith => _$RawKanjidicDtoCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjidicDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokeCountMisstrokes, strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other.nanori, nanori)&&const DeepCollectionEquality().equals(other.meanings, meanings)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.radicalNames, radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RawKanjidicDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other.strokeCountMisstrokes, strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other.nanori, nanori)&&const DeepCollectionEquality().equals(other.meanings, meanings)&&const DeepCollectionEquality().equals(other.variants, variants)&&const DeepCollectionEquality().equals(other.radicalNames, radicalNames));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(nanori),const DeepCollectionEquality().hash(meanings),const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(radicalNames),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(nanori),const DeepCollectionEquality().hash(meanings),const DeepCollectionEquality().hash(variants),const DeepCollectionEquality().hash(radicalNames));
 
 @override
 String toString() {
-  return 'RawKanjidicDto(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
+  return 'RawKanjidicDto(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RawKanjidicDtoCopyWith<$Res>  {
   factory $RawKanjidicDtoCopyWith(RawKanjidicDto value, $Res Function(RawKanjidicDto) _then) = _$RawKanjidicDtoCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId, String literal,@JsonKey(name: 'stroke_count') int strokeCount,@JsonKey(name: 'stroke_count_misstrokes') List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepointsDto codepoints, KanjidicRadicalsDto radicals,@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? dictRefs,@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? queryCodes, KanjidicReadingsDto readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariantDto>? variants,@JsonKey(name: 'radical_names') List<String>? radicalNames,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId, String literal,@JsonKey(name: 'stroke_count') int strokeCount,@JsonKey(name: 'stroke_count_misstrokes') List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepointsDto codepoints, KanjidicRadicalsDto radicals,@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? dictRefs,@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? queryCodes, KanjidicReadingsDto readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariantDto>? variants,@JsonKey(name: 'radical_names') List<String>? radicalNames
 });
 
 
@@ -65,7 +65,7 @@ class _$RawKanjidicDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjidicDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,}) {
   return _then(_self.copyWith(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,literal: null == literal ? _self.literal : literal // ignore: cast_nullable_to_non_nullable
@@ -83,8 +83,7 @@ as KanjidicReadingsDto,nanori: freezed == nanori ? _self.nanori : nanori // igno
 as List<String>?,meanings: null == meanings ? _self.meanings : meanings // ignore: cast_nullable_to_non_nullable
 as Map<String, List<String>>,variants: freezed == variants ? _self.variants : variants // ignore: cast_nullable_to_non_nullable
 as List<KanjidicVariantDto>?,radicalNames: freezed == radicalNames ? _self.radicalNames : radicalNames // ignore: cast_nullable_to_non_nullable
-as List<String>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as List<String>?,
   ));
 }
 /// Create a copy of RawKanjidicDto
@@ -220,10 +219,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RawKanjidicDto() when $default != null:
-return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames);case _:
   return orElse();
 
 }
@@ -241,10 +240,10 @@ return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames, @JsonKey(name: 'created_at')  DateTime createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames)  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjidicDto():
-return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -261,10 +260,10 @@ return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCount
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames, @JsonKey(name: 'created_at')  DateTime createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'import_id')  int importId,  String literal, @JsonKey(name: 'stroke_count')  int strokeCount, @JsonKey(name: 'stroke_count_misstrokes')  List<int>? strokeCountMisstrokes,  int? grade,  int? jlpt,  int? frequency,  KanjidicCodepointsDto codepoints,  KanjidicRadicalsDto radicals, @JsonKey(name: 'dict_refs')  KanjidicDictRefsDto? dictRefs, @JsonKey(name: 'query_codes')  KanjidicQueryCodesDto? queryCodes,  KanjidicReadingsDto readings,  List<String>? nanori,  Map<String, List<String>> meanings,  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names')  List<String>? radicalNames)?  $default,) {final _that = this;
 switch (_that) {
 case _RawKanjidicDto() when $default != null:
-return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames,_that.createdAt);case _:
+return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCountMisstrokes,_that.grade,_that.jlpt,_that.frequency,_that.codepoints,_that.radicals,_that.dictRefs,_that.queryCodes,_that.readings,_that.nanori,_that.meanings,_that.variants,_that.radicalNames);case _:
   return null;
 
 }
@@ -276,7 +275,7 @@ return $default(_that.importId,_that.literal,_that.strokeCount,_that.strokeCount
 @JsonSerializable()
 
 class _RawKanjidicDto extends RawKanjidicDto {
-  const _RawKanjidicDto({@JsonKey(name: 'import_id') required this.importId, required this.literal, @JsonKey(name: 'stroke_count') required this.strokeCount, @JsonKey(name: 'stroke_count_misstrokes') final  List<int>? strokeCountMisstrokes, this.grade, this.jlpt, this.frequency, required this.codepoints, required this.radicals, @JsonKey(name: 'dict_refs') this.dictRefs, @JsonKey(name: 'query_codes') this.queryCodes, required this.readings, final  List<String>? nanori, required final  Map<String, List<String>> meanings, final  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names') final  List<String>? radicalNames, @JsonKey(name: 'created_at') required this.createdAt}): _strokeCountMisstrokes = strokeCountMisstrokes,_nanori = nanori,_meanings = meanings,_variants = variants,_radicalNames = radicalNames,super._();
+  const _RawKanjidicDto({@JsonKey(name: 'import_id') required this.importId, required this.literal, @JsonKey(name: 'stroke_count') required this.strokeCount, @JsonKey(name: 'stroke_count_misstrokes') final  List<int>? strokeCountMisstrokes, this.grade, this.jlpt, this.frequency, required this.codepoints, required this.radicals, @JsonKey(name: 'dict_refs') this.dictRefs, @JsonKey(name: 'query_codes') this.queryCodes, required this.readings, final  List<String>? nanori, required final  Map<String, List<String>> meanings, final  List<KanjidicVariantDto>? variants, @JsonKey(name: 'radical_names') final  List<String>? radicalNames}): _strokeCountMisstrokes = strokeCountMisstrokes,_nanori = nanori,_meanings = meanings,_variants = variants,_radicalNames = radicalNames,super._();
   factory _RawKanjidicDto.fromJson(Map<String, dynamic> json) => _$RawKanjidicDtoFromJson(json);
 
 @override@JsonKey(name: 'import_id') final  int importId;
@@ -333,7 +332,6 @@ class _RawKanjidicDto extends RawKanjidicDto {
   return EqualUnmodifiableListView(value);
 }
 
-@override@JsonKey(name: 'created_at') final  DateTime createdAt;
 
 /// Create a copy of RawKanjidicDto
 /// with the given fields replaced by the non-null parameter values.
@@ -348,16 +346,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjidicDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokeCountMisstrokes, _strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other._nanori, _nanori)&&const DeepCollectionEquality().equals(other._meanings, _meanings)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._radicalNames, _radicalNames)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RawKanjidicDto&&(identical(other.importId, importId) || other.importId == importId)&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&const DeepCollectionEquality().equals(other._strokeCountMisstrokes, _strokeCountMisstrokes)&&(identical(other.grade, grade) || other.grade == grade)&&(identical(other.jlpt, jlpt) || other.jlpt == jlpt)&&(identical(other.frequency, frequency) || other.frequency == frequency)&&(identical(other.codepoints, codepoints) || other.codepoints == codepoints)&&(identical(other.radicals, radicals) || other.radicals == radicals)&&(identical(other.dictRefs, dictRefs) || other.dictRefs == dictRefs)&&(identical(other.queryCodes, queryCodes) || other.queryCodes == queryCodes)&&(identical(other.readings, readings) || other.readings == readings)&&const DeepCollectionEquality().equals(other._nanori, _nanori)&&const DeepCollectionEquality().equals(other._meanings, _meanings)&&const DeepCollectionEquality().equals(other._variants, _variants)&&const DeepCollectionEquality().equals(other._radicalNames, _radicalNames));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(_strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(_nanori),const DeepCollectionEquality().hash(_meanings),const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_radicalNames),createdAt);
+int get hashCode => Object.hash(runtimeType,importId,literal,strokeCount,const DeepCollectionEquality().hash(_strokeCountMisstrokes),grade,jlpt,frequency,codepoints,radicals,dictRefs,queryCodes,readings,const DeepCollectionEquality().hash(_nanori),const DeepCollectionEquality().hash(_meanings),const DeepCollectionEquality().hash(_variants),const DeepCollectionEquality().hash(_radicalNames));
 
 @override
 String toString() {
-  return 'RawKanjidicDto(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames, createdAt: $createdAt)';
+  return 'RawKanjidicDto(importId: $importId, literal: $literal, strokeCount: $strokeCount, strokeCountMisstrokes: $strokeCountMisstrokes, grade: $grade, jlpt: $jlpt, frequency: $frequency, codepoints: $codepoints, radicals: $radicals, dictRefs: $dictRefs, queryCodes: $queryCodes, readings: $readings, nanori: $nanori, meanings: $meanings, variants: $variants, radicalNames: $radicalNames)';
 }
 
 
@@ -368,7 +366,7 @@ abstract mixin class _$RawKanjidicDtoCopyWith<$Res> implements $RawKanjidicDtoCo
   factory _$RawKanjidicDtoCopyWith(_RawKanjidicDto value, $Res Function(_RawKanjidicDto) _then) = __$RawKanjidicDtoCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'import_id') int importId, String literal,@JsonKey(name: 'stroke_count') int strokeCount,@JsonKey(name: 'stroke_count_misstrokes') List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepointsDto codepoints, KanjidicRadicalsDto radicals,@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? dictRefs,@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? queryCodes, KanjidicReadingsDto readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariantDto>? variants,@JsonKey(name: 'radical_names') List<String>? radicalNames,@JsonKey(name: 'created_at') DateTime createdAt
+@JsonKey(name: 'import_id') int importId, String literal,@JsonKey(name: 'stroke_count') int strokeCount,@JsonKey(name: 'stroke_count_misstrokes') List<int>? strokeCountMisstrokes, int? grade, int? jlpt, int? frequency, KanjidicCodepointsDto codepoints, KanjidicRadicalsDto radicals,@JsonKey(name: 'dict_refs') KanjidicDictRefsDto? dictRefs,@JsonKey(name: 'query_codes') KanjidicQueryCodesDto? queryCodes, KanjidicReadingsDto readings, List<String>? nanori, Map<String, List<String>> meanings, List<KanjidicVariantDto>? variants,@JsonKey(name: 'radical_names') List<String>? radicalNames
 });
 
 
@@ -385,7 +383,7 @@ class __$RawKanjidicDtoCopyWithImpl<$Res>
 
 /// Create a copy of RawKanjidicDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? importId = null,Object? literal = null,Object? strokeCount = null,Object? strokeCountMisstrokes = freezed,Object? grade = freezed,Object? jlpt = freezed,Object? frequency = freezed,Object? codepoints = null,Object? radicals = null,Object? dictRefs = freezed,Object? queryCodes = freezed,Object? readings = null,Object? nanori = freezed,Object? meanings = null,Object? variants = freezed,Object? radicalNames = freezed,}) {
   return _then(_RawKanjidicDto(
 importId: null == importId ? _self.importId : importId // ignore: cast_nullable_to_non_nullable
 as int,literal: null == literal ? _self.literal : literal // ignore: cast_nullable_to_non_nullable
@@ -403,8 +401,7 @@ as KanjidicReadingsDto,nanori: freezed == nanori ? _self._nanori : nanori // ign
 as List<String>?,meanings: null == meanings ? _self._meanings : meanings // ignore: cast_nullable_to_non_nullable
 as Map<String, List<String>>,variants: freezed == variants ? _self._variants : variants // ignore: cast_nullable_to_non_nullable
 as List<KanjidicVariantDto>?,radicalNames: freezed == radicalNames ? _self._radicalNames : radicalNames // ignore: cast_nullable_to_non_nullable
-as List<String>?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as List<String>?,
   ));
 }
 

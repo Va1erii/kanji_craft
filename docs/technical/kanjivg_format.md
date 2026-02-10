@@ -24,7 +24,7 @@ Each SVG contains two root-level groups:
 | Group | ID pattern | Purpose |
 |---|---|---|
 | **StrokePaths** | `kvg:StrokePaths_{hex}` | Nested `<g>` groups encoding the component tree, containing `<path>` elements for each stroke |
-| **StrokeNumbers** | `kvg:StrokeNumbers_{hex}` | `<text>` elements positioned near stroke starting points. Optional; used for printed materials |
+| **StrokeNumbers** | `kvg:StrokeNumbers_{hex}` | `<text>` elements with `transform` attributes, positioned to the side of the beginning of each stroke. Each text element contains the stroke number in digits (1 to total strokes), corresponding to the stroke `id` values. Optional; useful for printed materials |
 
 The `{hex}` segment is the Unicode code point as a 5-digit lowercase hexadecimal number (e.g. `04eee` for 仮 U+4EEE).
 
@@ -85,16 +85,16 @@ This encodes:
 
 | Attribute | Type | Required | Description |
 |---|---|---|---|
-| `element` | `String` | Yes (on meaningful groups) | The Unicode character this group represents physically. The outermost group's `element` matches the kanji itself |
+| `element` | `String` | Yes (on meaningful groups) | The Unicode character that best represents the group physically — the character that resembles the group as much as possible. The outermost group's `element` matches the kanji itself |
 | `position` | `String?` | No | Where this group sits relative to siblings. See [Position Values](#position-values) |
-| `variant` | `"true"?` | No | Present and set to `"true"` if this element is a visual variant of another character |
-| `original` | `String?` | No | The base character this variant derives from. Only meaningful when `variant="true"`. E.g. `element="亻" original="人"` |
+| `variant` | `"true"?` | No | Undocumented in the KanjiVG source. Possibly indicates that the shape of the element is unlike the usual grapheme. In practice, often present on groups where `original` provides the base character (e.g. `element="亻" variant="true" original="人"`) |
+| `original` | `String?` | No | The kanji that represents the group from a semantic point of view. Present when the semantic representation differs from the physical one (the `element`). E.g. `element="亻" original="人"` — ninben is physically 亻 but semantically 人 |
 | `radical` | `String?` | No | Marks this group as a radical. See [Radical Values](#radical-values) |
-| `phon` | `String?` | No | Phonetic marker — the on'yomi reading this component contributes. Values are inconsistent in KanjiVG (see note below) |
+| `phon` | `String?` | No | Marks the part indicating the Sino-Japanese pronunciation (phoneticum). Values are inconsistent and many are undocumented — see [KanjiVG issue #312](https://github.com/KanjiVG/kanjivg/issues/312) |
 | `part` | `int?` | No | When a component's strokes are non-contiguous, it's split across multiple groups sharing the same `element` but with different `part` numbers (1, 2, ...) |
-| `number` | `int?` | No | Disambiguates when the same element appears multiple times AND more than one of those is split into parts. Rare — e.g. 圖 has four 口, two of which are split |
-| `partial` | `"true"?` | No | Set to `"true"` if the group represents only part of the element (not all strokes present) |
-| `tradForm` | `String?` | No | The traditional (kyuujitai) form if different from the modern one. E.g. `element="学" tradForm="學"` |
+| `number` | `int?` | No | Disambiguates when the same element appears multiple times AND more than one of those is split into parts. Rare — e.g. 圖 (05716.svg) has four 口, two of which are split |
+| `partial` | `"true"?` | No | Set to `"true"` if the group only represents the element partially (not all its strokes are present) |
+| `tradForm` | `String?` | No | Related to cases where the Nelson character dictionary radicals differ from those in traditional Japanese dictionaries. Historical context: the original Kanjidic file that KanjiVG was based on favored Nelson radicals |
 | `radicalForm` | `"true"?` | No | Set to `"true"` for groups where a radical-like form is provided as the `element` while `original` holds the standard kanji |
 
 ### Position Values
@@ -105,11 +105,11 @@ This encodes:
 | `right` | 旁 (tsukuri) | Right side | 力 in 助 |
 | `top` | 冠 (kanmuri) | Top crown | 宀 in 家 |
 | `bottom` | 脚 (ashi) | Bottom legs | 灬 in 点 |
-| `kamae` | 構 (kamae) | Enclosure (wrapping around). Used inconsistently as a grab-bag for various enclosing structures | 囗 in 国 |
-| `tare` | 垂 (tare) | Top-left hanging | 广 in 店 |
-| `tarec` | — | Counterpart/complement of a `tare` part | The enclosed portion under 广 |
-| `nyo` | 繞 (nyo) | Bottom-left wrapping | 辶 in 道 |
-| `nyoc` | — | Counterpart/complement of a `nyo` part | The enclosed portion above 辶 |
+| `kamae` | 構 (kamae) | Wrapped around another part (e.g. 門). Used very inconsistently in KanjiVG as a grab-bag for various different structures | 囗 in 国 |
+| `tare` | 垂 (tare) | Left and above another part | 广 in 店 |
+| `tarec` | — | Complement/counterpart of a `tare` part | The enclosed portion under 广 |
+| `nyo` | 繞 (nyo) | Left and under another part | 辶 in 道 |
+| `nyoc` | — | Complement/counterpart of a `nyo` part | The enclosed portion above 辶 |
 
 **Mapping to our Position enum:** Our schema uses traditional names (`hen`, `tsukuri`, `kanmuri`, `ashi`, `kamae`, `tare`, `nyo`, `unknown`). The parser maps KanjiVG values:
 
@@ -130,10 +130,10 @@ This encodes:
 
 | Value | Description |
 |---|---|
-| `general` | The generally accepted radical — authors agree |
-| `tradit` | Traditional Kangxi radical (where it differs from Nelson) |
-| `nelson` | Nelson dictionary radical |
-| `jis` | JIS Kanji Jiten radical (used by KANJIDIC, sometimes differs from general/tradit) |
+| `general` | The generally accepted radical which authors agree on |
+| `tradit` | The "traditional" radical — the Kangxi radical where it disagrees with Nelson |
+| `nelson` | The Nelson dictionary radical |
+| `jis` | The radical used by JIS Kanji Jiten (used by KANJIDIC). Added to deal with inconsistencies between KanjiVG and KANJIDIC; sometimes differs from general or tradit |
 
 **Mapping to our schema:** Our `radicals.is_official` is `true` only when any occurrence carries `radical` with value `general` (the consensus Kangxi radical). The `tradit`, `nelson`, and `jis` values are preserved as `radical_type` on `kanji_components` but do not set `is_official` on the radical itself.
 
@@ -147,9 +147,9 @@ Each stroke is a single `<path>` element. Strokes appear in writing order within
 
 | Attribute | Format | Description |
 |---|---|---|
-| `id` | `kvg:{hex}-s{n}` | Unique stroke ID. `{n}` is 1-based stroke number in document order |
-| `d` | SVG path data | Cubic bezier curves only (`M`/`m`, `C`/`c`, `S`/`s` commands). No other path commands are used. Each stroke is a single sub-path (one `moveto`) |
-| `kvg:type` | CJK Stroke character | Stroke shape using Unicode CJK Strokes (U+31C0–U+31EF). E.g. `㇐` (horizontal), `㇑` (vertical), `㇒` (diagonal). May have a lowercase letter suffix for sub-variants (e.g. `㇑a`) |
+| `id` | `kvg:{hex}[-variant]-s{n}` | Unique stroke ID. `{hex}` is the 5-digit hex code point, optional variant info may follow, `{n}` is a consecutive 1-based stroke number corresponding to the stroke order. E.g. `kvg:053ec-s3` |
+| `d` | SVG path data | Cubic bezier curves only (`M`/`m`, `C`/`c`, `S`/`s` commands). No other SVG path elements are used. Each stroke is a single sub-path (one `moveto`) |
+| `kvg:type` | CJK Stroke character | Stroke shape using Unicode CJK Strokes (U+31C0–U+31EF), whose names (D, HZ, etc.) are initials of Chinese stroke names. E.g. `㇐` (horizontal), `㇑` (vertical), `㇒` (diagonal). May have a lowercase letter suffix for sub-variants (e.g. `㇑a`). See the [KanjiVG Stroke types page](https://github.com/KanjiVG/kanjivg/wiki/Stroke-types) |
 
 ### Canvas
 
@@ -184,7 +184,7 @@ The radical 二 (traditional Kangxi) is split into part 1 (top horizontal stroke
 
 The `phon` attribute marks components that contribute to the kanji's Sino-Japanese pronunciation (on'yomi). This is valuable for our `logic_hint` estimation (semantic vs phonetic).
 
-**Caveat:** The `phon` values in KanjiVG are inconsistent. Some contain reading values (e.g. `ボウ`), others contain element references with notation (e.g. `叚V/反`), and many phonetic components have no `phon` attribute at all. Our AI Heuristics phase ([pipeline.md §2.5](pipeline.md#25-ai-heuristics-logic-hint-estimation)) uses onyomi matching as the primary signal rather than relying solely on `phon`.
+**Caveat:** The `phon` values in KanjiVG are inconsistent and many are completely undocumented (see [KanjiVG issue #312](https://github.com/KanjiVG/kanjivg/issues/312)). Some contain reading values (e.g. `ボウ`), others contain element references with notation (e.g. `叚V/反`), and many phonetic components have no `phon` attribute at all. Our AI Heuristics phase ([pipeline.md §2.5](pipeline.md#25-ai-heuristics-logic-hint-estimation)) uses onyomi matching as the primary signal rather than relying solely on `phon`.
 
 **Where `phon` is present and clean**, it can boost `ai_confidence` on the phonetic classification.
 

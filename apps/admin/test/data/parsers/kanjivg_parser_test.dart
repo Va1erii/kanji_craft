@@ -79,12 +79,12 @@ void main() {
   <kanji id="kvg:kanji_04f11">
     <g id="kvg:04f11" kvg:element="休"
        xmlns:kvg="http://kanjivg.tagaini.net">
-      <g id="kvg:04f11-g1" kvg:element="亻" kvg:position="hen"
-         kvg:variant="true" kvg:original="人" kvg:radical="s">
+      <g id="kvg:04f11-g1" kvg:element="亻" kvg:position="left"
+         kvg:variant="true" kvg:original="人" kvg:radical="general">
         <path id="kvg:04f11-s1" d="M 28,25 L 15,90"/>
         <path id="kvg:04f11-s2" d="M 28,25 L 50,90"/>
       </g>
-      <g id="kvg:04f11-g2" kvg:element="木" kvg:position="tsukuri">
+      <g id="kvg:04f11-g2" kvg:element="木" kvg:position="right">
         <path id="kvg:04f11-s3" d="M 60,20 L 60,90"/>
         <path id="kvg:04f11-s4" d="M 55,50 L 95,50"/>
         <path id="kvg:04f11-s5" d="M 60,52 L 55,90"/>
@@ -110,16 +110,16 @@ void main() {
 
       final left = root.children[0];
       expect(left.element, '亻');
-      expect(left.position, 'hen');
+      expect(left.position, 'left');
       expect(left.variant, true);
       expect(left.original, '人');
-      expect(left.radical, 's');
+      expect(left.radical, 'general');
       expect(left.strokeIndices, [0, 1]);
       expect(left.children, isEmpty);
 
       final right = root.children[1];
       expect(right.element, '木');
-      expect(right.position, 'tsukuri');
+      expect(right.position, 'right');
       expect(right.variant, isNull);
       expect(right.strokeIndices, [2, 3, 4, 5]);
       expect(right.children, isEmpty);
@@ -202,10 +202,10 @@ void main() {
   <kanji id="kvg:kanji_05fd9">
     <g id="kvg:05fd9" kvg:element="忙"
        xmlns:kvg="http://kanjivg.tagaini.net">
-      <g id="kvg:05fd9-g1" kvg:element="忄" kvg:position="hen">
+      <g id="kvg:05fd9-g1" kvg:element="忄" kvg:position="left">
         <path d="M 10,30 L 10,80"/>
       </g>
-      <g id="kvg:05fd9-g2" kvg:element="亡" kvg:position="tsukuri"
+      <g id="kvg:05fd9-g2" kvg:element="亡" kvg:position="right"
          kvg:phon="ボウ">
         <path d="M 50,20 L 90,20"/>
       </g>
@@ -496,7 +496,7 @@ void main() {
   <kanji id="kvg:kanji_06c34">
     <g id="kvg:06c34" kvg:element="水"
        xmlns:kvg="http://kanjivg.tagaini.net"
-       kvg:radical="n">
+       kvg:radical="nelson">
       <path d="M 50,10 L 50,90"/>
     </g>
   </kanji>
@@ -504,7 +504,7 @@ void main() {
 ''';
 
       final results = parser.parseXmlString(xmlString: xml, importId: 1).entries;
-      expect(results.first.components.radical, 'n');
+      expect(results.first.components.radical, 'nelson');
     });
   });
 }

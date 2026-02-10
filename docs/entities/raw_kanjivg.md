@@ -103,7 +103,7 @@ A recursive tree describing how the kanji decomposes into radical/element groups
 | Key | Type | Description |
 |---|---|---|
 | `element` | `String` | The character or component at this node, e.g. "休", "亻", "木" |
-| `position` | `String?` | Positional role: "hen", "tsukuri", "kanmuri", "ashi", "kamae", "tare", "nyo", or null for the root |
+| `position` | `String?` | Positional role using KanjiVG values: `"left"`, `"right"`, `"top"`, `"bottom"`, `"kamae"`, `"tare"`, `"tarec"`, `"nyo"`, `"nyoc"`, or null for the root. Mapped to our Position enum during extraction (see [kanjivg_format.md](../technical/kanjivg_format.md#position-values)) |
 | `variant` | `bool?` | `true` if this is a positional variant of another element (e.g. 亻 is a variant of 人) |
 | `original` | `String?` | The base form this variant derives from, e.g. "人" for 亻. Null if not a variant |
 | `part` | `int?` | Part number when an element is split across non-contiguous strokes |

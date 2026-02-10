@@ -74,7 +74,7 @@ A recursive tree describing how the kanji decomposes into radical/element groups
   "children": [
     {
       "element": "亻",
-      "position": "hen",
+      "position": "left",
       "variant": true,
       "original": "人",
       "part": null,
@@ -86,7 +86,7 @@ A recursive tree describing how the kanji decomposes into radical/element groups
     },
     {
       "element": "木",
-      "position": "tsukuri",
+      "position": "right",
       "variant": null,
       "original": null,
       "part": null,
@@ -104,13 +104,13 @@ A recursive tree describing how the kanji decomposes into radical/element groups
 |---|---|---|
 | `element` | `String` | The character or component at this node, e.g. "休", "亻", "木" |
 | `position` | `String?` | Positional role using KanjiVG values: `"left"`, `"right"`, `"top"`, `"bottom"`, `"kamae"`, `"tare"`, `"tarec"`, `"nyo"`, `"nyoc"`, or null for the root. Mapped to our Position enum during extraction (see [kanjivg_format.md](../technical/kanjivg_format.md#position-values)) |
-| `variant` | `bool?` | `true` if this is a positional variant of another element (e.g. 亻 is a variant of 人) |
-| `original` | `String?` | The base form this variant derives from, e.g. "人" for 亻. Null if not a variant |
+| `variant` | `bool?` | Undocumented in the KanjiVG source — possibly indicates the element's shape differs from the usual grapheme. In practice, often present alongside `original` (e.g. 亻 with `original: "人"`) |
+| `original` | `String?` | The kanji that represents the group from a semantic point of view, when it differs from the physical `element`. E.g. "人" for 亻 — ninben is physically 亻 but semantically 人. Null when semantic and physical match |
 | `part` | `int?` | Part number when an element is split across non-contiguous strokes |
 | `number` | `int?` | Disambiguates when the same element is split into parts multiple times within one kanji (e.g. 圖 has four 口, two of which are split). Pairs with `part` to uniquely identify each fragment |
 | `radical` | `String?` | Radical classification marker from KanjiVG: `"general"`, `"tradit"`, `"nelson"`, `"jis"`, or null. See [kanjivg_format.md](../technical/kanjivg_format.md#radical-values) |
-| `phon` | `String?` | Phonetic marker — the on'yomi reading this component contributes, if any. Values are inconsistent in KanjiVG |
-| `trad_form` | `String?` | Traditional (kyuujitai) form of the element, if different from the modern form |
+| `phon` | `String?` | Marks the part indicating the Sino-Japanese pronunciation (phoneticum). Values are inconsistent and many are undocumented — see [KanjiVG issue #312](https://github.com/KanjiVG/kanjivg/issues/312) |
+| `trad_form` | `String?` | Related to cases where the Nelson character dictionary radicals differ from those in traditional Japanese dictionaries. See [kanjivg_format.md](../technical/kanjivg_format.md) |
 | `partial` | `bool?` | `true` if this group represents the element only partially (not all strokes present). Rare |
 | `radical_form` | `bool?` | `true` if `element` is a radical-specific Unicode character and `original` holds the standard CJK ideograph. Rare |
 | `stroke_indices` | `JsonList` | 0-based indexes into the parent `strokes` array, identifying which strokes belong to this component. Derived from `<path>` nesting inside `<g>` groups in the source SVG |
@@ -142,6 +142,6 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 - **Kanji with no sub-components:** A few simple kanji (e.g. 一) have a flat component tree — the root element with an empty `children` array. This is valid; it means the character is itself a leaf radical.
 - **Deeply nested components:** Some kanji decompose 3–4 levels deep (e.g. 鑑). The JSONB structure handles arbitrary depth without schema changes.
 - **Multiple radicals marked:** A single kanji can have more than one node with a non-null `radical` field (one "s" for Kangxi, one "n" for Nelson). Both are preserved.
-- **Variant without original:** If KanjiVG marks `variant: true` but omits the `original` field, the pipeline should log a warning and skip variant linkage for that node.
-- **Null `position` on root:** The root node of the component tree always has `position: null` — it represents the whole character, not a positioned sub-part.
+- **Variant without original:** If KanjiVG marks `variant: true` but omits the `original` field, the pipeline should log a warning and treat the element as its own master symbol.
+- **Null `position`:** The root node always has `position: null` (it represents the whole character). Non-root nodes can also lack position — per the KanjiVG source, "not every element has a position value."
 - **Re-import with fewer characters:** If a new KanjiVG release drops a character, the old row remains under the previous `import_id`. The new import simply won't have a row for that character. Orphan detection (comparing import versions) is a separate pipeline step.

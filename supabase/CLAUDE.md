@@ -35,9 +35,12 @@ card_state:          new_card, learning, review, relearning
 rating:              again, hard, good, easy
 auth_provider:       email, google, apple, facebook
 study_path:          jlpt, grade
-import_source:       kanjivg, kanjidic, jmdict
+import_source:       kanjivg, kanjidic, jmdict, jmdict_furigana
 import_status:       pending, ingested, processing, processed, failed
 verification_status: draft, verified, flagged
+pos_tag:             ichidan_verb, godan_verb, suru_verb, kuru_verb, transitive,
+                     intransitive, i_adjective, na_adjective, noun, adverb,
+                     usually_kana, polite, humble, honorific
 ```
 
 ### Table Dependencies (FK order for sync)
@@ -78,6 +81,7 @@ users (UUID, references auth.users)
 - `kanji.svg_*`: NOT NULL (content tables hold complete rows; pipeline staging is separate)
 - `vocabulary_sentences.verification_status`: column directly on the row (no separate review table for sentences)
 - `vocabulary.segments`: JSONB array of rendering segments (kanji_id/kanji_ids + text + reading)
+- `vocabulary.pos_tags`: JSONB array of pos_tag enum values for UI badges and display logic
 - `vocabulary_sentences.original_text`: Japanese sentence with `[kanji](reading)` inline furigana (replaced sentence_ja/sentence_furigana/sentence_translated/lang_code)
 - `vocabulary_sentence_i18n`: translations of vocabulary sentences, one per language
 
@@ -122,3 +126,6 @@ Child table changes bump parent `updated_at` so Release Builder detects updates:
 | `20260211074609` | Add vocabulary_sentence_i18n table + propagation trigger |
 | `20260211074643` | Add segments JSONB column to vocabulary |
 | `20260211074649` | RLS for vocabulary_sentence_i18n |
+| `20260211101419` | source_vocab_levels table (composite PK: expression, reading) |
+| `20260211101447` | jmdict_furigana table + import_source enum value |
+| `20260211101454` | pos_tag enum + pos_tags JSONB column on vocabulary |

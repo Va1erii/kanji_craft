@@ -97,6 +97,10 @@ class ComposeKanji {
         continue;
       }
 
+      if (raw.readings.jaOn.isEmpty && raw.readings.jaKun.isEmpty) {
+        warnings.add('${raw.literal}: no readings (empty ja_on and ja_kun)');
+      }
+
       for (final on in raw.readings.jaOn) {
         readings.add(DraftKanjiReading(
           id: 0,
@@ -132,10 +136,14 @@ class ComposeKanji {
       final kanjiId = charToId[raw.literal];
       if (kanjiId == null) continue;
 
+      var hasEnglish = false;
+
       for (final entry in raw.meanings.entries) {
         final langCode = entry.key;
         final meanings = entry.value;
         if (meanings.isEmpty) continue;
+
+        if (langCode == 'en') hasEnglish = true;
 
         i18nList.add(DraftKanjiI18n(
           id: 0,
@@ -147,6 +155,10 @@ class ComposeKanji {
           createdAt: now,
           updatedAt: now,
         ));
+      }
+
+      if (!hasEnglish) {
+        warnings.add('${raw.literal}: missing English (en) meanings');
       }
     }
 

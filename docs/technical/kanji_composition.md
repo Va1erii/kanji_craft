@@ -2,7 +2,7 @@
 
 ## Overview
 
-Kanji composition transforms `raw_kanjidic` staging data into learnable kanji rows and their child tables: `kanji`, `kanji_readings`, and `kanji_i18n`. The result is a structured educational dataset where every kanji carries its readings, localized meanings, level classifications, and frequency ordering — everything the SRS engine needs to schedule lessons and the client needs to render cards.
+Kanji composition transforms `raw_kanjidic` staging data into draft kanji rows and their child tables: `draft_kanji`, `draft_kanji_readings`, and `draft_kanji_i18n`. The result is a structured educational dataset where every kanji carries its readings, localized meanings, level classifications, and frequency ordering. Draft rows are promoted to content tables (`kanji`, `kanji_readings`, `kanji_i18n`) when complete — see [pipeline.md](pipeline.md) for the raw → draft → content flow.
 
 This phase sits between radical extraction Passes 1–2 (which create `radicals` and `radical_variants`) and Passes 3–4 (which link kanji to their component radicals and derive radical metadata). The kanji rows must exist before component linking can reference them via `kanji_components.kanji_id`.
 
@@ -29,22 +29,24 @@ Key fields consumed by this phase:
 
 The composition runs in five steps over the active `raw_kanjidic` import. Each step is idempotent — re-running with the same data produces the same result.
 
+**Strategy:** Steps 1-3 delete all existing draft rows and batch insert fresh data. This is simpler and faster than per-row upserts for the ~13K character dataset. Idempotency is preserved — re-running produces the same draft rows.
+
 ### Step 1: Create Kanji Rows
 
-For each `raw_kanjidic` row in the active import, upsert a `kanji` row.
+For each `raw_kanjidic` row in the active import, create a `draft_kanji` row.
 
 **Field mapping:**
 
-| `raw_kanjidic` | `kanji` | Transformation |
+| `raw_kanjidic` | `draft_kanji` | Transformation |
 |---|---|---|
 | `literal` | `character` | Direct copy |
 | `stroke_count` | `stroke_count` | Direct copy |
 | `grade` | `min_grade` | 1–6, 8 → keep; 9–10 → `null`; `null` → `null` |
 | `jlpt` | `min_jlpt_level` | Map old 1–4 → new 1–5 via JLPT mapping table (see §JLPT Level Mapping) |
 | `frequency` | `frequency_rank` | Direct for 1–2501; `null` → synthetic rank (see below) |
-| — | `svg_file_name` | Derived from SVG Processing (Phase 2.4) |
-| — | `svg_file_url` | Derived from SVG Processing (Phase 2.4) |
-| — | `svg_hash` | Derived from SVG Processing (Phase 2.4) |
+| — | `svg_file_name` | `null` in draft; populated by SVG Processing (Phase 2.4) |
+| — | `svg_file_url` | `null` in draft; populated by SVG Processing (Phase 2.4) |
+| — | `svg_hash` | `null` in draft; populated by SVG Processing (Phase 2.4) |
 
 **Grade mapping detail:**
 
@@ -71,40 +73,40 @@ The safe offset keeps real frequency ranks (1–2,501) and synthetic ranks (10,0
 
 This ensures `frequency_rank` is never null, allowing the client to sort all kanji within a level by frequency without null-handling logic.
 
-**Upsert key:** `character` (unique constraint on `kanji`).
+**Unique constraint:** `character` on `draft_kanji`.
 
 ### Step 2: Create Reading Rows
 
-For each kanji, extract readings from `raw_kanjidic.readings` and upsert into `kanji_readings`.
+For each kanji, extract readings from `raw_kanjidic.readings` and insert into `draft_kanji_readings`.
 
 **Onyomi** (`readings.ja_on`):
-- Each entry becomes a `kanji_readings` row with `reading_type = onyomi`.
+- Each entry becomes a `draft_kanji_readings` row with `reading_type = onyomi`.
 - Stored as katakana (matching source format).
 
 **Kunyomi** (`readings.ja_kun`):
-- Each entry becomes a `kanji_readings` row with `reading_type = kunyomi`.
+- Each entry becomes a `draft_kanji_readings` row with `reading_type = kunyomi`.
 - Stored as hiragana, **preserving okurigana dots and prefix/suffix dashes** from KANJIDIC2. For example, `やす.む` is stored as-is — the dot marks the inflection boundary (kanji reads やす, む is appended hiragana). The client parses on the dot to split stem from suffix for display (see edge case below). The raw notation is preserved for admin review and future processing.
 
 **Priority assignment:** All readings start as `primary`. KANJIDIC2 does not distinguish primary from secondary readings — every listed reading is considered equally important by the source. An admin may downgrade readings to `secondary` during review if a reading is archaic or domain-specific.
 
-**Upsert key:** `(kanji_id, reading, reading_type)` — no duplicate readings for the same kanji.
+**Unique constraint:** `(draft_kanji_id, reading, reading_type)` — no duplicate readings for the same kanji.
 
 **Validation:** After processing, every kanji must have at least one reading row. If a `raw_kanjidic` entry has empty `ja_on` and empty `ja_kun`, log a warning (this should not happen per KANJIDIC2 rules — every character has at least one Japanese reading).
 
 ### Step 3: Create I18n Rows
 
-For each kanji, create localized meaning rows in `kanji_i18n` for each target language in the pipeline configuration (default: `['en', 'es']`).
+For each kanji, create localized meaning rows in `draft_kanji_i18n` for **every language** present in the raw data. All languages are stored in drafts — target language filtering (default: `['en', 'es']`) is applied later during AI enrichment (Phase 2.5/2.7) and promotion to content tables.
 
-For each target language:
+For each language key in `raw_kanjidic.meanings`:
 
 1. Look up `raw_kanjidic.meanings[lang_code]`.
-2. If the language key is present and the meanings array is non-empty:
+2. If the meanings array is non-empty:
    - `meanings` ← the array as-is (preserves source ordering, which is priority order).
    - `system_mnemonic` ← empty string placeholder. Populated by AI in Phase 2.5 or manually by admin.
    - `search_tags` ← empty array. Populated later during content enrichment.
-3. If the language key is not present in `raw_kanjidic.meanings`, **skip** — do not create an i18n row. Fallback to English happens at query time per [kanji.md](../entities/kanji.md) edge cases, not at ingestion time.
+3. If the meanings array is empty, **skip** — do not create a draft i18n row.
 
-**Upsert key:** `(kanji_id, lang_code)`.
+**Unique constraint:** `(draft_kanji_id, lang_code)`.
 
 **Validation:** After processing, every kanji must have at least an English (`en`) i18n row. KANJIDIC2 always includes English meanings, so a missing `en` row indicates a parser bug.
 
@@ -273,16 +275,16 @@ This kanji is excluded from both JLPT-based and grade-based study paths. It surf
 
 ## Business Rules
 
-1. Every `raw_kanjidic` row produces exactly one `kanji` row (upsert on `character`).
+1. Every `raw_kanjidic` row produces exactly one `draft_kanji` row (unique on `character`).
 2. `stroke_count` must be a positive integer (validated during raw_kanjidic ingestion).
 3. `min_grade` mapped: 1–6, 8 → keep; 9–10 → `null`; `null` → `null`.
 4. `min_jlpt_level` must come from the JLPT mapping table, not from `raw_kanjidic.jlpt` directly. The raw `jlpt` field is reference-only.
 5. Every kanji must have at least one reading row after Step 2.
 6. Every kanji must have at least one `primary` reading.
-7. `kanji_i18n` required for `en` at minimum (KANJIDIC2 always has English meanings).
-8. `kanji_i18n.meanings` must have at least one entry per row.
+7. `draft_kanji_i18n` required for `en` at minimum (KANJIDIC2 always has English meanings). Missing `en` is logged as a warning.
+8. `draft_kanji_i18n.meanings` must have at least one entry per row.
 9. Kunyomi readings preserve okurigana notation: dots for inflection points (e.g. `やす.む`), dashes for prefixes/suffixes (e.g. `-び`).
-10. Re-processing the same `raw_kanjidic` data produces the same result (idempotent upserts).
+10. Re-processing the same `raw_kanjidic` data produces the same result (idempotent via delete all + batch insert).
 11. `frequency_rank` is always populated — ranked kanji get their source value, unranked kanji get a synthetic rank.
 
 ## Edge Cases
@@ -302,8 +304,8 @@ Readings like `やす.む` (for 休む) are stored as-is in `kanji_readings.read
 ### Kunyomi with prefix/suffix dashes
 Readings like `-び` and `-か` (for 日 in compounds like 祝日) are stored as-is. The dash indicates the reading only occurs as part of a compound, not independently.
 
-### Languages not in target set
-If a target language (e.g. `es`) has no entry in `raw_kanjidic.meanings`, no `kanji_i18n` row is created for that language-kanji pair. This is not an error — Spanish coverage in KANJIDIC2 is partial. The client falls back to English at query time (see [kanji.md](../entities/kanji.md) edge cases).
+### Languages with no meanings
+If a language key in `raw_kanjidic.meanings` has an empty array, no `draft_kanji_i18n` row is created for that language-kanji pair. This is expected — not all languages have meanings for every character. The client falls back to English at query time (see [kanji.md](../entities/kanji.md) edge cases).
 
 ### Kanji in raw_kanjidic but not in raw_kanjivg
 A kanji row is created from KANJIDIC2 data even if no matching KanjiVG entry exists. Steps 1–3 succeed, but Step 4 (component linking) produces no `kanji_components` rows for this character. This is logged as a warning — it means the kanji exists as a learnable item but has no decomposition tree. The admin should investigate missing KanjiVG coverage.
@@ -318,9 +320,9 @@ Should not occur — KANJIDIC2 guarantees at least one `ja_on` or `ja_kun` readi
 
 | Table | What gets created | Source |
 |---|---|---|
-| `kanji` | One row per `raw_kanjidic` entry | Step 1 |
-| `kanji_readings` | One row per reading per kanji | Step 2 |
-| `kanji_i18n` | One row per language per kanji (for target languages with data) | Step 3 |
+| `draft_kanji` | One row per `raw_kanjidic` entry | Step 1 |
+| `draft_kanji_readings` | One row per reading per kanji | Step 2 |
+| `draft_kanji_i18n` | One row per language per kanji (for all languages with data) | Step 3 |
 
 Tables populated by **this phase but documented elsewhere:**
 - `kanji_components` — component linking (Step 4, see [radical_extraction.md Pass 3](radical_extraction.md#pass-3-link--create-kanjicomponent-rows))

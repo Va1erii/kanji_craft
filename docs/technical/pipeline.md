@@ -242,7 +242,7 @@ See [radical.md](../entities/radical.md).
 
 ### 2.3 Kanji & Component Composition
 
-1. **Kanji creation:** Upsert `kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping). For each target language, create `kanji_i18n` rows from `raw_kanjidic.meanings[lang_code]` (all languages are stored in raw tables during Phase 1).
+1. **Kanji creation:** Create `draft_kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping). Create `draft_kanji_i18n` rows from `raw_kanjidic.meanings` for all languages present in the raw data — target language filtering is applied during AI enrichment and promotion.
 2. **Component linking:** Parse `raw_kanjivg.components` tree one level deep per kanji, resolve each child to its master radical, and create `kanji_components` rows. Then derive radical metadata (`impact_score`, `min_grade`, `min_jlpt_level`) from the links.
 
 See [kanji_composition.md](kanji_composition.md), [component_linking.md](component_linking.md).

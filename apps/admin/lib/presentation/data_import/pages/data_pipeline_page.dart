@@ -5,6 +5,7 @@ import '../bloc/data_import_event.dart';
 import '../bloc/data_import_state.dart';
 import '../widgets/imports_table.dart';
 import '../widgets/new_import_dialog.dart';
+import '../widgets/source_requirements_row.dart';
 
 class DataPipelinePage extends StatelessWidget {
   const DataPipelinePage({super.key});
@@ -45,6 +46,12 @@ class DataPipelinePage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
+                state.maybeWhen(
+                  loaded: (imports, _) =>
+                      SourceRequirementsRow(imports: imports),
+                  orElse: () => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: 16),
                 Expanded(
                   child: state.when(
                     initial: () => const Center(child: CircularProgressIndicator()),

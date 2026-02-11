@@ -11,6 +11,7 @@ import 'di/injection.dart';
 import 'domain/repositories/source_jlpt_level_repository.dart';
 import 'domain/repositories/source_vocab_level_repository.dart';
 import 'presentation/data_import/bloc/data_import_bloc.dart';
+import 'presentation/data_import/bloc/extraction_bloc.dart';
 import 'presentation/hydration/bloc/hydration_bloc.dart';
 import 'presentation/hydration/bloc/hydration_event.dart';
 
@@ -59,6 +60,9 @@ class KanjiCraftAdmin extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => getIt<DataImportBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<ExtractionBloc>(),
         ),
       ],
       child: MaterialApp.router(

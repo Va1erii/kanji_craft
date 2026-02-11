@@ -33,6 +33,7 @@ import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/hydrate_local_db.dart';
 import '../domain/usecases/ingest_source_data.dart';
 import '../presentation/data_import/bloc/data_import_bloc.dart';
+import '../presentation/data_import/bloc/extraction_bloc.dart';
 import '../presentation/hydration/bloc/hydration_bloc.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
@@ -146,5 +147,8 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory<HydrationBloc>(
     () => HydrationBloc(hydrateLocalDb: getIt<HydrateLocalDb>()),
+  );
+  getIt.registerFactory<ExtractionBloc>(
+    () => ExtractionBloc(extractRadicals: getIt<ExtractRadicals>()),
   );
 }

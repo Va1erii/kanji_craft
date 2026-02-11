@@ -23,7 +23,6 @@ class SourceRequirementsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ingested = _ingestedSources;
-    final allReady = ImportSource.values.every(ingested.contains);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -40,11 +39,6 @@ class SourceRequirementsRow extends StatelessWidget {
                 isReady: ingested.contains(source),
                 colorScheme: colorScheme,
               ),
-            const SizedBox(width: 8),
-            FilledButton(
-              onPressed: allReady ? () {} : null,
-              child: const Text('Proceed to Extraction'),
-            ),
           ],
         ),
       ],

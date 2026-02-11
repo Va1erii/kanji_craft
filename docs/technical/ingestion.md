@@ -78,6 +78,20 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 | Raw table | `raw_jmdict` |
 | Unique constraint | `(import_id, ent_seq)` |
 
+### JLPT Mapping
+
+| Aspect | Value |
+|---|---|
+| File | `sources/jlpt_mapping/jlpt_mapping.csv` |
+| Table | `source_jlpt_levels` |
+| Strategy | TRUNCATE + INSERT (full reload each time) |
+| Import tracking | None — not tracked in `data_imports` |
+| Unique constraint | `character` (primary key) |
+
+Simple CSV load: the entire `source_jlpt_levels` table is truncated and repopulated from the CSV. No version lifecycle, no partial inserts, no failure recovery beyond re-running. The table must be loaded before Phase 2.3 (kanji composition), which looks up each character's N1–N5 level from it.
+
+See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md) for the file format and column mapping.
+
 ## What Is NOT Enforced (Known Gaps)
 
 These are known limitations of the current ingestion layer, documented here so they are explicitly deferred rather than silently missing.

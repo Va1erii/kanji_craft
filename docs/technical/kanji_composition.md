@@ -137,12 +137,12 @@ KANJIDIC2 uses the **pre-2010 JLPT scale** (levels 1–4). Our schema uses the *
 
 Because of these splits, the raw `jlpt` value **cannot be mechanically converted** to a new level. Instead, the pipeline uses an **external JLPT mapping table** — a curated dataset that maps individual kanji characters to their current N1–N5 level based on community-maintained kanji lists.
 
-**Source data:** The de-facto standard for "New JLPT" kanji lists is the [Tanos (Jonathan Waller)](https://www.tanos.co.uk/jlpt/) collection, supplemented by community-maintained JLPT Resources lists. A curated CSV (`jlpt_mapping.csv`) is committed to `sources/` and ingested into a `ref_jlpt_levels` lookup table during Phase 1. Each row maps a single character to its N1–N5 level.
+**Source data:** The de-facto standard for "New JLPT" kanji lists is the [Tanos (Jonathan Waller)](https://www.tanos.co.uk/jlpt/) collection, supplemented by community-maintained JLPT Resources lists. A curated CSV (`jlpt_mapping.csv`) is committed to `sources/jlpt_mapping/` and loaded into the `source_jlpt_levels` table (see [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md)). Each row maps a single character to its N1–N5 level.
 
 **Strategy:**
 
 1. `raw_kanjidic.jlpt` stores the raw 1–4 value for reference and auditing.
-2. The `ref_jlpt_levels` lookup table maps `character → N level` (integer 1–5), sourced from `sources/jlpt_mapping.csv`.
+2. The `source_jlpt_levels` table maps `character → N level` (integer 1–5), sourced from `sources/jlpt_mapping/jlpt_mapping.csv`.
 3. During Step 1, look up each kanji's character in the lookup table:
    - Found → set `kanji.min_jlpt_level` to the mapped value.
    - Not found → set `kanji.min_jlpt_level` to `null`.

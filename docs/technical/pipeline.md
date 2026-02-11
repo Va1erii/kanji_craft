@@ -45,6 +45,16 @@ Downloaded from the [KanjiVG](https://kanjivg.tagaini.net/) project. Stroke orde
 | `kanjivg-{version}.xml.gz` | Single XML with all kanji stroke/component data (~6,700 entries) | `raw_kanjivg` → `radicals`, `kanji_components` |
 | `kanjivg-{version}-main.zip` | Individual SVG files per kanji (stroke diagrams) | `radicals` (SVG assets), `radical_variants` |
 
+### 4. JLPT Level Mapping — `jlpt_mapping/`
+
+Curated kanji-to-JLPT-level mapping compiled from Jonathan Waller's [Tanos](https://www.tanos.co.uk/jlpt/) lists and David Luz Gouveia's [kanji-data](https://github.com/davidluzgouveia/kanji-data) repo.
+
+| File | Contents | Pipeline target |
+|---|---|---|
+| `jlpt_mapping.csv` | 2,211 kanji → N1–N5 level | `source_jlpt_levels` |
+
+No version suffix — single curated file, updated manually. Not tracked in `data_imports`. Loaded via TRUNCATE + INSERT during pipeline setup (see [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md)).
+
 ### Source Strategy Summary
 
 | Source | Files | Languages | Strategy |
@@ -64,6 +74,7 @@ The admin prepares source data by placing downloaded archives into correctly nam
 | KANJIDIC | `kanjidic2-{version}/` | `kanjidic2-20260208/` |
 | JMDict | `jmdict-{version}/` | `jmdict-20260207/` |
 | KanjiVG | `kanjivg-{version}/` | `kanjivg-20250816/` |
+| JLPT Mapping | `jlpt_mapping/` (no version) | `jlpt_mapping/` |
 
 The `{version}` segment becomes the `source_version` value in `data_imports`.
 
@@ -160,6 +171,10 @@ Before parsing, create a new `data_imports` row to track this batch.
 | `status` | `pending` |
 
 See [data_import.md](../entities/data_import.md).
+
+### 1.1b JLPT Mapping Load
+
+The `source_jlpt_levels` table is loaded from `sources/jlpt_mapping/jlpt_mapping.csv` via TRUNCATE + INSERT. This is a standalone reference load — not tracked in `data_imports` and not versioned. It runs during pipeline setup or hydration, before Phase 2 needs the lookup table. See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
 
 ### 1.2 Parsing & Insertion
 

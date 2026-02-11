@@ -52,7 +52,7 @@ These sources have no formal license requiring attribution, but crediting them i
 |---|---|
 | **Source** | Jonathan Waller's JLPT Resources |
 | **URL** | https://www.tanos.co.uk/jlpt/ |
-| **Used for** | Mapping kanji to current JLPT N1–N5 levels (the `ref_jlpt_levels` lookup table) |
+| **Used for** | Mapping kanji to current JLPT N1–N5 levels (the `source_jlpt_levels` table) |
 
 ### Kanji Data (JLPT Mapping Dataset)
 

@@ -33,7 +33,7 @@ One row per character entry in KANJIDIC2. Scalar fields for commonly queried dat
 
 **Why `jlpt` is 1–4, not 1–5?**
 
-KANJIDIC2 uses the **pre-2010 JLPT scale** (levels 1–4). The current JLPT (2010+) uses levels 1–5, where old level 4 was split into N4 and N5. This table stores the raw source value as-is. The content pipeline maps old levels to current N1–N5 when populating the `kanji` table.
+KANJIDIC2 uses the **pre-2010 JLPT scale** (levels 1–4). The current JLPT (2010+) uses levels 1–5, where old level 4 was split into N4 and N5. This table stores the raw source value as-is. The pipeline **ignores** this field when populating `kanji.min_jlpt_level` — it uses `source_jlpt_levels` exclusively (see [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md)). The raw value is preserved for reference and auditing only.
 
 **Why JSONB for readings, meanings, dict_refs, etc.?**
 
@@ -248,7 +248,7 @@ These are **pipeline-level data flows**, not foreign keys. The content pipeline 
 ## Edge Cases
 
 - **Character with no grade:** Many characters in KANJIDIC2 are outside the jouyou/jinmeiyou sets. `grade` is null — the pipeline must handle this when deciding whether to import into the `kanji` table.
-- **Character with no JLPT level:** KANJIDIC2's JLPT field covers the old 4-level system only. Characters added to JLPT N5 after the 2010 restructuring may have `jlpt: null`. The pipeline uses a separate JLPT N1–N5 mapping table for current level assignment.
+- **Character with no JLPT level:** KANJIDIC2's JLPT field covers the old 4-level system only. Characters added to JLPT N5 after the 2010 restructuring may have `jlpt: null`. The pipeline uses `source_jlpt_levels` (not this field) for current N1–N5 level assignment — see [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
 - **Character with no frequency:** Rare characters have no newspaper frequency rank. `frequency` is null — the pipeline assigns a synthetic rank or excludes them from lesson ordering.
 - **Readings with okurigana markers:** Kun'yomi readings use `.` to separate the kanji reading from okurigana (e.g. "やす.む" for 休む) and `-` for prefix/suffix forms (e.g. "-び"). The raw values preserve these markers; the pipeline strips them when populating `kanji_readings`.
 - **Moro dict_ref as object:** Unlike all other dictionary references (flat strings), `moro` is `{volume, page}`. The pipeline must handle this structural difference when extracting dict_refs.

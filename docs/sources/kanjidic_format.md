@@ -191,7 +191,7 @@ KANJIDIC2 uses the **pre-2010 JLPT scale** (4 levels). The current JLPT (2010+) 
 | 2 | N3, N2 | Old level 2 was split between N2 and N3 |
 | 1 | N1 | Old level 1 maps to N1 |
 
-**No official kanji lists exist for the new N1–N5 levels.** Our pipeline stores the raw 1–4 value in `raw_kanjidic.jlpt` and uses a separate JLPT N1–N5 mapping table when populating `kanji.min_jlpt_level`. In our schema, N5 is stored as `5` and N1 as `1`.
+**No official kanji lists exist for the new N1–N5 levels.** Our pipeline stores the raw 1–4 value in `raw_kanjidic.jlpt` for reference only and uses `source_jlpt_levels` exclusively when populating `kanji.min_jlpt_level` (see [jlpt_mapping_format.md](jlpt_mapping_format.md)). In our schema, N5 is stored as `5` and N1 as `1`.
 
 ### Variant Cross-References
 
@@ -453,7 +453,7 @@ These KANJIDIC2 fields exist in the source but are not extracted by our parser:
 
 | Issue | Impact | Handling |
 |---|---|---|
-| JLPT levels are pre-2010 (1–4 scale) | Cannot directly use for current N1–N5 filtering | Pipeline maps to N1–N5 via external mapping table |
+| JLPT levels are pre-2010 (1–4 scale) | Cannot directly use for current N1–N5 filtering | Pipeline maps to N1–N5 via `source_jlpt_levels` (see [jlpt_mapping_format.md](jlpt_mapping_format.md)) |
 | `frequency` only covers top 2,501 characters | Rare kanji have no ranking | Pipeline assigns synthetic rank or excludes from lesson ordering |
 | `grade` is null for non-jouyou/jinmeiyou kanji | Many characters are ungraded | Pipeline handles null — ungraded kanji excluded from grade-based study path |
 | English meanings always present; other languages partial | Some kanji have no Spanish meanings | Pipeline falls back to English for `kanji_i18n` in unsupported languages |

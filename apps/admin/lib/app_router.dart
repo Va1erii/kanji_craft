@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
-import 'package:kanji_craft_admin/presentation/pages/dashboard_page.dart';
-import 'package:kanji_craft_admin/presentation/pages/data_pipeline_page.dart';
-import 'package:kanji_craft_admin/presentation/pages/placeholder_page.dart';
-import 'package:kanji_craft_admin/presentation/widgets/admin_shell.dart';
+import 'package:kanji_craft_admin/presentation/common/pages/dashboard_page.dart';
+import 'package:kanji_craft_admin/presentation/common/pages/placeholder_page.dart';
+import 'package:kanji_craft_admin/presentation/common/widgets/admin_shell.dart';
+import 'package:kanji_craft_admin/presentation/data_import/pages/data_pipeline_page.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',

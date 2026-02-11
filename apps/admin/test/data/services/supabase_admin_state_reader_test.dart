@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kanji_craft_admin/data/datasources/supabase_data_import_datasource.dart';
-import 'package:kanji_craft_admin/data/datasources/supabase_kanji_component_review_datasource.dart';
+import 'package:kanji_craft_admin/data/repositories/data_import/supabase_data_import_datasource.dart';
+import 'package:kanji_craft_admin/data/repositories/kanji_component_review/supabase_kanji_component_review_datasource.dart';
 import 'package:kanji_craft_admin/data/services/supabase_admin_state_reader.dart';
 import 'package:mocktail/mocktail.dart';
 

@@ -1,15 +1,15 @@
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../data/datasources/supabase_data_import_datasource.dart';
-import '../data/datasources/supabase_kanji_component_review_datasource.dart';
-import '../data/local/admin_database.dart';
-import '../data/repositories/drift_data_import_repository.dart';
-import '../data/repositories/drift_kanji_component_review_repository.dart';
-import '../data/repositories/drift_raw_jmdict_repository.dart';
-import '../data/repositories/drift_raw_kanjidic_repository.dart';
-import '../data/repositories/drift_raw_kanjivg_repository.dart';
-import '../data/repositories/drift_source_jlpt_level_repository.dart';
+import '../data/database/admin_database.dart';
+import '../data/repositories/data_import/drift_data_import_repository.dart';
+import '../data/repositories/data_import/supabase_data_import_datasource.dart';
+import '../data/repositories/kanji_component_review/drift_kanji_component_review_repository.dart';
+import '../data/repositories/kanji_component_review/supabase_kanji_component_review_datasource.dart';
+import '../data/repositories/raw_jmdict/drift_raw_jmdict_repository.dart';
+import '../data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
+import '../data/repositories/raw_kanjivg/drift_raw_kanjivg_repository.dart';
+import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import '../data/services/drift_admin_state_writer.dart';
 import '../data/services/source_parser_impl.dart';
 import '../data/services/supabase_admin_state_reader.dart';
@@ -24,8 +24,8 @@ import '../domain/services/admin_state_writer.dart';
 import '../domain/services/source_parser.dart';
 import '../domain/usecases/hydrate_local_db.dart';
 import '../domain/usecases/ingest_source_data.dart';
-import '../presentation/bloc/data_import_bloc.dart';
-import '../presentation/bloc/hydration_bloc.dart';
+import '../presentation/data_import/bloc/data_import_bloc.dart';
+import '../presentation/hydration/bloc/hydration_bloc.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const _supabaseServiceRoleKey =

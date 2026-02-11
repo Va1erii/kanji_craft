@@ -8,9 +8,9 @@ import 'app_router.dart';
 import 'data/services/jlpt_mapping_parser.dart';
 import 'di/injection.dart';
 import 'domain/repositories/source_jlpt_level_repository.dart';
-import 'presentation/bloc/data_import_bloc.dart';
-import 'presentation/bloc/hydration_bloc.dart';
-import 'presentation/bloc/hydration_event.dart';
+import 'presentation/data_import/bloc/data_import_bloc.dart';
+import 'presentation/hydration/bloc/hydration_bloc.dart';
+import 'presentation/hydration/bloc/hydration_event.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

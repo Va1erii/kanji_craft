@@ -1,8 +1,8 @@
 import '../../domain/entities/data_import.dart';
 import '../../domain/entities/kanji_component_review.dart';
 import '../../domain/services/admin_state_reader.dart';
-import '../datasources/supabase_data_import_datasource.dart';
-import '../datasources/supabase_kanji_component_review_datasource.dart';
+import '../repositories/data_import/supabase_data_import_datasource.dart';
+import '../repositories/kanji_component_review/supabase_kanji_component_review_datasource.dart';
 
 class SupabaseAdminStateReader implements AdminStateReader {
   SupabaseAdminStateReader({

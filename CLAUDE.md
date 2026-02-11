@@ -55,10 +55,12 @@ Supabase CLI commands are in [docs/technical/supabase.md](docs/technical/supabas
 ### Key Directories
 
 - `packages/core/lib/domain/entities/` — shared domain entities and enums
-- `apps/admin/lib/domain/` — admin-only entities and repository interfaces
-- `apps/admin/lib/data/` — Drift DB, parsers, DTOs, repositories, services
-- `apps/admin/lib/presentation/` — BLoC, pages, widgets
-- `apps/admin/lib/core/` — theme, router
+- `apps/admin/lib/domain/` — admin-only entities, repository interfaces, use cases
+- `apps/admin/lib/data/database/` — Drift DB, tables, mappers, converters, raw DTOs
+- `apps/admin/lib/data/repositories/{feature}/` — feature-scoped: Drift repo + Supabase datasource + DTO
+- `apps/admin/lib/data/services/` — parsers, admin state reader/writer
+- `apps/admin/lib/presentation/{feature}/` — feature-scoped: BLoC + pages + widgets
+- `apps/admin/lib/presentation/common/` — shared widgets (admin_shell) and pages (dashboard, placeholder)
 - `apps/admin/lib/di/` — get_it dependency injection
 - `apps/client/lib/` — client app (scaffold)
 - `docs/entities/` — entity group specs (docs-first design)

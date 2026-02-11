@@ -37,49 +37,126 @@ cd apps/admin && flutter pub run build_runner build --delete-conflicting-outputs
 
 # Workspace-wide
 dart pub get                                    # Resolve all packages from root
-```
 
-Supabase CLI commands are in [docs/technical/supabase.md](docs/technical/supabase.md#commands).
+# Supabase
+supabase migration new <name>                   # Create timestamped migration file
+supabase db reset                               # Apply all migrations (destructive)
+```
 
 ## Architecture
 
 - **Clean Architecture:** domain → data → presentation layers
 - **State Management:** BLoC (`flutter_bloc`)
 - **Routing:** `go_router`
-- **DI:** `get_it` (singleton DB/repos, factory BLoCs)
+- **DI:** `get_it` (singleton DB/repos, factory BLoCs) in each app's `lib/di/injection.dart`
 - **Local DB:** Drift (SQLite) — source of truth for offline-first
 - **Remote:** Supabase (PostgreSQL + Auth + Storage)
-- **Code Gen:** Freezed for immutable data classes
+- **Code Gen:** Freezed for immutable data classes, Drift for SQLite, json_serializable for DTOs
 - **SRS Engine:** `fsrs` package for spaced repetition scheduling (runs locally)
 
-### Key Directories
+## Key Directories
 
-- `packages/core/lib/domain/entities/` — shared domain entities and enums
-- `apps/admin/lib/domain/` — admin-only entities, repository interfaces, use cases
-- `apps/admin/lib/data/database/` — Drift DB, tables, mappers, converters, raw DTOs
-- `apps/admin/lib/data/repositories/{feature}/` — feature-scoped: Drift repo + Supabase datasource + DTO
-- `apps/admin/lib/data/services/` — parsers, admin state reader/writer
-- `apps/admin/lib/presentation/{feature}/` — feature-scoped: BLoC + pages + widgets
-- `apps/admin/lib/presentation/common/` — shared widgets (admin_shell) and pages (dashboard, placeholder)
-- `apps/admin/lib/di/` — get_it dependency injection
-- `apps/client/lib/` — client app (scaffold)
-- `docs/entities/` — entity group specs (docs-first design)
-- `docs/technical/` — infrastructure docs (supabase.md, offline.md)
-- `supabase/` — config, migrations, seed data, `.env`
+```
+packages/core/lib/domain/entities/     # Shared enums + Freezed entities
+apps/admin/lib/
+  domain/entities/                     # Admin-only entities (DataImport, raw DTOs)
+  domain/repositories/                 # Repository interfaces
+  data/database/                       # Drift DB, tables, mappers, converters
+  data/database/dto/                   # Raw DTOs (used by Drift converters)
+  data/repositories/{feature}/         # Drift repo + Supabase datasource + DTO
+  data/services/                       # Parsers, admin state reader/writer
+  presentation/{feature}/bloc/         # BLoC + event + state per feature
+  presentation/{feature}/pages/        # Pages per feature
+  presentation/{feature}/widgets/      # Widgets per feature
+  presentation/common/                 # Shared shell, dashboard, placeholder
+  di/injection.dart                    # get_it registration
+  core/                                # Theme, router
+apps/client/lib/                       # Client app (scaffold)
+docs/                                  # See Documentation Map below
+supabase/migrations/                   # Timestamped SQL migrations
+```
 
-### Docs-First Entity Design
+## Documentation Map
 
-Entity specs in `docs/entities/` are written **before** code. They define fields, relationships, business rules, and edge cases. The `/doc-entity` skill generates these specs. Implementation must follow the spec.
+Read specific docs only when relevant to the task. Do not load all docs at once.
 
-### Key Docs
+### Entity Specs (`docs/entities/`) — read when implementing or modifying entities
 
-- [docs/technical/offline.md](docs/technical/offline.md) — offline-first sync, conflict resolution, data categories
-- [docs/technical/supabase.md](docs/technical/supabase.md) — auth, database, storage, migrations, RLS
-- [docs/product/monetization.md](docs/product/monetization.md) — freemium strategy, pricing, grandfathering
-- [docs/guides/apple-sign-in-key-rotation.md](docs/guides/apple-sign-in-key-rotation.md) — Apple OAuth secret rotation (every 6 months)
+| Doc | Covers | Key decisions |
+|---|---|---|
+| `radical.md` | Radical, RadicalI18n, RadicalVariant, Position enum | master_symbol is canonical identity; variants are shapes at positions |
+| `kanji.md` | Kanji, KanjiReading, KanjiI18n | frequency_rank always populated (synthetic for unranked) |
+| `kanji_component.md` | KanjiComponent, KanjiComponentReview, LogicHint, RadicalType | logic_hint is per-kanji-radical pair, not global; is_primary is generated from radical_type |
+| `vocabulary.md` | Vocabulary, VocabularyReading/I18n/Kanji/Sentence | furigana uses `{kanji\|reading}` per-character notation |
+| `srs.md` | SrsCard, ReviewLog, Rating, CardState | FSRS algorithm; difficulty 0 = new, 1-10 after first review |
+| `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
+| `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
+| `data_import.md` | DataImport, ImportSource, ImportStatus | Lives in Remote admin schema; one active import per source |
+| `shared_types.md` | ItemType, ReadingType, ReadingPriority | Shared across entity groups |
+| `raw_kanjivg.md` | RawKanjiVg staging table | Components is recursive JSONB tree |
+| `raw_kanjidic.md` | RawKanjidic staging table | Meanings grouped by lang_code in JSONB |
+| `raw_jmdict.md` | RawJmdict staging table | Composite PK: import_id + ent_seq |
+
+### Technical Docs (`docs/technical/`) — read when implementing pipeline or infrastructure
+
+| Doc | Covers | When to read |
+|---|---|---|
+| `pipeline.md` | Full pipeline orchestration (Phases 1-4) | Understanding overall data flow |
+| `ingestion.md` | Phase 1 correctness invariants | Implementing/fixing parsers or import logic |
+| `radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
+| `kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |
+| `component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
+| `supabase.md` | Auth, database, storage, RLS, migrations | Any Supabase/migration work |
+| `offline.md` | Client sync, conflict resolution | Client-side data sync |
+| `admin_workflow.md` | Admin tool UI/UX flow | Admin presentation layer |
+
+### Source Format Docs (`docs/sources/`) — read when modifying parsers
+
+| Doc | Covers |
+|---|---|
+| `kanjivg_format.md` | KanjiVG SVG namespace, position values, radical markers |
+| `kanjidic_format.md` | KANJIDIC2 XML structure, grade/JLPT values |
+| `jmdict_format.md` | JMdict XML structure, sense inheritance |
+| `jlpt_mapping_format.md` | JLPT mapping CSV format |
+
+## Database Schema Digest
+
+**21 tables:** 12 content + 5 user + 3 staging + 1 admin review. See `supabase/migrations/` for full DDL.
+
+**Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`
+
+**User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
+
+**Staging (admin-only, local):** `data_imports`, `raw_kanjivg`, `raw_kanjidic`, `raw_jmdict`
+
+**Admin review (Remote admin schema):** `kanji_component_reviews`
+
+**Reference (local Drift only):** `source_jlpt_level_entries`, `sync_metadata_entries`
+
+**12 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `import_source`, `import_status`, `verification_status`
+
+**Key constraints:**
+- `kanji_components` unique on `(kanji_id, radical_id, position)`
+- `srs_cards` unique on `(user_id, item_type, item_id)` — polymorphic FK, no DB FK on item_id
+- `review_logs` is append-only (no UPDATE/DELETE RLS)
+- `is_primary` on `kanji_components` is a generated column: `radical_type = 'general'`
+- `users.id` is UUID referencing `auth.users(id)`
+
+## Key Architectural Decisions
+
+1. **Docs-first design:** Entity specs in `docs/entities/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
+2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files + Remote admin state. `data_imports` and `kanji_component_reviews` live in Remote admin schema.
+3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
+4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
+5. **Deferred fields:** SVG fields and radical metadata are nullable during pipeline passes, populated in later phases. Release Builder rejects incomplete rows.
+6. **Comparison-based sync:** No `last_synced_at` column. Release Builder queries Remote at push time and diffs against local state.
+7. **Admin uses service_role key:** Bypasses RLS for admin-only tables (staging, reviews, imports).
 
 ## Conventions
 
 - **Commits:** conventional commit format via `/commit` skill. No Co-Authored-By lines.
 - **Field naming:** snake_case. FKs: `{entity}_id`. Booleans: `is_*`. Timestamps: `*_at`. Enums: snake_case values.
 - **Linting:** `package:flutter_lints/flutter.yaml` (no custom overrides).
+- **Constraint naming:** `chk_`, `uq_`, `fk_` prefixes. Triggers: `trg_{table}_updated_at`. Indexes: `idx_{table}_{column(s)}`.
+- **DI pattern:** singleton for DB/repos, factory for BLoCs. Registration in `lib/di/injection.dart`.
+- **Repository pattern:** interface in `domain/repositories/`, Drift impl + Supabase datasource + DTO in `data/repositories/{feature}/`.

@@ -3711,6 +3711,693 @@ class SourceJlptLevelEntriesCompanion
   }
 }
 
+class $SourceVocabLevelEntriesTable extends SourceVocabLevelEntries
+    with TableInfo<$SourceVocabLevelEntriesTable, SourceVocabLevelEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SourceVocabLevelEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _expressionMeta = const VerificationMeta(
+    'expression',
+  );
+  @override
+  late final GeneratedColumn<String> expression = GeneratedColumn<String>(
+    'expression',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _readingMeta = const VerificationMeta(
+    'reading',
+  );
+  @override
+  late final GeneratedColumn<String> reading = GeneratedColumn<String>(
+    'reading',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<int> level = GeneratedColumn<int>(
+    'level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (level BETWEEN 1 AND 5)',
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('tanos'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [expression, reading, level, source];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'source_vocab_level_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SourceVocabLevelEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('expression')) {
+      context.handle(
+        _expressionMeta,
+        expression.isAcceptableOrUnknown(data['expression']!, _expressionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_expressionMeta);
+    }
+    if (data.containsKey('reading')) {
+      context.handle(
+        _readingMeta,
+        reading.isAcceptableOrUnknown(data['reading']!, _readingMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_readingMeta);
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_levelMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {expression, reading};
+  @override
+  SourceVocabLevelEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SourceVocabLevelEntry(
+      expression: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expression'],
+      )!,
+      reading: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reading'],
+      )!,
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}level'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+    );
+  }
+
+  @override
+  $SourceVocabLevelEntriesTable createAlias(String alias) {
+    return $SourceVocabLevelEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class SourceVocabLevelEntry extends DataClass
+    implements Insertable<SourceVocabLevelEntry> {
+  final String expression;
+  final String reading;
+  final int level;
+  final String source;
+  const SourceVocabLevelEntry({
+    required this.expression,
+    required this.reading,
+    required this.level,
+    required this.source,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['expression'] = Variable<String>(expression);
+    map['reading'] = Variable<String>(reading);
+    map['level'] = Variable<int>(level);
+    map['source'] = Variable<String>(source);
+    return map;
+  }
+
+  SourceVocabLevelEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SourceVocabLevelEntriesCompanion(
+      expression: Value(expression),
+      reading: Value(reading),
+      level: Value(level),
+      source: Value(source),
+    );
+  }
+
+  factory SourceVocabLevelEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SourceVocabLevelEntry(
+      expression: serializer.fromJson<String>(json['expression']),
+      reading: serializer.fromJson<String>(json['reading']),
+      level: serializer.fromJson<int>(json['level']),
+      source: serializer.fromJson<String>(json['source']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'expression': serializer.toJson<String>(expression),
+      'reading': serializer.toJson<String>(reading),
+      'level': serializer.toJson<int>(level),
+      'source': serializer.toJson<String>(source),
+    };
+  }
+
+  SourceVocabLevelEntry copyWith({
+    String? expression,
+    String? reading,
+    int? level,
+    String? source,
+  }) => SourceVocabLevelEntry(
+    expression: expression ?? this.expression,
+    reading: reading ?? this.reading,
+    level: level ?? this.level,
+    source: source ?? this.source,
+  );
+  SourceVocabLevelEntry copyWithCompanion(
+    SourceVocabLevelEntriesCompanion data,
+  ) {
+    return SourceVocabLevelEntry(
+      expression: data.expression.present
+          ? data.expression.value
+          : this.expression,
+      reading: data.reading.present ? data.reading.value : this.reading,
+      level: data.level.present ? data.level.value : this.level,
+      source: data.source.present ? data.source.value : this.source,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SourceVocabLevelEntry(')
+          ..write('expression: $expression, ')
+          ..write('reading: $reading, ')
+          ..write('level: $level, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(expression, reading, level, source);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SourceVocabLevelEntry &&
+          other.expression == this.expression &&
+          other.reading == this.reading &&
+          other.level == this.level &&
+          other.source == this.source);
+}
+
+class SourceVocabLevelEntriesCompanion
+    extends UpdateCompanion<SourceVocabLevelEntry> {
+  final Value<String> expression;
+  final Value<String> reading;
+  final Value<int> level;
+  final Value<String> source;
+  final Value<int> rowid;
+  const SourceVocabLevelEntriesCompanion({
+    this.expression = const Value.absent(),
+    this.reading = const Value.absent(),
+    this.level = const Value.absent(),
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SourceVocabLevelEntriesCompanion.insert({
+    required String expression,
+    required String reading,
+    required int level,
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : expression = Value(expression),
+       reading = Value(reading),
+       level = Value(level);
+  static Insertable<SourceVocabLevelEntry> custom({
+    Expression<String>? expression,
+    Expression<String>? reading,
+    Expression<int>? level,
+    Expression<String>? source,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (expression != null) 'expression': expression,
+      if (reading != null) 'reading': reading,
+      if (level != null) 'level': level,
+      if (source != null) 'source': source,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SourceVocabLevelEntriesCompanion copyWith({
+    Value<String>? expression,
+    Value<String>? reading,
+    Value<int>? level,
+    Value<String>? source,
+    Value<int>? rowid,
+  }) {
+    return SourceVocabLevelEntriesCompanion(
+      expression: expression ?? this.expression,
+      reading: reading ?? this.reading,
+      level: level ?? this.level,
+      source: source ?? this.source,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (expression.present) {
+      map['expression'] = Variable<String>(expression.value);
+    }
+    if (reading.present) {
+      map['reading'] = Variable<String>(reading.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<int>(level.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SourceVocabLevelEntriesCompanion(')
+          ..write('expression: $expression, ')
+          ..write('reading: $reading, ')
+          ..write('level: $level, ')
+          ..write('source: $source, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $JmdictFuriganaEntriesTable extends JmdictFuriganaEntries
+    with TableInfo<$JmdictFuriganaEntriesTable, JmdictFuriganaEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $JmdictFuriganaEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _importIdMeta = const VerificationMeta(
+    'importId',
+  );
+  @override
+  late final GeneratedColumn<int> importId = GeneratedColumn<int>(
+    'import_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES data_import_entries (id)',
+    ),
+  );
+  static const VerificationMeta _textFieldMeta = const VerificationMeta(
+    'textField',
+  );
+  @override
+  late final GeneratedColumn<String> textField = GeneratedColumn<String>(
+    'text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _readingMeta = const VerificationMeta(
+    'reading',
+  );
+  @override
+  late final GeneratedColumn<String> reading = GeneratedColumn<String>(
+    'reading',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _furiganaMeta = const VerificationMeta(
+    'furigana',
+  );
+  @override
+  late final GeneratedColumn<String> furigana = GeneratedColumn<String>(
+    'furigana',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    importId,
+    textField,
+    reading,
+    furigana,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'jmdict_furigana_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<JmdictFuriganaEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('import_id')) {
+      context.handle(
+        _importIdMeta,
+        importId.isAcceptableOrUnknown(data['import_id']!, _importIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_importIdMeta);
+    }
+    if (data.containsKey('text')) {
+      context.handle(
+        _textFieldMeta,
+        textField.isAcceptableOrUnknown(data['text']!, _textFieldMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_textFieldMeta);
+    }
+    if (data.containsKey('reading')) {
+      context.handle(
+        _readingMeta,
+        reading.isAcceptableOrUnknown(data['reading']!, _readingMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_readingMeta);
+    }
+    if (data.containsKey('furigana')) {
+      context.handle(
+        _furiganaMeta,
+        furigana.isAcceptableOrUnknown(data['furigana']!, _furiganaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_furiganaMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {importId, textField, reading};
+  @override
+  JmdictFuriganaEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return JmdictFuriganaEntry(
+      importId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}import_id'],
+      )!,
+      textField: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text'],
+      )!,
+      reading: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reading'],
+      )!,
+      furigana: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}furigana'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $JmdictFuriganaEntriesTable createAlias(String alias) {
+    return $JmdictFuriganaEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class JmdictFuriganaEntry extends DataClass
+    implements Insertable<JmdictFuriganaEntry> {
+  final int importId;
+  final String textField;
+  final String reading;
+  final String furigana;
+  final DateTime createdAt;
+  const JmdictFuriganaEntry({
+    required this.importId,
+    required this.textField,
+    required this.reading,
+    required this.furigana,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['import_id'] = Variable<int>(importId);
+    map['text'] = Variable<String>(textField);
+    map['reading'] = Variable<String>(reading);
+    map['furigana'] = Variable<String>(furigana);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  JmdictFuriganaEntriesCompanion toCompanion(bool nullToAbsent) {
+    return JmdictFuriganaEntriesCompanion(
+      importId: Value(importId),
+      textField: Value(textField),
+      reading: Value(reading),
+      furigana: Value(furigana),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory JmdictFuriganaEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return JmdictFuriganaEntry(
+      importId: serializer.fromJson<int>(json['importId']),
+      textField: serializer.fromJson<String>(json['textField']),
+      reading: serializer.fromJson<String>(json['reading']),
+      furigana: serializer.fromJson<String>(json['furigana']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'importId': serializer.toJson<int>(importId),
+      'textField': serializer.toJson<String>(textField),
+      'reading': serializer.toJson<String>(reading),
+      'furigana': serializer.toJson<String>(furigana),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  JmdictFuriganaEntry copyWith({
+    int? importId,
+    String? textField,
+    String? reading,
+    String? furigana,
+    DateTime? createdAt,
+  }) => JmdictFuriganaEntry(
+    importId: importId ?? this.importId,
+    textField: textField ?? this.textField,
+    reading: reading ?? this.reading,
+    furigana: furigana ?? this.furigana,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  JmdictFuriganaEntry copyWithCompanion(JmdictFuriganaEntriesCompanion data) {
+    return JmdictFuriganaEntry(
+      importId: data.importId.present ? data.importId.value : this.importId,
+      textField: data.textField.present ? data.textField.value : this.textField,
+      reading: data.reading.present ? data.reading.value : this.reading,
+      furigana: data.furigana.present ? data.furigana.value : this.furigana,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JmdictFuriganaEntry(')
+          ..write('importId: $importId, ')
+          ..write('textField: $textField, ')
+          ..write('reading: $reading, ')
+          ..write('furigana: $furigana, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(importId, textField, reading, furigana, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JmdictFuriganaEntry &&
+          other.importId == this.importId &&
+          other.textField == this.textField &&
+          other.reading == this.reading &&
+          other.furigana == this.furigana &&
+          other.createdAt == this.createdAt);
+}
+
+class JmdictFuriganaEntriesCompanion
+    extends UpdateCompanion<JmdictFuriganaEntry> {
+  final Value<int> importId;
+  final Value<String> textField;
+  final Value<String> reading;
+  final Value<String> furigana;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const JmdictFuriganaEntriesCompanion({
+    this.importId = const Value.absent(),
+    this.textField = const Value.absent(),
+    this.reading = const Value.absent(),
+    this.furigana = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  JmdictFuriganaEntriesCompanion.insert({
+    required int importId,
+    required String textField,
+    required String reading,
+    required String furigana,
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : importId = Value(importId),
+       textField = Value(textField),
+       reading = Value(reading),
+       furigana = Value(furigana);
+  static Insertable<JmdictFuriganaEntry> custom({
+    Expression<int>? importId,
+    Expression<String>? textField,
+    Expression<String>? reading,
+    Expression<String>? furigana,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (importId != null) 'import_id': importId,
+      if (textField != null) 'text': textField,
+      if (reading != null) 'reading': reading,
+      if (furigana != null) 'furigana': furigana,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  JmdictFuriganaEntriesCompanion copyWith({
+    Value<int>? importId,
+    Value<String>? textField,
+    Value<String>? reading,
+    Value<String>? furigana,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return JmdictFuriganaEntriesCompanion(
+      importId: importId ?? this.importId,
+      textField: textField ?? this.textField,
+      reading: reading ?? this.reading,
+      furigana: furigana ?? this.furigana,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (importId.present) {
+      map['import_id'] = Variable<int>(importId.value);
+    }
+    if (textField.present) {
+      map['text'] = Variable<String>(textField.value);
+    }
+    if (reading.present) {
+      map['reading'] = Variable<String>(reading.value);
+    }
+    if (furigana.present) {
+      map['furigana'] = Variable<String>(furigana.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JmdictFuriganaEntriesCompanion(')
+          ..write('importId: $importId, ')
+          ..write('textField: $textField, ')
+          ..write('reading: $reading, ')
+          ..write('furigana: $furigana, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RadicalEntriesTable extends RadicalEntries
     with TableInfo<$RadicalEntriesTable, RadicalEntry> {
   @override
@@ -7792,6 +8479,16 @@ class $VocabularyEntriesTable extends VocabularyEntries
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> posTags =
+      GeneratedColumn<String>(
+        'pos_tags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      ).withConverter<List<String>>($VocabularyEntriesTable.$converterposTags);
   static const VerificationMeta _frequencyRankMeta = const VerificationMeta(
     'frequencyRank',
   );
@@ -7834,6 +8531,7 @@ class $VocabularyEntriesTable extends VocabularyEntries
     word,
     segments,
     minJlptLevel,
+    posTags,
     frequencyRank,
     createdAt,
     updatedAt,
@@ -7920,6 +8618,12 @@ class $VocabularyEntriesTable extends VocabularyEntries
         DriftSqlType.int,
         data['${effectivePrefix}min_jlpt_level'],
       ),
+      posTags: $VocabularyEntriesTable.$converterposTags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}pos_tags'],
+        )!,
+      ),
       frequencyRank: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}frequency_rank'],
@@ -7942,6 +8646,8 @@ class $VocabularyEntriesTable extends VocabularyEntries
 
   static TypeConverter<List<VocabularySegment>, String> $convertersegments =
       const VocabularySegmentListConverter();
+  static TypeConverter<List<String>, String> $converterposTags =
+      const NonNullableStringListConverter();
 }
 
 class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
@@ -7949,6 +8655,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   final String word;
   final List<VocabularySegment> segments;
   final int? minJlptLevel;
+  final List<String> posTags;
   final int frequencyRank;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -7957,6 +8664,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     required this.word,
     required this.segments,
     this.minJlptLevel,
+    required this.posTags,
     required this.frequencyRank,
     required this.createdAt,
     required this.updatedAt,
@@ -7974,6 +8682,11 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     if (!nullToAbsent || minJlptLevel != null) {
       map['min_jlpt_level'] = Variable<int>(minJlptLevel);
     }
+    {
+      map['pos_tags'] = Variable<String>(
+        $VocabularyEntriesTable.$converterposTags.toSql(posTags),
+      );
+    }
     map['frequency_rank'] = Variable<int>(frequencyRank);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -7988,6 +8701,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
       minJlptLevel: minJlptLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(minJlptLevel),
+      posTags: Value(posTags),
       frequencyRank: Value(frequencyRank),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -8004,6 +8718,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
       word: serializer.fromJson<String>(json['word']),
       segments: serializer.fromJson<List<VocabularySegment>>(json['segments']),
       minJlptLevel: serializer.fromJson<int?>(json['minJlptLevel']),
+      posTags: serializer.fromJson<List<String>>(json['posTags']),
       frequencyRank: serializer.fromJson<int>(json['frequencyRank']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -8017,6 +8732,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
       'word': serializer.toJson<String>(word),
       'segments': serializer.toJson<List<VocabularySegment>>(segments),
       'minJlptLevel': serializer.toJson<int?>(minJlptLevel),
+      'posTags': serializer.toJson<List<String>>(posTags),
       'frequencyRank': serializer.toJson<int>(frequencyRank),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -8028,6 +8744,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     String? word,
     List<VocabularySegment>? segments,
     Value<int?> minJlptLevel = const Value.absent(),
+    List<String>? posTags,
     int? frequencyRank,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -8036,6 +8753,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     word: word ?? this.word,
     segments: segments ?? this.segments,
     minJlptLevel: minJlptLevel.present ? minJlptLevel.value : this.minJlptLevel,
+    posTags: posTags ?? this.posTags,
     frequencyRank: frequencyRank ?? this.frequencyRank,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -8048,6 +8766,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
       minJlptLevel: data.minJlptLevel.present
           ? data.minJlptLevel.value
           : this.minJlptLevel,
+      posTags: data.posTags.present ? data.posTags.value : this.posTags,
       frequencyRank: data.frequencyRank.present
           ? data.frequencyRank.value
           : this.frequencyRank,
@@ -8063,6 +8782,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
           ..write('word: $word, ')
           ..write('segments: $segments, ')
           ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('posTags: $posTags, ')
           ..write('frequencyRank: $frequencyRank, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -8076,6 +8796,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     word,
     segments,
     minJlptLevel,
+    posTags,
     frequencyRank,
     createdAt,
     updatedAt,
@@ -8088,6 +8809,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
           other.word == this.word &&
           other.segments == this.segments &&
           other.minJlptLevel == this.minJlptLevel &&
+          other.posTags == this.posTags &&
           other.frequencyRank == this.frequencyRank &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -8098,6 +8820,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
   final Value<String> word;
   final Value<List<VocabularySegment>> segments;
   final Value<int?> minJlptLevel;
+  final Value<List<String>> posTags;
   final Value<int> frequencyRank;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -8106,6 +8829,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     this.word = const Value.absent(),
     this.segments = const Value.absent(),
     this.minJlptLevel = const Value.absent(),
+    this.posTags = const Value.absent(),
     this.frequencyRank = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -8115,6 +8839,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     required String word,
     required List<VocabularySegment> segments,
     this.minJlptLevel = const Value.absent(),
+    this.posTags = const Value.absent(),
     required int frequencyRank,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -8126,6 +8851,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     Expression<String>? word,
     Expression<String>? segments,
     Expression<int>? minJlptLevel,
+    Expression<String>? posTags,
     Expression<int>? frequencyRank,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -8135,6 +8861,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
       if (word != null) 'word': word,
       if (segments != null) 'segments': segments,
       if (minJlptLevel != null) 'min_jlpt_level': minJlptLevel,
+      if (posTags != null) 'pos_tags': posTags,
       if (frequencyRank != null) 'frequency_rank': frequencyRank,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -8146,6 +8873,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     Value<String>? word,
     Value<List<VocabularySegment>>? segments,
     Value<int?>? minJlptLevel,
+    Value<List<String>>? posTags,
     Value<int>? frequencyRank,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -8155,6 +8883,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
       word: word ?? this.word,
       segments: segments ?? this.segments,
       minJlptLevel: minJlptLevel ?? this.minJlptLevel,
+      posTags: posTags ?? this.posTags,
       frequencyRank: frequencyRank ?? this.frequencyRank,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -8178,6 +8907,11 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     if (minJlptLevel.present) {
       map['min_jlpt_level'] = Variable<int>(minJlptLevel.value);
     }
+    if (posTags.present) {
+      map['pos_tags'] = Variable<String>(
+        $VocabularyEntriesTable.$converterposTags.toSql(posTags.value),
+      );
+    }
     if (frequencyRank.present) {
       map['frequency_rank'] = Variable<int>(frequencyRank.value);
     }
@@ -8197,6 +8931,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
           ..write('word: $word, ')
           ..write('segments: $segments, ')
           ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('posTags: $posTags, ')
           ..write('frequencyRank: $frequencyRank, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -10457,6 +11192,10 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $SyncMetadataEntriesTable(this);
   late final $SourceJlptLevelEntriesTable sourceJlptLevelEntries =
       $SourceJlptLevelEntriesTable(this);
+  late final $SourceVocabLevelEntriesTable sourceVocabLevelEntries =
+      $SourceVocabLevelEntriesTable(this);
+  late final $JmdictFuriganaEntriesTable jmdictFuriganaEntries =
+      $JmdictFuriganaEntriesTable(this);
   late final $RadicalEntriesTable radicalEntries = $RadicalEntriesTable(this);
   late final $RadicalI18nEntriesTable radicalI18nEntries =
       $RadicalI18nEntriesTable(this);
@@ -10494,6 +11233,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     kanjiComponentReviewEntries,
     syncMetadataEntries,
     sourceJlptLevelEntries,
+    sourceVocabLevelEntries,
+    jmdictFuriganaEntries,
     radicalEntries,
     radicalI18nEntries,
     radicalVariantEntries,

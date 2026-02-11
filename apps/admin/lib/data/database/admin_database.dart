@@ -25,7 +25,9 @@ import 'tables/radical_variant_table.dart';
 import 'tables/raw_jmdict_table.dart';
 import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
+import 'tables/jmdict_furigana_table.dart';
 import 'tables/source_jlpt_level_table.dart';
+import 'tables/source_vocab_level_table.dart';
 import 'tables/sync_metadata_table.dart';
 import 'tables/vocabulary_i18n_table.dart';
 import 'tables/vocabulary_kanji_table.dart';
@@ -45,6 +47,8 @@ part 'admin_database.g.dart';
     KanjiComponentReviewEntries,
     SyncMetadataEntries,
     SourceJlptLevelEntries,
+    SourceVocabLevelEntries,
+    JmdictFuriganaEntries,
     RadicalEntries,
     RadicalI18nEntries,
     RadicalVariantEntries,
@@ -66,7 +70,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -121,6 +125,29 @@ class AdminDatabase extends _$AdminDatabase {
             // vocabulary_sentence_entries has column changes.
             // Admin DB is ephemeral — drop and recreate all vocabulary tables.
             for (final name in [
+              'vocabulary_sentence_entries',
+              'vocabulary_kanji_entries',
+              'vocabulary_i18n_entries',
+              'vocabulary_reading_entries',
+              'vocabulary_entries',
+            ]) {
+              await m.database
+                  .customStatement('DROP TABLE IF EXISTS $name');
+            }
+            await m.createTable(vocabularyEntries);
+            await m.createTable(vocabularyReadingEntries);
+            await m.createTable(vocabularyI18nEntries);
+            await m.createTable(vocabularyKanjiEntries);
+            await m.createTable(vocabularySentenceEntries);
+            await m.createTable(vocabularySentenceI18nEntries);
+          }
+          if (from < 10) {
+            await m.createTable(sourceVocabLevelEntries);
+            await m.createTable(jmdictFuriganaEntries);
+            // vocabulary_entries gains pos_tags column.
+            // Admin DB is ephemeral — drop and recreate vocabulary tables.
+            for (final name in [
+              'vocabulary_sentence_i18n_entries',
               'vocabulary_sentence_entries',
               'vocabulary_kanji_entries',
               'vocabulary_i18n_entries',

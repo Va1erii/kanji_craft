@@ -8,6 +8,9 @@ class VocabularyEntries extends Table {
   TextColumn get segments =>
       text().map(const VocabularySegmentListConverter())();
   IntColumn get minJlptLevel => integer().nullable()();
+  TextColumn get posTags =>
+      text().map(const NonNullableStringListConverter())
+          .withDefault(const Constant('[]'))();
   IntColumn get frequencyRank =>
       integer().customConstraint('NOT NULL CHECK (frequency_rank > 0)')();
   DateTimeColumn get createdAt =>

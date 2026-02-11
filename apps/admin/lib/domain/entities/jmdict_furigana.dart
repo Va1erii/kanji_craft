@@ -2,8 +2,8 @@
 ///
 /// Stores the raw JSON string for the furigana segments to avoid
 /// an intermediate domain type for this staging-only data.
-class JmdictFuriganaEntry {
-  const JmdictFuriganaEntry({
+class JmdictFurigana {
+  const JmdictFurigana({
     required this.text,
     required this.reading,
     required this.furigana,

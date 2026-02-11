@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import '../../domain/entities/jmdict_furigana_entry.dart';
+import '../../domain/entities/jmdict_furigana.dart';
 import '../../domain/services/parse_result.dart';
 
-/// Parses the JmdictFurigana JSON dataset into [JmdictFuriganaEntry] entries.
+/// Parses the JmdictFurigana JSON dataset into [JmdictFurigana] entries.
 ///
 /// The source file is a JSON array of objects with `text`, `reading`, and
 /// `furigana` fields. The `furigana` array is stored as a raw JSON string
@@ -11,13 +11,13 @@ import '../../domain/services/parse_result.dart';
 ///
 /// Handles UTF-8 BOM (`\xEF\xBB\xBF`) at the start of the file.
 class JmdictFuriganaParser {
-  static ParseResult<JmdictFuriganaEntry> parse(String jsonContent) {
+  static ParseResult<JmdictFurigana> parse(String jsonContent) {
     // Strip UTF-8 BOM if present.
     final content =
         jsonContent.startsWith('\uFEFF') ? jsonContent.substring(1) : jsonContent;
 
     final list = jsonDecode(content) as List;
-    final entries = <JmdictFuriganaEntry>[];
+    final entries = <JmdictFurigana>[];
     final skipped = <SkippedEntry>[];
 
     for (var i = 0; i < list.length; i++) {
@@ -40,7 +40,7 @@ class JmdictFuriganaParser {
         continue;
       }
 
-      entries.add(JmdictFuriganaEntry(
+      entries.add(JmdictFurigana(
         text: text,
         reading: reading,
         furigana: jsonEncode(furigana),

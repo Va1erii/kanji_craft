@@ -3,10 +3,12 @@ import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/jlpt_level.dart';
+import '../../../domain/entities/jmdict_furigana.dart';
 import '../../../domain/entities/kanji_component_review.dart';
 import '../../../domain/entities/raw_jmdict.dart';
 import '../../../domain/entities/raw_kanjidic.dart';
 import '../../../domain/entities/raw_kanjivg.dart';
+import '../../../domain/entities/vocab_level.dart';
 import '../admin_database.dart';
 
 // -- DataImport ↔ DataImportEntry --
@@ -380,6 +382,7 @@ extension VocabularyToCompanion on Vocabulary {
         word: Value(word),
         segments: Value(segments),
         minJlptLevel: Value(minJlptLevel),
+        posTags: Value(posTags.map((t) => t.name).toList()),
         frequencyRank: Value(frequencyRank),
       );
 }
@@ -390,6 +393,7 @@ extension VocabularyEntryToDomain on VocabularyEntry {
         word: word,
         segments: segments,
         minJlptLevel: minJlptLevel,
+        posTags: posTags.map((s) => PosTag.values.byName(s)).toList(),
         frequencyRank: frequencyRank,
         createdAt: createdAt,
         updatedAt: updatedAt,
@@ -507,5 +511,45 @@ extension VocabularySentenceI18nEntryToDomain on VocabularySentenceI18nEntry {
         sentenceTranslated: sentenceTranslated,
         createdAt: createdAt,
         updatedAt: updatedAt,
+      );
+}
+
+// -- VocabLevel ↔ SourceVocabLevelEntry --
+
+extension VocabLevelToCompanion on VocabLevel {
+  SourceVocabLevelEntriesCompanion toCompanion() =>
+      SourceVocabLevelEntriesCompanion(
+        expression: Value(expression),
+        reading: Value(reading),
+        level: Value(level),
+      );
+}
+
+extension SourceVocabLevelEntryToDomain on SourceVocabLevelEntry {
+  VocabLevel toDomain() => VocabLevel(
+        expression: expression,
+        reading: reading,
+        level: level,
+      );
+}
+
+// -- JmdictFurigana ↔ JmdictFuriganaEntry --
+
+extension JmdictFuriganaToCompanion on JmdictFurigana {
+  JmdictFuriganaEntriesCompanion toCompanion({required int importId}) =>
+      JmdictFuriganaEntriesCompanion(
+        importId: Value(importId),
+        textField: Value(text),
+        reading: Value(reading),
+        furigana: Value(furigana),
+        // createdAt omitted — uses DB default (currentDateAndTime).
+      );
+}
+
+extension JmdictFuriganaEntryToDomain on JmdictFuriganaEntry {
+  JmdictFurigana toDomain() => JmdictFurigana(
+        text: textField,
+        reading: reading,
+        furigana: furigana,
       );
 }

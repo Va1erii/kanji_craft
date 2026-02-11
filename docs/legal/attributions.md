@@ -63,6 +63,16 @@ These sources have no formal license requiring attribution, but crediting them i
 | **Source** | https://github.com/davidluzgouveia/kanji-data |
 | **Used for** | Curated kanji-to-JLPT-level mapping combining KANJIDIC and Jonathan Waller's lists |
 
+### Open Anki JLPT Decks (JLPT Vocabulary Mapping)
+
+| | |
+|---|---|
+| **License** | MIT |
+| **Author** | Jamie Sinclair |
+| **Source** | https://github.com/jamsinclair/open-anki-jlpt-decks |
+| **Upstream** | Based on [chyyran/jlpt-anki-decks](https://github.com/chyyran/jlpt-anki-decks), originally derived from tanos.co.uk |
+| **Used for** | Mapping vocabulary words to JLPT N1–N5 levels (the `source_vocab_levels` table) |
+
 ## Software Libraries (MIT — no in-app mention needed)
 
 These only require the license text bundled with the app (Flutter's `LicenseRegistry` handles this automatically via `showLicensePage()`):
@@ -78,5 +88,5 @@ All other Dart/Flutter packages (freezed, dio, flutter_bloc, go_router, etc.) ar
 - [ ] Add "Acknowledgments" screen accessible from Settings > About
 - [ ] Include EDRDG acknowledgment text with links
 - [ ] Include KanjiVG attribution with author name
-- [ ] Credit Jonathan Waller's JLPT Resources and David Luz Gouveia's kanji-data
+- [ ] Credit Jonathan Waller's JLPT Resources, David Luz Gouveia's kanji-data, and Jamie Sinclair's Open Anki JLPT Decks
 - [ ] Ensure `showLicensePage()` is accessible (covers all Dart packages)

@@ -105,68 +105,13 @@ For each unique element from Pass 1:
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
-For each `raw_kanjivg` entry, create `kanji_components` linking the kanji to its direct child radicals.
+For each `raw_kanjivg` entry, create `kanji_components` linking the kanji to its direct child radicals. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [component_linking.md](component_linking.md).
 
-For each `raw_kanjivg` row:
-1. Look up the `kanji` row by `character` (must exist — kanji creation from KANJIDIC runs first, see [pipeline.md §2.3](pipeline.md#23-kanji--component-composition)).
-2. Get the root node's direct children.
-3. For each child (after merging split parts):
-   - **Resolve the radical:** If `variant == true` and `original` is present, look up the radical by `master_symbol == original`. Otherwise, look up by `master_symbol == element`.
-   - **Determine position:** Map the child's `position` attribute from KanjiVG values to `position_type`:
-
-     | KanjiVG value | `position_type` |
-     |---|---|
-     | `left` | `hen` |
-     | `right` | `tsukuri` |
-     | `top` | `kanmuri` |
-     | `bottom` | `ashi` |
-     | `kamae` | `kamae` |
-     | `tare` | `tare` |
-     | `nyo` | `nyo` |
-     | `tarec` | `unknown` |
-     | `nyoc` | `unknown` |
-     | `null` | `unknown` |
-
-   - **Determine radical_type:** Map the child's `radical` attribute to `RadicalType`:
-     - `"general"` → `general`
-     - `"tradit"` → `tradit`
-     - `"nelson"` → `nelson`
-     - `"jis"` → `jis`
-     - `null` → `component`
-   - **Upsert `kanji_components`:** unique on `(kanji_id, radical_id, position)`.
-     - `kanji_id` — from step 1.
-     - `radical_id` — from the resolved radical.
-     - `position` — from the mapping above.
-     - `logic_hint` — defaults to `semantic`. Refined in pipeline Phase 2.5 (AI Heuristics).
-     - `radical_type` — from the child's `radical` attribute (see above). Most components will be `component`; only 1–2 per kanji carry a dictionary radical designation.
-     - `is_primary` — Computed, not set during extraction:
-       - `true` if `radical_type == general`.
-       - `false` for everything else.
-       - In PostgreSQL this is a generated column (`GENERATED ALWAYS AS (radical_type = 'general') STORED`); in Dart it is a getter on `KanjiComponent` (see [kanji_component.md rule #5](../entities/kanji_component.md)).
-
-**Skip condition:** If a child's `element` cannot be resolved to a radical (e.g. it was filtered out or the element is empty), log a warning and skip. This should not happen if Pass 1 and Pass 2 ran correctly.
+**Summary:** For each kanji, parse its component tree one level deep, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.5). Upsert key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
-After all kanji and components are linked, compute derived fields on each radical.
-
-1. **`impact_score`** — Count distinct `kanji_id` values in `kanji_components` for this `radical_id`. Map to a 1–10 scale:
-   - 1–5 kanji → score 1
-   - 6–15 → score 2
-   - 16–30 → score 3
-   - 31–50 → score 4
-   - 51–80 → score 5
-   - 81–120 → score 6
-   - 121–180 → score 7
-   - 181–260 → score 8
-   - 261–400 → score 9
-   - 401+ → score 10
-
-   The buckets are approximate and may need tuning after processing real data. The goal: score 10 radicals (like 口, 木) appear in hundreds of kanji; score 1 radicals appear in a handful.
-
-2. **`min_grade`** — `SELECT MIN(k.min_grade) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. The earliest school grade any kanji containing this radical appears in. Returns `null` if all containing kanji have null grade (see "Radical with no graded kanji" edge case below).
-
-3. **`min_jlpt_level`** — `SELECT MAX(k.min_jlpt_level) FROM kanji k JOIN kanji_components kc ON k.id = kc.kanji_id WHERE kc.radical_id = ?`. Note: MAX because JLPT 5 is easiest, 1 is hardest — `MAX` returns the easiest level. Returns `null` if all containing kanji have null JLPT (see "Radical with no graded kanji" edge case below). This assumes `kanji.min_jlpt_level` stores N5 as `5` and N1 as `1` (the raw JLPT integer, not an inverted difficulty scale). Verify your KANJIDIC ingestion follows this convention — KANJIDIC2 uses the old 1–4 scale, so the pipeline must map to current N1–N5 before this query is meaningful.
+After all kanji and components are linked, compute derived fields on each radical: `impact_score`, `min_grade`, `min_jlpt_level`. The full algorithm — including impact score bucketing, the MIN/MAX queries, and edge cases for radicals with no graded kanji — is documented in [component_linking.md Step 3](component_linking.md#step-3-derive-radical-metadata).
 
 ## Worked Examples
 
@@ -332,5 +277,6 @@ Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji
 - [kanji.md](../entities/kanji.md) — Kanji entity spec
 - [kanji_component.md](../entities/kanji_component.md) — KanjiComponent entity and review state
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table and component tree shape
+- [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Passes 3–4)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
 - [ingestion.md](ingestion.md) — Phase 1 correctness invariants

@@ -112,7 +112,7 @@ For each target language:
 
 For each kanji, link to its direct child radicals from `raw_kanjivg.components`.
 
-This step is the same operation as radical extraction Pass 3. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, and radical_type determination — is documented in [radical_extraction.md Pass 3](radical_extraction.md#pass-3-link--create-kanjicomponent-rows).
+The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, and radical_type determination — is documented in [component_linking.md](component_linking.md).
 
 **Prerequisite:** Steps 1–3 must complete first (kanji rows must exist for `kanji_components.kanji_id`). Radical extraction Passes 1–2 must also have completed (radicals must exist for `kanji_components.radical_id`).
 
@@ -120,7 +120,7 @@ This step is the same operation as radical extraction Pass 3. The full algorithm
 
 Compute derived fields on each radical: `impact_score`, `min_grade`, `min_jlpt_level`.
 
-This step is the same operation as radical extraction Pass 4. The full algorithm — including impact score bucketing and the MIN/MAX queries for grade and JLPT — is documented in [radical_extraction.md Pass 4](radical_extraction.md#pass-4-derive--compute-radical-metadata).
+The full algorithm — including impact score bucketing and the MIN/MAX queries for grade and JLPT — is documented in [component_linking.md Step 3](component_linking.md#step-3-derive-radical-metadata).
 
 **Prerequisite:** Step 4 must complete first (component links must exist for the aggregation queries).
 
@@ -339,5 +339,6 @@ Tables populated by **later phases** (not this algorithm):
 - [kanji_component.md](../entities/kanji_component.md) — KanjiComponent entity and review state
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — Source staging table schema
 - [kanjidic_format.md](../sources/kanjidic_format.md) — KANJIDIC2 XML format reference (JLPT mapping, grade values)
-- [radical_extraction.md](radical_extraction.md) — Passes 3–4 algorithm (component linking, metadata derivation)
+- [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Steps 4–5)
+- [radical_extraction.md](radical_extraction.md) — Passes 1–2 (radical/variant registration)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)

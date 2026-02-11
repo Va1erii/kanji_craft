@@ -211,11 +211,9 @@ See [radical.md](../entities/radical.md).
 ### 2.3 Kanji & Component Composition
 
 1. **Kanji creation:** Upsert `kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping). For each target language, create `kanji_i18n` rows from `raw_kanjidic.meanings[lang_code]` (all languages are stored in raw tables during Phase 1).
-2. **Component linking:** Recursively parse `raw_kanjivg.components` tree.
-   - Stop recursion when a node matches a known `radicals.master_symbol`.
-   - Create `kanji_components` rows.
+2. **Component linking:** Parse `raw_kanjivg.components` tree one level deep per kanji, resolve each child to its master radical, and create `kanji_components` rows. Then derive radical metadata (`impact_score`, `min_grade`, `min_jlpt_level`) from the links.
 
-See [kanji.md](../entities/kanji.md), [kanji_component.md](../entities/kanji_component.md).
+See [kanji_composition.md](kanji_composition.md), [component_linking.md](component_linking.md).
 
 ### 2.4 SVG Processing & Hashing
 
@@ -433,6 +431,9 @@ flutter run -d macos --target lib/pipeline/ingest_kanjivg.dart
 ## Related Docs
 
 - [ingestion.md](ingestion.md) — Phase 1 correctness invariants, known gaps, and recovery procedures
+- [radical_extraction.md](radical_extraction.md) — Passes 1–2 radical/variant registration
+- [kanji_composition.md](kanji_composition.md) — kanji creation from KANJIDIC2
+- [component_linking.md](component_linking.md) — component linking and radical metadata derivation
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table

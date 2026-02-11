@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/entities/extraction_phase.dart';
+import '../../../domain/entities/warning.dart';
 import '../bloc/extraction_bloc.dart';
 import '../bloc/extraction_event.dart';
 import '../bloc/extraction_state.dart';
@@ -136,7 +137,7 @@ class PhaseRow extends StatelessWidget {
                   color: colorScheme.onErrorContainer,
                 ),
                 label: Text(
-                  '${warnings.length} warning${warnings.length == 1 ? '' : 's'}',
+                  _warningChipLabel(warnings),
                   style: textStyle?.copyWith(
                     color: colorScheme.onErrorContainer,
                   ),
@@ -181,30 +182,61 @@ class PhaseRow extends StatelessWidget {
     };
   }
 
-  void _showWarningsDialog(BuildContext context, List<String> warnings) {
+  String _warningChipLabel(List<Warning> warnings) {
+    final high = warnings.where((w) => w.severity == WarningSeverity.high).length;
+    final low = warnings.length - high;
+    if (high == 0) return '$low warning${low == 1 ? '' : 's'}';
+    if (low == 0) return '$high high';
+    return '$high high, $low low';
+  }
+
+  void _showWarningsDialog(BuildContext context, List<Warning> warnings) {
+    final sorted = [...warnings]
+      ..sort((a, b) => b.severity.index.compareTo(a.severity.index));
+
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Warnings'),
-        content: SizedBox(
-          width: 480,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: warnings.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, index) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: SelectableText(warnings[index]),
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return AlertDialog(
+          title: const Text('Warnings'),
+          content: SizedBox(
+            width: 480,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: sorted.length,
+              separatorBuilder: (_, _) => const Divider(height: 1),
+              itemBuilder: (_, index) {
+                final warning = sorted[index];
+                final isHigh = warning.severity == WarningSeverity.high;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        isHigh ? Icons.error_outline : Icons.info_outline,
+                        size: 18,
+                        color: isHigh
+                            ? colorScheme.error
+                            : colorScheme.outline,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: SelectableText(warning.message)),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

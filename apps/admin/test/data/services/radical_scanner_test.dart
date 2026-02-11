@@ -148,7 +148,7 @@ void main() {
         expect(result.masters, contains('甘'));
         expect(result.masters['甘']!.variants['甘']!.isExplicitVariant, isFalse);
         expect(result.warnings, isNotEmpty);
-        expect(result.warnings.first, contains('甘'));
+        expect(result.warnings.first.message, contains('甘'));
       });
     });
 

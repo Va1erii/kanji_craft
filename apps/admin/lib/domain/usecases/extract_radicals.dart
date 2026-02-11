@@ -3,6 +3,7 @@ import 'package:kanji_craft_core/kanji_craft_core.dart';
 import '../../data/services/radical_scanner.dart';
 import '../entities/draft_radical.dart';
 import '../entities/draft_radical_variant.dart';
+import '../entities/warning.dart';
 import '../repositories/radical_repository.dart';
 import '../repositories/raw_kanjivg_repository.dart';
 
@@ -16,7 +17,7 @@ class ExtractionResult {
 
   final int radicalCount;
   final int variantCount;
-  final List<String> warnings;
+  final List<Warning> warnings;
 }
 
 /// Orchestrates radical extraction Passes 1-2:

@@ -1,6 +1,7 @@
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../domain/entities/raw_kanjivg.dart';
+import '../../domain/entities/warning.dart';
 
 /// Result of scanning raw KanjiVG entries for radical candidates.
 class RadicalScanResult {
@@ -10,7 +11,7 @@ class RadicalScanResult {
   final Map<String, MasterInfo> masters;
 
   /// Warnings encountered during scanning (e.g. variant without original).
-  final List<String> warnings;
+  final List<Warning> warnings;
 }
 
 /// Information about a master radical collected during scanning.
@@ -70,7 +71,7 @@ class RadicalScanner {
   /// candidates and their variant/position information.
   RadicalScanResult scan(List<RawKanjiVg> entries) {
     final masters = <String, _MasterBuilder>{};
-    final warnings = <String>[];
+    final warnings = <Warning>[];
 
     for (final entry in entries) {
       final directChildren = _collectDirectChildren(entry.components);
@@ -86,10 +87,10 @@ class RadicalScanner {
           isExplicitVariant = true;
         } else {
           if (child.variant == true) {
-            warnings.add(
+            warnings.add(Warning(
               'Variant without original: ${child.element} '
               'in ${entry.character}',
-            );
+            ));
           }
           masterSymbol = child.element;
           shape = child.element;

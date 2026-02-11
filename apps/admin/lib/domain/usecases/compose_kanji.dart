@@ -3,6 +3,7 @@ import 'package:kanji_craft_core/kanji_craft_core.dart';
 import '../entities/draft_kanji.dart';
 import '../entities/draft_kanji_i18n.dart';
 import '../entities/draft_kanji_reading.dart';
+import '../entities/warning.dart';
 import '../repositories/kanji_repository.dart';
 import '../repositories/raw_kanjidic_repository.dart';
 import '../repositories/source_jlpt_level_repository.dart';
@@ -19,7 +20,7 @@ class CompositionResult {
   final int kanjiCount;
   final int readingCount;
   final int i18nCount;
-  final List<String> warnings;
+  final List<Warning> warnings;
 }
 
 /// Orchestrates kanji composition Steps 1-3:
@@ -41,7 +42,7 @@ class ComposeKanji {
   final SourceJlptLevelRepository _sourceJlptLevelRepository;
 
   Future<CompositionResult> call(int importId) async {
-    final warnings = <String>[];
+    final warnings = <Warning>[];
 
     // 1. Load raw entries + JLPT levels.
     final rawEntries = await _rawKanjidicRepository.getByImportId(importId);
@@ -82,6 +83,17 @@ class ComposeKanji {
       ));
     }
 
+    // 3b. Check for JLPT kanji missing from KANJIDIC import.
+    final importedChars = {for (final raw in rawEntries) raw.literal};
+    for (final entry in jlptLevels) {
+      if (!importedChars.contains(entry.character)) {
+        warnings.add(Warning(
+          '${entry.character}: in JLPT N${entry.level} mapping but missing from KANJIDIC import',
+          severity: WarningSeverity.high,
+        ));
+      }
+    }
+
     // 4. Batch insert kanji → query back → build character→ID map.
     await _kanjiRepository.insertDraftKanjiBatch(draftKanjiList);
     final savedKanji = await _kanjiRepository.getAllDraftKanji();
@@ -93,12 +105,21 @@ class ComposeKanji {
     for (final raw in rawEntries) {
       final kanjiId = charToId[raw.literal];
       if (kanjiId == null) {
-        warnings.add('No draft kanji ID for ${raw.literal}');
+        warnings.add(Warning(
+          'No draft kanji ID for ${raw.literal}',
+          severity: WarningSeverity.high,
+        ));
         continue;
       }
 
       if (raw.readings.jaOn.isEmpty && raw.readings.jaKun.isEmpty) {
-        warnings.add('${raw.literal}: no readings (empty ja_on and ja_kun)');
+        final severity = jlptMap.containsKey(raw.literal)
+            ? WarningSeverity.high
+            : WarningSeverity.low;
+        warnings.add(Warning(
+          '${raw.literal}: no readings (empty ja_on and ja_kun)',
+          severity: severity,
+        ));
       }
 
       for (final on in raw.readings.jaOn) {
@@ -158,7 +179,13 @@ class ComposeKanji {
       }
 
       if (!hasEnglish) {
-        warnings.add('${raw.literal}: missing English (en) meanings');
+        final severity = jlptMap.containsKey(raw.literal)
+            ? WarningSeverity.high
+            : WarningSeverity.low;
+        warnings.add(Warning(
+          '${raw.literal}: missing English (en) meanings',
+          severity: severity,
+        ));
       }
     }
 

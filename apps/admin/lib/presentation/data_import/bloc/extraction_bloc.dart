@@ -6,6 +6,7 @@ import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/extraction_phase.dart';
 import '../../../domain/entities/import_source.dart';
 import '../../../domain/entities/import_status.dart';
+import '../../../domain/entities/warning.dart';
 import '../../../domain/usecases/compose_kanji.dart';
 import '../../../domain/usecases/extract_radicals.dart';
 import 'extraction_event.dart';
@@ -74,7 +75,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     }
   }
 
-  Future<({String summary, List<String> warnings})> _runPhase(
+  Future<({String summary, List<Warning> warnings})> _runPhase(
     ExtractionPhase phase,
   ) async {
     switch (phase) {

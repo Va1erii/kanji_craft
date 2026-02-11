@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../domain/entities/extraction_phase.dart';
+import '../../../domain/entities/warning.dart';
 
 part 'extraction_state.freezed.dart';
 
@@ -33,7 +34,7 @@ final class PhaseRunning extends PhaseStatus {
 final class PhaseCompleted extends PhaseStatus {
   const PhaseCompleted(this.summary, {this.warnings = const []});
   final String summary;
-  final List<String> warnings;
+  final List<Warning> warnings;
 }
 
 final class PhaseFailed extends PhaseStatus {

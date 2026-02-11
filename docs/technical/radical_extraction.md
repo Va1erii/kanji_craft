@@ -88,10 +88,8 @@ For each unique element from Pass 1:
    - `master_symbol` — as determined above.
    - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
    - `stroke_count` — looked up from `raw_kanjivg` where `character == master_symbol` (the master's own entry).
-   - `svg_file_name`, `svg_file_url`, `svg_hash` — `null` at creation. Populated in SVG Processing (pipeline Phase 2.4).
-   - `min_grade`, `min_jlpt_level`, `impact_score` — `null` at creation. Populated in Pass 4 (metadata derivation).
-
-   **Schema note:** These deferred fields are **nullable** in the database schema to support multi-pass pipeline population. The domain entity ([radical.md](../entities/radical.md)) defines the complete radical — all fields populated. The Release Builder (Phase 4) rejects rows with null SVG or metadata fields — only fully-populated radicals are eligible for remote sync.
+   - `svg_file_name`, `svg_file_url`, `svg_hash` — from SVG Processing (pipeline Phase 2.4).
+   - `min_grade`, `min_jlpt_level`, `impact_score` — from Pass 4 (metadata derivation).
 
 3. **Upsert `radical_variants`:**
    - For every element seen with `variant == true`:
@@ -99,7 +97,7 @@ For each unique element from Pass 1:
      - `shape` — the variant element (e.g. 氵).
      - `position` — the most common `position` value seen for this variant across all trees.
      - `is_locked` — `true` if this variant was **only** ever seen in a single position across all kanji trees.
-     - SVG fields — `null` at creation. Populated in SVG Processing.
+     - SVG fields — from SVG Processing (Phase 2.4).
    - For every radical whose `master_symbol` was NOT seen as a variant of anything (it is its own canonical form):
      - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../entities/radical.md): every radical has at least one variant.)
 

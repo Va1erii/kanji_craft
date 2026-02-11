@@ -148,7 +148,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files + Remote admin state. `data_imports` and `kanji_component_reviews` live in Remote admin schema.
 3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
 4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
-5. **Deferred fields:** SVG fields and radical metadata are nullable during pipeline passes, populated in later phases. Release Builder rejects incomplete rows.
+5. **Content vs staging tables:** Content tables (Supabase + Drift) have all fields NOT NULL — they hold complete, ready-to-sync rows. Pipeline intermediate state uses separate local staging tables with nullable deferred fields. Release Builder pushes only from content tables.
 6. **Comparison-based sync:** No `last_synced_at` column. Release Builder queries Remote at push time and diffs against local state.
 7. **Admin uses service_role key:** Bypasses RLS for admin-only tables (staging, reviews, imports).
 

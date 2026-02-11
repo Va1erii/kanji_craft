@@ -42,9 +42,9 @@ For each `raw_kanjidic` row in the active import, upsert a `kanji` row.
 | `grade` | `min_grade` | 1–6, 8 → keep; 9–10 → `null`; `null` → `null` |
 | `jlpt` | `min_jlpt_level` | Map old 1–4 → new 1–5 via JLPT mapping table (see §JLPT Level Mapping) |
 | `frequency` | `frequency_rank` | Direct for 1–2501; `null` → synthetic rank (see below) |
-| — | `svg_file_name` | `null` at creation; populated in Phase 2.4 (SVG Processing) |
-| — | `svg_file_url` | `null` at creation; populated in Phase 2.4 |
-| — | `svg_hash` | `null` at creation; populated in Phase 2.4 |
+| — | `svg_file_name` | Derived from SVG Processing (Phase 2.4) |
+| — | `svg_file_url` | Derived from SVG Processing (Phase 2.4) |
+| — | `svg_hash` | Derived from SVG Processing (Phase 2.4) |
 
 **Grade mapping detail:**
 
@@ -150,21 +150,17 @@ Because of these splits, the raw `jlpt` value **cannot be mechanically converted
 
 **Note on `min_jlpt_level` semantics:** The value 5 means N5 (easiest), 1 means N1 (hardest). This means `MAX(min_jlpt_level)` returns the easiest level — relevant for radical metadata derivation in Pass 4 (see [radical_extraction.md](radical_extraction.md#pass-4-derive--compute-radical-metadata)).
 
-## Deferred Fields
+## Fields Not Derived from KANJIDIC
 
-Several fields on the `kanji` table are **null at creation time** and populated by later pipeline phases:
+Several `kanji` fields come from other pipeline phases, not from `raw_kanjidic`:
 
-| Field | Populated in | Phase |
+| Field | Source | Phase |
 |---|---|---|
 | `svg_file_name` | SVG Processing | 2.4 |
 | `svg_file_url` | SVG Processing | 2.4 |
 | `svg_hash` | SVG Processing | 2.4 |
 
-This is the same pattern used by radical extraction (see [radical_extraction.md](radical_extraction.md) schema note on deferred fields). The domain entity ([kanji.md](../entities/kanji.md)) defines the complete kanji — all fields populated. The Release Builder (Phase 4) rejects rows with null SVG fields before remote sync — only fully-populated kanji are eligible.
-
-**Migration needed:** The current `kanji` table schema defines SVG fields as `NOT NULL`. A migration is needed to make `svg_file_name`, `svg_file_url`, and `svg_hash` nullable, matching the same pattern applied to radicals in migration `20260210150814`. Without this migration, Step 1 cannot insert kanji rows with null SVG fields.
-
-**Note on `frequency_rank`:** Unlike SVG fields, `frequency_rank` is always populated at Step 1 — ranked kanji get their source value, unranked kanji get a synthetic rank. No nullable migration is needed for this field.
+**Note on `frequency_rank`:** Always populated at Step 1 — ranked kanji get their source value, unranked kanji get a synthetic rank.
 
 ## Ordering Constraints
 
@@ -214,9 +210,9 @@ meanings.es     = ["día", "sol", "Japón"]
 | `min_grade` | 1 | Grade 1 → keep |
 | `min_jlpt_level` | 5 | Old level 4 → mapped to N5 via JLPT mapping table |
 | `frequency_rank` | 1 | Direct copy (most common kanji) |
-| `svg_file_name` | `null` | Deferred to Phase 2.4 |
-| `svg_file_url` | `null` | Deferred to Phase 2.4 |
-| `svg_hash` | `null` | Deferred to Phase 2.4 |
+| `svg_file_name` | — | From SVG Processing (Phase 2.4) |
+| `svg_file_url` | — | From SVG Processing (Phase 2.4) |
+| `svg_hash` | — | From SVG Processing (Phase 2.4) |
 
 **Step 2 → `kanji_readings` rows (5 rows):**
 
@@ -271,7 +267,7 @@ meanings.en     = ["dragon", "imperial"]
 | `min_grade` | `null` | No grade assignment |
 | `min_jlpt_level` | `null` | Not in JLPT mapping table |
 | `frequency_rank` | 10,001+ | Synthetic rank (no newspaper frequency; safe offset) |
-| `svg_*` | `null` | Deferred |
+| `svg_*` | — | From SVG Processing (Phase 2.4) |
 
 This kanji is excluded from both JLPT-based and grade-based study paths. It surfaces only via search or browse.
 

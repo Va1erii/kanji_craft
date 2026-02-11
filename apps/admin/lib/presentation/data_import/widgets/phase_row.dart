@@ -194,7 +194,7 @@ class PhaseRow extends StatelessWidget {
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (_, index) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(warnings[index]),
+              child: SelectableText(warnings[index]),
             ),
           ),
         ),

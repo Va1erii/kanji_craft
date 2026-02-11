@@ -78,13 +78,50 @@ An example sentence that uses the vocabulary word in context. Helps the user see
 | `id` | `int` | Unique identifier |
 | `vocabulary_id` | `int` | FK to the parent Vocabulary. Unique — one sentence per word |
 | `sentence_ja` | `String` | The Japanese sentence in plain text, e.g. "日本に行きたい。" |
-| `sentence_furigana` | `String` | The same sentence with inline furigana using `[kanji|reading]` notation, e.g. "[日本|にほん]に[行|い]きたい。" |
+| `sentence_furigana` | `String` | The same sentence with inline furigana using `{kanji\|r1\|r2\|...}` notation (see Furigana Notation below), e.g. "{日本\|に\|ほん}に{行\|い}きたい。" |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
 **Why separate `sentence_ja` and `sentence_furigana`?**
 
-`sentence_ja` is clean text — useful for display without furigana, search indexing, and text-to-speech. `sentence_furigana` carries `[kanji|reading]` annotations that the app parses for rendering small kana above kanji. Keeping them separate avoids parsing when furigana isn't needed.
+`sentence_ja` is clean text — useful for display without furigana, search indexing, and text-to-speech. `sentence_furigana` carries `{kanji|reading}` annotations that the app parses for rendering small kana above kanji. Keeping them separate avoids parsing when furigana isn't needed.
+
+### Furigana Notation
+
+Curly-brace notation encodes per-character reading placement:
+
+```
+{kanji_chars|reading_1|reading_2|...|reading_N}
+```
+
+**Per-character mode:** When the number of reading segments equals the number of kanji characters, each reading maps 1:1 to its character:
+
+```
+{日本|に|ほん}   → 日(に) 本(ほん)     — 2 chars, 2 readings
+{食|た}べる      → 食(た)べる           — 1 char, 1 reading
+{東京都|とう|きょう|と} → 東(とう) 京(きょう) 都(と)
+```
+
+**Group mode (jukujikun):** When there is 1 reading segment for multiple kanji characters, the reading spans the entire group as a single ruby annotation:
+
+```
+{大人|おとな}    → 大人(おとな)         — 2 chars, 1 reading (group ruby)
+{今日|きょう}    → 今日(きょう)         — 2 chars, 1 reading (group ruby)
+{昨日|きのう}    → 昨日(きのう)         — jukujikun, can't split per-char
+```
+
+**Disambiguation rule:** If reading segment count == kanji character count → per-character. If reading segment count == 1 and kanji character count > 1 → group ruby. A single-character kanji with 1 reading (e.g. `{行|い}`) is unambiguous — both modes produce the same result.
+
+**Full sentence example:**
+
+```
+{日本|に|ほん}に{行|い}きたい。
+
+Renders as:  に ほん   い
+             日 本  に 行 きたい。
+```
+
+Plain kana outside `{}` markers is rendered as-is without furigana.
 
 ### VocabularySentenceI18n (Value Object)
 
@@ -140,6 +177,7 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 16. Only sentences whose review row has `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
 17. There is exactly one `VocabularySentenceReview` per `VocabularySentence` (enforced by unique constraint on `vocabulary_sentence_id`).
 18. Deleting a `VocabularySentence` must cascade-delete its `VocabularySentenceReview` row and all `VocabularySentenceI18n` rows.
+19. `sentence_furigana` must use valid `{kanji|reading}` notation: each `{}` group must have at least one reading segment, and the reading segment count must be either 1 (group ruby) or equal to the kanji character count (per-character ruby).
 
 ## Edge Cases
 
@@ -152,4 +190,6 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 - **Missing sentences:** Not every vocabulary word will have an example sentence. The UI should gracefully hide the sentence section when none exist.
 - **Missing sentence translations:** A sentence may exist but lack a translation in the user's language. Fall back to "en". If no translations exist at all, hide the sentence section.
 - **Unverified sentences:** A sentence whose `VocabularySentenceReview` is `draft` or `flagged` will not sync to remote. Clients never see it.
+- **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `{大人|おとな}`. The single reading segment spans all characters. The client renders this as one ruby annotation over the entire group rather than per-character.
+- **Furigana segment count mismatch:** If a `{}` group has N kanji characters and M reading segments where M != 1 and M != N, the notation is invalid. The pipeline should reject this during generation; the admin review queue should flag it.
 - **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n and VocabularySentenceReview), and associated SrsCard/ReviewLog rows.

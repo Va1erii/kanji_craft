@@ -16,6 +16,7 @@ const _sourceLabels = {
   ImportSource.kanjivg: 'KanjiVG',
   ImportSource.kanjidic: 'KANJIDIC',
   ImportSource.jmdict: 'JMDict',
+  ImportSource.jmdictFurigana: 'JMDict Furigana',
 };
 
 class NewImportDialog extends StatefulWidget {

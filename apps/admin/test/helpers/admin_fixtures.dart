@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:kanji_craft_admin/domain/entities/data_import.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
+import 'package:kanji_craft_admin/domain/entities/jmdict_furigana.dart';
 import 'package:kanji_craft_admin/domain/entities/kanji_component_review.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
+import 'package:kanji_craft_admin/domain/entities/vocab_level.dart';
 import 'package:kanji_craft_core/domain/entities/verification_status.dart';
 
 final _epoch = DateTime.utc(2025, 1, 1);
@@ -182,4 +186,26 @@ KanjiComponentReview fakeReview({
       aiConfidence: aiConfidence,
       createdAt: createdAt ?? _epoch,
       updatedAt: updatedAt ?? _epoch,
+    );
+
+VocabLevel fakeVocabLevel({
+  String expression = '食べる',
+  String reading = 'たべる',
+  int level = 5,
+}) =>
+    VocabLevel(expression: expression, reading: reading, level: level);
+
+JmdictFurigana fakeJmdictFurigana({
+  String text = '食べる',
+  String reading = 'たべる',
+  List<Map<String, String>>? furiganaSegments,
+}) =>
+    JmdictFurigana(
+      text: text,
+      reading: reading,
+      furigana: jsonEncode(furiganaSegments ??
+          [
+            {'ruby': text.substring(0, 1), 'rt': reading.substring(0, 1)},
+            {'ruby': text.substring(1)},
+          ]),
     );

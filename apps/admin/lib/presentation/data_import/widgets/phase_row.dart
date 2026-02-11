@@ -115,7 +115,7 @@ class PhaseRow extends StatelessWidget {
             ],
           ],
         ),
-      PhaseCompleted(:final summary) => Row(
+      PhaseCompleted(:final summary, :final warnings) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Chip(
@@ -127,6 +127,27 @@ class PhaseRow extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
+            if (warnings.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              ActionChip(
+                avatar: Icon(
+                  Icons.warning_amber_rounded,
+                  size: 16,
+                  color: colorScheme.onErrorContainer,
+                ),
+                label: Text(
+                  '${warnings.length} warning${warnings.length == 1 ? '' : 's'}',
+                  style: textStyle?.copyWith(
+                    color: colorScheme.onErrorContainer,
+                  ),
+                ),
+                backgroundColor: colorScheme.errorContainer,
+                side: BorderSide.none,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                onPressed: () => _showWarningsDialog(context, warnings),
+              ),
+            ],
             const SizedBox(width: 8),
             OutlinedButton(
               onPressed: () => context
@@ -158,5 +179,32 @@ class PhaseRow extends StatelessWidget {
           ],
         ),
     };
+  }
+
+  void _showWarningsDialog(BuildContext context, List<String> warnings) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Warnings'),
+        content: SizedBox(
+          width: 480,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: warnings.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (_, index) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(warnings[index]),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 }

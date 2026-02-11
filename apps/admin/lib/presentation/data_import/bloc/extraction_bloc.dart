@@ -52,9 +52,12 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     ));
 
     try {
-      final summary = await _runPhase(phase);
+      final (:summary, :warnings) = await _runPhase(phase);
       emit(ExtractionState(
-        phases: {...state.phases, phase: PhaseCompleted(summary)},
+        phases: {
+          ...state.phases,
+          phase: PhaseCompleted(summary, warnings: warnings),
+        },
       ));
       // Recompute downstream phases — a completed phase may unblock others.
       emit(ExtractionState(phases: await _recomputeStatuses()));
@@ -71,19 +74,27 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     }
   }
 
-  Future<String> _runPhase(ExtractionPhase phase) async {
+  Future<({String summary, List<String> warnings})> _runPhase(
+    ExtractionPhase phase,
+  ) async {
     switch (phase) {
       case ExtractionPhase.radicalExtraction:
         final importId = _importIdFor(ImportSource.kanjivg);
         final result = await _extractRadicals.call(importId);
-        return '${result.radicalCount} radicals, '
-            '${result.variantCount} variants';
+        return (
+          summary: '${result.radicalCount} radicals, '
+              '${result.variantCount} variants',
+          warnings: result.warnings,
+        );
       case ExtractionPhase.kanjiComposition:
         final importId = _importIdFor(ImportSource.kanjidic);
         final result = await _composeKanji.call(importId);
-        return '${result.kanjiCount} kanji, '
-            '${result.readingCount} readings, '
-            '${result.i18nCount} i18n';
+        return (
+          summary: '${result.kanjiCount} kanji, '
+              '${result.readingCount} readings, '
+              '${result.i18nCount} i18n',
+          warnings: result.warnings,
+        );
       default:
         throw UnimplementedError('${phase.label} is not implemented');
     }

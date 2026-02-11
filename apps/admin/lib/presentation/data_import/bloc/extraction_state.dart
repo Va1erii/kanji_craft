@@ -31,8 +31,9 @@ final class PhaseRunning extends PhaseStatus {
 }
 
 final class PhaseCompleted extends PhaseStatus {
-  const PhaseCompleted(this.summary);
+  const PhaseCompleted(this.summary, {this.warnings = const []});
   final String summary;
+  final List<String> warnings;
 }
 
 final class PhaseFailed extends PhaseStatus {

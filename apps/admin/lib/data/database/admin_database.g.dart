@@ -3711,6 +3711,4035 @@ class SourceJlptLevelEntriesCompanion
   }
 }
 
+class $RadicalEntriesTable extends RadicalEntries
+    with TableInfo<$RadicalEntriesTable, RadicalEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadicalEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _masterSymbolMeta = const VerificationMeta(
+    'masterSymbol',
+  );
+  @override
+  late final GeneratedColumn<String> masterSymbol = GeneratedColumn<String>(
+    'master_symbol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _strokeCountMeta = const VerificationMeta(
+    'strokeCount',
+  );
+  @override
+  late final GeneratedColumn<int> strokeCount = GeneratedColumn<int>(
+    'stroke_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (stroke_count > 0)',
+  );
+  static const VerificationMeta _impactScoreMeta = const VerificationMeta(
+    'impactScore',
+  );
+  @override
+  late final GeneratedColumn<int> impactScore = GeneratedColumn<int>(
+    'impact_score',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (impact_score BETWEEN 1 AND 10)',
+  );
+  static const VerificationMeta _minJlptLevelMeta = const VerificationMeta(
+    'minJlptLevel',
+  );
+  @override
+  late final GeneratedColumn<int> minJlptLevel = GeneratedColumn<int>(
+    'min_jlpt_level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (min_jlpt_level BETWEEN 1 AND 5)',
+  );
+  static const VerificationMeta _minGradeMeta = const VerificationMeta(
+    'minGrade',
+  );
+  @override
+  late final GeneratedColumn<int> minGrade = GeneratedColumn<int>(
+    'min_grade',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (min_grade BETWEEN 1 AND 8)',
+  );
+  static const VerificationMeta _svgFileNameMeta = const VerificationMeta(
+    'svgFileName',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileName = GeneratedColumn<String>(
+    'svg_file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgFileUrlMeta = const VerificationMeta(
+    'svgFileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileUrl = GeneratedColumn<String>(
+    'svg_file_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgHashMeta = const VerificationMeta(
+    'svgHash',
+  );
+  @override
+  late final GeneratedColumn<String> svgHash = GeneratedColumn<String>(
+    'svg_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isOfficialMeta = const VerificationMeta(
+    'isOfficial',
+  );
+  @override
+  late final GeneratedColumn<bool> isOfficial = GeneratedColumn<bool>(
+    'is_official',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_official" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    masterSymbol,
+    strokeCount,
+    impactScore,
+    minJlptLevel,
+    minGrade,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    isOfficial,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radical_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RadicalEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('master_symbol')) {
+      context.handle(
+        _masterSymbolMeta,
+        masterSymbol.isAcceptableOrUnknown(
+          data['master_symbol']!,
+          _masterSymbolMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_masterSymbolMeta);
+    }
+    if (data.containsKey('stroke_count')) {
+      context.handle(
+        _strokeCountMeta,
+        strokeCount.isAcceptableOrUnknown(
+          data['stroke_count']!,
+          _strokeCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_strokeCountMeta);
+    }
+    if (data.containsKey('impact_score')) {
+      context.handle(
+        _impactScoreMeta,
+        impactScore.isAcceptableOrUnknown(
+          data['impact_score']!,
+          _impactScoreMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_impactScoreMeta);
+    }
+    if (data.containsKey('min_jlpt_level')) {
+      context.handle(
+        _minJlptLevelMeta,
+        minJlptLevel.isAcceptableOrUnknown(
+          data['min_jlpt_level']!,
+          _minJlptLevelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_minJlptLevelMeta);
+    }
+    if (data.containsKey('min_grade')) {
+      context.handle(
+        _minGradeMeta,
+        minGrade.isAcceptableOrUnknown(data['min_grade']!, _minGradeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_minGradeMeta);
+    }
+    if (data.containsKey('svg_file_name')) {
+      context.handle(
+        _svgFileNameMeta,
+        svgFileName.isAcceptableOrUnknown(
+          data['svg_file_name']!,
+          _svgFileNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileNameMeta);
+    }
+    if (data.containsKey('svg_file_url')) {
+      context.handle(
+        _svgFileUrlMeta,
+        svgFileUrl.isAcceptableOrUnknown(
+          data['svg_file_url']!,
+          _svgFileUrlMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileUrlMeta);
+    }
+    if (data.containsKey('svg_hash')) {
+      context.handle(
+        _svgHashMeta,
+        svgHash.isAcceptableOrUnknown(data['svg_hash']!, _svgHashMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_svgHashMeta);
+    }
+    if (data.containsKey('is_official')) {
+      context.handle(
+        _isOfficialMeta,
+        isOfficial.isAcceptableOrUnknown(data['is_official']!, _isOfficialMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RadicalEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadicalEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      masterSymbol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}master_symbol'],
+      )!,
+      strokeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stroke_count'],
+      )!,
+      impactScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}impact_score'],
+      )!,
+      minJlptLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_jlpt_level'],
+      )!,
+      minGrade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_grade'],
+      )!,
+      svgFileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_name'],
+      )!,
+      svgFileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_url'],
+      )!,
+      svgHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_hash'],
+      )!,
+      isOfficial: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_official'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RadicalEntriesTable createAlias(String alias) {
+    return $RadicalEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class RadicalEntry extends DataClass implements Insertable<RadicalEntry> {
+  final int id;
+  final String masterSymbol;
+  final int strokeCount;
+  final int impactScore;
+  final int minJlptLevel;
+  final int minGrade;
+  final String svgFileName;
+  final String svgFileUrl;
+  final String svgHash;
+  final bool isOfficial;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const RadicalEntry({
+    required this.id,
+    required this.masterSymbol,
+    required this.strokeCount,
+    required this.impactScore,
+    required this.minJlptLevel,
+    required this.minGrade,
+    required this.svgFileName,
+    required this.svgFileUrl,
+    required this.svgHash,
+    required this.isOfficial,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['master_symbol'] = Variable<String>(masterSymbol);
+    map['stroke_count'] = Variable<int>(strokeCount);
+    map['impact_score'] = Variable<int>(impactScore);
+    map['min_jlpt_level'] = Variable<int>(minJlptLevel);
+    map['min_grade'] = Variable<int>(minGrade);
+    map['svg_file_name'] = Variable<String>(svgFileName);
+    map['svg_file_url'] = Variable<String>(svgFileUrl);
+    map['svg_hash'] = Variable<String>(svgHash);
+    map['is_official'] = Variable<bool>(isOfficial);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RadicalEntriesCompanion toCompanion(bool nullToAbsent) {
+    return RadicalEntriesCompanion(
+      id: Value(id),
+      masterSymbol: Value(masterSymbol),
+      strokeCount: Value(strokeCount),
+      impactScore: Value(impactScore),
+      minJlptLevel: Value(minJlptLevel),
+      minGrade: Value(minGrade),
+      svgFileName: Value(svgFileName),
+      svgFileUrl: Value(svgFileUrl),
+      svgHash: Value(svgHash),
+      isOfficial: Value(isOfficial),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RadicalEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadicalEntry(
+      id: serializer.fromJson<int>(json['id']),
+      masterSymbol: serializer.fromJson<String>(json['masterSymbol']),
+      strokeCount: serializer.fromJson<int>(json['strokeCount']),
+      impactScore: serializer.fromJson<int>(json['impactScore']),
+      minJlptLevel: serializer.fromJson<int>(json['minJlptLevel']),
+      minGrade: serializer.fromJson<int>(json['minGrade']),
+      svgFileName: serializer.fromJson<String>(json['svgFileName']),
+      svgFileUrl: serializer.fromJson<String>(json['svgFileUrl']),
+      svgHash: serializer.fromJson<String>(json['svgHash']),
+      isOfficial: serializer.fromJson<bool>(json['isOfficial']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'masterSymbol': serializer.toJson<String>(masterSymbol),
+      'strokeCount': serializer.toJson<int>(strokeCount),
+      'impactScore': serializer.toJson<int>(impactScore),
+      'minJlptLevel': serializer.toJson<int>(minJlptLevel),
+      'minGrade': serializer.toJson<int>(minGrade),
+      'svgFileName': serializer.toJson<String>(svgFileName),
+      'svgFileUrl': serializer.toJson<String>(svgFileUrl),
+      'svgHash': serializer.toJson<String>(svgHash),
+      'isOfficial': serializer.toJson<bool>(isOfficial),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RadicalEntry copyWith({
+    int? id,
+    String? masterSymbol,
+    int? strokeCount,
+    int? impactScore,
+    int? minJlptLevel,
+    int? minGrade,
+    String? svgFileName,
+    String? svgFileUrl,
+    String? svgHash,
+    bool? isOfficial,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => RadicalEntry(
+    id: id ?? this.id,
+    masterSymbol: masterSymbol ?? this.masterSymbol,
+    strokeCount: strokeCount ?? this.strokeCount,
+    impactScore: impactScore ?? this.impactScore,
+    minJlptLevel: minJlptLevel ?? this.minJlptLevel,
+    minGrade: minGrade ?? this.minGrade,
+    svgFileName: svgFileName ?? this.svgFileName,
+    svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+    svgHash: svgHash ?? this.svgHash,
+    isOfficial: isOfficial ?? this.isOfficial,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RadicalEntry copyWithCompanion(RadicalEntriesCompanion data) {
+    return RadicalEntry(
+      id: data.id.present ? data.id.value : this.id,
+      masterSymbol: data.masterSymbol.present
+          ? data.masterSymbol.value
+          : this.masterSymbol,
+      strokeCount: data.strokeCount.present
+          ? data.strokeCount.value
+          : this.strokeCount,
+      impactScore: data.impactScore.present
+          ? data.impactScore.value
+          : this.impactScore,
+      minJlptLevel: data.minJlptLevel.present
+          ? data.minJlptLevel.value
+          : this.minJlptLevel,
+      minGrade: data.minGrade.present ? data.minGrade.value : this.minGrade,
+      svgFileName: data.svgFileName.present
+          ? data.svgFileName.value
+          : this.svgFileName,
+      svgFileUrl: data.svgFileUrl.present
+          ? data.svgFileUrl.value
+          : this.svgFileUrl,
+      svgHash: data.svgHash.present ? data.svgHash.value : this.svgHash,
+      isOfficial: data.isOfficial.present
+          ? data.isOfficial.value
+          : this.isOfficial,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalEntry(')
+          ..write('id: $id, ')
+          ..write('masterSymbol: $masterSymbol, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('impactScore: $impactScore, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('isOfficial: $isOfficial, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    masterSymbol,
+    strokeCount,
+    impactScore,
+    minJlptLevel,
+    minGrade,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    isOfficial,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadicalEntry &&
+          other.id == this.id &&
+          other.masterSymbol == this.masterSymbol &&
+          other.strokeCount == this.strokeCount &&
+          other.impactScore == this.impactScore &&
+          other.minJlptLevel == this.minJlptLevel &&
+          other.minGrade == this.minGrade &&
+          other.svgFileName == this.svgFileName &&
+          other.svgFileUrl == this.svgFileUrl &&
+          other.svgHash == this.svgHash &&
+          other.isOfficial == this.isOfficial &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RadicalEntriesCompanion extends UpdateCompanion<RadicalEntry> {
+  final Value<int> id;
+  final Value<String> masterSymbol;
+  final Value<int> strokeCount;
+  final Value<int> impactScore;
+  final Value<int> minJlptLevel;
+  final Value<int> minGrade;
+  final Value<String> svgFileName;
+  final Value<String> svgFileUrl;
+  final Value<String> svgHash;
+  final Value<bool> isOfficial;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const RadicalEntriesCompanion({
+    this.id = const Value.absent(),
+    this.masterSymbol = const Value.absent(),
+    this.strokeCount = const Value.absent(),
+    this.impactScore = const Value.absent(),
+    this.minJlptLevel = const Value.absent(),
+    this.minGrade = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.isOfficial = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  RadicalEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String masterSymbol,
+    required int strokeCount,
+    required int impactScore,
+    required int minJlptLevel,
+    required int minGrade,
+    required String svgFileName,
+    required String svgFileUrl,
+    required String svgHash,
+    this.isOfficial = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : masterSymbol = Value(masterSymbol),
+       strokeCount = Value(strokeCount),
+       impactScore = Value(impactScore),
+       minJlptLevel = Value(minJlptLevel),
+       minGrade = Value(minGrade),
+       svgFileName = Value(svgFileName),
+       svgFileUrl = Value(svgFileUrl),
+       svgHash = Value(svgHash);
+  static Insertable<RadicalEntry> custom({
+    Expression<int>? id,
+    Expression<String>? masterSymbol,
+    Expression<int>? strokeCount,
+    Expression<int>? impactScore,
+    Expression<int>? minJlptLevel,
+    Expression<int>? minGrade,
+    Expression<String>? svgFileName,
+    Expression<String>? svgFileUrl,
+    Expression<String>? svgHash,
+    Expression<bool>? isOfficial,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (masterSymbol != null) 'master_symbol': masterSymbol,
+      if (strokeCount != null) 'stroke_count': strokeCount,
+      if (impactScore != null) 'impact_score': impactScore,
+      if (minJlptLevel != null) 'min_jlpt_level': minJlptLevel,
+      if (minGrade != null) 'min_grade': minGrade,
+      if (svgFileName != null) 'svg_file_name': svgFileName,
+      if (svgFileUrl != null) 'svg_file_url': svgFileUrl,
+      if (svgHash != null) 'svg_hash': svgHash,
+      if (isOfficial != null) 'is_official': isOfficial,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  RadicalEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? masterSymbol,
+    Value<int>? strokeCount,
+    Value<int>? impactScore,
+    Value<int>? minJlptLevel,
+    Value<int>? minGrade,
+    Value<String>? svgFileName,
+    Value<String>? svgFileUrl,
+    Value<String>? svgHash,
+    Value<bool>? isOfficial,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return RadicalEntriesCompanion(
+      id: id ?? this.id,
+      masterSymbol: masterSymbol ?? this.masterSymbol,
+      strokeCount: strokeCount ?? this.strokeCount,
+      impactScore: impactScore ?? this.impactScore,
+      minJlptLevel: minJlptLevel ?? this.minJlptLevel,
+      minGrade: minGrade ?? this.minGrade,
+      svgFileName: svgFileName ?? this.svgFileName,
+      svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+      svgHash: svgHash ?? this.svgHash,
+      isOfficial: isOfficial ?? this.isOfficial,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (masterSymbol.present) {
+      map['master_symbol'] = Variable<String>(masterSymbol.value);
+    }
+    if (strokeCount.present) {
+      map['stroke_count'] = Variable<int>(strokeCount.value);
+    }
+    if (impactScore.present) {
+      map['impact_score'] = Variable<int>(impactScore.value);
+    }
+    if (minJlptLevel.present) {
+      map['min_jlpt_level'] = Variable<int>(minJlptLevel.value);
+    }
+    if (minGrade.present) {
+      map['min_grade'] = Variable<int>(minGrade.value);
+    }
+    if (svgFileName.present) {
+      map['svg_file_name'] = Variable<String>(svgFileName.value);
+    }
+    if (svgFileUrl.present) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl.value);
+    }
+    if (svgHash.present) {
+      map['svg_hash'] = Variable<String>(svgHash.value);
+    }
+    if (isOfficial.present) {
+      map['is_official'] = Variable<bool>(isOfficial.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('masterSymbol: $masterSymbol, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('impactScore: $impactScore, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('isOfficial: $isOfficial, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadicalI18nEntriesTable extends RadicalI18nEntries
+    with TableInfo<$RadicalI18nEntriesTable, RadicalI18nEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadicalI18nEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _radicalIdMeta = const VerificationMeta(
+    'radicalId',
+  );
+  @override
+  late final GeneratedColumn<int> radicalId = GeneratedColumn<int>(
+    'radical_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES radical_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _langCodeMeta = const VerificationMeta(
+    'langCode',
+  );
+  @override
+  late final GeneratedColumn<String> langCode = GeneratedColumn<String>(
+    'lang_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _systemMnemonicMeta = const VerificationMeta(
+    'systemMnemonic',
+  );
+  @override
+  late final GeneratedColumn<String> systemMnemonic = GeneratedColumn<String>(
+    'system_mnemonic',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> searchTags =
+      GeneratedColumn<String>(
+        'search_tags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<String>>(
+        $RadicalI18nEntriesTable.$convertersearchTags,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    radicalId,
+    langCode,
+    name,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radical_i18n_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RadicalI18nEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('radical_id')) {
+      context.handle(
+        _radicalIdMeta,
+        radicalId.isAcceptableOrUnknown(data['radical_id']!, _radicalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_radicalIdMeta);
+    }
+    if (data.containsKey('lang_code')) {
+      context.handle(
+        _langCodeMeta,
+        langCode.isAcceptableOrUnknown(data['lang_code']!, _langCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_langCodeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('system_mnemonic')) {
+      context.handle(
+        _systemMnemonicMeta,
+        systemMnemonic.isAcceptableOrUnknown(
+          data['system_mnemonic']!,
+          _systemMnemonicMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_systemMnemonicMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {radicalId, langCode},
+  ];
+  @override
+  RadicalI18nEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadicalI18nEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      radicalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}radical_id'],
+      )!,
+      langCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lang_code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      systemMnemonic: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}system_mnemonic'],
+      )!,
+      searchTags: $RadicalI18nEntriesTable.$convertersearchTags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}search_tags'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RadicalI18nEntriesTable createAlias(String alias) {
+    return $RadicalI18nEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<List<String>, String> $convertersearchTags =
+      const NonNullableStringListConverter();
+}
+
+class RadicalI18nEntry extends DataClass
+    implements Insertable<RadicalI18nEntry> {
+  final int id;
+  final int radicalId;
+  final String langCode;
+  final String name;
+  final String systemMnemonic;
+  final List<String> searchTags;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const RadicalI18nEntry({
+    required this.id,
+    required this.radicalId,
+    required this.langCode,
+    required this.name,
+    required this.systemMnemonic,
+    required this.searchTags,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['radical_id'] = Variable<int>(radicalId);
+    map['lang_code'] = Variable<String>(langCode);
+    map['name'] = Variable<String>(name);
+    map['system_mnemonic'] = Variable<String>(systemMnemonic);
+    {
+      map['search_tags'] = Variable<String>(
+        $RadicalI18nEntriesTable.$convertersearchTags.toSql(searchTags),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RadicalI18nEntriesCompanion toCompanion(bool nullToAbsent) {
+    return RadicalI18nEntriesCompanion(
+      id: Value(id),
+      radicalId: Value(radicalId),
+      langCode: Value(langCode),
+      name: Value(name),
+      systemMnemonic: Value(systemMnemonic),
+      searchTags: Value(searchTags),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RadicalI18nEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadicalI18nEntry(
+      id: serializer.fromJson<int>(json['id']),
+      radicalId: serializer.fromJson<int>(json['radicalId']),
+      langCode: serializer.fromJson<String>(json['langCode']),
+      name: serializer.fromJson<String>(json['name']),
+      systemMnemonic: serializer.fromJson<String>(json['systemMnemonic']),
+      searchTags: serializer.fromJson<List<String>>(json['searchTags']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'radicalId': serializer.toJson<int>(radicalId),
+      'langCode': serializer.toJson<String>(langCode),
+      'name': serializer.toJson<String>(name),
+      'systemMnemonic': serializer.toJson<String>(systemMnemonic),
+      'searchTags': serializer.toJson<List<String>>(searchTags),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RadicalI18nEntry copyWith({
+    int? id,
+    int? radicalId,
+    String? langCode,
+    String? name,
+    String? systemMnemonic,
+    List<String>? searchTags,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => RadicalI18nEntry(
+    id: id ?? this.id,
+    radicalId: radicalId ?? this.radicalId,
+    langCode: langCode ?? this.langCode,
+    name: name ?? this.name,
+    systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+    searchTags: searchTags ?? this.searchTags,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RadicalI18nEntry copyWithCompanion(RadicalI18nEntriesCompanion data) {
+    return RadicalI18nEntry(
+      id: data.id.present ? data.id.value : this.id,
+      radicalId: data.radicalId.present ? data.radicalId.value : this.radicalId,
+      langCode: data.langCode.present ? data.langCode.value : this.langCode,
+      name: data.name.present ? data.name.value : this.name,
+      systemMnemonic: data.systemMnemonic.present
+          ? data.systemMnemonic.value
+          : this.systemMnemonic,
+      searchTags: data.searchTags.present
+          ? data.searchTags.value
+          : this.searchTags,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalI18nEntry(')
+          ..write('id: $id, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('langCode: $langCode, ')
+          ..write('name: $name, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    radicalId,
+    langCode,
+    name,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadicalI18nEntry &&
+          other.id == this.id &&
+          other.radicalId == this.radicalId &&
+          other.langCode == this.langCode &&
+          other.name == this.name &&
+          other.systemMnemonic == this.systemMnemonic &&
+          other.searchTags == this.searchTags &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RadicalI18nEntriesCompanion extends UpdateCompanion<RadicalI18nEntry> {
+  final Value<int> id;
+  final Value<int> radicalId;
+  final Value<String> langCode;
+  final Value<String> name;
+  final Value<String> systemMnemonic;
+  final Value<List<String>> searchTags;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const RadicalI18nEntriesCompanion({
+    this.id = const Value.absent(),
+    this.radicalId = const Value.absent(),
+    this.langCode = const Value.absent(),
+    this.name = const Value.absent(),
+    this.systemMnemonic = const Value.absent(),
+    this.searchTags = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  RadicalI18nEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int radicalId,
+    required String langCode,
+    required String name,
+    required String systemMnemonic,
+    required List<String> searchTags,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : radicalId = Value(radicalId),
+       langCode = Value(langCode),
+       name = Value(name),
+       systemMnemonic = Value(systemMnemonic),
+       searchTags = Value(searchTags);
+  static Insertable<RadicalI18nEntry> custom({
+    Expression<int>? id,
+    Expression<int>? radicalId,
+    Expression<String>? langCode,
+    Expression<String>? name,
+    Expression<String>? systemMnemonic,
+    Expression<String>? searchTags,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (radicalId != null) 'radical_id': radicalId,
+      if (langCode != null) 'lang_code': langCode,
+      if (name != null) 'name': name,
+      if (systemMnemonic != null) 'system_mnemonic': systemMnemonic,
+      if (searchTags != null) 'search_tags': searchTags,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  RadicalI18nEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? radicalId,
+    Value<String>? langCode,
+    Value<String>? name,
+    Value<String>? systemMnemonic,
+    Value<List<String>>? searchTags,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return RadicalI18nEntriesCompanion(
+      id: id ?? this.id,
+      radicalId: radicalId ?? this.radicalId,
+      langCode: langCode ?? this.langCode,
+      name: name ?? this.name,
+      systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+      searchTags: searchTags ?? this.searchTags,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (radicalId.present) {
+      map['radical_id'] = Variable<int>(radicalId.value);
+    }
+    if (langCode.present) {
+      map['lang_code'] = Variable<String>(langCode.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (systemMnemonic.present) {
+      map['system_mnemonic'] = Variable<String>(systemMnemonic.value);
+    }
+    if (searchTags.present) {
+      map['search_tags'] = Variable<String>(
+        $RadicalI18nEntriesTable.$convertersearchTags.toSql(searchTags.value),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalI18nEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('langCode: $langCode, ')
+          ..write('name: $name, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RadicalVariantEntriesTable extends RadicalVariantEntries
+    with TableInfo<$RadicalVariantEntriesTable, RadicalVariantEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RadicalVariantEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _radicalIdMeta = const VerificationMeta(
+    'radicalId',
+  );
+  @override
+  late final GeneratedColumn<int> radicalId = GeneratedColumn<int>(
+    'radical_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES radical_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _shapeMeta = const VerificationMeta('shape');
+  @override
+  late final GeneratedColumn<String> shape = GeneratedColumn<String>(
+    'shape',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Position, String> position =
+      GeneratedColumn<String>(
+        'position',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<Position>($RadicalVariantEntriesTable.$converterposition);
+  static const VerificationMeta _isLockedMeta = const VerificationMeta(
+    'isLocked',
+  );
+  @override
+  late final GeneratedColumn<bool> isLocked = GeneratedColumn<bool>(
+    'is_locked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_locked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _svgFileNameMeta = const VerificationMeta(
+    'svgFileName',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileName = GeneratedColumn<String>(
+    'svg_file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgFileUrlMeta = const VerificationMeta(
+    'svgFileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileUrl = GeneratedColumn<String>(
+    'svg_file_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgHashMeta = const VerificationMeta(
+    'svgHash',
+  );
+  @override
+  late final GeneratedColumn<String> svgHash = GeneratedColumn<String>(
+    'svg_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    radicalId,
+    shape,
+    position,
+    isLocked,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'radical_variant_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RadicalVariantEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('radical_id')) {
+      context.handle(
+        _radicalIdMeta,
+        radicalId.isAcceptableOrUnknown(data['radical_id']!, _radicalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_radicalIdMeta);
+    }
+    if (data.containsKey('shape')) {
+      context.handle(
+        _shapeMeta,
+        shape.isAcceptableOrUnknown(data['shape']!, _shapeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shapeMeta);
+    }
+    if (data.containsKey('is_locked')) {
+      context.handle(
+        _isLockedMeta,
+        isLocked.isAcceptableOrUnknown(data['is_locked']!, _isLockedMeta),
+      );
+    }
+    if (data.containsKey('svg_file_name')) {
+      context.handle(
+        _svgFileNameMeta,
+        svgFileName.isAcceptableOrUnknown(
+          data['svg_file_name']!,
+          _svgFileNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileNameMeta);
+    }
+    if (data.containsKey('svg_file_url')) {
+      context.handle(
+        _svgFileUrlMeta,
+        svgFileUrl.isAcceptableOrUnknown(
+          data['svg_file_url']!,
+          _svgFileUrlMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileUrlMeta);
+    }
+    if (data.containsKey('svg_hash')) {
+      context.handle(
+        _svgHashMeta,
+        svgHash.isAcceptableOrUnknown(data['svg_hash']!, _svgHashMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_svgHashMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {radicalId, position},
+  ];
+  @override
+  RadicalVariantEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RadicalVariantEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      radicalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}radical_id'],
+      )!,
+      shape: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shape'],
+      )!,
+      position: $RadicalVariantEntriesTable.$converterposition.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}position'],
+        )!,
+      ),
+      isLocked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_locked'],
+      )!,
+      svgFileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_name'],
+      )!,
+      svgFileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_url'],
+      )!,
+      svgHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_hash'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RadicalVariantEntriesTable createAlias(String alias) {
+    return $RadicalVariantEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<Position, String> $converterposition =
+      const PositionConverter();
+}
+
+class RadicalVariantEntry extends DataClass
+    implements Insertable<RadicalVariantEntry> {
+  final int id;
+  final int radicalId;
+  final String shape;
+  final Position position;
+  final bool isLocked;
+  final String svgFileName;
+  final String svgFileUrl;
+  final String svgHash;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const RadicalVariantEntry({
+    required this.id,
+    required this.radicalId,
+    required this.shape,
+    required this.position,
+    required this.isLocked,
+    required this.svgFileName,
+    required this.svgFileUrl,
+    required this.svgHash,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['radical_id'] = Variable<int>(radicalId);
+    map['shape'] = Variable<String>(shape);
+    {
+      map['position'] = Variable<String>(
+        $RadicalVariantEntriesTable.$converterposition.toSql(position),
+      );
+    }
+    map['is_locked'] = Variable<bool>(isLocked);
+    map['svg_file_name'] = Variable<String>(svgFileName);
+    map['svg_file_url'] = Variable<String>(svgFileUrl);
+    map['svg_hash'] = Variable<String>(svgHash);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  RadicalVariantEntriesCompanion toCompanion(bool nullToAbsent) {
+    return RadicalVariantEntriesCompanion(
+      id: Value(id),
+      radicalId: Value(radicalId),
+      shape: Value(shape),
+      position: Value(position),
+      isLocked: Value(isLocked),
+      svgFileName: Value(svgFileName),
+      svgFileUrl: Value(svgFileUrl),
+      svgHash: Value(svgHash),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory RadicalVariantEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RadicalVariantEntry(
+      id: serializer.fromJson<int>(json['id']),
+      radicalId: serializer.fromJson<int>(json['radicalId']),
+      shape: serializer.fromJson<String>(json['shape']),
+      position: serializer.fromJson<Position>(json['position']),
+      isLocked: serializer.fromJson<bool>(json['isLocked']),
+      svgFileName: serializer.fromJson<String>(json['svgFileName']),
+      svgFileUrl: serializer.fromJson<String>(json['svgFileUrl']),
+      svgHash: serializer.fromJson<String>(json['svgHash']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'radicalId': serializer.toJson<int>(radicalId),
+      'shape': serializer.toJson<String>(shape),
+      'position': serializer.toJson<Position>(position),
+      'isLocked': serializer.toJson<bool>(isLocked),
+      'svgFileName': serializer.toJson<String>(svgFileName),
+      'svgFileUrl': serializer.toJson<String>(svgFileUrl),
+      'svgHash': serializer.toJson<String>(svgHash),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  RadicalVariantEntry copyWith({
+    int? id,
+    int? radicalId,
+    String? shape,
+    Position? position,
+    bool? isLocked,
+    String? svgFileName,
+    String? svgFileUrl,
+    String? svgHash,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => RadicalVariantEntry(
+    id: id ?? this.id,
+    radicalId: radicalId ?? this.radicalId,
+    shape: shape ?? this.shape,
+    position: position ?? this.position,
+    isLocked: isLocked ?? this.isLocked,
+    svgFileName: svgFileName ?? this.svgFileName,
+    svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+    svgHash: svgHash ?? this.svgHash,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  RadicalVariantEntry copyWithCompanion(RadicalVariantEntriesCompanion data) {
+    return RadicalVariantEntry(
+      id: data.id.present ? data.id.value : this.id,
+      radicalId: data.radicalId.present ? data.radicalId.value : this.radicalId,
+      shape: data.shape.present ? data.shape.value : this.shape,
+      position: data.position.present ? data.position.value : this.position,
+      isLocked: data.isLocked.present ? data.isLocked.value : this.isLocked,
+      svgFileName: data.svgFileName.present
+          ? data.svgFileName.value
+          : this.svgFileName,
+      svgFileUrl: data.svgFileUrl.present
+          ? data.svgFileUrl.value
+          : this.svgFileUrl,
+      svgHash: data.svgHash.present ? data.svgHash.value : this.svgHash,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalVariantEntry(')
+          ..write('id: $id, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('shape: $shape, ')
+          ..write('position: $position, ')
+          ..write('isLocked: $isLocked, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    radicalId,
+    shape,
+    position,
+    isLocked,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RadicalVariantEntry &&
+          other.id == this.id &&
+          other.radicalId == this.radicalId &&
+          other.shape == this.shape &&
+          other.position == this.position &&
+          other.isLocked == this.isLocked &&
+          other.svgFileName == this.svgFileName &&
+          other.svgFileUrl == this.svgFileUrl &&
+          other.svgHash == this.svgHash &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class RadicalVariantEntriesCompanion
+    extends UpdateCompanion<RadicalVariantEntry> {
+  final Value<int> id;
+  final Value<int> radicalId;
+  final Value<String> shape;
+  final Value<Position> position;
+  final Value<bool> isLocked;
+  final Value<String> svgFileName;
+  final Value<String> svgFileUrl;
+  final Value<String> svgHash;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const RadicalVariantEntriesCompanion({
+    this.id = const Value.absent(),
+    this.radicalId = const Value.absent(),
+    this.shape = const Value.absent(),
+    this.position = const Value.absent(),
+    this.isLocked = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  RadicalVariantEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int radicalId,
+    required String shape,
+    required Position position,
+    this.isLocked = const Value.absent(),
+    required String svgFileName,
+    required String svgFileUrl,
+    required String svgHash,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : radicalId = Value(radicalId),
+       shape = Value(shape),
+       position = Value(position),
+       svgFileName = Value(svgFileName),
+       svgFileUrl = Value(svgFileUrl),
+       svgHash = Value(svgHash);
+  static Insertable<RadicalVariantEntry> custom({
+    Expression<int>? id,
+    Expression<int>? radicalId,
+    Expression<String>? shape,
+    Expression<String>? position,
+    Expression<bool>? isLocked,
+    Expression<String>? svgFileName,
+    Expression<String>? svgFileUrl,
+    Expression<String>? svgHash,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (radicalId != null) 'radical_id': radicalId,
+      if (shape != null) 'shape': shape,
+      if (position != null) 'position': position,
+      if (isLocked != null) 'is_locked': isLocked,
+      if (svgFileName != null) 'svg_file_name': svgFileName,
+      if (svgFileUrl != null) 'svg_file_url': svgFileUrl,
+      if (svgHash != null) 'svg_hash': svgHash,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  RadicalVariantEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? radicalId,
+    Value<String>? shape,
+    Value<Position>? position,
+    Value<bool>? isLocked,
+    Value<String>? svgFileName,
+    Value<String>? svgFileUrl,
+    Value<String>? svgHash,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return RadicalVariantEntriesCompanion(
+      id: id ?? this.id,
+      radicalId: radicalId ?? this.radicalId,
+      shape: shape ?? this.shape,
+      position: position ?? this.position,
+      isLocked: isLocked ?? this.isLocked,
+      svgFileName: svgFileName ?? this.svgFileName,
+      svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+      svgHash: svgHash ?? this.svgHash,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (radicalId.present) {
+      map['radical_id'] = Variable<int>(radicalId.value);
+    }
+    if (shape.present) {
+      map['shape'] = Variable<String>(shape.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<String>(
+        $RadicalVariantEntriesTable.$converterposition.toSql(position.value),
+      );
+    }
+    if (isLocked.present) {
+      map['is_locked'] = Variable<bool>(isLocked.value);
+    }
+    if (svgFileName.present) {
+      map['svg_file_name'] = Variable<String>(svgFileName.value);
+    }
+    if (svgFileUrl.present) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl.value);
+    }
+    if (svgHash.present) {
+      map['svg_hash'] = Variable<String>(svgHash.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RadicalVariantEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('shape: $shape, ')
+          ..write('position: $position, ')
+          ..write('isLocked: $isLocked, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KanjiEntriesTable extends KanjiEntries
+    with TableInfo<$KanjiEntriesTable, KanjiEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KanjiEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _characterMeta = const VerificationMeta(
+    'character',
+  );
+  @override
+  late final GeneratedColumn<String> character = GeneratedColumn<String>(
+    'character',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _strokeCountMeta = const VerificationMeta(
+    'strokeCount',
+  );
+  @override
+  late final GeneratedColumn<int> strokeCount = GeneratedColumn<int>(
+    'stroke_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (stroke_count > 0)',
+  );
+  static const VerificationMeta _minJlptLevelMeta = const VerificationMeta(
+    'minJlptLevel',
+  );
+  @override
+  late final GeneratedColumn<int> minJlptLevel = GeneratedColumn<int>(
+    'min_jlpt_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _minGradeMeta = const VerificationMeta(
+    'minGrade',
+  );
+  @override
+  late final GeneratedColumn<int> minGrade = GeneratedColumn<int>(
+    'min_grade',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _frequencyRankMeta = const VerificationMeta(
+    'frequencyRank',
+  );
+  @override
+  late final GeneratedColumn<int> frequencyRank = GeneratedColumn<int>(
+    'frequency_rank',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (frequency_rank > 0)',
+  );
+  static const VerificationMeta _svgFileNameMeta = const VerificationMeta(
+    'svgFileName',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileName = GeneratedColumn<String>(
+    'svg_file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgFileUrlMeta = const VerificationMeta(
+    'svgFileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileUrl = GeneratedColumn<String>(
+    'svg_file_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _svgHashMeta = const VerificationMeta(
+    'svgHash',
+  );
+  @override
+  late final GeneratedColumn<String> svgHash = GeneratedColumn<String>(
+    'svg_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    character,
+    strokeCount,
+    minJlptLevel,
+    minGrade,
+    frequencyRank,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kanji_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KanjiEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('character')) {
+      context.handle(
+        _characterMeta,
+        character.isAcceptableOrUnknown(data['character']!, _characterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_characterMeta);
+    }
+    if (data.containsKey('stroke_count')) {
+      context.handle(
+        _strokeCountMeta,
+        strokeCount.isAcceptableOrUnknown(
+          data['stroke_count']!,
+          _strokeCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_strokeCountMeta);
+    }
+    if (data.containsKey('min_jlpt_level')) {
+      context.handle(
+        _minJlptLevelMeta,
+        minJlptLevel.isAcceptableOrUnknown(
+          data['min_jlpt_level']!,
+          _minJlptLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('min_grade')) {
+      context.handle(
+        _minGradeMeta,
+        minGrade.isAcceptableOrUnknown(data['min_grade']!, _minGradeMeta),
+      );
+    }
+    if (data.containsKey('frequency_rank')) {
+      context.handle(
+        _frequencyRankMeta,
+        frequencyRank.isAcceptableOrUnknown(
+          data['frequency_rank']!,
+          _frequencyRankMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_frequencyRankMeta);
+    }
+    if (data.containsKey('svg_file_name')) {
+      context.handle(
+        _svgFileNameMeta,
+        svgFileName.isAcceptableOrUnknown(
+          data['svg_file_name']!,
+          _svgFileNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileNameMeta);
+    }
+    if (data.containsKey('svg_file_url')) {
+      context.handle(
+        _svgFileUrlMeta,
+        svgFileUrl.isAcceptableOrUnknown(
+          data['svg_file_url']!,
+          _svgFileUrlMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_svgFileUrlMeta);
+    }
+    if (data.containsKey('svg_hash')) {
+      context.handle(
+        _svgHashMeta,
+        svgHash.isAcceptableOrUnknown(data['svg_hash']!, _svgHashMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_svgHashMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  KanjiEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KanjiEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      character: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character'],
+      )!,
+      strokeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stroke_count'],
+      )!,
+      minJlptLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_jlpt_level'],
+      ),
+      minGrade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_grade'],
+      ),
+      frequencyRank: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}frequency_rank'],
+      )!,
+      svgFileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_name'],
+      )!,
+      svgFileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_url'],
+      )!,
+      svgHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_hash'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $KanjiEntriesTable createAlias(String alias) {
+    return $KanjiEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class KanjiEntry extends DataClass implements Insertable<KanjiEntry> {
+  final int id;
+  final String character;
+  final int strokeCount;
+  final int? minJlptLevel;
+  final int? minGrade;
+  final int frequencyRank;
+  final String svgFileName;
+  final String svgFileUrl;
+  final String svgHash;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const KanjiEntry({
+    required this.id,
+    required this.character,
+    required this.strokeCount,
+    this.minJlptLevel,
+    this.minGrade,
+    required this.frequencyRank,
+    required this.svgFileName,
+    required this.svgFileUrl,
+    required this.svgHash,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['character'] = Variable<String>(character);
+    map['stroke_count'] = Variable<int>(strokeCount);
+    if (!nullToAbsent || minJlptLevel != null) {
+      map['min_jlpt_level'] = Variable<int>(minJlptLevel);
+    }
+    if (!nullToAbsent || minGrade != null) {
+      map['min_grade'] = Variable<int>(minGrade);
+    }
+    map['frequency_rank'] = Variable<int>(frequencyRank);
+    map['svg_file_name'] = Variable<String>(svgFileName);
+    map['svg_file_url'] = Variable<String>(svgFileUrl);
+    map['svg_hash'] = Variable<String>(svgHash);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  KanjiEntriesCompanion toCompanion(bool nullToAbsent) {
+    return KanjiEntriesCompanion(
+      id: Value(id),
+      character: Value(character),
+      strokeCount: Value(strokeCount),
+      minJlptLevel: minJlptLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minJlptLevel),
+      minGrade: minGrade == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minGrade),
+      frequencyRank: Value(frequencyRank),
+      svgFileName: Value(svgFileName),
+      svgFileUrl: Value(svgFileUrl),
+      svgHash: Value(svgHash),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory KanjiEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KanjiEntry(
+      id: serializer.fromJson<int>(json['id']),
+      character: serializer.fromJson<String>(json['character']),
+      strokeCount: serializer.fromJson<int>(json['strokeCount']),
+      minJlptLevel: serializer.fromJson<int?>(json['minJlptLevel']),
+      minGrade: serializer.fromJson<int?>(json['minGrade']),
+      frequencyRank: serializer.fromJson<int>(json['frequencyRank']),
+      svgFileName: serializer.fromJson<String>(json['svgFileName']),
+      svgFileUrl: serializer.fromJson<String>(json['svgFileUrl']),
+      svgHash: serializer.fromJson<String>(json['svgHash']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'character': serializer.toJson<String>(character),
+      'strokeCount': serializer.toJson<int>(strokeCount),
+      'minJlptLevel': serializer.toJson<int?>(minJlptLevel),
+      'minGrade': serializer.toJson<int?>(minGrade),
+      'frequencyRank': serializer.toJson<int>(frequencyRank),
+      'svgFileName': serializer.toJson<String>(svgFileName),
+      'svgFileUrl': serializer.toJson<String>(svgFileUrl),
+      'svgHash': serializer.toJson<String>(svgHash),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  KanjiEntry copyWith({
+    int? id,
+    String? character,
+    int? strokeCount,
+    Value<int?> minJlptLevel = const Value.absent(),
+    Value<int?> minGrade = const Value.absent(),
+    int? frequencyRank,
+    String? svgFileName,
+    String? svgFileUrl,
+    String? svgHash,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => KanjiEntry(
+    id: id ?? this.id,
+    character: character ?? this.character,
+    strokeCount: strokeCount ?? this.strokeCount,
+    minJlptLevel: minJlptLevel.present ? minJlptLevel.value : this.minJlptLevel,
+    minGrade: minGrade.present ? minGrade.value : this.minGrade,
+    frequencyRank: frequencyRank ?? this.frequencyRank,
+    svgFileName: svgFileName ?? this.svgFileName,
+    svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+    svgHash: svgHash ?? this.svgHash,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  KanjiEntry copyWithCompanion(KanjiEntriesCompanion data) {
+    return KanjiEntry(
+      id: data.id.present ? data.id.value : this.id,
+      character: data.character.present ? data.character.value : this.character,
+      strokeCount: data.strokeCount.present
+          ? data.strokeCount.value
+          : this.strokeCount,
+      minJlptLevel: data.minJlptLevel.present
+          ? data.minJlptLevel.value
+          : this.minJlptLevel,
+      minGrade: data.minGrade.present ? data.minGrade.value : this.minGrade,
+      frequencyRank: data.frequencyRank.present
+          ? data.frequencyRank.value
+          : this.frequencyRank,
+      svgFileName: data.svgFileName.present
+          ? data.svgFileName.value
+          : this.svgFileName,
+      svgFileUrl: data.svgFileUrl.present
+          ? data.svgFileUrl.value
+          : this.svgFileUrl,
+      svgHash: data.svgHash.present ? data.svgHash.value : this.svgHash,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiEntry(')
+          ..write('id: $id, ')
+          ..write('character: $character, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('frequencyRank: $frequencyRank, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    character,
+    strokeCount,
+    minJlptLevel,
+    minGrade,
+    frequencyRank,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KanjiEntry &&
+          other.id == this.id &&
+          other.character == this.character &&
+          other.strokeCount == this.strokeCount &&
+          other.minJlptLevel == this.minJlptLevel &&
+          other.minGrade == this.minGrade &&
+          other.frequencyRank == this.frequencyRank &&
+          other.svgFileName == this.svgFileName &&
+          other.svgFileUrl == this.svgFileUrl &&
+          other.svgHash == this.svgHash &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class KanjiEntriesCompanion extends UpdateCompanion<KanjiEntry> {
+  final Value<int> id;
+  final Value<String> character;
+  final Value<int> strokeCount;
+  final Value<int?> minJlptLevel;
+  final Value<int?> minGrade;
+  final Value<int> frequencyRank;
+  final Value<String> svgFileName;
+  final Value<String> svgFileUrl;
+  final Value<String> svgHash;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const KanjiEntriesCompanion({
+    this.id = const Value.absent(),
+    this.character = const Value.absent(),
+    this.strokeCount = const Value.absent(),
+    this.minJlptLevel = const Value.absent(),
+    this.minGrade = const Value.absent(),
+    this.frequencyRank = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  KanjiEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String character,
+    required int strokeCount,
+    this.minJlptLevel = const Value.absent(),
+    this.minGrade = const Value.absent(),
+    required int frequencyRank,
+    required String svgFileName,
+    required String svgFileUrl,
+    required String svgHash,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : character = Value(character),
+       strokeCount = Value(strokeCount),
+       frequencyRank = Value(frequencyRank),
+       svgFileName = Value(svgFileName),
+       svgFileUrl = Value(svgFileUrl),
+       svgHash = Value(svgHash);
+  static Insertable<KanjiEntry> custom({
+    Expression<int>? id,
+    Expression<String>? character,
+    Expression<int>? strokeCount,
+    Expression<int>? minJlptLevel,
+    Expression<int>? minGrade,
+    Expression<int>? frequencyRank,
+    Expression<String>? svgFileName,
+    Expression<String>? svgFileUrl,
+    Expression<String>? svgHash,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (character != null) 'character': character,
+      if (strokeCount != null) 'stroke_count': strokeCount,
+      if (minJlptLevel != null) 'min_jlpt_level': minJlptLevel,
+      if (minGrade != null) 'min_grade': minGrade,
+      if (frequencyRank != null) 'frequency_rank': frequencyRank,
+      if (svgFileName != null) 'svg_file_name': svgFileName,
+      if (svgFileUrl != null) 'svg_file_url': svgFileUrl,
+      if (svgHash != null) 'svg_hash': svgHash,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  KanjiEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? character,
+    Value<int>? strokeCount,
+    Value<int?>? minJlptLevel,
+    Value<int?>? minGrade,
+    Value<int>? frequencyRank,
+    Value<String>? svgFileName,
+    Value<String>? svgFileUrl,
+    Value<String>? svgHash,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return KanjiEntriesCompanion(
+      id: id ?? this.id,
+      character: character ?? this.character,
+      strokeCount: strokeCount ?? this.strokeCount,
+      minJlptLevel: minJlptLevel ?? this.minJlptLevel,
+      minGrade: minGrade ?? this.minGrade,
+      frequencyRank: frequencyRank ?? this.frequencyRank,
+      svgFileName: svgFileName ?? this.svgFileName,
+      svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+      svgHash: svgHash ?? this.svgHash,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (character.present) {
+      map['character'] = Variable<String>(character.value);
+    }
+    if (strokeCount.present) {
+      map['stroke_count'] = Variable<int>(strokeCount.value);
+    }
+    if (minJlptLevel.present) {
+      map['min_jlpt_level'] = Variable<int>(minJlptLevel.value);
+    }
+    if (minGrade.present) {
+      map['min_grade'] = Variable<int>(minGrade.value);
+    }
+    if (frequencyRank.present) {
+      map['frequency_rank'] = Variable<int>(frequencyRank.value);
+    }
+    if (svgFileName.present) {
+      map['svg_file_name'] = Variable<String>(svgFileName.value);
+    }
+    if (svgFileUrl.present) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl.value);
+    }
+    if (svgHash.present) {
+      map['svg_hash'] = Variable<String>(svgHash.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('character: $character, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('frequencyRank: $frequencyRank, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KanjiReadingEntriesTable extends KanjiReadingEntries
+    with TableInfo<$KanjiReadingEntriesTable, KanjiReadingEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KanjiReadingEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _kanjiIdMeta = const VerificationMeta(
+    'kanjiId',
+  );
+  @override
+  late final GeneratedColumn<int> kanjiId = GeneratedColumn<int>(
+    'kanji_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES kanji_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _readingMeta = const VerificationMeta(
+    'reading',
+  );
+  @override
+  late final GeneratedColumn<String> reading = GeneratedColumn<String>(
+    'reading',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ReadingType, String> readingType =
+      GeneratedColumn<String>(
+        'reading_type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ReadingType>(
+        $KanjiReadingEntriesTable.$converterreadingType,
+      );
+  @override
+  late final GeneratedColumnWithTypeConverter<ReadingPriority, String>
+  priority =
+      GeneratedColumn<String>(
+        'priority',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ReadingPriority>(
+        $KanjiReadingEntriesTable.$converterpriority,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kanjiId,
+    reading,
+    readingType,
+    priority,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kanji_reading_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KanjiReadingEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kanji_id')) {
+      context.handle(
+        _kanjiIdMeta,
+        kanjiId.isAcceptableOrUnknown(data['kanji_id']!, _kanjiIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kanjiIdMeta);
+    }
+    if (data.containsKey('reading')) {
+      context.handle(
+        _readingMeta,
+        reading.isAcceptableOrUnknown(data['reading']!, _readingMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_readingMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {kanjiId, reading, readingType},
+  ];
+  @override
+  KanjiReadingEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KanjiReadingEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      kanjiId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}kanji_id'],
+      )!,
+      reading: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reading'],
+      )!,
+      readingType: $KanjiReadingEntriesTable.$converterreadingType.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}reading_type'],
+        )!,
+      ),
+      priority: $KanjiReadingEntriesTable.$converterpriority.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}priority'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $KanjiReadingEntriesTable createAlias(String alias) {
+    return $KanjiReadingEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<ReadingType, String> $converterreadingType =
+      const ReadingTypeConverter();
+  static TypeConverter<ReadingPriority, String> $converterpriority =
+      const ReadingPriorityConverter();
+}
+
+class KanjiReadingEntry extends DataClass
+    implements Insertable<KanjiReadingEntry> {
+  final int id;
+  final int kanjiId;
+  final String reading;
+  final ReadingType readingType;
+  final ReadingPriority priority;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const KanjiReadingEntry({
+    required this.id,
+    required this.kanjiId,
+    required this.reading,
+    required this.readingType,
+    required this.priority,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kanji_id'] = Variable<int>(kanjiId);
+    map['reading'] = Variable<String>(reading);
+    {
+      map['reading_type'] = Variable<String>(
+        $KanjiReadingEntriesTable.$converterreadingType.toSql(readingType),
+      );
+    }
+    {
+      map['priority'] = Variable<String>(
+        $KanjiReadingEntriesTable.$converterpriority.toSql(priority),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  KanjiReadingEntriesCompanion toCompanion(bool nullToAbsent) {
+    return KanjiReadingEntriesCompanion(
+      id: Value(id),
+      kanjiId: Value(kanjiId),
+      reading: Value(reading),
+      readingType: Value(readingType),
+      priority: Value(priority),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory KanjiReadingEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KanjiReadingEntry(
+      id: serializer.fromJson<int>(json['id']),
+      kanjiId: serializer.fromJson<int>(json['kanjiId']),
+      reading: serializer.fromJson<String>(json['reading']),
+      readingType: serializer.fromJson<ReadingType>(json['readingType']),
+      priority: serializer.fromJson<ReadingPriority>(json['priority']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kanjiId': serializer.toJson<int>(kanjiId),
+      'reading': serializer.toJson<String>(reading),
+      'readingType': serializer.toJson<ReadingType>(readingType),
+      'priority': serializer.toJson<ReadingPriority>(priority),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  KanjiReadingEntry copyWith({
+    int? id,
+    int? kanjiId,
+    String? reading,
+    ReadingType? readingType,
+    ReadingPriority? priority,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => KanjiReadingEntry(
+    id: id ?? this.id,
+    kanjiId: kanjiId ?? this.kanjiId,
+    reading: reading ?? this.reading,
+    readingType: readingType ?? this.readingType,
+    priority: priority ?? this.priority,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  KanjiReadingEntry copyWithCompanion(KanjiReadingEntriesCompanion data) {
+    return KanjiReadingEntry(
+      id: data.id.present ? data.id.value : this.id,
+      kanjiId: data.kanjiId.present ? data.kanjiId.value : this.kanjiId,
+      reading: data.reading.present ? data.reading.value : this.reading,
+      readingType: data.readingType.present
+          ? data.readingType.value
+          : this.readingType,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiReadingEntry(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('reading: $reading, ')
+          ..write('readingType: $readingType, ')
+          ..write('priority: $priority, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    kanjiId,
+    reading,
+    readingType,
+    priority,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KanjiReadingEntry &&
+          other.id == this.id &&
+          other.kanjiId == this.kanjiId &&
+          other.reading == this.reading &&
+          other.readingType == this.readingType &&
+          other.priority == this.priority &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class KanjiReadingEntriesCompanion extends UpdateCompanion<KanjiReadingEntry> {
+  final Value<int> id;
+  final Value<int> kanjiId;
+  final Value<String> reading;
+  final Value<ReadingType> readingType;
+  final Value<ReadingPriority> priority;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const KanjiReadingEntriesCompanion({
+    this.id = const Value.absent(),
+    this.kanjiId = const Value.absent(),
+    this.reading = const Value.absent(),
+    this.readingType = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  KanjiReadingEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int kanjiId,
+    required String reading,
+    required ReadingType readingType,
+    required ReadingPriority priority,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : kanjiId = Value(kanjiId),
+       reading = Value(reading),
+       readingType = Value(readingType),
+       priority = Value(priority);
+  static Insertable<KanjiReadingEntry> custom({
+    Expression<int>? id,
+    Expression<int>? kanjiId,
+    Expression<String>? reading,
+    Expression<String>? readingType,
+    Expression<String>? priority,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kanjiId != null) 'kanji_id': kanjiId,
+      if (reading != null) 'reading': reading,
+      if (readingType != null) 'reading_type': readingType,
+      if (priority != null) 'priority': priority,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  KanjiReadingEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? kanjiId,
+    Value<String>? reading,
+    Value<ReadingType>? readingType,
+    Value<ReadingPriority>? priority,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return KanjiReadingEntriesCompanion(
+      id: id ?? this.id,
+      kanjiId: kanjiId ?? this.kanjiId,
+      reading: reading ?? this.reading,
+      readingType: readingType ?? this.readingType,
+      priority: priority ?? this.priority,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kanjiId.present) {
+      map['kanji_id'] = Variable<int>(kanjiId.value);
+    }
+    if (reading.present) {
+      map['reading'] = Variable<String>(reading.value);
+    }
+    if (readingType.present) {
+      map['reading_type'] = Variable<String>(
+        $KanjiReadingEntriesTable.$converterreadingType.toSql(
+          readingType.value,
+        ),
+      );
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(
+        $KanjiReadingEntriesTable.$converterpriority.toSql(priority.value),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiReadingEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('reading: $reading, ')
+          ..write('readingType: $readingType, ')
+          ..write('priority: $priority, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KanjiI18nEntriesTable extends KanjiI18nEntries
+    with TableInfo<$KanjiI18nEntriesTable, KanjiI18nEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KanjiI18nEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _kanjiIdMeta = const VerificationMeta(
+    'kanjiId',
+  );
+  @override
+  late final GeneratedColumn<int> kanjiId = GeneratedColumn<int>(
+    'kanji_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES kanji_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _langCodeMeta = const VerificationMeta(
+    'langCode',
+  );
+  @override
+  late final GeneratedColumn<String> langCode = GeneratedColumn<String>(
+    'lang_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> meanings =
+      GeneratedColumn<String>(
+        'meanings',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<String>>($KanjiI18nEntriesTable.$convertermeanings);
+  static const VerificationMeta _systemMnemonicMeta = const VerificationMeta(
+    'systemMnemonic',
+  );
+  @override
+  late final GeneratedColumn<String> systemMnemonic = GeneratedColumn<String>(
+    'system_mnemonic',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> searchTags =
+      GeneratedColumn<String>(
+        'search_tags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<String>>(
+        $KanjiI18nEntriesTable.$convertersearchTags,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kanjiId,
+    langCode,
+    meanings,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kanji_i18n_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KanjiI18nEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kanji_id')) {
+      context.handle(
+        _kanjiIdMeta,
+        kanjiId.isAcceptableOrUnknown(data['kanji_id']!, _kanjiIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kanjiIdMeta);
+    }
+    if (data.containsKey('lang_code')) {
+      context.handle(
+        _langCodeMeta,
+        langCode.isAcceptableOrUnknown(data['lang_code']!, _langCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_langCodeMeta);
+    }
+    if (data.containsKey('system_mnemonic')) {
+      context.handle(
+        _systemMnemonicMeta,
+        systemMnemonic.isAcceptableOrUnknown(
+          data['system_mnemonic']!,
+          _systemMnemonicMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_systemMnemonicMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {kanjiId, langCode},
+  ];
+  @override
+  KanjiI18nEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KanjiI18nEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      kanjiId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}kanji_id'],
+      )!,
+      langCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lang_code'],
+      )!,
+      meanings: $KanjiI18nEntriesTable.$convertermeanings.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}meanings'],
+        )!,
+      ),
+      systemMnemonic: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}system_mnemonic'],
+      )!,
+      searchTags: $KanjiI18nEntriesTable.$convertersearchTags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}search_tags'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $KanjiI18nEntriesTable createAlias(String alias) {
+    return $KanjiI18nEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<List<String>, String> $convertermeanings =
+      const NonNullableStringListConverter();
+  static TypeConverter<List<String>, String> $convertersearchTags =
+      const NonNullableStringListConverter();
+}
+
+class KanjiI18nEntry extends DataClass implements Insertable<KanjiI18nEntry> {
+  final int id;
+  final int kanjiId;
+  final String langCode;
+  final List<String> meanings;
+  final String systemMnemonic;
+  final List<String> searchTags;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const KanjiI18nEntry({
+    required this.id,
+    required this.kanjiId,
+    required this.langCode,
+    required this.meanings,
+    required this.systemMnemonic,
+    required this.searchTags,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kanji_id'] = Variable<int>(kanjiId);
+    map['lang_code'] = Variable<String>(langCode);
+    {
+      map['meanings'] = Variable<String>(
+        $KanjiI18nEntriesTable.$convertermeanings.toSql(meanings),
+      );
+    }
+    map['system_mnemonic'] = Variable<String>(systemMnemonic);
+    {
+      map['search_tags'] = Variable<String>(
+        $KanjiI18nEntriesTable.$convertersearchTags.toSql(searchTags),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  KanjiI18nEntriesCompanion toCompanion(bool nullToAbsent) {
+    return KanjiI18nEntriesCompanion(
+      id: Value(id),
+      kanjiId: Value(kanjiId),
+      langCode: Value(langCode),
+      meanings: Value(meanings),
+      systemMnemonic: Value(systemMnemonic),
+      searchTags: Value(searchTags),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory KanjiI18nEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KanjiI18nEntry(
+      id: serializer.fromJson<int>(json['id']),
+      kanjiId: serializer.fromJson<int>(json['kanjiId']),
+      langCode: serializer.fromJson<String>(json['langCode']),
+      meanings: serializer.fromJson<List<String>>(json['meanings']),
+      systemMnemonic: serializer.fromJson<String>(json['systemMnemonic']),
+      searchTags: serializer.fromJson<List<String>>(json['searchTags']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kanjiId': serializer.toJson<int>(kanjiId),
+      'langCode': serializer.toJson<String>(langCode),
+      'meanings': serializer.toJson<List<String>>(meanings),
+      'systemMnemonic': serializer.toJson<String>(systemMnemonic),
+      'searchTags': serializer.toJson<List<String>>(searchTags),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  KanjiI18nEntry copyWith({
+    int? id,
+    int? kanjiId,
+    String? langCode,
+    List<String>? meanings,
+    String? systemMnemonic,
+    List<String>? searchTags,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => KanjiI18nEntry(
+    id: id ?? this.id,
+    kanjiId: kanjiId ?? this.kanjiId,
+    langCode: langCode ?? this.langCode,
+    meanings: meanings ?? this.meanings,
+    systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+    searchTags: searchTags ?? this.searchTags,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  KanjiI18nEntry copyWithCompanion(KanjiI18nEntriesCompanion data) {
+    return KanjiI18nEntry(
+      id: data.id.present ? data.id.value : this.id,
+      kanjiId: data.kanjiId.present ? data.kanjiId.value : this.kanjiId,
+      langCode: data.langCode.present ? data.langCode.value : this.langCode,
+      meanings: data.meanings.present ? data.meanings.value : this.meanings,
+      systemMnemonic: data.systemMnemonic.present
+          ? data.systemMnemonic.value
+          : this.systemMnemonic,
+      searchTags: data.searchTags.present
+          ? data.searchTags.value
+          : this.searchTags,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiI18nEntry(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('langCode: $langCode, ')
+          ..write('meanings: $meanings, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    kanjiId,
+    langCode,
+    meanings,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KanjiI18nEntry &&
+          other.id == this.id &&
+          other.kanjiId == this.kanjiId &&
+          other.langCode == this.langCode &&
+          other.meanings == this.meanings &&
+          other.systemMnemonic == this.systemMnemonic &&
+          other.searchTags == this.searchTags &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class KanjiI18nEntriesCompanion extends UpdateCompanion<KanjiI18nEntry> {
+  final Value<int> id;
+  final Value<int> kanjiId;
+  final Value<String> langCode;
+  final Value<List<String>> meanings;
+  final Value<String> systemMnemonic;
+  final Value<List<String>> searchTags;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const KanjiI18nEntriesCompanion({
+    this.id = const Value.absent(),
+    this.kanjiId = const Value.absent(),
+    this.langCode = const Value.absent(),
+    this.meanings = const Value.absent(),
+    this.systemMnemonic = const Value.absent(),
+    this.searchTags = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  KanjiI18nEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int kanjiId,
+    required String langCode,
+    required List<String> meanings,
+    required String systemMnemonic,
+    required List<String> searchTags,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : kanjiId = Value(kanjiId),
+       langCode = Value(langCode),
+       meanings = Value(meanings),
+       systemMnemonic = Value(systemMnemonic),
+       searchTags = Value(searchTags);
+  static Insertable<KanjiI18nEntry> custom({
+    Expression<int>? id,
+    Expression<int>? kanjiId,
+    Expression<String>? langCode,
+    Expression<String>? meanings,
+    Expression<String>? systemMnemonic,
+    Expression<String>? searchTags,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kanjiId != null) 'kanji_id': kanjiId,
+      if (langCode != null) 'lang_code': langCode,
+      if (meanings != null) 'meanings': meanings,
+      if (systemMnemonic != null) 'system_mnemonic': systemMnemonic,
+      if (searchTags != null) 'search_tags': searchTags,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  KanjiI18nEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? kanjiId,
+    Value<String>? langCode,
+    Value<List<String>>? meanings,
+    Value<String>? systemMnemonic,
+    Value<List<String>>? searchTags,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return KanjiI18nEntriesCompanion(
+      id: id ?? this.id,
+      kanjiId: kanjiId ?? this.kanjiId,
+      langCode: langCode ?? this.langCode,
+      meanings: meanings ?? this.meanings,
+      systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+      searchTags: searchTags ?? this.searchTags,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kanjiId.present) {
+      map['kanji_id'] = Variable<int>(kanjiId.value);
+    }
+    if (langCode.present) {
+      map['lang_code'] = Variable<String>(langCode.value);
+    }
+    if (meanings.present) {
+      map['meanings'] = Variable<String>(
+        $KanjiI18nEntriesTable.$convertermeanings.toSql(meanings.value),
+      );
+    }
+    if (systemMnemonic.present) {
+      map['system_mnemonic'] = Variable<String>(systemMnemonic.value);
+    }
+    if (searchTags.present) {
+      map['search_tags'] = Variable<String>(
+        $KanjiI18nEntriesTable.$convertersearchTags.toSql(searchTags.value),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiI18nEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('langCode: $langCode, ')
+          ..write('meanings: $meanings, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $KanjiComponentEntriesTable extends KanjiComponentEntries
+    with TableInfo<$KanjiComponentEntriesTable, KanjiComponentEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $KanjiComponentEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _kanjiIdMeta = const VerificationMeta(
+    'kanjiId',
+  );
+  @override
+  late final GeneratedColumn<int> kanjiId = GeneratedColumn<int>(
+    'kanji_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES kanji_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _radicalIdMeta = const VerificationMeta(
+    'radicalId',
+  );
+  @override
+  late final GeneratedColumn<int> radicalId = GeneratedColumn<int>(
+    'radical_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES radical_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Position, String> position =
+      GeneratedColumn<String>(
+        'position',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<Position>($KanjiComponentEntriesTable.$converterposition);
+  @override
+  late final GeneratedColumnWithTypeConverter<LogicHint, String> logicHint =
+      GeneratedColumn<String>(
+        'logic_hint',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<LogicHint>(
+        $KanjiComponentEntriesTable.$converterlogicHint,
+      );
+  @override
+  late final GeneratedColumnWithTypeConverter<RadicalType, String> radicalType =
+      GeneratedColumn<String>(
+        'radical_type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<RadicalType>(
+        $KanjiComponentEntriesTable.$converterradicalType,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kanjiId,
+    radicalId,
+    position,
+    logicHint,
+    radicalType,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'kanji_component_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<KanjiComponentEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('kanji_id')) {
+      context.handle(
+        _kanjiIdMeta,
+        kanjiId.isAcceptableOrUnknown(data['kanji_id']!, _kanjiIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kanjiIdMeta);
+    }
+    if (data.containsKey('radical_id')) {
+      context.handle(
+        _radicalIdMeta,
+        radicalId.isAcceptableOrUnknown(data['radical_id']!, _radicalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_radicalIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {kanjiId, radicalId, position},
+  ];
+  @override
+  KanjiComponentEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return KanjiComponentEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      kanjiId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}kanji_id'],
+      )!,
+      radicalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}radical_id'],
+      )!,
+      position: $KanjiComponentEntriesTable.$converterposition.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}position'],
+        )!,
+      ),
+      logicHint: $KanjiComponentEntriesTable.$converterlogicHint.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}logic_hint'],
+        )!,
+      ),
+      radicalType: $KanjiComponentEntriesTable.$converterradicalType.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}radical_type'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $KanjiComponentEntriesTable createAlias(String alias) {
+    return $KanjiComponentEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<Position, String> $converterposition =
+      const PositionConverter();
+  static TypeConverter<LogicHint, String> $converterlogicHint =
+      const LogicHintConverter();
+  static TypeConverter<RadicalType, String> $converterradicalType =
+      const RadicalTypeConverter();
+}
+
+class KanjiComponentEntry extends DataClass
+    implements Insertable<KanjiComponentEntry> {
+  final int id;
+  final int kanjiId;
+  final int radicalId;
+  final Position position;
+  final LogicHint logicHint;
+  final RadicalType radicalType;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const KanjiComponentEntry({
+    required this.id,
+    required this.kanjiId,
+    required this.radicalId,
+    required this.position,
+    required this.logicHint,
+    required this.radicalType,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['kanji_id'] = Variable<int>(kanjiId);
+    map['radical_id'] = Variable<int>(radicalId);
+    {
+      map['position'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterposition.toSql(position),
+      );
+    }
+    {
+      map['logic_hint'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterlogicHint.toSql(logicHint),
+      );
+    }
+    {
+      map['radical_type'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterradicalType.toSql(radicalType),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  KanjiComponentEntriesCompanion toCompanion(bool nullToAbsent) {
+    return KanjiComponentEntriesCompanion(
+      id: Value(id),
+      kanjiId: Value(kanjiId),
+      radicalId: Value(radicalId),
+      position: Value(position),
+      logicHint: Value(logicHint),
+      radicalType: Value(radicalType),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory KanjiComponentEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return KanjiComponentEntry(
+      id: serializer.fromJson<int>(json['id']),
+      kanjiId: serializer.fromJson<int>(json['kanjiId']),
+      radicalId: serializer.fromJson<int>(json['radicalId']),
+      position: serializer.fromJson<Position>(json['position']),
+      logicHint: serializer.fromJson<LogicHint>(json['logicHint']),
+      radicalType: serializer.fromJson<RadicalType>(json['radicalType']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'kanjiId': serializer.toJson<int>(kanjiId),
+      'radicalId': serializer.toJson<int>(radicalId),
+      'position': serializer.toJson<Position>(position),
+      'logicHint': serializer.toJson<LogicHint>(logicHint),
+      'radicalType': serializer.toJson<RadicalType>(radicalType),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  KanjiComponentEntry copyWith({
+    int? id,
+    int? kanjiId,
+    int? radicalId,
+    Position? position,
+    LogicHint? logicHint,
+    RadicalType? radicalType,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => KanjiComponentEntry(
+    id: id ?? this.id,
+    kanjiId: kanjiId ?? this.kanjiId,
+    radicalId: radicalId ?? this.radicalId,
+    position: position ?? this.position,
+    logicHint: logicHint ?? this.logicHint,
+    radicalType: radicalType ?? this.radicalType,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  KanjiComponentEntry copyWithCompanion(KanjiComponentEntriesCompanion data) {
+    return KanjiComponentEntry(
+      id: data.id.present ? data.id.value : this.id,
+      kanjiId: data.kanjiId.present ? data.kanjiId.value : this.kanjiId,
+      radicalId: data.radicalId.present ? data.radicalId.value : this.radicalId,
+      position: data.position.present ? data.position.value : this.position,
+      logicHint: data.logicHint.present ? data.logicHint.value : this.logicHint,
+      radicalType: data.radicalType.present
+          ? data.radicalType.value
+          : this.radicalType,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiComponentEntry(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('position: $position, ')
+          ..write('logicHint: $logicHint, ')
+          ..write('radicalType: $radicalType, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    kanjiId,
+    radicalId,
+    position,
+    logicHint,
+    radicalType,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is KanjiComponentEntry &&
+          other.id == this.id &&
+          other.kanjiId == this.kanjiId &&
+          other.radicalId == this.radicalId &&
+          other.position == this.position &&
+          other.logicHint == this.logicHint &&
+          other.radicalType == this.radicalType &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class KanjiComponentEntriesCompanion
+    extends UpdateCompanion<KanjiComponentEntry> {
+  final Value<int> id;
+  final Value<int> kanjiId;
+  final Value<int> radicalId;
+  final Value<Position> position;
+  final Value<LogicHint> logicHint;
+  final Value<RadicalType> radicalType;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const KanjiComponentEntriesCompanion({
+    this.id = const Value.absent(),
+    this.kanjiId = const Value.absent(),
+    this.radicalId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.logicHint = const Value.absent(),
+    this.radicalType = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  KanjiComponentEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int kanjiId,
+    required int radicalId,
+    required Position position,
+    required LogicHint logicHint,
+    required RadicalType radicalType,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : kanjiId = Value(kanjiId),
+       radicalId = Value(radicalId),
+       position = Value(position),
+       logicHint = Value(logicHint),
+       radicalType = Value(radicalType);
+  static Insertable<KanjiComponentEntry> custom({
+    Expression<int>? id,
+    Expression<int>? kanjiId,
+    Expression<int>? radicalId,
+    Expression<String>? position,
+    Expression<String>? logicHint,
+    Expression<String>? radicalType,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kanjiId != null) 'kanji_id': kanjiId,
+      if (radicalId != null) 'radical_id': radicalId,
+      if (position != null) 'position': position,
+      if (logicHint != null) 'logic_hint': logicHint,
+      if (radicalType != null) 'radical_type': radicalType,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  KanjiComponentEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? kanjiId,
+    Value<int>? radicalId,
+    Value<Position>? position,
+    Value<LogicHint>? logicHint,
+    Value<RadicalType>? radicalType,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return KanjiComponentEntriesCompanion(
+      id: id ?? this.id,
+      kanjiId: kanjiId ?? this.kanjiId,
+      radicalId: radicalId ?? this.radicalId,
+      position: position ?? this.position,
+      logicHint: logicHint ?? this.logicHint,
+      radicalType: radicalType ?? this.radicalType,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (kanjiId.present) {
+      map['kanji_id'] = Variable<int>(kanjiId.value);
+    }
+    if (radicalId.present) {
+      map['radical_id'] = Variable<int>(radicalId.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterposition.toSql(position.value),
+      );
+    }
+    if (logicHint.present) {
+      map['logic_hint'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterlogicHint.toSql(logicHint.value),
+      );
+    }
+    if (radicalType.present) {
+      map['radical_type'] = Variable<String>(
+        $KanjiComponentEntriesTable.$converterradicalType.toSql(
+          radicalType.value,
+        ),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('KanjiComponentEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('kanjiId: $kanjiId, ')
+          ..write('radicalId: $radicalId, ')
+          ..write('position: $position, ')
+          ..write('logicHint: $logicHint, ')
+          ..write('radicalType: $radicalType, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AdminDatabase extends GeneratedDatabase {
   _$AdminDatabase(QueryExecutor e) : super(e);
   late final $DataImportEntriesTable dataImportEntries =
@@ -3728,6 +7757,19 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $SyncMetadataEntriesTable(this);
   late final $SourceJlptLevelEntriesTable sourceJlptLevelEntries =
       $SourceJlptLevelEntriesTable(this);
+  late final $RadicalEntriesTable radicalEntries = $RadicalEntriesTable(this);
+  late final $RadicalI18nEntriesTable radicalI18nEntries =
+      $RadicalI18nEntriesTable(this);
+  late final $RadicalVariantEntriesTable radicalVariantEntries =
+      $RadicalVariantEntriesTable(this);
+  late final $KanjiEntriesTable kanjiEntries = $KanjiEntriesTable(this);
+  late final $KanjiReadingEntriesTable kanjiReadingEntries =
+      $KanjiReadingEntriesTable(this);
+  late final $KanjiI18nEntriesTable kanjiI18nEntries = $KanjiI18nEntriesTable(
+    this,
+  );
+  late final $KanjiComponentEntriesTable kanjiComponentEntries =
+      $KanjiComponentEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3740,7 +7782,59 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     kanjiComponentReviewEntries,
     syncMetadataEntries,
     sourceJlptLevelEntries,
+    radicalEntries,
+    radicalI18nEntries,
+    radicalVariantEntries,
+    kanjiEntries,
+    kanjiReadingEntries,
+    kanjiI18nEntries,
+    kanjiComponentEntries,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'radical_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('radical_i18n_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'radical_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('radical_variant_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'kanji_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('kanji_reading_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'kanji_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('kanji_i18n_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'kanji_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('kanji_component_entries', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'radical_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('kanji_component_entries', kind: UpdateKind.delete)],
+    ),
+  ]);
   @override
   DriftDatabaseOptions get options =>
       const DriftDatabaseOptions(storeDateTimeAsText: true);

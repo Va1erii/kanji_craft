@@ -74,7 +74,7 @@ users (UUID, references auth.users)
 - `review_logs`: append-only, no `updated_at`, no UPDATE/DELETE RLS
 - `srs_cards.difficulty`: 0-10 range (0 = new card sentinel)
 - `kanji_components.is_primary`: `GENERATED ALWAYS AS (radical_type = 'general') STORED`
-- `kanji.svg_*`, `radicals.svg_*`, `radicals.impact_score/min_grade/min_jlpt_level`: nullable (deferred pipeline fields)
+- `kanji.svg_*`: NOT NULL (content tables hold complete rows; pipeline staging is separate)
 - `vocabulary_sentences.verification_status`: column directly on the row (no separate review table for sentences)
 
 ### Propagation Triggers
@@ -112,3 +112,4 @@ Child table changes bump parent `updated_at` so Release Builder detects updates:
 | `20260210123515` | Add radical_type enum + column + is_primary generated column |
 | `20260210150814` | Make radical deferred fields nullable (SVG + metadata) |
 | `20260211015427` | source_jlpt_levels table |
+| `20260211060339` | Revert radical/variant nullable fields to NOT NULL |

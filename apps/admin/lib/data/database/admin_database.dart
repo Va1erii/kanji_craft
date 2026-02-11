@@ -10,11 +10,18 @@ import '../../domain/entities/import_status.dart';
 import '../../domain/entities/raw_jmdict.dart';
 import '../../domain/entities/raw_kanjidic.dart';
 import '../../domain/entities/raw_kanjivg.dart';
-import 'package:kanji_craft_core/domain/entities/verification_status.dart';
+import 'package:kanji_craft_core/kanji_craft_core.dart';
 import 'converters/enum_converters.dart';
 import 'converters/json_converters.dart';
 import 'tables/data_import_table.dart';
 import 'tables/kanji_component_review_table.dart';
+import 'tables/kanji_component_table.dart';
+import 'tables/kanji_i18n_table.dart';
+import 'tables/kanji_reading_table.dart';
+import 'tables/kanji_table.dart';
+import 'tables/radical_i18n_table.dart';
+import 'tables/radical_table.dart';
+import 'tables/radical_variant_table.dart';
 import 'tables/raw_jmdict_table.dart';
 import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
@@ -32,6 +39,13 @@ part 'admin_database.g.dart';
     KanjiComponentReviewEntries,
     SyncMetadataEntries,
     SourceJlptLevelEntries,
+    RadicalEntries,
+    RadicalI18nEntries,
+    RadicalVariantEntries,
+    KanjiEntries,
+    KanjiReadingEntries,
+    KanjiI18nEntries,
+    KanjiComponentEntries,
   ],
 )
 class AdminDatabase extends _$AdminDatabase {
@@ -40,7 +54,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -73,6 +87,15 @@ class AdminDatabase extends _$AdminDatabase {
           }
           if (from < 6) {
             await m.createTable(sourceJlptLevelEntries);
+          }
+          if (from < 7) {
+            await m.createTable(radicalEntries);
+            await m.createTable(radicalI18nEntries);
+            await m.createTable(radicalVariantEntries);
+            await m.createTable(kanjiEntries);
+            await m.createTable(kanjiReadingEntries);
+            await m.createTable(kanjiI18nEntries);
+            await m.createTable(kanjiComponentEntries);
           }
         },
       );

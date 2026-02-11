@@ -180,6 +180,20 @@ class IntListConverter extends TypeConverter<List<int>?, String?> {
   }
 }
 
+class NonNullableStringListConverter
+    extends TypeConverter<List<String>, String> {
+  const NonNullableStringListConverter();
+
+  @override
+  List<String> fromSql(String fromDb) {
+    final list = jsonDecode(fromDb) as List;
+    return list.cast<String>();
+  }
+
+  @override
+  String toSql(List<String> value) => jsonEncode(value);
+}
+
 class StringListConverter extends TypeConverter<List<String>?, String?> {
   const StringListConverter();
 

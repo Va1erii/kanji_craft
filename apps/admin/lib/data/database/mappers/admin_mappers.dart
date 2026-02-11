@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/jlpt_level.dart';
@@ -177,4 +178,197 @@ extension JlptLevelToCompanion on JlptLevel {
 
 extension SourceJlptLevelEntryToDomain on SourceJlptLevelEntry {
   JlptLevel toDomain() => JlptLevel(character: character, level: level);
+}
+
+// -- Radical ↔ RadicalEntry --
+
+extension RadicalToCompanion on Radical {
+  RadicalEntriesCompanion toCompanion() => RadicalEntriesCompanion(
+        masterSymbol: Value(masterSymbol),
+        strokeCount: Value(strokeCount),
+        impactScore: Value(impactScore),
+        minJlptLevel: Value(minJlptLevel),
+        minGrade: Value(minGrade),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+        isOfficial: Value(isOfficial),
+      );
+}
+
+extension RadicalEntryToDomain on RadicalEntry {
+  Radical toDomain() => Radical(
+        id: id,
+        masterSymbol: masterSymbol,
+        strokeCount: strokeCount,
+        impactScore: impactScore,
+        minJlptLevel: minJlptLevel,
+        minGrade: minGrade,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        isOfficial: isOfficial,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- RadicalI18n ↔ RadicalI18nEntry --
+
+extension RadicalI18nToCompanion on RadicalI18n {
+  RadicalI18nEntriesCompanion toCompanion() => RadicalI18nEntriesCompanion(
+        radicalId: Value(radicalId),
+        langCode: Value(langCode),
+        name: Value(name),
+        systemMnemonic: Value(systemMnemonic),
+        searchTags: Value(searchTags),
+      );
+}
+
+extension RadicalI18nEntryToDomain on RadicalI18nEntry {
+  RadicalI18n toDomain() => RadicalI18n(
+        id: id,
+        radicalId: radicalId,
+        langCode: langCode,
+        name: name,
+        systemMnemonic: systemMnemonic,
+        searchTags: searchTags,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- RadicalVariant ↔ RadicalVariantEntry --
+
+extension RadicalVariantToCompanion on RadicalVariant {
+  RadicalVariantEntriesCompanion toCompanion() =>
+      RadicalVariantEntriesCompanion(
+        radicalId: Value(radicalId),
+        shape: Value(shape),
+        position: Value(position),
+        isLocked: Value(isLocked),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+      );
+}
+
+extension RadicalVariantEntryToDomain on RadicalVariantEntry {
+  RadicalVariant toDomain() => RadicalVariant(
+        id: id,
+        radicalId: radicalId,
+        shape: shape,
+        position: position,
+        isLocked: isLocked,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- Kanji ↔ KanjiEntry --
+
+extension KanjiToCompanion on Kanji {
+  KanjiEntriesCompanion toCompanion() => KanjiEntriesCompanion(
+        character: Value(character),
+        strokeCount: Value(strokeCount),
+        minJlptLevel: Value(minJlptLevel),
+        minGrade: Value(minGrade),
+        frequencyRank: Value(frequencyRank),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+      );
+}
+
+extension KanjiEntryToDomain on KanjiEntry {
+  Kanji toDomain() => Kanji(
+        id: id,
+        character: character,
+        strokeCount: strokeCount,
+        minJlptLevel: minJlptLevel,
+        minGrade: minGrade,
+        frequencyRank: frequencyRank,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- KanjiReading ↔ KanjiReadingEntry --
+
+extension KanjiReadingToCompanion on KanjiReading {
+  KanjiReadingEntriesCompanion toCompanion() => KanjiReadingEntriesCompanion(
+        kanjiId: Value(kanjiId),
+        reading: Value(reading),
+        readingType: Value(readingType),
+        priority: Value(priority),
+      );
+}
+
+extension KanjiReadingEntryToDomain on KanjiReadingEntry {
+  KanjiReading toDomain() => KanjiReading(
+        id: id,
+        kanjiId: kanjiId,
+        reading: reading,
+        readingType: readingType,
+        priority: priority,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- KanjiI18n ↔ KanjiI18nEntry --
+
+extension KanjiI18nToCompanion on KanjiI18n {
+  KanjiI18nEntriesCompanion toCompanion() => KanjiI18nEntriesCompanion(
+        kanjiId: Value(kanjiId),
+        langCode: Value(langCode),
+        meanings: Value(meanings),
+        systemMnemonic: Value(systemMnemonic),
+        searchTags: Value(searchTags),
+      );
+}
+
+extension KanjiI18nEntryToDomain on KanjiI18nEntry {
+  KanjiI18n toDomain() => KanjiI18n(
+        id: id,
+        kanjiId: kanjiId,
+        langCode: langCode,
+        meanings: meanings,
+        systemMnemonic: systemMnemonic,
+        searchTags: searchTags,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- KanjiComponent ↔ KanjiComponentEntry --
+
+extension KanjiComponentToCompanion on KanjiComponent {
+  KanjiComponentEntriesCompanion toCompanion() =>
+      KanjiComponentEntriesCompanion(
+        kanjiId: Value(kanjiId),
+        radicalId: Value(radicalId),
+        position: Value(position),
+        logicHint: Value(logicHint),
+        radicalType: Value(radicalType),
+      );
+}
+
+extension KanjiComponentEntryToDomain on KanjiComponentEntry {
+  KanjiComponent toDomain() => KanjiComponent(
+        id: id,
+        kanjiId: kanjiId,
+        radicalId: radicalId,
+        position: position,
+        logicHint: logicHint,
+        radicalType: radicalType,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 }

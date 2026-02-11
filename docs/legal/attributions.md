@@ -42,6 +42,27 @@ Both dictionaries are governed by the same EDRDG licence and can share a single 
 
 **ShareAlike obligation:** Any modified SVGs must be released under CC BY-SA 3.0 or a compatible license.
 
+## Community Data Sources (courtesy attribution)
+
+These sources have no formal license requiring attribution, but crediting them is standard practice in the Japanese learning app community.
+
+### JLPT Level Lists
+
+| | |
+|---|---|
+| **Source** | Jonathan Waller's JLPT Resources |
+| **URL** | https://www.tanos.co.uk/jlpt/ |
+| **Used for** | Mapping kanji to current JLPT N1–N5 levels (the `ref_jlpt_levels` lookup table) |
+
+### Kanji Data (JLPT Mapping Dataset)
+
+| | |
+|---|---|
+| **License** | MIT |
+| **Author** | David Luz Gouveia |
+| **Source** | https://github.com/davidluzgouveia/kanji-data |
+| **Used for** | Curated kanji-to-JLPT-level mapping combining KANJIDIC and Jonathan Waller's lists |
+
 ## Software Libraries (MIT — no in-app mention needed)
 
 These only require the license text bundled with the app (Flutter's `LicenseRegistry` handles this automatically via `showLicensePage()`):
@@ -57,4 +78,5 @@ All other Dart/Flutter packages (freezed, dio, flutter_bloc, go_router, etc.) ar
 - [ ] Add "Acknowledgments" screen accessible from Settings > About
 - [ ] Include EDRDG acknowledgment text with links
 - [ ] Include KanjiVG attribution with author name
+- [ ] Credit Jonathan Waller's JLPT Resources and David Luz Gouveia's kanji-data
 - [ ] Ensure `showLicensePage()` is accessible (covers all Dart packages)

@@ -15,15 +15,15 @@ class SourceRequirementsRow extends StatelessWidget {
 
   final List<DataImport> imports;
 
-  Set<ImportSource> get _processedSources => imports
-      .where((i) => i.status == ImportStatus.processed)
+  Set<ImportSource> get _ingestedSources => imports
+      .where((i) => i.status == ImportStatus.ingested)
       .map((i) => i.source)
       .toSet();
 
   @override
   Widget build(BuildContext context) {
-    final processed = _processedSources;
-    final allReady = ImportSource.values.every(processed.contains);
+    final ingested = _ingestedSources;
+    final allReady = ImportSource.values.every(ingested.contains);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -37,7 +37,7 @@ class SourceRequirementsRow extends StatelessWidget {
             for (final source in ImportSource.values)
               _SourceChip(
                 label: _sourceLabels[source]!,
-                isReady: processed.contains(source),
+                isReady: ingested.contains(source),
                 colorScheme: colorScheme,
               ),
             const SizedBox(width: 8),
@@ -65,20 +65,26 @@ class _SourceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelSmall;
+
     if (isReady) {
       return Chip(
-        avatar: Icon(Icons.check, size: 18, color: colorScheme.onPrimary),
-        label: Text(label, style: TextStyle(color: colorScheme.onPrimary)),
-        backgroundColor: colorScheme.primary,
+        avatar: Icon(Icons.check, size: 14, color: colorScheme.onSecondaryContainer),
+        label: Text(label, style: style?.copyWith(color: colorScheme.onSecondaryContainer)),
+        backgroundColor: colorScheme.secondaryContainer,
         side: BorderSide.none,
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
       );
     }
 
     return Chip(
-      avatar: Icon(Icons.close, size: 18, color: colorScheme.outline),
-      label: Text(label, style: TextStyle(color: colorScheme.outline)),
+      avatar: Icon(Icons.close, size: 14, color: colorScheme.outline),
+      label: Text(label, style: style?.copyWith(color: colorScheme.outline)),
       backgroundColor: Colors.transparent,
-      side: BorderSide(color: colorScheme.outline),
+      side: BorderSide(color: colorScheme.outlineVariant),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.compact,
     );
   }
 }

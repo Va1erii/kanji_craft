@@ -40,6 +40,37 @@ Indicates whether a reading is a primary or secondary pronunciation. Used for bo
 
 Used by: `KanjiReading.priority` (see kanji.md), `VocabularyReading.priority` (see vocabulary.md).
 
+### PosTag (Enum)
+
+A curated subset of JMdict part-of-speech and miscellaneous codes that drive pedagogical UI: badges, color-coding, display logic (e.g., prepending "to" for verbs), and transitivity indicators. Stored as a JSONB array on `vocabulary.pos_tags`.
+
+The full JMdict DTD defines 200+ POS codes; this enum captures only the ~14 that affect learner-facing grammar rules and visual cues. Everything else is ignored during extraction.
+
+| Value | JMdict Source | Category | UI Purpose |
+|---|---|---|---|
+| `ichidan_verb` | `v1` (pos) | Verb type | "Verb" badge; conjugation hint (drop -ru) |
+| `godan_verb` | `v5*` (pos) | Verb type | "Verb" badge; conjugation hint (u-row shift) |
+| `suru_verb` | `vs`, `vs-i`, `vs-s` (pos) | Verb type | "Suru-Verb" badge; noun+する pattern |
+| `kuru_verb` | `vk` (pos) | Verb type | "Verb" badge; irregular conjugation |
+| `transitive` | `vt` (pos) | Transitivity | "Transitive" badge; "to [do something]" |
+| `intransitive` | `vi` (pos) | Transitivity | "Intransitive" badge; "[something] happens" |
+| `i_adjective` | `adj-i` (pos) | Adjective | "i-Adj" badge; direct conjugation |
+| `na_adjective` | `adj-na` (pos) | Adjective | "na-Adj" badge; copula conjugation |
+| `noun` | `n` (pos) | Word class | "Noun" badge |
+| `adverb` | `adv` (pos) | Word class | "Adverb" badge |
+| `usually_kana` | `uk` (misc) | Display hint | Prioritize kana view over kanji view |
+| `polite` | `pol` (misc) | Tone | "Polite" usage indicator |
+| `humble` | `hum` (misc) | Tone | "Humble" usage indicator |
+| `honorific` | `hon` (misc) | Tone | "Honorific" usage indicator |
+
+**Mapping rules:**
+- All `v5*` variants (`v5u`, `v5k`, `v5r`, `v5s`, etc.) map to a single `godan_verb` value.
+- All suru variants (`vs`, `vs-i`, `vs-s`) map to a single `suru_verb` value.
+- `uk`, `pol`, `hum`, `hon` come from the `misc` field in JMdict senses, not `pos`.
+- A word typically has 2–4 tags (e.g., `[godan_verb, transitive]` or `[noun, suru_verb]`).
+
+Used by: `Vocabulary.pos_tags` (see vocabulary.md). Extraction logic in [vocabulary_extraction.md](../technical/vocabulary_extraction.md).
+
 ### Supported Languages
 
 The app supports two content languages for the client UI and production tables. Ingestion (Phase 1) stores **all** languages from source files in raw tables — filtering to supported languages happens during transformation (Phase 2) when creating `*_i18n` rows. This means adding a new language requires no re-ingestion.

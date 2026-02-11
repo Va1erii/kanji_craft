@@ -92,7 +92,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
 | `data_import.md` | DataImport, ImportSource, ImportStatus | Lives in Remote admin schema; one active import per source |
-| `shared_types.md` | ItemType, ReadingType, ReadingPriority | Shared across entity groups |
+| `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
 | `raw_kanjivg.md` | RawKanjiVg staging table | Components is recursive JSONB tree |
 | `raw_kanjidic.md` | RawKanjidic staging table | Meanings grouped by lang_code in JSONB |
 | `raw_jmdict.md` | RawJmdict staging table | Composite PK: import_id + ent_seq |
@@ -138,7 +138,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 **Reference (local Drift only):** `source_jlpt_level_entries`, `sync_metadata_entries`
 
-**12 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `import_source`, `import_status`, `verification_status`
+**13 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `import_source`, `import_status`, `verification_status`
 
 **Key constraints:**
 - `kanji_components` unique on `(kanji_id, radical_id, position)`

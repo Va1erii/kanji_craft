@@ -14,7 +14,7 @@ This phase sits after Kanji Composition (Phase 2.3) and Component Linking becaus
 
 | Source | Used in | Purpose |
 |---|---|---|
-| `raw_jmdict` | Steps 1, 2, 3 | Core dictionary entries (words, readings, meanings) |
+| `raw_jmdict` | Steps 1, 2, 3 | Core dictionary entries (words, readings, meanings, POS codes) |
 | `raw_jmdict.examples` | Step 5 | Tanaka Corpus example sentences (verified English) |
 | `kanji` table | Steps 1, 4 | Resolving `vocabulary_kanji` links and segment `kanji_id` |
 | `source_vocab_levels` | Step 1 | Tanos JLPT vocabulary list (N5–N1) for `min_jlpt_level` |
@@ -53,6 +53,7 @@ This ensures both common words (frequency-based) and pedagogically important wor
 | `kanji_elements[0].keb` | `word` | Use the first (most common) kanji headword. If null, use `reading_elements[0].reb` (kana-only word) |
 | (Derived) | `segments` | Construct JSONB using `jmdict_furigana` logic (see §Segmentation) |
 | (Derived) | `min_jlpt_level` | Primary: lookup in `source_vocab_levels`. Fallback: `MAX(kanji.min_jlpt_level)` across constituent kanji (see §JLPT Level Strategy) |
+| (Derived) | `pos_tags` | Collect `pos` and `misc` from all senses, map to `PosTag` enum (see §POS Tag Extraction) |
 | Priority flags | `frequency_rank` | Map priority flags to an integer rank (see below) |
 
 **Frequency rank mapping:**
@@ -289,6 +290,58 @@ Without `source_vocab_levels`, the pipeline would derive `min_jlpt_level = 4` (f
 
 If a word is not in `source_vocab_levels` and all its kanji have `null` JLPT levels, `min_jlpt_level` is set to `null`. These words are excluded from JLPT-based study paths but remain accessible via search.
 
+## POS Tag Extraction
+
+The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` codes across all senses of the entry, mapped to the curated `PosTag` enum (see [shared_types.md §PosTag](../entities/shared_types.md#postag-enum)).
+
+**Collection logic:**
+
+1. Iterate over all `senses` in the `raw_jmdict` entry.
+2. For each sense, collect `pos` codes (with inheritance — carry forward from previous sense if `pos` is null).
+3. For each sense, collect `misc` codes.
+4. Map each collected code to a `PosTag` value using these rules:
+
+| JMdict Code | Maps To | Source Field |
+|---|---|---|
+| `v1` | `ichidan_verb` | `pos` |
+| `v5u`, `v5k`, `v5r`, `v5s`, `v5t`, `v5b`, `v5g`, `v5m`, `v5n`, `v5k-s`, `v5r-i`, `v5u-s`, `v5aru` | `godan_verb` | `pos` |
+| `vs`, `vs-i`, `vs-s` | `suru_verb` | `pos` |
+| `vk` | `kuru_verb` | `pos` |
+| `vt` | `transitive` | `pos` |
+| `vi` | `intransitive` | `pos` |
+| `adj-i` | `i_adjective` | `pos` |
+| `adj-na` | `na_adjective` | `pos` |
+| `n` | `noun` | `pos` |
+| `adv` | `adverb` | `pos` |
+| `uk` | `usually_kana` | `misc` |
+| `pol` | `polite` | `misc` |
+| `hum` | `humble` | `misc` |
+| `hon` | `honorific` | `misc` |
+
+5. Deduplicate the result — a word gets each tag at most once, regardless of how many senses carry it.
+6. Store as a JSONB array on `vocabulary.pos_tags`.
+
+**POS inheritance:** JMdict applies `pos` to subsequent senses until a new `pos` appears. The extractor must track the "current POS" state while iterating senses. When a sense has `pos: null`, it inherits the most recent non-null `pos`. All inherited codes are included in the collection.
+
+**Example — 勉強 (Study):**
+
+Sense 1: `pos: ["n", "vs"]`, `misc: null` → `[noun, suru_verb]`
+Sense 2: `pos: null` (inherits `["n", "vs"]`), `misc: null` → no new tags
+
+Result: `pos_tags = ["noun", "suru_verb"]`
+
+**Example — 消す (To Erase):**
+
+Sense 1: `pos: ["v5s", "vt"]`, `misc: null` → `[godan_verb, transitive]`
+
+Result: `pos_tags = ["godan_verb", "transitive"]`
+
+**Example — 有難う (Thank You):**
+
+Sense 1: `pos: ["int"]`, `misc: ["uk"]` → `[usually_kana]` (int is not in our curated set)
+
+Result: `pos_tags = ["usually_kana"]`
+
 ## Grade Path Note
 
 Vocabulary does **not** store a `min_grade` field. School grades classify individual kanji, not vocabulary words — there is no official "Grade 1 Vocabulary List."
@@ -346,12 +399,14 @@ Not every vocabulary word has Tanaka Corpus examples. Words without sentences si
 13. `frequency_rank` must be a positive integer.
 14. `min_jlpt_level`, when present, must be in range 1–5.
 15. Re-processing the same `raw_jmdict` data produces the same result (idempotent upserts).
+16. `pos_tags` must be a JSON array of valid `PosTag` enum values with no duplicates.
+17. POS inheritance must be tracked across senses — a sense with `pos: null` inherits from the most recent non-null `pos`.
 
 ## Output Summary
 
 | Table | Source | Description |
 |---|---|---|
-| `vocabulary` | `raw_jmdict` | Core entity with JLPT levels, segments, and frequency rank |
+| `vocabulary` | `raw_jmdict` | Core entity with JLPT levels, segments, POS tags, and frequency rank |
 | `vocabulary_readings` | `raw_jmdict.reading_elements` | Pronunciations with priority |
 | `vocabulary_i18n` | `raw_jmdict.senses` | Localized meanings (en, es) |
 | `vocabulary_kanji` | Computed from `word` + `kanji` table | Kanji composition links with positions |

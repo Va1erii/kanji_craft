@@ -16,6 +16,7 @@ The core identity of a single vocabulary word. Holds language-independent data: 
 | `word` | `String` | The vocabulary word as written, e.g. "日本", "食べる", "大きい". Unique across all vocabulary |
 | `segments` | `JSONB` | Structured word breakdown for Ghost Kanji rendering. See Segments Format below |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this word appears in (5 = N5, 1 = N1). Null for words outside the JLPT set |
+| `pos_tags` | `List<PosTag>` | Curated grammar/usage tags for UI badges and display logic. See [shared_types.md §PosTag](shared_types.md#postag-enum) |
 | `frequency_rank` | `int` | Frequency rank (1 = most common). Used for ordering within a level |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
@@ -202,6 +203,8 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 17. `original_text` must use valid `[kanji](reading)` notation: each `[]()` group must contain non-empty kanji and reading.
 18. `segments` must be a JSON array. Concatenating all segment `text` values must reproduce the `word` field exactly.
 19. `segments` kanji references (`kanji_id` or `kanji_ids`) must use exactly one form per segment — never both, never neither for kanji-containing segments.
+20. `pos_tags` must be a JSON array of valid `PosTag` enum values. May be empty for words that don't match any curated tag.
+21. `pos_tags` values must not contain duplicates.
 
 ## Edge Cases
 
@@ -215,4 +218,7 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 - **Missing sentence translations:** A sentence may exist but lack a `VocabularySentenceI18n` row in the user's language. Fall back to "en". If no translations exist at all, hide the translation.
 - **Unverified sentences:** A sentence with `verification_status` of `draft` or `flagged` will not sync to remote. Clients never see it.
 - **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `[大人](おとな)`. The client renders this as one ruby annotation over the entire group rather than per-character.
+- **Words with multiple POS tags:** A word like 勉強 is both a noun and a suru-verb (`[noun, suru_verb]`). A verb like 消す is godan and transitive (`[godan_verb, transitive]`). The UI determines the dominant badge/color from the tag list — this is a presentation concern, not an entity concern.
+- **Words with `usually_kana` tag:** Words like 有難う (ありがとう) have `usually_kana` in their `pos_tags`. The client should default to showing the kana form even if the kanji form exists.
+- **Words with no matching POS tags:** Rare words that don't match any curated JMdict code get an empty `pos_tags` array. The UI shows no badge.
 - **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n), and associated SrsCard/ReviewLog rows.

@@ -42,6 +42,19 @@ Both dictionaries are governed by the same EDRDG licence and can share a single 
 
 **ShareAlike obligation:** Any modified SVGs must be released under CC BY-SA 3.0 or a compatible license.
 
+### JmdictFurigana
+
+| | |
+|---|---|
+| **License** | CC BY-SA (data, same as JMdict); MIT (code) |
+| **Author** | Doublevil |
+| **Source** | https://github.com/Doublevil/JmdictFurigana |
+| **Used for** | Per-character furigana mappings for vocabulary segment construction (the `jmdict_furigana` table) |
+
+The furigana data files are derived from JMdict and KANJIDIC readings, so the output is distributed under the same CC BY-SA licence as JMdict. The generator code itself is MIT. Attribution is covered by the EDRDG acknowledgment above; listing this source separately for traceability.
+
+**Note:** The dataset auto-rebuilds monthly from the latest JMdict release, so the ingested snapshot should be periodically refreshed.
+
 ## Community Data Sources (courtesy attribution)
 
 These sources have no formal license requiring attribution, but crediting them is standard practice in the Japanese learning app community.
@@ -88,5 +101,5 @@ All other Dart/Flutter packages (freezed, dio, flutter_bloc, go_router, etc.) ar
 - [ ] Add "Acknowledgments" screen accessible from Settings > About
 - [ ] Include EDRDG acknowledgment text with links
 - [ ] Include KanjiVG attribution with author name
-- [ ] Credit Jonathan Waller's JLPT Resources, David Luz Gouveia's kanji-data, and Jamie Sinclair's Open Anki JLPT Decks
+- [ ] Credit Jonathan Waller's JLPT Resources, David Luz Gouveia's kanji-data, Jamie Sinclair's Open Anki JLPT Decks, and Doublevil's JmdictFurigana
 - [ ] Ensure `showLicensePage()` is accessible (covers all Dart packages)

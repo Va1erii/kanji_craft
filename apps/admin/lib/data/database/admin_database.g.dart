@@ -7769,6 +7769,18 @@ class $VocabularyEntriesTable extends VocabularyEntries
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<VocabularySegment>, String>
+  segments =
+      GeneratedColumn<String>(
+        'segments',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<VocabularySegment>>(
+        $VocabularyEntriesTable.$convertersegments,
+      );
   static const VerificationMeta _minJlptLevelMeta = const VerificationMeta(
     'minJlptLevel',
   );
@@ -7820,6 +7832,7 @@ class $VocabularyEntriesTable extends VocabularyEntries
   List<GeneratedColumn> get $columns => [
     id,
     word,
+    segments,
     minJlptLevel,
     frequencyRank,
     createdAt,
@@ -7897,6 +7910,12 @@ class $VocabularyEntriesTable extends VocabularyEntries
         DriftSqlType.string,
         data['${effectivePrefix}word'],
       )!,
+      segments: $VocabularyEntriesTable.$convertersegments.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}segments'],
+        )!,
+      ),
       minJlptLevel: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}min_jlpt_level'],
@@ -7920,11 +7939,15 @@ class $VocabularyEntriesTable extends VocabularyEntries
   $VocabularyEntriesTable createAlias(String alias) {
     return $VocabularyEntriesTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<List<VocabularySegment>, String> $convertersegments =
+      const VocabularySegmentListConverter();
 }
 
 class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   final int id;
   final String word;
+  final List<VocabularySegment> segments;
   final int? minJlptLevel;
   final int frequencyRank;
   final DateTime createdAt;
@@ -7932,6 +7955,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   const VocabularyEntry({
     required this.id,
     required this.word,
+    required this.segments,
     this.minJlptLevel,
     required this.frequencyRank,
     required this.createdAt,
@@ -7942,6 +7966,11 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['word'] = Variable<String>(word);
+    {
+      map['segments'] = Variable<String>(
+        $VocabularyEntriesTable.$convertersegments.toSql(segments),
+      );
+    }
     if (!nullToAbsent || minJlptLevel != null) {
       map['min_jlpt_level'] = Variable<int>(minJlptLevel);
     }
@@ -7955,6 +7984,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     return VocabularyEntriesCompanion(
       id: Value(id),
       word: Value(word),
+      segments: Value(segments),
       minJlptLevel: minJlptLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(minJlptLevel),
@@ -7972,6 +8002,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     return VocabularyEntry(
       id: serializer.fromJson<int>(json['id']),
       word: serializer.fromJson<String>(json['word']),
+      segments: serializer.fromJson<List<VocabularySegment>>(json['segments']),
       minJlptLevel: serializer.fromJson<int?>(json['minJlptLevel']),
       frequencyRank: serializer.fromJson<int>(json['frequencyRank']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -7984,6 +8015,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'word': serializer.toJson<String>(word),
+      'segments': serializer.toJson<List<VocabularySegment>>(segments),
       'minJlptLevel': serializer.toJson<int?>(minJlptLevel),
       'frequencyRank': serializer.toJson<int>(frequencyRank),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -7994,6 +8026,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   VocabularyEntry copyWith({
     int? id,
     String? word,
+    List<VocabularySegment>? segments,
     Value<int?> minJlptLevel = const Value.absent(),
     int? frequencyRank,
     DateTime? createdAt,
@@ -8001,6 +8034,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   }) => VocabularyEntry(
     id: id ?? this.id,
     word: word ?? this.word,
+    segments: segments ?? this.segments,
     minJlptLevel: minJlptLevel.present ? minJlptLevel.value : this.minJlptLevel,
     frequencyRank: frequencyRank ?? this.frequencyRank,
     createdAt: createdAt ?? this.createdAt,
@@ -8010,6 +8044,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     return VocabularyEntry(
       id: data.id.present ? data.id.value : this.id,
       word: data.word.present ? data.word.value : this.word,
+      segments: data.segments.present ? data.segments.value : this.segments,
       minJlptLevel: data.minJlptLevel.present
           ? data.minJlptLevel.value
           : this.minJlptLevel,
@@ -8026,6 +8061,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
     return (StringBuffer('VocabularyEntry(')
           ..write('id: $id, ')
           ..write('word: $word, ')
+          ..write('segments: $segments, ')
           ..write('minJlptLevel: $minJlptLevel, ')
           ..write('frequencyRank: $frequencyRank, ')
           ..write('createdAt: $createdAt, ')
@@ -8035,14 +8071,22 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, word, minJlptLevel, frequencyRank, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    word,
+    segments,
+    minJlptLevel,
+    frequencyRank,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is VocabularyEntry &&
           other.id == this.id &&
           other.word == this.word &&
+          other.segments == this.segments &&
           other.minJlptLevel == this.minJlptLevel &&
           other.frequencyRank == this.frequencyRank &&
           other.createdAt == this.createdAt &&
@@ -8052,6 +8096,7 @@ class VocabularyEntry extends DataClass implements Insertable<VocabularyEntry> {
 class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
   final Value<int> id;
   final Value<String> word;
+  final Value<List<VocabularySegment>> segments;
   final Value<int?> minJlptLevel;
   final Value<int> frequencyRank;
   final Value<DateTime> createdAt;
@@ -8059,6 +8104,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
   const VocabularyEntriesCompanion({
     this.id = const Value.absent(),
     this.word = const Value.absent(),
+    this.segments = const Value.absent(),
     this.minJlptLevel = const Value.absent(),
     this.frequencyRank = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -8067,15 +8113,18 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
   VocabularyEntriesCompanion.insert({
     this.id = const Value.absent(),
     required String word,
+    required List<VocabularySegment> segments,
     this.minJlptLevel = const Value.absent(),
     required int frequencyRank,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : word = Value(word),
+       segments = Value(segments),
        frequencyRank = Value(frequencyRank);
   static Insertable<VocabularyEntry> custom({
     Expression<int>? id,
     Expression<String>? word,
+    Expression<String>? segments,
     Expression<int>? minJlptLevel,
     Expression<int>? frequencyRank,
     Expression<DateTime>? createdAt,
@@ -8084,6 +8133,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (word != null) 'word': word,
+      if (segments != null) 'segments': segments,
       if (minJlptLevel != null) 'min_jlpt_level': minJlptLevel,
       if (frequencyRank != null) 'frequency_rank': frequencyRank,
       if (createdAt != null) 'created_at': createdAt,
@@ -8094,6 +8144,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
   VocabularyEntriesCompanion copyWith({
     Value<int>? id,
     Value<String>? word,
+    Value<List<VocabularySegment>>? segments,
     Value<int?>? minJlptLevel,
     Value<int>? frequencyRank,
     Value<DateTime>? createdAt,
@@ -8102,6 +8153,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     return VocabularyEntriesCompanion(
       id: id ?? this.id,
       word: word ?? this.word,
+      segments: segments ?? this.segments,
       minJlptLevel: minJlptLevel ?? this.minJlptLevel,
       frequencyRank: frequencyRank ?? this.frequencyRank,
       createdAt: createdAt ?? this.createdAt,
@@ -8117,6 +8169,11 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     }
     if (word.present) {
       map['word'] = Variable<String>(word.value);
+    }
+    if (segments.present) {
+      map['segments'] = Variable<String>(
+        $VocabularyEntriesTable.$convertersegments.toSql(segments.value),
+      );
     }
     if (minJlptLevel.present) {
       map['min_jlpt_level'] = Variable<int>(minJlptLevel.value);
@@ -8138,6 +8195,7 @@ class VocabularyEntriesCompanion extends UpdateCompanion<VocabularyEntry> {
     return (StringBuffer('VocabularyEntriesCompanion(')
           ..write('id: $id, ')
           ..write('word: $word, ')
+          ..write('segments: $segments, ')
           ..write('minJlptLevel: $minJlptLevel, ')
           ..write('frequencyRank: $frequencyRank, ')
           ..write('createdAt: $createdAt, ')
@@ -9539,50 +9597,17 @@ class $VocabularySentenceEntriesTable extends VocabularySentenceEntries
       'REFERENCES vocabulary_entries (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _langCodeMeta = const VerificationMeta(
-    'langCode',
+  static const VerificationMeta _originalTextMeta = const VerificationMeta(
+    'originalText',
   );
   @override
-  late final GeneratedColumn<String> langCode = GeneratedColumn<String>(
-    'lang_code',
+  late final GeneratedColumn<String> originalText = GeneratedColumn<String>(
+    'original_text',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _sentenceJaMeta = const VerificationMeta(
-    'sentenceJa',
-  );
-  @override
-  late final GeneratedColumn<String> sentenceJa = GeneratedColumn<String>(
-    'sentence_ja',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _sentenceFuriganaMeta = const VerificationMeta(
-    'sentenceFurigana',
-  );
-  @override
-  late final GeneratedColumn<String> sentenceFurigana = GeneratedColumn<String>(
-    'sentence_furigana',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _sentenceTranslatedMeta =
-      const VerificationMeta('sentenceTranslated');
-  @override
-  late final GeneratedColumn<String> sentenceTranslated =
-      GeneratedColumn<String>(
-        'sentence_translated',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
   @override
   late final GeneratedColumnWithTypeConverter<VerificationStatus, String>
   verificationStatus =
@@ -9623,10 +9648,7 @@ class $VocabularySentenceEntriesTable extends VocabularySentenceEntries
   List<GeneratedColumn> get $columns => [
     id,
     vocabularyId,
-    langCode,
-    sentenceJa,
-    sentenceFurigana,
-    sentenceTranslated,
+    originalText,
     verificationStatus,
     createdAt,
     updatedAt,
@@ -9657,43 +9679,16 @@ class $VocabularySentenceEntriesTable extends VocabularySentenceEntries
     } else if (isInserting) {
       context.missing(_vocabularyIdMeta);
     }
-    if (data.containsKey('lang_code')) {
+    if (data.containsKey('original_text')) {
       context.handle(
-        _langCodeMeta,
-        langCode.isAcceptableOrUnknown(data['lang_code']!, _langCodeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_langCodeMeta);
-    }
-    if (data.containsKey('sentence_ja')) {
-      context.handle(
-        _sentenceJaMeta,
-        sentenceJa.isAcceptableOrUnknown(data['sentence_ja']!, _sentenceJaMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_sentenceJaMeta);
-    }
-    if (data.containsKey('sentence_furigana')) {
-      context.handle(
-        _sentenceFuriganaMeta,
-        sentenceFurigana.isAcceptableOrUnknown(
-          data['sentence_furigana']!,
-          _sentenceFuriganaMeta,
+        _originalTextMeta,
+        originalText.isAcceptableOrUnknown(
+          data['original_text']!,
+          _originalTextMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_sentenceFuriganaMeta);
-    }
-    if (data.containsKey('sentence_translated')) {
-      context.handle(
-        _sentenceTranslatedMeta,
-        sentenceTranslated.isAcceptableOrUnknown(
-          data['sentence_translated']!,
-          _sentenceTranslatedMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_sentenceTranslatedMeta);
+      context.missing(_originalTextMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -9714,7 +9709,7 @@ class $VocabularySentenceEntriesTable extends VocabularySentenceEntries
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {vocabularyId, langCode},
+    {vocabularyId},
   ];
   @override
   VocabularySentenceEntry map(
@@ -9731,21 +9726,9 @@ class $VocabularySentenceEntriesTable extends VocabularySentenceEntries
         DriftSqlType.int,
         data['${effectivePrefix}vocabulary_id'],
       )!,
-      langCode: attachedDatabase.typeMapping.read(
+      originalText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}lang_code'],
-      )!,
-      sentenceJa: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}sentence_ja'],
-      )!,
-      sentenceFurigana: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}sentence_furigana'],
-      )!,
-      sentenceTranslated: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}sentence_translated'],
+        data['${effectivePrefix}original_text'],
       )!,
       verificationStatus: $VocabularySentenceEntriesTable
           .$converterverificationStatus
@@ -9779,20 +9762,14 @@ class VocabularySentenceEntry extends DataClass
     implements Insertable<VocabularySentenceEntry> {
   final int id;
   final int vocabularyId;
-  final String langCode;
-  final String sentenceJa;
-  final String sentenceFurigana;
-  final String sentenceTranslated;
+  final String originalText;
   final VerificationStatus verificationStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
   const VocabularySentenceEntry({
     required this.id,
     required this.vocabularyId,
-    required this.langCode,
-    required this.sentenceJa,
-    required this.sentenceFurigana,
-    required this.sentenceTranslated,
+    required this.originalText,
     required this.verificationStatus,
     required this.createdAt,
     required this.updatedAt,
@@ -9802,10 +9779,7 @@ class VocabularySentenceEntry extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['vocabulary_id'] = Variable<int>(vocabularyId);
-    map['lang_code'] = Variable<String>(langCode);
-    map['sentence_ja'] = Variable<String>(sentenceJa);
-    map['sentence_furigana'] = Variable<String>(sentenceFurigana);
-    map['sentence_translated'] = Variable<String>(sentenceTranslated);
+    map['original_text'] = Variable<String>(originalText);
     {
       map['verification_status'] = Variable<String>(
         $VocabularySentenceEntriesTable.$converterverificationStatus.toSql(
@@ -9822,10 +9796,7 @@ class VocabularySentenceEntry extends DataClass
     return VocabularySentenceEntriesCompanion(
       id: Value(id),
       vocabularyId: Value(vocabularyId),
-      langCode: Value(langCode),
-      sentenceJa: Value(sentenceJa),
-      sentenceFurigana: Value(sentenceFurigana),
-      sentenceTranslated: Value(sentenceTranslated),
+      originalText: Value(originalText),
       verificationStatus: Value(verificationStatus),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -9840,12 +9811,7 @@ class VocabularySentenceEntry extends DataClass
     return VocabularySentenceEntry(
       id: serializer.fromJson<int>(json['id']),
       vocabularyId: serializer.fromJson<int>(json['vocabularyId']),
-      langCode: serializer.fromJson<String>(json['langCode']),
-      sentenceJa: serializer.fromJson<String>(json['sentenceJa']),
-      sentenceFurigana: serializer.fromJson<String>(json['sentenceFurigana']),
-      sentenceTranslated: serializer.fromJson<String>(
-        json['sentenceTranslated'],
-      ),
+      originalText: serializer.fromJson<String>(json['originalText']),
       verificationStatus: serializer.fromJson<VerificationStatus>(
         json['verificationStatus'],
       ),
@@ -9859,10 +9825,7 @@ class VocabularySentenceEntry extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'vocabularyId': serializer.toJson<int>(vocabularyId),
-      'langCode': serializer.toJson<String>(langCode),
-      'sentenceJa': serializer.toJson<String>(sentenceJa),
-      'sentenceFurigana': serializer.toJson<String>(sentenceFurigana),
-      'sentenceTranslated': serializer.toJson<String>(sentenceTranslated),
+      'originalText': serializer.toJson<String>(originalText),
       'verificationStatus': serializer.toJson<VerificationStatus>(
         verificationStatus,
       ),
@@ -9874,20 +9837,14 @@ class VocabularySentenceEntry extends DataClass
   VocabularySentenceEntry copyWith({
     int? id,
     int? vocabularyId,
-    String? langCode,
-    String? sentenceJa,
-    String? sentenceFurigana,
-    String? sentenceTranslated,
+    String? originalText,
     VerificationStatus? verificationStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => VocabularySentenceEntry(
     id: id ?? this.id,
     vocabularyId: vocabularyId ?? this.vocabularyId,
-    langCode: langCode ?? this.langCode,
-    sentenceJa: sentenceJa ?? this.sentenceJa,
-    sentenceFurigana: sentenceFurigana ?? this.sentenceFurigana,
-    sentenceTranslated: sentenceTranslated ?? this.sentenceTranslated,
+    originalText: originalText ?? this.originalText,
     verificationStatus: verificationStatus ?? this.verificationStatus,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -9900,16 +9857,9 @@ class VocabularySentenceEntry extends DataClass
       vocabularyId: data.vocabularyId.present
           ? data.vocabularyId.value
           : this.vocabularyId,
-      langCode: data.langCode.present ? data.langCode.value : this.langCode,
-      sentenceJa: data.sentenceJa.present
-          ? data.sentenceJa.value
-          : this.sentenceJa,
-      sentenceFurigana: data.sentenceFurigana.present
-          ? data.sentenceFurigana.value
-          : this.sentenceFurigana,
-      sentenceTranslated: data.sentenceTranslated.present
-          ? data.sentenceTranslated.value
-          : this.sentenceTranslated,
+      originalText: data.originalText.present
+          ? data.originalText.value
+          : this.originalText,
       verificationStatus: data.verificationStatus.present
           ? data.verificationStatus.value
           : this.verificationStatus,
@@ -9923,10 +9873,7 @@ class VocabularySentenceEntry extends DataClass
     return (StringBuffer('VocabularySentenceEntry(')
           ..write('id: $id, ')
           ..write('vocabularyId: $vocabularyId, ')
-          ..write('langCode: $langCode, ')
-          ..write('sentenceJa: $sentenceJa, ')
-          ..write('sentenceFurigana: $sentenceFurigana, ')
-          ..write('sentenceTranslated: $sentenceTranslated, ')
+          ..write('originalText: $originalText, ')
           ..write('verificationStatus: $verificationStatus, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -9938,10 +9885,7 @@ class VocabularySentenceEntry extends DataClass
   int get hashCode => Object.hash(
     id,
     vocabularyId,
-    langCode,
-    sentenceJa,
-    sentenceFurigana,
-    sentenceTranslated,
+    originalText,
     verificationStatus,
     createdAt,
     updatedAt,
@@ -9952,10 +9896,7 @@ class VocabularySentenceEntry extends DataClass
       (other is VocabularySentenceEntry &&
           other.id == this.id &&
           other.vocabularyId == this.vocabularyId &&
-          other.langCode == this.langCode &&
-          other.sentenceJa == this.sentenceJa &&
-          other.sentenceFurigana == this.sentenceFurigana &&
-          other.sentenceTranslated == this.sentenceTranslated &&
+          other.originalText == this.originalText &&
           other.verificationStatus == this.verificationStatus &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -9965,20 +9906,14 @@ class VocabularySentenceEntriesCompanion
     extends UpdateCompanion<VocabularySentenceEntry> {
   final Value<int> id;
   final Value<int> vocabularyId;
-  final Value<String> langCode;
-  final Value<String> sentenceJa;
-  final Value<String> sentenceFurigana;
-  final Value<String> sentenceTranslated;
+  final Value<String> originalText;
   final Value<VerificationStatus> verificationStatus;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const VocabularySentenceEntriesCompanion({
     this.id = const Value.absent(),
     this.vocabularyId = const Value.absent(),
-    this.langCode = const Value.absent(),
-    this.sentenceJa = const Value.absent(),
-    this.sentenceFurigana = const Value.absent(),
-    this.sentenceTranslated = const Value.absent(),
+    this.originalText = const Value.absent(),
     this.verificationStatus = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -9986,26 +9921,17 @@ class VocabularySentenceEntriesCompanion
   VocabularySentenceEntriesCompanion.insert({
     this.id = const Value.absent(),
     required int vocabularyId,
-    required String langCode,
-    required String sentenceJa,
-    required String sentenceFurigana,
-    required String sentenceTranslated,
+    required String originalText,
     required VerificationStatus verificationStatus,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : vocabularyId = Value(vocabularyId),
-       langCode = Value(langCode),
-       sentenceJa = Value(sentenceJa),
-       sentenceFurigana = Value(sentenceFurigana),
-       sentenceTranslated = Value(sentenceTranslated),
+       originalText = Value(originalText),
        verificationStatus = Value(verificationStatus);
   static Insertable<VocabularySentenceEntry> custom({
     Expression<int>? id,
     Expression<int>? vocabularyId,
-    Expression<String>? langCode,
-    Expression<String>? sentenceJa,
-    Expression<String>? sentenceFurigana,
-    Expression<String>? sentenceTranslated,
+    Expression<String>? originalText,
     Expression<String>? verificationStatus,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -10013,10 +9939,7 @@ class VocabularySentenceEntriesCompanion
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (vocabularyId != null) 'vocabulary_id': vocabularyId,
-      if (langCode != null) 'lang_code': langCode,
-      if (sentenceJa != null) 'sentence_ja': sentenceJa,
-      if (sentenceFurigana != null) 'sentence_furigana': sentenceFurigana,
-      if (sentenceTranslated != null) 'sentence_translated': sentenceTranslated,
+      if (originalText != null) 'original_text': originalText,
       if (verificationStatus != null) 'verification_status': verificationStatus,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -10026,10 +9949,7 @@ class VocabularySentenceEntriesCompanion
   VocabularySentenceEntriesCompanion copyWith({
     Value<int>? id,
     Value<int>? vocabularyId,
-    Value<String>? langCode,
-    Value<String>? sentenceJa,
-    Value<String>? sentenceFurigana,
-    Value<String>? sentenceTranslated,
+    Value<String>? originalText,
     Value<VerificationStatus>? verificationStatus,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -10037,10 +9957,7 @@ class VocabularySentenceEntriesCompanion
     return VocabularySentenceEntriesCompanion(
       id: id ?? this.id,
       vocabularyId: vocabularyId ?? this.vocabularyId,
-      langCode: langCode ?? this.langCode,
-      sentenceJa: sentenceJa ?? this.sentenceJa,
-      sentenceFurigana: sentenceFurigana ?? this.sentenceFurigana,
-      sentenceTranslated: sentenceTranslated ?? this.sentenceTranslated,
+      originalText: originalText ?? this.originalText,
       verificationStatus: verificationStatus ?? this.verificationStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -10056,17 +9973,8 @@ class VocabularySentenceEntriesCompanion
     if (vocabularyId.present) {
       map['vocabulary_id'] = Variable<int>(vocabularyId.value);
     }
-    if (langCode.present) {
-      map['lang_code'] = Variable<String>(langCode.value);
-    }
-    if (sentenceJa.present) {
-      map['sentence_ja'] = Variable<String>(sentenceJa.value);
-    }
-    if (sentenceFurigana.present) {
-      map['sentence_furigana'] = Variable<String>(sentenceFurigana.value);
-    }
-    if (sentenceTranslated.present) {
-      map['sentence_translated'] = Variable<String>(sentenceTranslated.value);
+    if (originalText.present) {
+      map['original_text'] = Variable<String>(originalText.value);
     }
     if (verificationStatus.present) {
       map['verification_status'] = Variable<String>(
@@ -10089,11 +9997,442 @@ class VocabularySentenceEntriesCompanion
     return (StringBuffer('VocabularySentenceEntriesCompanion(')
           ..write('id: $id, ')
           ..write('vocabularyId: $vocabularyId, ')
-          ..write('langCode: $langCode, ')
-          ..write('sentenceJa: $sentenceJa, ')
-          ..write('sentenceFurigana: $sentenceFurigana, ')
-          ..write('sentenceTranslated: $sentenceTranslated, ')
+          ..write('originalText: $originalText, ')
           ..write('verificationStatus: $verificationStatus, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $VocabularySentenceI18nEntriesTable extends VocabularySentenceI18nEntries
+    with
+        TableInfo<
+          $VocabularySentenceI18nEntriesTable,
+          VocabularySentenceI18nEntry
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VocabularySentenceI18nEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _vocabularySentenceIdMeta =
+      const VerificationMeta('vocabularySentenceId');
+  @override
+  late final GeneratedColumn<int> vocabularySentenceId = GeneratedColumn<int>(
+    'vocabulary_sentence_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES vocabulary_sentence_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _langCodeMeta = const VerificationMeta(
+    'langCode',
+  );
+  @override
+  late final GeneratedColumn<String> langCode = GeneratedColumn<String>(
+    'lang_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sentenceTranslatedMeta =
+      const VerificationMeta('sentenceTranslated');
+  @override
+  late final GeneratedColumn<String> sentenceTranslated =
+      GeneratedColumn<String>(
+        'sentence_translated',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    vocabularySentenceId,
+    langCode,
+    sentenceTranslated,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'vocabulary_sentence_i18n_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VocabularySentenceI18nEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('vocabulary_sentence_id')) {
+      context.handle(
+        _vocabularySentenceIdMeta,
+        vocabularySentenceId.isAcceptableOrUnknown(
+          data['vocabulary_sentence_id']!,
+          _vocabularySentenceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_vocabularySentenceIdMeta);
+    }
+    if (data.containsKey('lang_code')) {
+      context.handle(
+        _langCodeMeta,
+        langCode.isAcceptableOrUnknown(data['lang_code']!, _langCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_langCodeMeta);
+    }
+    if (data.containsKey('sentence_translated')) {
+      context.handle(
+        _sentenceTranslatedMeta,
+        sentenceTranslated.isAcceptableOrUnknown(
+          data['sentence_translated']!,
+          _sentenceTranslatedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sentenceTranslatedMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {vocabularySentenceId, langCode},
+  ];
+  @override
+  VocabularySentenceI18nEntry map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VocabularySentenceI18nEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      vocabularySentenceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}vocabulary_sentence_id'],
+      )!,
+      langCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lang_code'],
+      )!,
+      sentenceTranslated: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sentence_translated'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $VocabularySentenceI18nEntriesTable createAlias(String alias) {
+    return $VocabularySentenceI18nEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class VocabularySentenceI18nEntry extends DataClass
+    implements Insertable<VocabularySentenceI18nEntry> {
+  final int id;
+  final int vocabularySentenceId;
+  final String langCode;
+  final String sentenceTranslated;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const VocabularySentenceI18nEntry({
+    required this.id,
+    required this.vocabularySentenceId,
+    required this.langCode,
+    required this.sentenceTranslated,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['vocabulary_sentence_id'] = Variable<int>(vocabularySentenceId);
+    map['lang_code'] = Variable<String>(langCode);
+    map['sentence_translated'] = Variable<String>(sentenceTranslated);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  VocabularySentenceI18nEntriesCompanion toCompanion(bool nullToAbsent) {
+    return VocabularySentenceI18nEntriesCompanion(
+      id: Value(id),
+      vocabularySentenceId: Value(vocabularySentenceId),
+      langCode: Value(langCode),
+      sentenceTranslated: Value(sentenceTranslated),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory VocabularySentenceI18nEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VocabularySentenceI18nEntry(
+      id: serializer.fromJson<int>(json['id']),
+      vocabularySentenceId: serializer.fromJson<int>(
+        json['vocabularySentenceId'],
+      ),
+      langCode: serializer.fromJson<String>(json['langCode']),
+      sentenceTranslated: serializer.fromJson<String>(
+        json['sentenceTranslated'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'vocabularySentenceId': serializer.toJson<int>(vocabularySentenceId),
+      'langCode': serializer.toJson<String>(langCode),
+      'sentenceTranslated': serializer.toJson<String>(sentenceTranslated),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  VocabularySentenceI18nEntry copyWith({
+    int? id,
+    int? vocabularySentenceId,
+    String? langCode,
+    String? sentenceTranslated,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => VocabularySentenceI18nEntry(
+    id: id ?? this.id,
+    vocabularySentenceId: vocabularySentenceId ?? this.vocabularySentenceId,
+    langCode: langCode ?? this.langCode,
+    sentenceTranslated: sentenceTranslated ?? this.sentenceTranslated,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  VocabularySentenceI18nEntry copyWithCompanion(
+    VocabularySentenceI18nEntriesCompanion data,
+  ) {
+    return VocabularySentenceI18nEntry(
+      id: data.id.present ? data.id.value : this.id,
+      vocabularySentenceId: data.vocabularySentenceId.present
+          ? data.vocabularySentenceId.value
+          : this.vocabularySentenceId,
+      langCode: data.langCode.present ? data.langCode.value : this.langCode,
+      sentenceTranslated: data.sentenceTranslated.present
+          ? data.sentenceTranslated.value
+          : this.sentenceTranslated,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VocabularySentenceI18nEntry(')
+          ..write('id: $id, ')
+          ..write('vocabularySentenceId: $vocabularySentenceId, ')
+          ..write('langCode: $langCode, ')
+          ..write('sentenceTranslated: $sentenceTranslated, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    vocabularySentenceId,
+    langCode,
+    sentenceTranslated,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VocabularySentenceI18nEntry &&
+          other.id == this.id &&
+          other.vocabularySentenceId == this.vocabularySentenceId &&
+          other.langCode == this.langCode &&
+          other.sentenceTranslated == this.sentenceTranslated &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class VocabularySentenceI18nEntriesCompanion
+    extends UpdateCompanion<VocabularySentenceI18nEntry> {
+  final Value<int> id;
+  final Value<int> vocabularySentenceId;
+  final Value<String> langCode;
+  final Value<String> sentenceTranslated;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const VocabularySentenceI18nEntriesCompanion({
+    this.id = const Value.absent(),
+    this.vocabularySentenceId = const Value.absent(),
+    this.langCode = const Value.absent(),
+    this.sentenceTranslated = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  VocabularySentenceI18nEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int vocabularySentenceId,
+    required String langCode,
+    required String sentenceTranslated,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : vocabularySentenceId = Value(vocabularySentenceId),
+       langCode = Value(langCode),
+       sentenceTranslated = Value(sentenceTranslated);
+  static Insertable<VocabularySentenceI18nEntry> custom({
+    Expression<int>? id,
+    Expression<int>? vocabularySentenceId,
+    Expression<String>? langCode,
+    Expression<String>? sentenceTranslated,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (vocabularySentenceId != null)
+        'vocabulary_sentence_id': vocabularySentenceId,
+      if (langCode != null) 'lang_code': langCode,
+      if (sentenceTranslated != null) 'sentence_translated': sentenceTranslated,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  VocabularySentenceI18nEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? vocabularySentenceId,
+    Value<String>? langCode,
+    Value<String>? sentenceTranslated,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return VocabularySentenceI18nEntriesCompanion(
+      id: id ?? this.id,
+      vocabularySentenceId: vocabularySentenceId ?? this.vocabularySentenceId,
+      langCode: langCode ?? this.langCode,
+      sentenceTranslated: sentenceTranslated ?? this.sentenceTranslated,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (vocabularySentenceId.present) {
+      map['vocabulary_sentence_id'] = Variable<int>(vocabularySentenceId.value);
+    }
+    if (langCode.present) {
+      map['lang_code'] = Variable<String>(langCode.value);
+    }
+    if (sentenceTranslated.present) {
+      map['sentence_translated'] = Variable<String>(sentenceTranslated.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VocabularySentenceI18nEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('vocabularySentenceId: $vocabularySentenceId, ')
+          ..write('langCode: $langCode, ')
+          ..write('sentenceTranslated: $sentenceTranslated, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -10141,6 +10480,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $VocabularyKanjiEntriesTable(this);
   late final $VocabularySentenceEntriesTable vocabularySentenceEntries =
       $VocabularySentenceEntriesTable(this);
+  late final $VocabularySentenceI18nEntriesTable vocabularySentenceI18nEntries =
+      $VocabularySentenceI18nEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10165,6 +10506,7 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     vocabularyI18nEntries,
     vocabularyKanjiEntries,
     vocabularySentenceEntries,
+    vocabularySentenceI18nEntries,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -10251,6 +10593,18 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       ),
       result: [
         TableUpdate('vocabulary_sentence_entries', kind: UpdateKind.delete),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'vocabulary_sentence_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate(
+          'vocabulary_sentence_i18n_entries',
+          kind: UpdateKind.delete,
+        ),
       ],
     ),
   ]);

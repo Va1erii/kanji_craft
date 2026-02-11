@@ -7,10 +7,7 @@ class VocabularySentenceEntries extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get vocabularyId => integer()
       .references(VocabularyEntries, #id, onDelete: KeyAction.cascade)();
-  TextColumn get langCode => text()();
-  TextColumn get sentenceJa => text()();
-  TextColumn get sentenceFurigana => text()();
-  TextColumn get sentenceTranslated => text()();
+  TextColumn get originalText => text()();
   TextColumn get verificationStatus =>
       text().map(const VerificationStatusConverter())();
   DateTimeColumn get createdAt =>
@@ -20,6 +17,6 @@ class VocabularySentenceEntries extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {vocabularyId, langCode},
+        {vocabularyId},
       ];
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../../domain/entities/raw_jmdict.dart';
 import '../../../domain/entities/raw_kanjidic.dart';
@@ -313,6 +314,44 @@ class JmdictExamplesConverter
     if (value == null) return null;
     final dtos = value.map(JmdictExampleDto.fromDomain).toList();
     return jsonEncode(dtos.map((d) => d.toJson()).toList());
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Generic converters
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Vocabulary converters
+// ---------------------------------------------------------------------------
+
+class VocabularySegmentListConverter
+    extends TypeConverter<List<VocabularySegment>, String> {
+  const VocabularySegmentListConverter();
+
+  @override
+  List<VocabularySegment> fromSql(String fromDb) {
+    final list = jsonDecode(fromDb) as List;
+    return list.map((e) {
+      final map = e as Map<String, Object?>;
+      return VocabularySegment(
+        text: map['text'] as String,
+        reading: map['reading'] as String?,
+        kanjiId: map['kanji_id'] as int?,
+        kanjiIds: (map['kanji_ids'] as List?)?.cast<int>(),
+      );
+    }).toList();
+  }
+
+  @override
+  String toSql(List<VocabularySegment> value) {
+    return jsonEncode(value.map((s) {
+      final map = <String, Object?>{'text': s.text};
+      if (s.reading != null) map['reading'] = s.reading;
+      if (s.kanjiId != null) map['kanji_id'] = s.kanjiId;
+      if (s.kanjiIds != null) map['kanji_ids'] = s.kanjiIds;
+      return map;
+    }).toList());
   }
 }
 

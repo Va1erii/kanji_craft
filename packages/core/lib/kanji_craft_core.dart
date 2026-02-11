@@ -27,4 +27,6 @@ export 'domain/entities/vocabulary/vocabulary.dart';
 export 'domain/entities/vocabulary/vocabulary_i18n.dart';
 export 'domain/entities/vocabulary/vocabulary_kanji.dart';
 export 'domain/entities/vocabulary/vocabulary_reading.dart';
+export 'domain/entities/vocabulary/vocabulary_segment.dart';
 export 'domain/entities/vocabulary/vocabulary_sentence.dart';
+export 'domain/entities/vocabulary/vocabulary_sentence_i18n.dart';

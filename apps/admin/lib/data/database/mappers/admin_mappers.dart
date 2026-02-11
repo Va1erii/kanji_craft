@@ -378,6 +378,7 @@ extension KanjiComponentEntryToDomain on KanjiComponentEntry {
 extension VocabularyToCompanion on Vocabulary {
   VocabularyEntriesCompanion toCompanion() => VocabularyEntriesCompanion(
         word: Value(word),
+        segments: Value(segments),
         minJlptLevel: Value(minJlptLevel),
         frequencyRank: Value(frequencyRank),
       );
@@ -387,6 +388,7 @@ extension VocabularyEntryToDomain on VocabularyEntry {
   Vocabulary toDomain() => Vocabulary(
         id: id,
         word: word,
+        segments: segments,
         minJlptLevel: minJlptLevel,
         frequencyRank: frequencyRank,
         createdAt: createdAt,
@@ -470,10 +472,7 @@ extension VocabularySentenceToCompanion on VocabularySentence {
   VocabularySentenceEntriesCompanion toCompanion() =>
       VocabularySentenceEntriesCompanion(
         vocabularyId: Value(vocabularyId),
-        langCode: Value(langCode),
-        sentenceJa: Value(sentenceJa),
-        sentenceFurigana: Value(sentenceFurigana),
-        sentenceTranslated: Value(sentenceTranslated),
+        originalText: Value(originalText),
         verificationStatus: Value(verificationStatus),
       );
 }
@@ -482,11 +481,30 @@ extension VocabularySentenceEntryToDomain on VocabularySentenceEntry {
   VocabularySentence toDomain() => VocabularySentence(
         id: id,
         vocabularyId: vocabularyId,
-        langCode: langCode,
-        sentenceJa: sentenceJa,
-        sentenceFurigana: sentenceFurigana,
-        sentenceTranslated: sentenceTranslated,
+        originalText: originalText,
         verificationStatus: verificationStatus,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- VocabularySentenceI18n ↔ VocabularySentenceI18nEntry --
+
+extension VocabularySentenceI18nToCompanion on VocabularySentenceI18n {
+  VocabularySentenceI18nEntriesCompanion toCompanion() =>
+      VocabularySentenceI18nEntriesCompanion(
+        vocabularySentenceId: Value(vocabularySentenceId),
+        langCode: Value(langCode),
+        sentenceTranslated: Value(sentenceTranslated),
+      );
+}
+
+extension VocabularySentenceI18nEntryToDomain on VocabularySentenceI18nEntry {
+  VocabularySentenceI18n toDomain() => VocabularySentenceI18n(
+        id: id,
+        vocabularySentenceId: vocabularySentenceId,
+        langCode: langCode,
+        sentenceTranslated: sentenceTranslated,
         createdAt: createdAt,
         updatedAt: updatedAt,
       );

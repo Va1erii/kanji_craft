@@ -9,10 +9,7 @@ abstract class VocabularySentence with _$VocabularySentence {
   const factory VocabularySentence({
     required int id,
     required int vocabularyId,
-    required String langCode,
-    required String sentenceJa,
-    required String sentenceFurigana,
-    required String sentenceTranslated,
+    required String originalText,
     required VerificationStatus verificationStatus,
     required DateTime createdAt,
     required DateTime updatedAt,

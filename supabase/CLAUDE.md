@@ -59,6 +59,7 @@ vocabulary
   ├── vocabulary_i18n       (vocabulary_id)
   ├── vocabulary_kanji      (vocabulary_id, kanji_id)
   └── vocabulary_sentences  (vocabulary_id)
+      └── vocabulary_sentence_i18n (vocabulary_sentence_id)
 
 users (UUID, references auth.users)
   ├── user_settings         (user_id, 1:1)
@@ -76,6 +77,9 @@ users (UUID, references auth.users)
 - `kanji_components.is_primary`: `GENERATED ALWAYS AS (radical_type = 'general') STORED`
 - `kanji.svg_*`: NOT NULL (content tables hold complete rows; pipeline staging is separate)
 - `vocabulary_sentences.verification_status`: column directly on the row (no separate review table for sentences)
+- `vocabulary.segments`: JSONB array of rendering segments (kanji_id/kanji_ids + text + reading)
+- `vocabulary_sentences.original_text`: Japanese sentence with `[kanji](reading)` inline furigana (replaced sentence_ja/sentence_furigana/sentence_translated/lang_code)
+- `vocabulary_sentence_i18n`: translations of vocabulary sentences, one per language
 
 ### Propagation Triggers
 
@@ -83,6 +87,7 @@ Child table changes bump parent `updated_at` so Release Builder detects updates:
 - `kanji_readings`, `kanji_i18n`, `kanji_components` → bump `kanji.updated_at`
 - `radical_i18n`, `radical_variants` → bump `radicals.updated_at`
 - `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences` → bump `vocabulary.updated_at`
+- `vocabulary_sentence_i18n` → bump `vocabulary_sentences.updated_at`
 
 ### RLS Strategy
 
@@ -113,3 +118,7 @@ Child table changes bump parent `updated_at` so Release Builder detects updates:
 | `20260210150814` | Make radical deferred fields nullable (SVG + metadata) |
 | `20260211015427` | source_jlpt_levels table |
 | `20260211060339` | Revert radical/variant nullable fields to NOT NULL |
+| `20260211074115` | Restructure vocabulary_sentences (replace split fields with original_text) |
+| `20260211074609` | Add vocabulary_sentence_i18n table + propagation trigger |
+| `20260211074643` | Add segments JSONB column to vocabulary |
+| `20260211074649` | RLS for vocabulary_sentence_i18n |

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Vocabulary {
 
- int get id; String get word; int? get minJlptLevel; int get frequencyRank; DateTime get createdAt; DateTime get updatedAt;
+ int get id; String get word; List<VocabularySegment> get segments; int? get minJlptLevel; int get frequencyRank; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Vocabulary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $VocabularyCopyWith<Vocabulary> get copyWith => _$VocabularyCopyWithImpl<Vocabul
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Vocabulary&&(identical(other.id, id) || other.id == id)&&(identical(other.word, word) || other.word == word)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.frequencyRank, frequencyRank) || other.frequencyRank == frequencyRank)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Vocabulary&&(identical(other.id, id) || other.id == id)&&(identical(other.word, word) || other.word == word)&&const DeepCollectionEquality().equals(other.segments, segments)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.frequencyRank, frequencyRank) || other.frequencyRank == frequencyRank)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,word,minJlptLevel,frequencyRank,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,word,const DeepCollectionEquality().hash(segments),minJlptLevel,frequencyRank,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Vocabulary(id: $id, word: $word, minJlptLevel: $minJlptLevel, frequencyRank: $frequencyRank, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Vocabulary(id: $id, word: $word, segments: $segments, minJlptLevel: $minJlptLevel, frequencyRank: $frequencyRank, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $VocabularyCopyWith<$Res>  {
   factory $VocabularyCopyWith(Vocabulary value, $Res Function(Vocabulary) _then) = _$VocabularyCopyWithImpl;
 @useResult
 $Res call({
- int id, String word, int? minJlptLevel, int frequencyRank, DateTime createdAt, DateTime updatedAt
+ int id, String word, List<VocabularySegment> segments, int? minJlptLevel, int frequencyRank, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,11 +62,12 @@ class _$VocabularyCopyWithImpl<$Res>
 
 /// Create a copy of Vocabulary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? word = null,Object? minJlptLevel = freezed,Object? frequencyRank = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? word = null,Object? segments = null,Object? minJlptLevel = freezed,Object? frequencyRank = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,word: null == word ? _self.word : word // ignore: cast_nullable_to_non_nullable
-as String,minJlptLevel: freezed == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
+as String,segments: null == segments ? _self.segments : segments // ignore: cast_nullable_to_non_nullable
+as List<VocabularySegment>,minJlptLevel: freezed == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
 as int?,frequencyRank: null == frequencyRank ? _self.frequencyRank : frequencyRank // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -155,10 +156,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String word,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String word,  List<VocabularySegment> segments,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Vocabulary() when $default != null:
-return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.word,_that.segments,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -176,10 +177,10 @@ return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String word,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String word,  List<VocabularySegment> segments,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Vocabulary():
-return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.word,_that.segments,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +197,10 @@ return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String word,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String word,  List<VocabularySegment> segments,  int? minJlptLevel,  int frequencyRank,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Vocabulary() when $default != null:
-return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.word,_that.segments,_that.minJlptLevel,_that.frequencyRank,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -211,11 +212,18 @@ return $default(_that.id,_that.word,_that.minJlptLevel,_that.frequencyRank,_that
 
 
 class _Vocabulary implements Vocabulary {
-  const _Vocabulary({required this.id, required this.word, this.minJlptLevel, required this.frequencyRank, required this.createdAt, required this.updatedAt});
+  const _Vocabulary({required this.id, required this.word, required final  List<VocabularySegment> segments, this.minJlptLevel, required this.frequencyRank, required this.createdAt, required this.updatedAt}): _segments = segments;
   
 
 @override final  int id;
 @override final  String word;
+ final  List<VocabularySegment> _segments;
+@override List<VocabularySegment> get segments {
+  if (_segments is EqualUnmodifiableListView) return _segments;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_segments);
+}
+
 @override final  int? minJlptLevel;
 @override final  int frequencyRank;
 @override final  DateTime createdAt;
@@ -231,16 +239,16 @@ _$VocabularyCopyWith<_Vocabulary> get copyWith => __$VocabularyCopyWithImpl<_Voc
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Vocabulary&&(identical(other.id, id) || other.id == id)&&(identical(other.word, word) || other.word == word)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.frequencyRank, frequencyRank) || other.frequencyRank == frequencyRank)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Vocabulary&&(identical(other.id, id) || other.id == id)&&(identical(other.word, word) || other.word == word)&&const DeepCollectionEquality().equals(other._segments, _segments)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.frequencyRank, frequencyRank) || other.frequencyRank == frequencyRank)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,word,minJlptLevel,frequencyRank,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,word,const DeepCollectionEquality().hash(_segments),minJlptLevel,frequencyRank,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Vocabulary(id: $id, word: $word, minJlptLevel: $minJlptLevel, frequencyRank: $frequencyRank, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Vocabulary(id: $id, word: $word, segments: $segments, minJlptLevel: $minJlptLevel, frequencyRank: $frequencyRank, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -251,7 +259,7 @@ abstract mixin class _$VocabularyCopyWith<$Res> implements $VocabularyCopyWith<$
   factory _$VocabularyCopyWith(_Vocabulary value, $Res Function(_Vocabulary) _then) = __$VocabularyCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String word, int? minJlptLevel, int frequencyRank, DateTime createdAt, DateTime updatedAt
+ int id, String word, List<VocabularySegment> segments, int? minJlptLevel, int frequencyRank, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -268,11 +276,12 @@ class __$VocabularyCopyWithImpl<$Res>
 
 /// Create a copy of Vocabulary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? word = null,Object? minJlptLevel = freezed,Object? frequencyRank = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? word = null,Object? segments = null,Object? minJlptLevel = freezed,Object? frequencyRank = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Vocabulary(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,word: null == word ? _self.word : word // ignore: cast_nullable_to_non_nullable
-as String,minJlptLevel: freezed == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
+as String,segments: null == segments ? _self._segments : segments // ignore: cast_nullable_to_non_nullable
+as List<VocabularySegment>,minJlptLevel: freezed == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
 as int?,frequencyRank: null == frequencyRank ? _self.frequencyRank : frequencyRank // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

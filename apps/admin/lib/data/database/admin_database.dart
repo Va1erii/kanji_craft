@@ -30,6 +30,7 @@ import 'tables/sync_metadata_table.dart';
 import 'tables/vocabulary_i18n_table.dart';
 import 'tables/vocabulary_kanji_table.dart';
 import 'tables/vocabulary_reading_table.dart';
+import 'tables/vocabulary_sentence_i18n_table.dart';
 import 'tables/vocabulary_sentence_table.dart';
 import 'tables/vocabulary_table.dart';
 
@@ -56,6 +57,7 @@ part 'admin_database.g.dart';
     VocabularyI18nEntries,
     VocabularyKanjiEntries,
     VocabularySentenceEntries,
+    VocabularySentenceI18nEntries,
   ],
 )
 class AdminDatabase extends _$AdminDatabase {
@@ -64,7 +66,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -113,6 +115,27 @@ class AdminDatabase extends _$AdminDatabase {
             await m.createTable(vocabularyI18nEntries);
             await m.createTable(vocabularyKanjiEntries);
             await m.createTable(vocabularySentenceEntries);
+          }
+          if (from < 9) {
+            // vocabulary_entries gains segments column;
+            // vocabulary_sentence_entries has column changes.
+            // Admin DB is ephemeral — drop and recreate all vocabulary tables.
+            for (final name in [
+              'vocabulary_sentence_entries',
+              'vocabulary_kanji_entries',
+              'vocabulary_i18n_entries',
+              'vocabulary_reading_entries',
+              'vocabulary_entries',
+            ]) {
+              await m.database
+                  .customStatement('DROP TABLE IF EXISTS $name');
+            }
+            await m.createTable(vocabularyEntries);
+            await m.createTable(vocabularyReadingEntries);
+            await m.createTable(vocabularyI18nEntries);
+            await m.createTable(vocabularyKanjiEntries);
+            await m.createTable(vocabularySentenceEntries);
+            await m.createTable(vocabularySentenceI18nEntries);
           }
         },
       );

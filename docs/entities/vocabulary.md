@@ -8,12 +8,13 @@ A vocabulary word is a Japanese word or compound that uses one or more kanji cha
 
 ### Vocabulary (Entity)
 
-The core identity of a single vocabulary word. Holds language-independent data: the written form, reading metadata, and level classifications.
+The core identity of a single vocabulary word. Holds language-independent data: the written form, reading metadata, level classifications, and a structured segment breakdown for rendering.
 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `word` | `String` | The vocabulary word as written, e.g. "日本", "食べる", "大きい". Unique across all vocabulary |
+| `segments` | `JSONB` | Structured word breakdown for Ghost Kanji rendering. See Segments Format below |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this word appears in (5 = N5, 1 = N1). Null for words outside the JLPT set |
 | `frequency_rank` | `int` | Frequency rank (1 = most common). Used for ordering within a level |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
@@ -26,6 +27,45 @@ School grades classify individual kanji, not vocabulary words. The JLPT test set
 **Why no SVG fields?**
 
 Vocabulary words are rendered as styled text, not as stroke-order diagrams. The individual kanji within the word already have SVGs (see kanji.md).
+
+#### Segments Format
+
+Each vocabulary word is split into rendering segments for Ghost Kanji display. Each segment is one of:
+
+- **Kanji segment:** `{"text": "冷", "reading": "れい", "kanji_id": 501}` — a single kanji character with its reading and FK to the kanji table
+- **Jukujikun segment:** `{"text": "大人", "reading": "おとな", "kanji_ids": [102, 45]}` — an irregular compound where the reading spans multiple kanji
+- **Kana segment:** `{"text": "の"}` — plain kana, no reading or kanji reference
+
+Rules:
+- `kanji_id` (single int) for regular kanji; `kanji_ids` (list of ints) for jukujikun — mutually exclusive. Exactly one present for kanji segments, neither for kana segments.
+- Concatenating all `text` values reproduces the `word` field exactly.
+- Pipeline generates segments during vocabulary extraction; Release Builder rejects rows with null segments.
+
+**Examples:**
+
+`冷蔵庫` (refrigerator):
+```json
+[
+  {"text": "冷", "reading": "れい", "kanji_id": 501},
+  {"text": "蔵", "reading": "ぞう", "kanji_id": 502},
+  {"text": "庫", "reading": "こ", "kanji_id": 503}
+]
+```
+
+`食べる` (to eat):
+```json
+[
+  {"text": "食", "reading": "た", "kanji_id": 201},
+  {"text": "べる"}
+]
+```
+
+`大人` (adult — jukujikun):
+```json
+[
+  {"text": "大人", "reading": "おとな", "kanji_ids": [102, 45]}
+]
+```
 
 ### VocabularyReading (Entity)
 
@@ -77,51 +117,45 @@ An example sentence that uses the vocabulary word in context. Helps the user see
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `vocabulary_id` | `int` | FK to the parent Vocabulary. Unique — one sentence per word |
-| `sentence_ja` | `String` | The Japanese sentence in plain text, e.g. "日本に行きたい。" |
-| `sentence_furigana` | `String` | The same sentence with inline furigana using `{kanji\|r1\|r2\|...}` notation (see Furigana Notation below), e.g. "{日本\|に\|ほん}に{行\|い}きたい。" |
+| `original_text` | `String` | Japanese sentence with inline furigana using `[kanji](reading)` notation (see Furigana Notation below), e.g. `[日](に)[本](ほん)に[行](い)きたい。` |
+| `verification_status` | `VerificationStatus` | Review state for this sentence. Defaults to `draft`. Only `verified` rows are eligible for remote sync |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
-**Why separate `sentence_ja` and `sentence_furigana`?**
-
-`sentence_ja` is clean text — useful for display without furigana, search indexing, and text-to-speech. `sentence_furigana` carries `{kanji|reading}` annotations that the app parses for rendering small kana above kanji. Keeping them separate avoids parsing when furigana isn't needed.
-
 ### Furigana Notation
 
-Curly-brace notation encodes per-character reading placement:
+Square-bracket notation encodes kanji readings inline within text:
 
 ```
-{kanji_chars|reading_1|reading_2|...|reading_N}
+[kanji](reading)
 ```
 
-**Per-character mode:** When the number of reading segments equals the number of kanji characters, each reading maps 1:1 to its character:
+**Per-character mode:** Each kanji character gets its own `[kanji](reading)` pair:
 
 ```
-{日本|に|ほん}   → 日(に) 本(ほん)     — 2 chars, 2 readings
-{食|た}べる      → 食(た)べる           — 1 char, 1 reading
-{東京都|とう|きょう|と} → 東(とう) 京(きょう) 都(と)
+[冷](れい)[蔵](ぞう)[庫](こ)   → 冷(れい) 蔵(ぞう) 庫(こ)
+[食](た)べる                    → 食(た)べる
+[東](とう)[京](きょう)[都](と)  → 東(とう) 京(きょう) 都(と)
 ```
 
-**Group mode (jukujikun):** When there is 1 reading segment for multiple kanji characters, the reading spans the entire group as a single ruby annotation:
+**Group mode (jukujikun):** Multiple kanji characters share a single reading annotation:
 
 ```
-{大人|おとな}    → 大人(おとな)         — 2 chars, 1 reading (group ruby)
-{今日|きょう}    → 今日(きょう)         — 2 chars, 1 reading (group ruby)
-{昨日|きのう}    → 昨日(きのう)         — jukujikun, can't split per-char
+[大人](おとな)    → 大人(おとな)     — jukujikun, single ruby over group
+[今日](きょう)    → 今日(きょう)     — irregular reading
+[昨日](きのう)    → 昨日(きのう)     — jukujikun
 ```
-
-**Disambiguation rule:** If reading segment count == kanji character count → per-character. If reading segment count == 1 and kanji character count > 1 → group ruby. A single-character kanji with 1 reading (e.g. `{行|い}`) is unambiguous — both modes produce the same result.
 
 **Full sentence example:**
 
 ```
-{日本|に|ほん}に{行|い}きたい。
+[日](に)[本](ほん)に[行](い)きたい。
 
-Renders as:  に ほん   い
-             日 本  に 行 きたい。
+Renders as:  に ほん     い
+             日 本   に 行 きたい。
 ```
 
-Plain kana outside `{}` markers is rendered as-is without furigana.
+Plain text outside `[]()` markers is rendered as-is without furigana.
 
 ### VocabularySentenceI18n (Value Object)
 
@@ -129,32 +163,22 @@ Localized translation of an example sentence. One row per sentence per language.
 
 | Field | Type | Description |
 |---|---|---|
+| `id` | `int` | Unique identifier |
 | `vocabulary_sentence_id` | `int` | FK to VocabularySentence |
 | `lang_code` | `String` | ISO 639-1 language code, e.g. "en", "es" |
 | `sentence_translated` | `String` | Translated sentence, e.g. "I want to go to Japan." |
-
-### VocabularySentenceReview (Entity)
-
-Admin-only review state for each `VocabularySentence`. This table lives in the **Remote `admin` schema** as the authoritative source of truth, surviving device loss. It is **not present in the client Drift schema** — clients never see review data; they only receive sentences that have been verified and synced to production. Access is restricted to the `service_role` key (which bypasses RLS). Follows the same pattern as `KanjiComponentReview` (see kanji_component.md).
-
-| Field | Type | Description |
-|---|---|---|
-| `id` | `int` | Unique identifier |
-| `vocabulary_sentence_id` | `int` | FK to `vocabulary_sentences(id)`. One review row per sentence (unique constraint) |
-| `verification_status` | `VerificationStatus` | Review state for this sentence. Defaults to `draft`. Only `verified` rows are eligible for remote sync. See `VerificationStatus` enum in kanji_component.md |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp (auto-set) |
 
 ## Relationships
 
 ```
-Vocabulary  ──1:N──→ VocabularyReading    (one word, many pronunciations)
-Vocabulary  ──1:N──→ VocabularyI18n       (one word, one row per language)
-Vocabulary  ──1:N──→ VocabularyKanji      (one word, many kanji in order)
-Vocabulary  ──1:1──→ VocabularySentence   (one word, one example sentence)
-VocabularySentence ──1:N──→ VocabularySentenceI18n   (one sentence, translations per language)
-VocabularySentence ──1:1──→ VocabularySentenceReview (one review row per sentence; admin-only)
-Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kanji.md)
+Vocabulary  ──1:N──→ VocabularyReading          (one word, many pronunciations)
+Vocabulary  ──1:N──→ VocabularyI18n             (one word, one row per language)
+Vocabulary  ──1:N──→ VocabularyKanji            (one word, many kanji in order)
+Vocabulary  ──1:1──→ VocabularySentence         (one word, one example sentence)
+VocabularySentence ──1:N──→ VocabularySentenceI18n  (one sentence, translations per language)
+Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; see kanji.md)
 ```
 
 ## Business Rules
@@ -173,23 +197,22 @@ Vocabulary  ──N:M──→ Kanji               (via VocabularyKanji; see kan
 12. `min_jlpt_level`, when present, must be in the range 1–5.
 13. `vocabulary_id` must be unique in `VocabularySentence` — one sentence per word.
 14. `vocabulary_sentence_id` + `lang_code` must be unique in `VocabularySentenceI18n` — one translation per language per sentence.
-15. New sentences created by the pipeline must have a corresponding `VocabularySentenceReview` row with `verification_status = draft`.
-16. Only sentences whose review row has `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
-17. There is exactly one `VocabularySentenceReview` per `VocabularySentence` (enforced by unique constraint on `vocabulary_sentence_id`).
-18. Deleting a `VocabularySentence` must cascade-delete its `VocabularySentenceReview` row and all `VocabularySentenceI18n` rows.
-19. `sentence_furigana` must use valid `{kanji|reading}` notation: each `{}` group must have at least one reading segment, and the reading segment count must be either 1 (group ruby) or equal to the kanji character count (per-character ruby).
+15. Only sentences with `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
+16. Deleting a `VocabularySentence` must cascade-delete all `VocabularySentenceI18n` rows.
+17. `original_text` must use valid `[kanji](reading)` notation: each `[]()` group must contain non-empty kanji and reading.
+18. `segments` must be a JSON array. Concatenating all segment `text` values must reproduce the `word` field exactly.
+19. `segments` kanji references (`kanji_id` or `kanji_ids`) must use exactly one form per segment — never both, never neither for kanji-containing segments.
 
 ## Edge Cases
 
 - **Vocabulary with no JLPT level:** Some common words aren't in the JLPT set. They unlock based on kanji progress alone and surface via search, not the JLPT lesson path.
-- **Kana-only vocabulary:** Words like すごい or ありがとう contain no kanji. They have zero `VocabularyKanji` rows and no unlock gate — they can enter the lesson queue immediately. Rule #6 is trivially satisfied (all zero kanji are stable).
+- **Kana-only vocabulary:** Words like すごい or ありがとう contain no kanji. They have zero `VocabularyKanji` rows and no unlock gate — they can enter the lesson queue immediately. Rule #6 is trivially satisfied (all zero kanji are stable). Their `segments` array contains only kana segments.
 - **Repeated kanji in a word:** Words like 人々 or 日々 use the same kanji twice. `VocabularyKanji` stores one row per occurrence, each with a distinct `position`. The unlock gate deduplicates by `kanji_id` — it only checks whether each distinct kanji is known, not how many times it appears.
 - **Multiple primary readings:** Some words genuinely have two primary readings (e.g. 明日: あした and あす are both common). SRS should test all primary readings.
-- **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana.
+- **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana. `segments` separates kanji and kana into distinct segments.
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
 - **Missing sentences:** Not every vocabulary word will have an example sentence. The UI should gracefully hide the sentence section when none exist.
-- **Missing sentence translations:** A sentence may exist but lack a translation in the user's language. Fall back to "en". If no translations exist at all, hide the sentence section.
-- **Unverified sentences:** A sentence whose `VocabularySentenceReview` is `draft` or `flagged` will not sync to remote. Clients never see it.
-- **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `{大人|おとな}`. The single reading segment spans all characters. The client renders this as one ruby annotation over the entire group rather than per-character.
-- **Furigana segment count mismatch:** If a `{}` group has N kanji characters and M reading segments where M != 1 and M != N, the notation is invalid. The pipeline should reject this during generation; the admin review queue should flag it.
-- **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n and VocabularySentenceReview), and associated SrsCard/ReviewLog rows.
+- **Missing sentence translations:** A sentence may exist but lack a `VocabularySentenceI18n` row in the user's language. Fall back to "en". If no translations exist at all, hide the translation.
+- **Unverified sentences:** A sentence with `verification_status` of `draft` or `flagged` will not sync to remote. Clients never see it.
+- **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `[大人](おとな)`. The client renders this as one ruby annotation over the entire group rather than per-character.
+- **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n), and associated SrsCard/ReviewLog rows.

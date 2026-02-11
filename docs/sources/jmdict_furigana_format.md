@@ -174,7 +174,7 @@ JmdictFurigana uses **semantic versioning with a build date suffix**: `{semver}+
 
 The semver tracks the generator algorithm version. The date suffix tracks which JMdict snapshot was used to generate the data. The dataset auto-rebuilds monthly on the 25th, so the date typically reflects the most recent monthly build.
 
-Unlike KANJIDIC, KanjiVG, and JMdict (which are tracked in `data_imports` with an import lifecycle), JmdictFurigana is a **reference table** — loaded directly into `jmdict_furigana` via TRUNCATE + INSERT during Phase 1 ingestion, similar to `source_jlpt_levels` and `source_vocab_levels`.
+JmdictFurigana is tracked in `data_imports` (source = `jmdict_furigana`) because the dataset is tightly coupled with JMdict — both are derived from the same dictionary snapshot and should be updated in lockstep. The `source_version` uses the full `{semver}+{date}` string (e.g. `2.3.1+20260125`).
 
 **Required folder contents:**
 

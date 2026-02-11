@@ -20,7 +20,7 @@ This phase sits after Kanji Composition (Phase 2.3) and Component Linking becaus
 | `source_vocab_levels` | Step 1 | Tanos JLPT vocabulary list (N5–N1) for `min_jlpt_level` |
 | `jmdict_furigana` | Step 1 | Per-character furigana mappings for segment construction |
 
-**Note on new sources:** `source_vocab_levels` and `jmdict_furigana` are new ingestion sources not yet implemented in the codebase. They follow the same pattern as `source_jlpt_levels` (curated CSV → local reference table). The schema changes and ingestion logic will be implemented separately; this doc describes the extraction algorithm that consumes them.
+**Note on new sources:** `source_vocab_levels`, and `jmdict_furigana` are new ingestion sources not yet implemented in the codebase. `source_vocab_levels` follows the same pattern as `source_jlpt_levels` (curated CSV → local reference table, not tracked in `data_imports`). `jmdict_furigana` is tracked in `data_imports` because it is tightly coupled with JMdict and must be updated in lockstep. The schema changes and ingestion logic will be implemented separately; this doc describes the extraction algorithm that consumes them.
 
 ## Prerequisites
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Content Pipeline transforms raw open-source dictionary data (KANJIDIC2, KanjiVG, JMdict) into structured, verified educational content used by the app. It follows a **Local-First, Human-in-the-Loop** architecture.
+The Content Pipeline transforms raw open-source dictionary data (KANJIDIC2, KanjiVG, JMdict) and reference datasets (JLPT mappings, JmdictFurigana) into structured, verified educational content used by the app. It follows a **Local-First, Human-in-the-Loop** architecture.
 
 The pipeline runs entirely in the **Local Environment** (Local Supabase + Admin Tool). Only verified, production-ready data is synced to the **Remote Production** database.
 
@@ -55,6 +55,26 @@ Curated kanji-to-JLPT-level mapping compiled from Jonathan Waller's [Tanos](http
 
 No version suffix — single curated file, updated manually. Not tracked in `data_imports`. Loaded via TRUNCATE + INSERT during pipeline setup (see [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md)).
 
+### 5. JLPT Vocabulary Mapping — `jlpt_vocab_mapping/`
+
+Curated vocabulary-to-JLPT-level mapping compiled from Jamie Sinclair's [Open Anki JLPT Decks](https://github.com/jamsinclair/open-anki-jlpt-decks), originally derived from Jonathan Waller's [Tanos](https://www.tanos.co.uk/jlpt/) word lists.
+
+| File | Contents | Pipeline target |
+|---|---|---|
+| `n1.csv` through `n5.csv` | 8,131 vocabulary → N1–N5 level (one file per level) | `source_vocab_levels` |
+
+No version suffix — curated files, updated manually. Not tracked in `data_imports`. Loaded via TRUNCATE + INSERT during pipeline setup (see [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md)).
+
+### 6. Furigana Mapping — `jmdictfurigana-{semver}+{date}/`
+
+Pre-computed per-character furigana mappings from [Doublevil's JmdictFurigana](https://github.com/Doublevil/JmdictFurigana). Auto-rebuilt monthly from the latest JMdict and KANJIDIC releases.
+
+| Archive | Contents | Pipeline target |
+|---|---|---|
+| `JmdictFurigana.json.tar.gz` | 230,371 word → furigana segment mappings | `jmdict_furigana` |
+
+Uses semantic versioning with a build date suffix (e.g. `jmdictfurigana-2.3.1+20260125/`). Tracked in `data_imports` (like JMdict) because the dataset is tightly coupled with JMdict — both should be updated together when a new JMdict snapshot is released. See [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md).
+
 ### Source Strategy Summary
 
 | Source | Files | Languages | Strategy |
@@ -62,6 +82,9 @@ No version suffix — single curated file, updated manually. Not tracked in `dat
 | Kanji | 1 XML (`kanjidic2.xml.gz`) | All (filtered to target languages during transformation) | Single pass, meanings grouped by `m_lang` |
 | Vocabulary | 2 XML (`JMdict.gz` + `JMdict_e_examp.gz`) | All (filtered to target languages during transformation) | Two-pass: dictionary then examples |
 | KanjiVG | 1 XML + 1 SVG ZIP | N/A | Single pass |
+| JLPT Mapping | 1 CSV (`jlpt_mapping.csv`) | N/A | TRUNCATE + INSERT reference table |
+| JLPT Vocab Mapping | 5 CSV (`n1.csv`–`n5.csv`) | N/A | TRUNCATE + INSERT reference table, level from filename |
+| JmdictFurigana | 1 JSON tarball (`JmdictFurigana.json.tar.gz`) | N/A | Tracked in `data_imports`, coupled with JMdict |
 
 ### Folder Preparation
 
@@ -75,8 +98,10 @@ The admin prepares source data by placing downloaded archives into correctly nam
 | JMDict | `jmdict-{version}/` | `jmdict-20260207/` |
 | KanjiVG | `kanjivg-{version}/` | `kanjivg-20250816/` |
 | JLPT Mapping | `jlpt_mapping/` (no version) | `jlpt_mapping/` |
+| JLPT Vocab Mapping | `jlpt_vocab_mapping/` (no version) | `jlpt_vocab_mapping/` |
+| JmdictFurigana | `jmdictfurigana-{semver}+{date}/` | `jmdictfurigana-2.3.1+20260125/` |
 
-The `{version}` segment becomes the `source_version` value in `data_imports`.
+The `{version}` segment becomes the `source_version` value in `data_imports`. Reference tables (JLPT mapping, JLPT vocab mapping) are not tracked in `data_imports` — they are static curated files with no version lifecycle. JmdictFurigana **is** tracked because it is rebuilt monthly from JMdict and must stay in sync.
 
 **Required folder contents:**
 
@@ -85,6 +110,9 @@ The `{version}` segment becomes the `source_version` value in `data_imports`.
 | KANJIDIC | `kanjidic2.xml.gz` | — |
 | JMDict | `JMdict.gz`, `JMdict_e_examp.gz` | — |
 | KanjiVG | `kanjivg-{version}.xml.gz` | `kanjivg-{version}-main.zip` (SVGs, used in Phase 2) |
+| JLPT Mapping | `jlpt_mapping.csv` | — |
+| JLPT Vocab Mapping | `n1.csv`, `n2.csv`, `n3.csv`, `n4.csv`, `n5.csv` | — |
+| JmdictFurigana | `JmdictFurigana.json.tar.gz` | — |
 
 **Pre-ingestion validation:** Before any parsing begins, the pipeline runs a validation step that checks:
 1. Folder name matches the expected pattern for the selected source.
@@ -101,6 +129,7 @@ graph TD
         XML[KANJIDIC2]
         SVG[KanjiVG]
         JMD[JMdict]
+        REF[Reference Tables]
     end
 
     subgraph "Local Supabase (Staging)"
@@ -134,6 +163,7 @@ graph TD
         Bucket[svg bucket]
     end
 
+    REF -->|"1. Load"| Rad & Kan & Comp & Vocab
     XML & SVG & JMD -->|"1. Ingest"| RawK & RawV & RawJ
     SVG -->|"2. Hash & index"| LocalSVG
     RawK & RawV -->|"2. Transform & AI"| Rad & Kan & Comp
@@ -151,7 +181,7 @@ graph TD
 When an admin starts fresh (new device, wiped DB, crash recovery), the local DB is rebuilt from source files and Remote admin state:
 
 1. **Login** — admin authenticates with Supabase. The app pulls `data_imports` and `kanji_component_reviews` from the Remote `admin` schema.
-2. **Supply source files** — admin places the same source archives into `sources/`. Re-parse into raw tables (idempotent — same file + version = same rows). Load `source_jlpt_levels` from the JLPT mapping CSV.
+2. **Supply source files** — admin places the same source archives into `sources/`. Re-parse into raw tables (idempotent — same file + version = same rows). Load reference tables: `source_jlpt_levels` (kanji JLPT mapping), `source_vocab_levels` (vocabulary JLPT mapping), `jmdict_furigana` (furigana segments).
 3. **Run transformation** — rebuild production tables from raw data (idempotent — same raw + same logic = same entities).
 4. **Apply saved reviews** — merge downloaded review decisions onto the locally regenerated `kanji_component_reviews` rows.
 5. **Resume work** — the admin is back to where they left off. No data was lost.
@@ -166,7 +196,7 @@ Before parsing, create a new `data_imports` row to track this batch.
 
 | Field | Value |
 |---|---|
-| `source` | `kanjidic`, `kanjivg`, or `jmdict` |
+| `source` | `kanjidic`, `kanjivg`, `jmdict`, or `jmdict_furigana` |
 | `source_version` | e.g. "2024-04-01" |
 | `status` | `pending` |
 
@@ -179,7 +209,9 @@ Dart parsers running inside the Admin Tool parse source files and insert rows in
 - **Kanji (XML):** Single Dart pass on `kanjidic2.xml`. Groups all `<meaning>` tags by `m_lang` attribute into `raw_kanjidic.meanings` JSONB column (EN, ES, etc. in one pass). Gzip decompression via `dart:io` `GZipCodec`.
 - **KanjiVG (XML):** Single Dart pass on `kanjivg-{version}.xml` for stroke paths and component trees. Gzip decompression via `dart:io` `GZipCodec`.
 - **Vocabulary (XML):** Single Dart pass on `JMdict.gz` for vocabulary entries with readings and senses. Gzip decompression via `dart:io` `GZipCodec`. All languages are stored in raw tables; filtering to supported languages happens during transformation (Phase 2).
-- **JLPT Mapping (CSV):** Load `sources/jlpt_mapping/jlpt_mapping.csv` into `source_jlpt_levels` via TRUNCATE + INSERT. Not tracked in `data_imports` — this is a simple reference table with no version lifecycle. See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
+- **JLPT Kanji Mapping (CSV):** Load `sources/jlpt_mapping/jlpt_mapping.csv` into `source_jlpt_levels` via TRUNCATE + INSERT. Not tracked in `data_imports` — this is a simple reference table with no version lifecycle. See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
+- **JLPT Vocabulary Mapping (CSV):** Load `sources/jlpt_vocab_mapping/n1.csv` through `n5.csv` into `source_vocab_levels` via TRUNCATE + INSERT. Level is derived from the filename (not from tags in the CSV). Duplicates across files resolved by keeping the easiest level. See [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md).
+- **JmdictFurigana (JSON):** Decompress `JmdictFurigana.json.tar.gz`, strip BOM, parse the JSON array, and insert into `jmdict_furigana` under the current `import_id`. Each entry maps a `(text, reading)` pair to a list of `ruby`/`rt` furigana segments. Tracked in `data_imports` (source = `jmdict_furigana`) because the dataset is coupled with JMdict and should be updated in lockstep. See [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md).
 
 Common rules:
 - Every row carries the `import_id` from step 1.1.
@@ -246,27 +278,32 @@ On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
 ### 2.6 Vocabulary Extraction
 
-JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
+JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline, using three additional reference tables loaded during Phase 1: `source_vocab_levels` (JLPT word levels), `jmdict_furigana` (per-character furigana mappings), and the `kanji` table (for FK resolution).
 
-**From `raw_jmdict`:**
-1. **Vocabulary creation:** Upsert `vocabulary` rows (word, reading, `ent_seq`, metadata).
-2. **Segmentation:** Parse each word into a `segments` JSON array — identify which parts are kanji vs kana, resolve `kanji_id`/`kanji_ids` from the `kanji` table, and assign per-segment readings. Verify that concatenating all segment `text` values reproduces `word` exactly. Jukujikun words use `kanji_ids` (list) instead of `kanji_id` (single).
-3. **Localized meanings:** Insert `vocabulary_i18n` rows for each target language from `raw_jmdict.senses.glosses`.
-4. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
+**From `raw_jmdict` + reference tables:**
+1. **Vocabulary creation:** Select common words (priority-flagged or in `source_vocab_levels`) and upsert `vocabulary` rows using `ent_seq` as the stable ID. Resolve `min_jlpt_level` from `source_vocab_levels` (authoritative) with fallback to `MAX(kanji.min_jlpt_level)` across constituent kanji.
+2. **Segmentation:** Construct `segments` JSONB using `jmdict_furigana` data — map each `ruby`/`rt` pair to a VocabularySegment with `kanji_id`/`kanji_ids` resolved from the `kanji` table. Jukujikun entries (multi-kanji `ruby`) produce segments with `kanji_ids` (list) instead of `kanji_id` (single).
+3. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority based on `re_pri` matching.
+4. **Localized meanings:** Insert `vocabulary_i18n` rows for each target language from `raw_jmdict.senses.glosses`.
 
-**From `JMdict_e_examp.gz` (example sentences):**
-5. **Example sentences:** Extract Tanaka Corpus sentence pairs into `vocabulary_sentences` with `original_text` (Japanese with `[kanji](reading)` inline furigana) and `verification_status = 'verified'` (source data is trustworthy). Insert the English translation into `vocabulary_sentence_i18n` with `lang_code = 'en'`.
+**From `raw_jmdict.examples` (Tanaka Corpus):**
+5. **Example sentences:** Extract sentence pairs into `vocabulary_sentences` with `original_text` and `verification_status = 'verified'` (source data is trustworthy). Insert the English translation into `vocabulary_sentence_i18n` with `lang_code = 'en'`.
 
 **Post-processing:**
-6. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
-7. **AI Translation (non-English targets):** For each target language other than English, use AI to translate the English source sentences. Insert into `vocabulary_sentence_i18n` with the target `lang_code` and set `vocabulary_sentences.verification_status = 'draft'`. The AI model (local or API) is configured per environment.
-8. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
+6. **Kanji linking:** For each word, scan the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index). Orphan kanji (not in the `kanji` table) are logged but the word is still imported (permissive approach — unlinked kanji render as "ghosts").
 
-**Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` references the `kanji` table.
+**Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` and segment `kanji_id` references require the `kanji` table. Reference tables (`source_vocab_levels`, `jmdict_furigana`) must be loaded during Phase 1.
 
-**Orphan prevention:** Vocabulary entries that contain kanji not present in the `kanji` table are skipped and logged. This prevents FK violations and ensures every `vocabulary_kanji` row points to a valid kanji.
+See [vocabulary_extraction.md](vocabulary_extraction.md) for the full algorithm, [vocabulary.md](../entities/vocabulary.md) for the entity spec.
 
-See [vocabulary.md](../entities/vocabulary.md).
+### 2.7 AI Enrichment
+
+Runs after vocabulary extraction. Handles tasks requiring AI that are not part of the core extraction:
+
+1. **AI Translation (non-English sentences):** For each target language other than English, use AI to translate the English source sentences. Insert into `vocabulary_sentence_i18n` with the target `lang_code` and set `vocabulary_sentences.verification_status = 'draft'`. The AI model (local or API) is configured per environment.
+2. **Furigana annotation:** Add `[kanji](reading)` bracket notation to `vocabulary_sentences.original_text` where the source sentence lacks furigana.
+
+These AI-generated artifacts require human review (Phase 3) before remote sync.
 
 ## Phase 3: Verification (Human-in-the-Loop)
 
@@ -435,12 +472,17 @@ flutter run -d macos --target lib/pipeline/ingest_kanjivg.dart
 - [radical_extraction.md](radical_extraction.md) — Passes 1–2 radical/variant registration
 - [kanji_composition.md](kanji_composition.md) — kanji creation from KANJIDIC2
 - [component_linking.md](component_linking.md) — component linking and radical metadata derivation
+- [vocabulary_extraction.md](vocabulary_extraction.md) — vocabulary extraction from JMdict (Phase 2.6)
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table
+- [raw_jmdict.md](../entities/raw_jmdict.md) — JMdict staging table
 - [kanji_component.md](../entities/kanji_component.md) — component entity and KanjiComponentReview (admin review state)
 - [radical.md](../entities/radical.md) — radical extraction target
 - [kanji.md](../entities/kanji.md) — kanji creation target
 - [vocabulary.md](../entities/vocabulary.md) — vocabulary extraction target
+- [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md) — JLPT kanji mapping CSV format
+- [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md) — JLPT vocabulary mapping CSV format
+- [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) — JmdictFurigana JSON format
 - [offline.md](offline.md) — client-side sync after promotion
 - [supabase.md](supabase.md) — database infrastructure

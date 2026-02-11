@@ -106,6 +106,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
 | `kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |
 | `component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
+| `vocabulary_extraction.md` | Phase 2.6: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
 | `supabase.md` | Auth, database, storage, RLS, migrations | Any Supabase/migration work |
 | `offline.md` | Client sync, conflict resolution | Client-side data sync |
 | `admin_workflow.md` | Admin tool UI/UX flow | Admin presentation layer |

@@ -151,7 +151,7 @@ graph TD
 When an admin starts fresh (new device, wiped DB, crash recovery), the local DB is rebuilt from source files and Remote admin state:
 
 1. **Login** — admin authenticates with Supabase. The app pulls `data_imports` and `kanji_component_reviews` from the Remote `admin` schema.
-2. **Supply source files** — admin places the same source archives into `sources/`. Re-parse into raw tables (idempotent — same file + version = same rows).
+2. **Supply source files** — admin places the same source archives into `sources/`. Re-parse into raw tables (idempotent — same file + version = same rows). Load `source_jlpt_levels` from the JLPT mapping CSV.
 3. **Run transformation** — rebuild production tables from raw data (idempotent — same raw + same logic = same entities).
 4. **Apply saved reviews** — merge downloaded review decisions onto the locally regenerated `kanji_component_reviews` rows.
 5. **Resume work** — the admin is back to where they left off. No data was lost.
@@ -172,10 +172,6 @@ Before parsing, create a new `data_imports` row to track this batch.
 
 See [data_import.md](../entities/data_import.md).
 
-### 1.1b JLPT Mapping Load
-
-The `source_jlpt_levels` table is loaded from `sources/jlpt_mapping/jlpt_mapping.csv` via TRUNCATE + INSERT. This is a standalone reference load — not tracked in `data_imports` and not versioned. It runs during pipeline setup or hydration, before Phase 2 needs the lookup table. See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
-
 ### 1.2 Parsing & Insertion
 
 Dart parsers running inside the Admin Tool parse source files and insert rows into `raw_kanjidic` / `raw_kanjivg` / `raw_jmdict`.
@@ -183,6 +179,7 @@ Dart parsers running inside the Admin Tool parse source files and insert rows in
 - **Kanji (XML):** Single Dart pass on `kanjidic2.xml`. Groups all `<meaning>` tags by `m_lang` attribute into `raw_kanjidic.meanings` JSONB column (EN, ES, etc. in one pass). Gzip decompression via `dart:io` `GZipCodec`.
 - **KanjiVG (XML):** Single Dart pass on `kanjivg-{version}.xml` for stroke paths and component trees. Gzip decompression via `dart:io` `GZipCodec`.
 - **Vocabulary (XML):** Single Dart pass on `JMdict.gz` for vocabulary entries with readings and senses. Gzip decompression via `dart:io` `GZipCodec`. All languages are stored in raw tables; filtering to supported languages happens during transformation (Phase 2).
+- **JLPT Mapping (CSV):** Load `sources/jlpt_mapping/jlpt_mapping.csv` into `source_jlpt_levels` via TRUNCATE + INSERT. Not tracked in `data_imports` — this is a simple reference table with no version lifecycle. See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md).
 
 Common rules:
 - Every row carries the `import_id` from step 1.1.

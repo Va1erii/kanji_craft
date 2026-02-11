@@ -8,6 +8,8 @@ The JLPT mapping file provides a curated kanji-to-JLPT-level mapping for the cur
 
 **Source file:** `sources/jlpt_mapping/jlpt_mapping.csv`
 
+**Admin asset:** `apps/admin/assets/jlpt_mapping.csv` — bundled as a mandatory Flutter asset. Auto-loaded into the local Drift database on first app launch; the app crashes if the asset is missing or malformed.
+
 See [attributions.md](../legal/attributions.md) for license details and required credits.
 
 ## File Format
@@ -55,7 +57,7 @@ N1 dominates because it is the catch-all for advanced kanji — any JLPT-relevan
 
 No versioning scheme — this is a single curated file, not a periodically released archive. The folder is `sources/jlpt_mapping/` (no version suffix). Updates are manual edits committed directly to the repository.
 
-Unlike KANJIDIC and KanjiVG sources (which use `{source}-{version}/` folders and are tracked in `data_imports`), the JLPT mapping has no import lifecycle. It is loaded directly into `source_jlpt_levels` via TRUNCATE + INSERT.
+Unlike KANJIDIC and KanjiVG sources (which use `{source}-{version}/` folders and are tracked in `data_imports`), the JLPT mapping has no import lifecycle. It is loaded directly into `source_jlpt_levels` via TRUNCATE + INSERT during Phase 1 ingestion.
 
 ## Mapping to `source_jlpt_levels`
 

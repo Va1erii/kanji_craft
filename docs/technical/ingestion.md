@@ -82,13 +82,14 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 | Aspect | Value |
 |---|---|
-| File | `sources/jlpt_mapping/jlpt_mapping.csv` |
-| Table | `source_jlpt_levels` |
-| Strategy | TRUNCATE + INSERT (full reload each time) |
+| Asset | `apps/admin/assets/jlpt_mapping.csv` (mandatory) |
+| Table | `source_jlpt_levels` (local Drift) |
+| Strategy | First-run auto-load: skip if table has rows, otherwise TRUNCATE + INSERT |
 | Import tracking | None — not tracked in `data_imports` |
 | Unique constraint | `character` (primary key) |
+| Failure | App crashes if asset missing or malformed (intentional) |
 
-Simple CSV load: the entire `source_jlpt_levels` table is truncated and repopulated from the CSV. No version lifecycle, no partial inserts, no failure recovery beyond re-running. The table must be loaded before Phase 2.3 (kanji composition), which looks up each character's N1–N5 level from it.
+The CSV ships as a mandatory admin app asset. On startup, `_loadJlptMappingIfNeeded()` checks the local `source_jlpt_level_entries` count — if zero, it loads the asset, parses it, and batch-inserts all rows in a single transaction. Subsequent launches are a no-op. The table must be loaded before Phase 2.3 (kanji composition), which looks up each character's N1–N5 level from it.
 
 See [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md) for the file format and column mapping.
 

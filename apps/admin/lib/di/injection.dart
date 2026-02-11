@@ -9,6 +9,7 @@ import '../data/repositories/drift_kanji_component_review_repository.dart';
 import '../data/repositories/drift_raw_jmdict_repository.dart';
 import '../data/repositories/drift_raw_kanjidic_repository.dart';
 import '../data/repositories/drift_raw_kanjivg_repository.dart';
+import '../data/repositories/drift_source_jlpt_level_repository.dart';
 import '../data/services/drift_admin_state_writer.dart';
 import '../data/services/source_parser_impl.dart';
 import '../data/services/supabase_admin_state_reader.dart';
@@ -17,6 +18,7 @@ import '../domain/repositories/kanji_component_review_repository.dart';
 import '../domain/repositories/raw_jmdict_repository.dart';
 import '../domain/repositories/raw_kanjidic_repository.dart';
 import '../domain/repositories/raw_kanjivg_repository.dart';
+import '../domain/repositories/source_jlpt_level_repository.dart';
 import '../domain/services/admin_state_reader.dart';
 import '../domain/services/admin_state_writer.dart';
 import '../domain/services/source_parser.dart';
@@ -60,6 +62,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<RawJmdictRepository>(
     () => DriftRawJmdictRepository(getIt<AdminDatabase>()),
+  );
+  getIt.registerLazySingleton<SourceJlptLevelRepository>(
+    () => DriftSourceJlptLevelRepository(getIt<AdminDatabase>()),
   );
 
   // -- Supabase datasources --

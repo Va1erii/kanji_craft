@@ -18,6 +18,7 @@ import 'tables/kanji_component_review_table.dart';
 import 'tables/raw_jmdict_table.dart';
 import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
+import 'tables/source_jlpt_level_table.dart';
 import 'tables/sync_metadata_table.dart';
 
 part 'admin_database.g.dart';
@@ -30,6 +31,7 @@ part 'admin_database.g.dart';
     RawJmdictEntries,
     KanjiComponentReviewEntries,
     SyncMetadataEntries,
+    SourceJlptLevelEntries,
   ],
 )
 class AdminDatabase extends _$AdminDatabase {
@@ -38,7 +40,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -68,6 +70,9 @@ class AdminDatabase extends _$AdminDatabase {
             await m.createTable(rawKanjiVgEntries);
             await m.createTable(rawKanjidicEntries);
             await m.createTable(rawJmdictEntries);
+          }
+          if (from < 6) {
+            await m.createTable(sourceJlptLevelEntries);
           }
         },
       );

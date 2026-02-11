@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../../domain/entities/data_import.dart';
+import '../../../domain/entities/jlpt_level.dart';
 import '../../../domain/entities/kanji_component_review.dart';
 import '../../../domain/entities/raw_jmdict.dart';
 import '../../../domain/entities/raw_kanjidic.dart';
@@ -162,4 +163,18 @@ extension KanjiComponentReviewEntryToDomain on KanjiComponentReviewEntry {
         createdAt: createdAt,
         updatedAt: updatedAt,
       );
+}
+
+// -- JlptLevel <-> SourceJlptLevelEntry --
+
+extension JlptLevelToCompanion on JlptLevel {
+  SourceJlptLevelEntriesCompanion toCompanion() =>
+      SourceJlptLevelEntriesCompanion(
+        character: Value(character),
+        level: Value(level),
+      );
+}
+
+extension SourceJlptLevelEntryToDomain on SourceJlptLevelEntry {
+  JlptLevel toDomain() => JlptLevel(character: character, level: level);
 }

@@ -3445,6 +3445,272 @@ class SyncMetadataEntriesCompanion extends UpdateCompanion<SyncMetadataEntry> {
   }
 }
 
+class $SourceJlptLevelEntriesTable extends SourceJlptLevelEntries
+    with TableInfo<$SourceJlptLevelEntriesTable, SourceJlptLevelEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SourceJlptLevelEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _characterMeta = const VerificationMeta(
+    'character',
+  );
+  @override
+  late final GeneratedColumn<String> character = GeneratedColumn<String>(
+    'character',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<int> level = GeneratedColumn<int>(
+    'level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (level BETWEEN 1 AND 5)',
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('tanos'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [character, level, source];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'source_jlpt_level_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SourceJlptLevelEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('character')) {
+      context.handle(
+        _characterMeta,
+        character.isAcceptableOrUnknown(data['character']!, _characterMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_characterMeta);
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_levelMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {character};
+  @override
+  SourceJlptLevelEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SourceJlptLevelEntry(
+      character: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}character'],
+      )!,
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}level'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+    );
+  }
+
+  @override
+  $SourceJlptLevelEntriesTable createAlias(String alias) {
+    return $SourceJlptLevelEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class SourceJlptLevelEntry extends DataClass
+    implements Insertable<SourceJlptLevelEntry> {
+  final String character;
+  final int level;
+  final String source;
+  const SourceJlptLevelEntry({
+    required this.character,
+    required this.level,
+    required this.source,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['character'] = Variable<String>(character);
+    map['level'] = Variable<int>(level);
+    map['source'] = Variable<String>(source);
+    return map;
+  }
+
+  SourceJlptLevelEntriesCompanion toCompanion(bool nullToAbsent) {
+    return SourceJlptLevelEntriesCompanion(
+      character: Value(character),
+      level: Value(level),
+      source: Value(source),
+    );
+  }
+
+  factory SourceJlptLevelEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SourceJlptLevelEntry(
+      character: serializer.fromJson<String>(json['character']),
+      level: serializer.fromJson<int>(json['level']),
+      source: serializer.fromJson<String>(json['source']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'character': serializer.toJson<String>(character),
+      'level': serializer.toJson<int>(level),
+      'source': serializer.toJson<String>(source),
+    };
+  }
+
+  SourceJlptLevelEntry copyWith({
+    String? character,
+    int? level,
+    String? source,
+  }) => SourceJlptLevelEntry(
+    character: character ?? this.character,
+    level: level ?? this.level,
+    source: source ?? this.source,
+  );
+  SourceJlptLevelEntry copyWithCompanion(SourceJlptLevelEntriesCompanion data) {
+    return SourceJlptLevelEntry(
+      character: data.character.present ? data.character.value : this.character,
+      level: data.level.present ? data.level.value : this.level,
+      source: data.source.present ? data.source.value : this.source,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SourceJlptLevelEntry(')
+          ..write('character: $character, ')
+          ..write('level: $level, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(character, level, source);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SourceJlptLevelEntry &&
+          other.character == this.character &&
+          other.level == this.level &&
+          other.source == this.source);
+}
+
+class SourceJlptLevelEntriesCompanion
+    extends UpdateCompanion<SourceJlptLevelEntry> {
+  final Value<String> character;
+  final Value<int> level;
+  final Value<String> source;
+  final Value<int> rowid;
+  const SourceJlptLevelEntriesCompanion({
+    this.character = const Value.absent(),
+    this.level = const Value.absent(),
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SourceJlptLevelEntriesCompanion.insert({
+    required String character,
+    required int level,
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : character = Value(character),
+       level = Value(level);
+  static Insertable<SourceJlptLevelEntry> custom({
+    Expression<String>? character,
+    Expression<int>? level,
+    Expression<String>? source,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (character != null) 'character': character,
+      if (level != null) 'level': level,
+      if (source != null) 'source': source,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SourceJlptLevelEntriesCompanion copyWith({
+    Value<String>? character,
+    Value<int>? level,
+    Value<String>? source,
+    Value<int>? rowid,
+  }) {
+    return SourceJlptLevelEntriesCompanion(
+      character: character ?? this.character,
+      level: level ?? this.level,
+      source: source ?? this.source,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (character.present) {
+      map['character'] = Variable<String>(character.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<int>(level.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SourceJlptLevelEntriesCompanion(')
+          ..write('character: $character, ')
+          ..write('level: $level, ')
+          ..write('source: $source, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AdminDatabase extends GeneratedDatabase {
   _$AdminDatabase(QueryExecutor e) : super(e);
   late final $DataImportEntriesTable dataImportEntries =
@@ -3460,6 +3726,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $KanjiComponentReviewEntriesTable(this);
   late final $SyncMetadataEntriesTable syncMetadataEntries =
       $SyncMetadataEntriesTable(this);
+  late final $SourceJlptLevelEntriesTable sourceJlptLevelEntries =
+      $SourceJlptLevelEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3471,6 +3739,7 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     rawJmdictEntries,
     kanjiComponentReviewEntries,
     syncMetadataEntries,
+    sourceJlptLevelEntries,
   ];
   @override
   DriftDatabaseOptions get options =>

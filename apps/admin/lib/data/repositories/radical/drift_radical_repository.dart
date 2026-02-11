@@ -94,4 +94,21 @@ class DriftRadicalRepository implements RadicalRepository {
     await _db.delete(_db.draftRadicalVariantEntries).go();
     await _db.delete(_db.draftRadicalEntries).go();
   }
+
+  @override
+  Future<int> countDraftRadicals() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftRadicalEntries)..addColumns([c]);
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
+
+  @override
+  Future<int> countDraftRadicalVariants() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftRadicalVariantEntries)
+      ..addColumns([c]);
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
 }

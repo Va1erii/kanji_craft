@@ -6,6 +6,7 @@ import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/extraction_phase.dart';
 import '../../../domain/entities/import_source.dart';
 import '../../../domain/entities/import_status.dart';
+import '../../../domain/usecases/compose_kanji.dart';
 import '../../../domain/usecases/extract_radicals.dart';
 import 'extraction_event.dart';
 import 'extraction_state.dart';
@@ -13,12 +14,15 @@ import 'extraction_state.dart';
 class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   ExtractionBloc({
     required ExtractRadicals extractRadicals,
+    required ComposeKanji composeKanji,
   })  : _extractRadicals = extractRadicals,
+        _composeKanji = composeKanji,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
   }
 
   final ExtractRadicals _extractRadicals;
+  final ComposeKanji _composeKanji;
   List<DataImport> _imports = const [];
 
   Future<void> _onEvent(
@@ -36,7 +40,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     Emitter<ExtractionState> emit,
   ) async {
     _imports = imports;
-    emit(ExtractionState(phases: _recomputeStatuses()));
+    emit(ExtractionState(phases: await _recomputeStatuses()));
   }
 
   Future<void> _onRunPhase(
@@ -53,7 +57,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         phases: {...state.phases, phase: PhaseCompleted(summary)},
       ));
       // Recompute downstream phases — a completed phase may unblock others.
-      emit(ExtractionState(phases: _recomputeStatuses()));
+      emit(ExtractionState(phases: await _recomputeStatuses()));
     } on Exception catch (e, st) {
       log(
         'Extraction phase ${phase.label} failed',
@@ -74,6 +78,12 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         final result = await _extractRadicals.call(importId);
         return '${result.radicalCount} radicals, '
             '${result.variantCount} variants';
+      case ExtractionPhase.kanjiComposition:
+        final importId = _importIdFor(ImportSource.kanjidic);
+        final result = await _composeKanji.call(importId);
+        return '${result.kanjiCount} kanji, '
+            '${result.readingCount} readings, '
+            '${result.i18nCount} i18n';
       default:
         throw UnimplementedError('${phase.label} is not implemented');
     }
@@ -89,8 +99,9 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   /// Recompute statuses for all phases in enum order.
   ///
   /// Preserves completed / running / failed states — only idle phases
-  /// get re-evaluated for readiness.
-  Map<ExtractionPhase, PhaseStatus> _recomputeStatuses() {
+  /// get re-evaluated for readiness. Phases that would be "ready" are
+  /// checked for existing draft data to detect previous completions.
+  Future<Map<ExtractionPhase, PhaseStatus>> _recomputeStatuses() async {
     final ingestedSources = _imports
         .where((i) => i.status == ImportStatus.ingested)
         .map((i) => i.source)
@@ -132,9 +143,28 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         continue;
       }
 
+      // Detect previous completion from existing draft data.
+      final existing = await _checkExistingResult(phase);
+      if (existing != null) {
+        result[phase] = PhaseCompleted(existing);
+        continue;
+      }
+
       result[phase] = const PhaseReady();
     }
 
     return result;
+  }
+
+  /// Returns a summary string if the phase's draft data already exists.
+  Future<String?> _checkExistingResult(ExtractionPhase phase) async {
+    switch (phase) {
+      case ExtractionPhase.radicalExtraction:
+        return _extractRadicals.checkExistingResult();
+      case ExtractionPhase.kanjiComposition:
+        return _composeKanji.checkExistingResult();
+      default:
+        return null;
+    }
   }
 }

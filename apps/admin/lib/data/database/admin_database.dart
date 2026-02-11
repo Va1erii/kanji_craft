@@ -14,6 +14,9 @@ import 'package:kanji_craft_core/kanji_craft_core.dart';
 import 'converters/enum_converters.dart';
 import 'converters/json_converters.dart';
 import 'tables/data_import_table.dart';
+import 'tables/draft_kanji_i18n_table.dart';
+import 'tables/draft_kanji_reading_table.dart';
+import 'tables/draft_kanji_table.dart';
 import 'tables/draft_radical_table.dart';
 import 'tables/draft_radical_variant_table.dart';
 import 'tables/kanji_component_review_table.dart';
@@ -53,6 +56,9 @@ part 'admin_database.g.dart';
     JmdictFuriganaEntries,
     DraftRadicalEntries,
     DraftRadicalVariantEntries,
+    DraftKanjiEntries,
+    DraftKanjiReadingEntries,
+    DraftKanjiI18nEntries,
     RadicalEntries,
     RadicalI18nEntries,
     RadicalVariantEntries,
@@ -74,7 +80,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -171,6 +177,11 @@ class AdminDatabase extends _$AdminDatabase {
           if (from < 11) {
             await m.createTable(draftRadicalEntries);
             await m.createTable(draftRadicalVariantEntries);
+          }
+          if (from < 12) {
+            await m.createTable(draftKanjiEntries);
+            await m.createTable(draftKanjiReadingEntries);
+            await m.createTable(draftKanjiI18nEntries);
           }
         },
       );

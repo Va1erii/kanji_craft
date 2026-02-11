@@ -2,6 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../../domain/entities/data_import.dart';
+import '../../../domain/entities/draft_kanji.dart';
+import '../../../domain/entities/draft_kanji_i18n.dart';
+import '../../../domain/entities/draft_kanji_reading.dart';
 import '../../../domain/entities/draft_radical.dart';
 import '../../../domain/entities/draft_radical_variant.dart';
 import '../../../domain/entities/jlpt_level.dart';
@@ -616,5 +619,86 @@ extension JmdictFuriganaEntryToDomain on JmdictFuriganaEntry {
         text: textField,
         reading: reading,
         furigana: furigana,
+      );
+}
+
+// -- DraftKanji ↔ DraftKanjiEntry --
+
+extension DraftKanjiToCompanion on DraftKanji {
+  DraftKanjiEntriesCompanion toCompanion() => DraftKanjiEntriesCompanion(
+        character: Value(character),
+        strokeCount: Value(strokeCount),
+        frequencyRank: Value(frequencyRank),
+        minJlptLevel: Value(minJlptLevel),
+        minGrade: Value(minGrade),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+      );
+}
+
+extension DraftKanjiEntryToDomain on DraftKanjiEntry {
+  DraftKanji toDomain() => DraftKanji(
+        id: id,
+        character: character,
+        strokeCount: strokeCount,
+        frequencyRank: frequencyRank,
+        minJlptLevel: minJlptLevel,
+        minGrade: minGrade,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- DraftKanjiReading ↔ DraftKanjiReadingEntry --
+
+extension DraftKanjiReadingToCompanion on DraftKanjiReading {
+  DraftKanjiReadingEntriesCompanion toCompanion() =>
+      DraftKanjiReadingEntriesCompanion(
+        draftKanjiId: Value(draftKanjiId),
+        reading: Value(reading),
+        readingType: Value(readingType),
+        priority: Value(priority),
+      );
+}
+
+extension DraftKanjiReadingEntryToDomain on DraftKanjiReadingEntry {
+  DraftKanjiReading toDomain() => DraftKanjiReading(
+        id: id,
+        draftKanjiId: draftKanjiId,
+        reading: reading,
+        readingType: readingType,
+        priority: priority,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- DraftKanjiI18n ↔ DraftKanjiI18nEntry --
+
+extension DraftKanjiI18nToCompanion on DraftKanjiI18n {
+  DraftKanjiI18nEntriesCompanion toCompanion() =>
+      DraftKanjiI18nEntriesCompanion(
+        draftKanjiId: Value(draftKanjiId),
+        langCode: Value(langCode),
+        meanings: Value(meanings),
+        systemMnemonic: Value(systemMnemonic),
+        searchTags: Value(searchTags),
+      );
+}
+
+extension DraftKanjiI18nEntryToDomain on DraftKanjiI18nEntry {
+  DraftKanjiI18n toDomain() => DraftKanjiI18n(
+        id: id,
+        draftKanjiId: draftKanjiId,
+        langCode: langCode,
+        meanings: meanings,
+        systemMnemonic: systemMnemonic,
+        searchTags: searchTags,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
 }

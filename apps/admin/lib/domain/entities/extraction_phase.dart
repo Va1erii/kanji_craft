@@ -17,7 +17,7 @@ enum ExtractionPhase {
     label: 'Kanji Composition',
     description: 'Create kanji rows, readings, and i18n from KANJIDIC',
     phaseNumber: '2.3',
-    isImplemented: false,
+    isImplemented: true,
     requiredSources: {ImportSource.kanjidic},
   ),
   svgProcessing(

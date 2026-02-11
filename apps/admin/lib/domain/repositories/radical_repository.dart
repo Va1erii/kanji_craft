@@ -22,4 +22,10 @@ abstract class RadicalRepository {
 
   /// Deletes all draft radicals (cascades to variants).
   Future<void> deleteAllDraftRadicals();
+
+  /// Returns the number of draft radicals.
+  Future<int> countDraftRadicals();
+
+  /// Returns the number of draft radical variants.
+  Future<int> countDraftRadicalVariants();
 }

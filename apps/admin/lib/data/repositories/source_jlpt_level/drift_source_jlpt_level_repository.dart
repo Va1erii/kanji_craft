@@ -30,4 +30,10 @@ class DriftSourceJlptLevelRepository implements SourceJlptLevelRepository {
     final result = await query.getSingle();
     return result.read(c)!;
   }
+
+  @override
+  Future<List<JlptLevel>> getAll() async {
+    final entries = await _db.select(_db.sourceJlptLevelEntries).get();
+    return entries.map((e) => e.toDomain()).toList();
+  }
 }

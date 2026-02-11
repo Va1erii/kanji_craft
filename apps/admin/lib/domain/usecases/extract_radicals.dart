@@ -104,6 +104,14 @@ class ExtractRadicals {
     );
   }
 
+  /// Returns a summary if draft radical data already exists, null otherwise.
+  Future<String?> checkExistingResult() async {
+    final radicals = await _radicalRepository.countDraftRadicals();
+    if (radicals == 0) return null;
+    final variants = await _radicalRepository.countDraftRadicalVariants();
+    return '$radicals radicals, $variants variants';
+  }
+
   /// Returns the position with the highest count, defaulting to unknown.
   static Position _bestPosition(Map<Position, int> counts) {
     if (counts.isEmpty) return Position.unknown;

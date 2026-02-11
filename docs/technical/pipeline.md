@@ -250,16 +250,17 @@ JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline.
 
 **From `raw_jmdict`:**
 1. **Vocabulary creation:** Upsert `vocabulary` rows (word, reading, `ent_seq`, metadata).
-2. **Localized meanings:** Insert `vocabulary_i18n` rows for each target language from `raw_jmdict.senses.glosses`.
-3. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
+2. **Segmentation:** Parse each word into a `segments` JSON array — identify which parts are kanji vs kana, resolve `kanji_id`/`kanji_ids` from the `kanji` table, and assign per-segment readings. Verify that concatenating all segment `text` values reproduces `word` exactly. Jukujikun words use `kanji_ids` (list) instead of `kanji_id` (single).
+3. **Localized meanings:** Insert `vocabulary_i18n` rows for each target language from `raw_jmdict.senses.glosses`.
+4. **Readings:** Extract readings into `vocabulary_readings` with primary/secondary priority.
 
 **From `JMdict_e_examp.gz` (example sentences):**
-4. **Example sentences (English):** Extract Tanaka Corpus sentence pairs (Japanese + English translation) into `vocabulary_sentences` with `verification_status = 'verified'` (source data is trustworthy).
+5. **Example sentences:** Extract Tanaka Corpus sentence pairs into `vocabulary_sentences` with `original_text` (Japanese with `[kanji](reading)` inline furigana) and `verification_status = 'verified'` (source data is trustworthy). Insert the English translation into `vocabulary_sentence_i18n` with `lang_code = 'en'`.
 
 **Post-processing:**
-5. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
-6. **AI Translation (non-English targets):** For each target language other than English, use AI to translate the English source sentences. Insert into `vocabulary_sentences` with the target `lang_code` and `verification_status = 'draft'`. The AI model (local or API) is configured per environment.
-7. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
+6. **Kanji association:** For each word, parse the string to find known kanji from the `kanji` table. Insert `vocabulary_kanji` rows with `kanji_id` and `position` (0-based index within the word).
+7. **AI Translation (non-English targets):** For each target language other than English, use AI to translate the English source sentences. Insert into `vocabulary_sentence_i18n` with the target `lang_code` and set `vocabulary_sentences.verification_status = 'draft'`. The AI model (local or API) is configured per environment.
+8. **JLPT inference:** If JMdict provides no JLPT level for a word, infer it from the word's constituent kanji levels (e.g. a word using only N5 kanji → suggest N5). Store as `min_jlpt_level` on the `vocabulary` row. This is a heuristic — low-confidence inferences surface in the review queue.
 
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` references the `kanji` table.
 
@@ -303,8 +304,8 @@ High-confidence matches (e.g. `ai_confidence >= 0.95`) can be auto-verified in b
 The Admin Tool queries `vocabulary_sentences` where `verification_status = 'draft'`, primarily AI-translated Spanish sentences.
 
 **Review UI:**
-- Side-by-side: English source sentence vs AI-generated Spanish translation.
-- The Japanese original and furigana are shown for context.
+- Side-by-side: English source sentence (from `vocabulary_sentence_i18n`) vs AI-generated Spanish translation.
+- The Japanese `original_text` is rendered with `[kanji](reading)` furigana for context.
 - Actions: "Edit Translation", "Confirm", "Reject".
 
 **Batch action:** "Approve all" can be used with caution for bulk verification. Unlike component reviews (which have `ai_confidence` scores), sentence reviews rely on human judgement of translation quality.
@@ -379,7 +380,7 @@ Tables must be synced in strict order to satisfy foreign key constraints:
 1. **radicals** — root entities (includes `radical_i18n`, `radical_variants`)
 2. **kanji** — depends on nothing directly (includes `kanji_i18n`, `kanji_readings`)
 3. **kanji_components** — depends on both `radicals` and `kanji`
-4. **vocabulary** — depends on `kanji` (includes `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`, `vocabulary_sentences`)
+4. **vocabulary** — depends on `kanji` (includes `vocabulary_i18n`, `vocabulary_readings`, `vocabulary_kanji`, `vocabulary_sentences`, `vocabulary_sentence_i18n`)
 
 The sync script validates parent existence on Remote before upserting children.
 

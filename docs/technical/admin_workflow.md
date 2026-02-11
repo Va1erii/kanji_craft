@@ -111,11 +111,12 @@ WHERE k.min_grade = 1
 AND kc.logic_hint IS NULL;
 
 -- Sentence translation: filtered by vocabulary JLPT
-SELECT vs.* FROM vocabulary_sentences vs
+SELECT vsi.* FROM vocabulary_sentence_i18n vsi
+JOIN vocabulary_sentences vs ON vsi.vocabulary_sentence_id = vs.id
 JOIN vocabulary v ON vs.vocabulary_id = v.id
 WHERE v.min_jlpt_level = 5
 AND vs.verification_status = 'draft'
-AND vs.lang_code = 'es';
+AND vsi.lang_code = 'es';
 ```
 
 Rows outside the selected scope are untouched — they remain `draft` and can be enriched in a later sprint.
@@ -192,9 +193,9 @@ A filterable list of `vocabulary_sentences` rows where `verification_status = 'd
 
 | Section | Content |
 |---|---|
-| **Japanese** | `sentence_ja` with `sentence_furigana` above |
-| **English (source)** | `sentence_translated` from the EN row (same `vocabulary_id`, `lang_code = 'en'`) |
-| **Spanish (AI)** | `sentence_translated` from the draft ES row — **editable text field** |
+| **Japanese** | `original_text` rendered with `[kanji](reading)` furigana |
+| **English (source)** | `sentence_translated` from the EN `vocabulary_sentence_i18n` row |
+| **Spanish (AI)** | `sentence_translated` from the draft ES `vocabulary_sentence_i18n` row — **editable text field** |
 | **Context** | Parent vocabulary word + meanings |
 
 **Actions:**
@@ -202,13 +203,13 @@ A filterable list of `vocabulary_sentences` rows where `verification_status = 'd
 | Button | Effect |
 |---|---|
 | **Approve** | Set `verification_status = 'verified'` |
-| **Edit & Approve** | Save edited `sentence_translated`, set `verification_status = 'verified'` |
+| **Edit & Approve** | Save edited `vocabulary_sentence_i18n.sentence_translated`, set `verification_status = 'verified'` |
 | **Reject** | Set `verification_status = 'flagged'` |
 | **Skip** | Move to next item without changes |
 
 After each action, the next `draft` item loads automatically.
 
-**Service invoked:** Updates `vocabulary_sentences.sentence_translated` and `vocabulary_sentences.verification_status` via repository.
+**Service invoked:** Updates `vocabulary_sentence_i18n.sentence_translated` and `vocabulary_sentences.verification_status` via repository.
 
 ## Promotion (Phase 4)
 

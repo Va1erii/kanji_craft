@@ -120,6 +120,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `jmdict_format.md` | JMdict XML structure, sense inheritance |
 | `jlpt_mapping_format.md` | JLPT kanji mapping CSV format |
 | `jlpt_vocab_mapping_format.md` | JLPT vocabulary mapping CSV format (Tanos word lists) |
+| `jmdict_furigana_format.md` | JmdictFurigana JSON format (per-character furigana for segments) |
 
 ## Database Schema Digest
 

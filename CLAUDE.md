@@ -118,7 +118,8 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `kanjivg_format.md` | KanjiVG SVG namespace, position values, radical markers |
 | `kanjidic_format.md` | KANJIDIC2 XML structure, grade/JLPT values |
 | `jmdict_format.md` | JMdict XML structure, sense inheritance |
-| `jlpt_mapping_format.md` | JLPT mapping CSV format |
+| `jlpt_mapping_format.md` | JLPT kanji mapping CSV format |
+| `jlpt_vocab_mapping_format.md` | JLPT vocabulary mapping CSV format (Tanos word lists) |
 
 ## Database Schema Digest
 

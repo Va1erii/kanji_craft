@@ -14,6 +14,8 @@ import 'package:kanji_craft_core/kanji_craft_core.dart';
 import 'converters/enum_converters.dart';
 import 'converters/json_converters.dart';
 import 'tables/data_import_table.dart';
+import 'tables/draft_radical_table.dart';
+import 'tables/draft_radical_variant_table.dart';
 import 'tables/kanji_component_review_table.dart';
 import 'tables/kanji_component_table.dart';
 import 'tables/kanji_i18n_table.dart';
@@ -49,6 +51,8 @@ part 'admin_database.g.dart';
     SourceJlptLevelEntries,
     SourceVocabLevelEntries,
     JmdictFuriganaEntries,
+    DraftRadicalEntries,
+    DraftRadicalVariantEntries,
     RadicalEntries,
     RadicalI18nEntries,
     RadicalVariantEntries,
@@ -70,7 +74,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -163,6 +167,10 @@ class AdminDatabase extends _$AdminDatabase {
             await m.createTable(vocabularyKanjiEntries);
             await m.createTable(vocabularySentenceEntries);
             await m.createTable(vocabularySentenceI18nEntries);
+          }
+          if (from < 11) {
+            await m.createTable(draftRadicalEntries);
+            await m.createTable(draftRadicalVariantEntries);
           }
         },
       );

@@ -8,6 +8,7 @@ import '../data/repositories/kanji_component_review/drift_kanji_component_review
 import '../data/repositories/kanji_component_review/supabase_kanji_component_review_datasource.dart';
 import '../data/repositories/raw_jmdict/drift_raw_jmdict_repository.dart';
 import '../data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
+import '../data/repositories/radical/drift_radical_repository.dart';
 import '../data/repositories/raw_kanjivg/drift_raw_kanjivg_repository.dart';
 import '../data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.dart';
 import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
@@ -19,13 +20,16 @@ import '../domain/repositories/data_import_repository.dart';
 import '../domain/repositories/kanji_component_review_repository.dart';
 import '../domain/repositories/raw_jmdict_repository.dart';
 import '../domain/repositories/raw_kanjidic_repository.dart';
+import '../domain/repositories/radical_repository.dart';
 import '../domain/repositories/raw_kanjivg_repository.dart';
 import '../domain/repositories/jmdict_furigana_repository.dart';
 import '../domain/repositories/source_jlpt_level_repository.dart';
 import '../domain/repositories/source_vocab_level_repository.dart';
 import '../domain/services/admin_state_reader.dart';
 import '../domain/services/admin_state_writer.dart';
+import '../data/services/radical_scanner.dart';
 import '../domain/services/source_parser.dart';
+import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/hydrate_local_db.dart';
 import '../domain/usecases/ingest_source_data.dart';
 import '../presentation/data_import/bloc/data_import_bloc.dart';
@@ -76,6 +80,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<JmdictFuriganaRepository>(
     () => DriftJmdictFuriganaRepository(getIt<AdminDatabase>()),
   );
+  getIt.registerLazySingleton<RadicalRepository>(
+    () => DriftRadicalRepository(getIt<AdminDatabase>()),
+  );
 
   // -- Supabase datasources --
   getIt.registerLazySingleton<SupabaseDataImportDataSource>(
@@ -86,6 +93,9 @@ Future<void> configureDependencies() async {
   );
 
   // -- Services --
+  getIt.registerLazySingleton<RadicalScanner>(
+    () => RadicalScanner(),
+  );
   getIt.registerLazySingleton<SourceParser>(
     () => SourceParserImpl(),
   );
@@ -111,6 +121,13 @@ Future<void> configureDependencies() async {
       jmdictRepository: getIt<RawJmdictRepository>(),
       jmdictFuriganaRepository: getIt<JmdictFuriganaRepository>(),
       sourceParser: getIt<SourceParser>(),
+    ),
+  );
+  getIt.registerLazySingleton<ExtractRadicals>(
+    () => ExtractRadicals(
+      rawKanjiVgRepository: getIt<RawKanjiVgRepository>(),
+      radicalRepository: getIt<RadicalRepository>(),
+      scanner: getIt<RadicalScanner>(),
     ),
   );
   getIt.registerLazySingleton<HydrateLocalDb>(

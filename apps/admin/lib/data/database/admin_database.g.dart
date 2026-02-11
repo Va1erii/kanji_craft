@@ -4398,6 +4398,1368 @@ class JmdictFuriganaEntriesCompanion
   }
 }
 
+class $DraftRadicalEntriesTable extends DraftRadicalEntries
+    with TableInfo<$DraftRadicalEntriesTable, DraftRadicalEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DraftRadicalEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _masterSymbolMeta = const VerificationMeta(
+    'masterSymbol',
+  );
+  @override
+  late final GeneratedColumn<String> masterSymbol = GeneratedColumn<String>(
+    'master_symbol',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _strokeCountMeta = const VerificationMeta(
+    'strokeCount',
+  );
+  @override
+  late final GeneratedColumn<int> strokeCount = GeneratedColumn<int>(
+    'stroke_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _impactScoreMeta = const VerificationMeta(
+    'impactScore',
+  );
+  @override
+  late final GeneratedColumn<int> impactScore = GeneratedColumn<int>(
+    'impact_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _minJlptLevelMeta = const VerificationMeta(
+    'minJlptLevel',
+  );
+  @override
+  late final GeneratedColumn<int> minJlptLevel = GeneratedColumn<int>(
+    'min_jlpt_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _minGradeMeta = const VerificationMeta(
+    'minGrade',
+  );
+  @override
+  late final GeneratedColumn<int> minGrade = GeneratedColumn<int>(
+    'min_grade',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _svgFileNameMeta = const VerificationMeta(
+    'svgFileName',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileName = GeneratedColumn<String>(
+    'svg_file_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _svgFileUrlMeta = const VerificationMeta(
+    'svgFileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileUrl = GeneratedColumn<String>(
+    'svg_file_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _svgHashMeta = const VerificationMeta(
+    'svgHash',
+  );
+  @override
+  late final GeneratedColumn<String> svgHash = GeneratedColumn<String>(
+    'svg_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isOfficialMeta = const VerificationMeta(
+    'isOfficial',
+  );
+  @override
+  late final GeneratedColumn<bool> isOfficial = GeneratedColumn<bool>(
+    'is_official',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_official" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    masterSymbol,
+    strokeCount,
+    impactScore,
+    minJlptLevel,
+    minGrade,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    isOfficial,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'draft_radical_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DraftRadicalEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('master_symbol')) {
+      context.handle(
+        _masterSymbolMeta,
+        masterSymbol.isAcceptableOrUnknown(
+          data['master_symbol']!,
+          _masterSymbolMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_masterSymbolMeta);
+    }
+    if (data.containsKey('stroke_count')) {
+      context.handle(
+        _strokeCountMeta,
+        strokeCount.isAcceptableOrUnknown(
+          data['stroke_count']!,
+          _strokeCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('impact_score')) {
+      context.handle(
+        _impactScoreMeta,
+        impactScore.isAcceptableOrUnknown(
+          data['impact_score']!,
+          _impactScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('min_jlpt_level')) {
+      context.handle(
+        _minJlptLevelMeta,
+        minJlptLevel.isAcceptableOrUnknown(
+          data['min_jlpt_level']!,
+          _minJlptLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('min_grade')) {
+      context.handle(
+        _minGradeMeta,
+        minGrade.isAcceptableOrUnknown(data['min_grade']!, _minGradeMeta),
+      );
+    }
+    if (data.containsKey('svg_file_name')) {
+      context.handle(
+        _svgFileNameMeta,
+        svgFileName.isAcceptableOrUnknown(
+          data['svg_file_name']!,
+          _svgFileNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('svg_file_url')) {
+      context.handle(
+        _svgFileUrlMeta,
+        svgFileUrl.isAcceptableOrUnknown(
+          data['svg_file_url']!,
+          _svgFileUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('svg_hash')) {
+      context.handle(
+        _svgHashMeta,
+        svgHash.isAcceptableOrUnknown(data['svg_hash']!, _svgHashMeta),
+      );
+    }
+    if (data.containsKey('is_official')) {
+      context.handle(
+        _isOfficialMeta,
+        isOfficial.isAcceptableOrUnknown(data['is_official']!, _isOfficialMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  DraftRadicalEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DraftRadicalEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      masterSymbol: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}master_symbol'],
+      )!,
+      strokeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stroke_count'],
+      ),
+      impactScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}impact_score'],
+      ),
+      minJlptLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_jlpt_level'],
+      ),
+      minGrade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}min_grade'],
+      ),
+      svgFileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_name'],
+      ),
+      svgFileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_url'],
+      ),
+      svgHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_hash'],
+      ),
+      isOfficial: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_official'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DraftRadicalEntriesTable createAlias(String alias) {
+    return $DraftRadicalEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class DraftRadicalEntry extends DataClass
+    implements Insertable<DraftRadicalEntry> {
+  final int id;
+  final String masterSymbol;
+  final int? strokeCount;
+  final int? impactScore;
+  final int? minJlptLevel;
+  final int? minGrade;
+  final String? svgFileName;
+  final String? svgFileUrl;
+  final String? svgHash;
+  final bool isOfficial;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const DraftRadicalEntry({
+    required this.id,
+    required this.masterSymbol,
+    this.strokeCount,
+    this.impactScore,
+    this.minJlptLevel,
+    this.minGrade,
+    this.svgFileName,
+    this.svgFileUrl,
+    this.svgHash,
+    required this.isOfficial,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['master_symbol'] = Variable<String>(masterSymbol);
+    if (!nullToAbsent || strokeCount != null) {
+      map['stroke_count'] = Variable<int>(strokeCount);
+    }
+    if (!nullToAbsent || impactScore != null) {
+      map['impact_score'] = Variable<int>(impactScore);
+    }
+    if (!nullToAbsent || minJlptLevel != null) {
+      map['min_jlpt_level'] = Variable<int>(minJlptLevel);
+    }
+    if (!nullToAbsent || minGrade != null) {
+      map['min_grade'] = Variable<int>(minGrade);
+    }
+    if (!nullToAbsent || svgFileName != null) {
+      map['svg_file_name'] = Variable<String>(svgFileName);
+    }
+    if (!nullToAbsent || svgFileUrl != null) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl);
+    }
+    if (!nullToAbsent || svgHash != null) {
+      map['svg_hash'] = Variable<String>(svgHash);
+    }
+    map['is_official'] = Variable<bool>(isOfficial);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DraftRadicalEntriesCompanion toCompanion(bool nullToAbsent) {
+    return DraftRadicalEntriesCompanion(
+      id: Value(id),
+      masterSymbol: Value(masterSymbol),
+      strokeCount: strokeCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(strokeCount),
+      impactScore: impactScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(impactScore),
+      minJlptLevel: minJlptLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minJlptLevel),
+      minGrade: minGrade == null && nullToAbsent
+          ? const Value.absent()
+          : Value(minGrade),
+      svgFileName: svgFileName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgFileName),
+      svgFileUrl: svgFileUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgFileUrl),
+      svgHash: svgHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgHash),
+      isOfficial: Value(isOfficial),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DraftRadicalEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DraftRadicalEntry(
+      id: serializer.fromJson<int>(json['id']),
+      masterSymbol: serializer.fromJson<String>(json['masterSymbol']),
+      strokeCount: serializer.fromJson<int?>(json['strokeCount']),
+      impactScore: serializer.fromJson<int?>(json['impactScore']),
+      minJlptLevel: serializer.fromJson<int?>(json['minJlptLevel']),
+      minGrade: serializer.fromJson<int?>(json['minGrade']),
+      svgFileName: serializer.fromJson<String?>(json['svgFileName']),
+      svgFileUrl: serializer.fromJson<String?>(json['svgFileUrl']),
+      svgHash: serializer.fromJson<String?>(json['svgHash']),
+      isOfficial: serializer.fromJson<bool>(json['isOfficial']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'masterSymbol': serializer.toJson<String>(masterSymbol),
+      'strokeCount': serializer.toJson<int?>(strokeCount),
+      'impactScore': serializer.toJson<int?>(impactScore),
+      'minJlptLevel': serializer.toJson<int?>(minJlptLevel),
+      'minGrade': serializer.toJson<int?>(minGrade),
+      'svgFileName': serializer.toJson<String?>(svgFileName),
+      'svgFileUrl': serializer.toJson<String?>(svgFileUrl),
+      'svgHash': serializer.toJson<String?>(svgHash),
+      'isOfficial': serializer.toJson<bool>(isOfficial),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DraftRadicalEntry copyWith({
+    int? id,
+    String? masterSymbol,
+    Value<int?> strokeCount = const Value.absent(),
+    Value<int?> impactScore = const Value.absent(),
+    Value<int?> minJlptLevel = const Value.absent(),
+    Value<int?> minGrade = const Value.absent(),
+    Value<String?> svgFileName = const Value.absent(),
+    Value<String?> svgFileUrl = const Value.absent(),
+    Value<String?> svgHash = const Value.absent(),
+    bool? isOfficial,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => DraftRadicalEntry(
+    id: id ?? this.id,
+    masterSymbol: masterSymbol ?? this.masterSymbol,
+    strokeCount: strokeCount.present ? strokeCount.value : this.strokeCount,
+    impactScore: impactScore.present ? impactScore.value : this.impactScore,
+    minJlptLevel: minJlptLevel.present ? minJlptLevel.value : this.minJlptLevel,
+    minGrade: minGrade.present ? minGrade.value : this.minGrade,
+    svgFileName: svgFileName.present ? svgFileName.value : this.svgFileName,
+    svgFileUrl: svgFileUrl.present ? svgFileUrl.value : this.svgFileUrl,
+    svgHash: svgHash.present ? svgHash.value : this.svgHash,
+    isOfficial: isOfficial ?? this.isOfficial,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DraftRadicalEntry copyWithCompanion(DraftRadicalEntriesCompanion data) {
+    return DraftRadicalEntry(
+      id: data.id.present ? data.id.value : this.id,
+      masterSymbol: data.masterSymbol.present
+          ? data.masterSymbol.value
+          : this.masterSymbol,
+      strokeCount: data.strokeCount.present
+          ? data.strokeCount.value
+          : this.strokeCount,
+      impactScore: data.impactScore.present
+          ? data.impactScore.value
+          : this.impactScore,
+      minJlptLevel: data.minJlptLevel.present
+          ? data.minJlptLevel.value
+          : this.minJlptLevel,
+      minGrade: data.minGrade.present ? data.minGrade.value : this.minGrade,
+      svgFileName: data.svgFileName.present
+          ? data.svgFileName.value
+          : this.svgFileName,
+      svgFileUrl: data.svgFileUrl.present
+          ? data.svgFileUrl.value
+          : this.svgFileUrl,
+      svgHash: data.svgHash.present ? data.svgHash.value : this.svgHash,
+      isOfficial: data.isOfficial.present
+          ? data.isOfficial.value
+          : this.isOfficial,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalEntry(')
+          ..write('id: $id, ')
+          ..write('masterSymbol: $masterSymbol, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('impactScore: $impactScore, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('isOfficial: $isOfficial, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    masterSymbol,
+    strokeCount,
+    impactScore,
+    minJlptLevel,
+    minGrade,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    isOfficial,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DraftRadicalEntry &&
+          other.id == this.id &&
+          other.masterSymbol == this.masterSymbol &&
+          other.strokeCount == this.strokeCount &&
+          other.impactScore == this.impactScore &&
+          other.minJlptLevel == this.minJlptLevel &&
+          other.minGrade == this.minGrade &&
+          other.svgFileName == this.svgFileName &&
+          other.svgFileUrl == this.svgFileUrl &&
+          other.svgHash == this.svgHash &&
+          other.isOfficial == this.isOfficial &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DraftRadicalEntriesCompanion extends UpdateCompanion<DraftRadicalEntry> {
+  final Value<int> id;
+  final Value<String> masterSymbol;
+  final Value<int?> strokeCount;
+  final Value<int?> impactScore;
+  final Value<int?> minJlptLevel;
+  final Value<int?> minGrade;
+  final Value<String?> svgFileName;
+  final Value<String?> svgFileUrl;
+  final Value<String?> svgHash;
+  final Value<bool> isOfficial;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const DraftRadicalEntriesCompanion({
+    this.id = const Value.absent(),
+    this.masterSymbol = const Value.absent(),
+    this.strokeCount = const Value.absent(),
+    this.impactScore = const Value.absent(),
+    this.minJlptLevel = const Value.absent(),
+    this.minGrade = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.isOfficial = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DraftRadicalEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required String masterSymbol,
+    this.strokeCount = const Value.absent(),
+    this.impactScore = const Value.absent(),
+    this.minJlptLevel = const Value.absent(),
+    this.minGrade = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.isOfficial = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : masterSymbol = Value(masterSymbol);
+  static Insertable<DraftRadicalEntry> custom({
+    Expression<int>? id,
+    Expression<String>? masterSymbol,
+    Expression<int>? strokeCount,
+    Expression<int>? impactScore,
+    Expression<int>? minJlptLevel,
+    Expression<int>? minGrade,
+    Expression<String>? svgFileName,
+    Expression<String>? svgFileUrl,
+    Expression<String>? svgHash,
+    Expression<bool>? isOfficial,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (masterSymbol != null) 'master_symbol': masterSymbol,
+      if (strokeCount != null) 'stroke_count': strokeCount,
+      if (impactScore != null) 'impact_score': impactScore,
+      if (minJlptLevel != null) 'min_jlpt_level': minJlptLevel,
+      if (minGrade != null) 'min_grade': minGrade,
+      if (svgFileName != null) 'svg_file_name': svgFileName,
+      if (svgFileUrl != null) 'svg_file_url': svgFileUrl,
+      if (svgHash != null) 'svg_hash': svgHash,
+      if (isOfficial != null) 'is_official': isOfficial,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DraftRadicalEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? masterSymbol,
+    Value<int?>? strokeCount,
+    Value<int?>? impactScore,
+    Value<int?>? minJlptLevel,
+    Value<int?>? minGrade,
+    Value<String?>? svgFileName,
+    Value<String?>? svgFileUrl,
+    Value<String?>? svgHash,
+    Value<bool>? isOfficial,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return DraftRadicalEntriesCompanion(
+      id: id ?? this.id,
+      masterSymbol: masterSymbol ?? this.masterSymbol,
+      strokeCount: strokeCount ?? this.strokeCount,
+      impactScore: impactScore ?? this.impactScore,
+      minJlptLevel: minJlptLevel ?? this.minJlptLevel,
+      minGrade: minGrade ?? this.minGrade,
+      svgFileName: svgFileName ?? this.svgFileName,
+      svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+      svgHash: svgHash ?? this.svgHash,
+      isOfficial: isOfficial ?? this.isOfficial,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (masterSymbol.present) {
+      map['master_symbol'] = Variable<String>(masterSymbol.value);
+    }
+    if (strokeCount.present) {
+      map['stroke_count'] = Variable<int>(strokeCount.value);
+    }
+    if (impactScore.present) {
+      map['impact_score'] = Variable<int>(impactScore.value);
+    }
+    if (minJlptLevel.present) {
+      map['min_jlpt_level'] = Variable<int>(minJlptLevel.value);
+    }
+    if (minGrade.present) {
+      map['min_grade'] = Variable<int>(minGrade.value);
+    }
+    if (svgFileName.present) {
+      map['svg_file_name'] = Variable<String>(svgFileName.value);
+    }
+    if (svgFileUrl.present) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl.value);
+    }
+    if (svgHash.present) {
+      map['svg_hash'] = Variable<String>(svgHash.value);
+    }
+    if (isOfficial.present) {
+      map['is_official'] = Variable<bool>(isOfficial.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('masterSymbol: $masterSymbol, ')
+          ..write('strokeCount: $strokeCount, ')
+          ..write('impactScore: $impactScore, ')
+          ..write('minJlptLevel: $minJlptLevel, ')
+          ..write('minGrade: $minGrade, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('isOfficial: $isOfficial, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DraftRadicalVariantEntriesTable extends DraftRadicalVariantEntries
+    with TableInfo<$DraftRadicalVariantEntriesTable, DraftRadicalVariantEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DraftRadicalVariantEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _draftRadicalIdMeta = const VerificationMeta(
+    'draftRadicalId',
+  );
+  @override
+  late final GeneratedColumn<int> draftRadicalId = GeneratedColumn<int>(
+    'draft_radical_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES draft_radical_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _shapeMeta = const VerificationMeta('shape');
+  @override
+  late final GeneratedColumn<String> shape = GeneratedColumn<String>(
+    'shape',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<Position, String> position =
+      GeneratedColumn<String>(
+        'position',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<Position>(
+        $DraftRadicalVariantEntriesTable.$converterposition,
+      );
+  static const VerificationMeta _isLockedMeta = const VerificationMeta(
+    'isLocked',
+  );
+  @override
+  late final GeneratedColumn<bool> isLocked = GeneratedColumn<bool>(
+    'is_locked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_locked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _svgFileNameMeta = const VerificationMeta(
+    'svgFileName',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileName = GeneratedColumn<String>(
+    'svg_file_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _svgFileUrlMeta = const VerificationMeta(
+    'svgFileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> svgFileUrl = GeneratedColumn<String>(
+    'svg_file_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _svgHashMeta = const VerificationMeta(
+    'svgHash',
+  );
+  @override
+  late final GeneratedColumn<String> svgHash = GeneratedColumn<String>(
+    'svg_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    draftRadicalId,
+    shape,
+    position,
+    isLocked,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'draft_radical_variant_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DraftRadicalVariantEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('draft_radical_id')) {
+      context.handle(
+        _draftRadicalIdMeta,
+        draftRadicalId.isAcceptableOrUnknown(
+          data['draft_radical_id']!,
+          _draftRadicalIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_draftRadicalIdMeta);
+    }
+    if (data.containsKey('shape')) {
+      context.handle(
+        _shapeMeta,
+        shape.isAcceptableOrUnknown(data['shape']!, _shapeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shapeMeta);
+    }
+    if (data.containsKey('is_locked')) {
+      context.handle(
+        _isLockedMeta,
+        isLocked.isAcceptableOrUnknown(data['is_locked']!, _isLockedMeta),
+      );
+    }
+    if (data.containsKey('svg_file_name')) {
+      context.handle(
+        _svgFileNameMeta,
+        svgFileName.isAcceptableOrUnknown(
+          data['svg_file_name']!,
+          _svgFileNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('svg_file_url')) {
+      context.handle(
+        _svgFileUrlMeta,
+        svgFileUrl.isAcceptableOrUnknown(
+          data['svg_file_url']!,
+          _svgFileUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('svg_hash')) {
+      context.handle(
+        _svgHashMeta,
+        svgHash.isAcceptableOrUnknown(data['svg_hash']!, _svgHashMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {draftRadicalId, shape},
+  ];
+  @override
+  DraftRadicalVariantEntry map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DraftRadicalVariantEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      draftRadicalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}draft_radical_id'],
+      )!,
+      shape: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shape'],
+      )!,
+      position: $DraftRadicalVariantEntriesTable.$converterposition.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}position'],
+        )!,
+      ),
+      isLocked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_locked'],
+      )!,
+      svgFileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_name'],
+      ),
+      svgFileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_file_url'],
+      ),
+      svgHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}svg_hash'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DraftRadicalVariantEntriesTable createAlias(String alias) {
+    return $DraftRadicalVariantEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<Position, String> $converterposition =
+      const PositionConverter();
+}
+
+class DraftRadicalVariantEntry extends DataClass
+    implements Insertable<DraftRadicalVariantEntry> {
+  final int id;
+  final int draftRadicalId;
+  final String shape;
+  final Position position;
+  final bool isLocked;
+  final String? svgFileName;
+  final String? svgFileUrl;
+  final String? svgHash;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const DraftRadicalVariantEntry({
+    required this.id,
+    required this.draftRadicalId,
+    required this.shape,
+    required this.position,
+    required this.isLocked,
+    this.svgFileName,
+    this.svgFileUrl,
+    this.svgHash,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['draft_radical_id'] = Variable<int>(draftRadicalId);
+    map['shape'] = Variable<String>(shape);
+    {
+      map['position'] = Variable<String>(
+        $DraftRadicalVariantEntriesTable.$converterposition.toSql(position),
+      );
+    }
+    map['is_locked'] = Variable<bool>(isLocked);
+    if (!nullToAbsent || svgFileName != null) {
+      map['svg_file_name'] = Variable<String>(svgFileName);
+    }
+    if (!nullToAbsent || svgFileUrl != null) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl);
+    }
+    if (!nullToAbsent || svgHash != null) {
+      map['svg_hash'] = Variable<String>(svgHash);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DraftRadicalVariantEntriesCompanion toCompanion(bool nullToAbsent) {
+    return DraftRadicalVariantEntriesCompanion(
+      id: Value(id),
+      draftRadicalId: Value(draftRadicalId),
+      shape: Value(shape),
+      position: Value(position),
+      isLocked: Value(isLocked),
+      svgFileName: svgFileName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgFileName),
+      svgFileUrl: svgFileUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgFileUrl),
+      svgHash: svgHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(svgHash),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DraftRadicalVariantEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DraftRadicalVariantEntry(
+      id: serializer.fromJson<int>(json['id']),
+      draftRadicalId: serializer.fromJson<int>(json['draftRadicalId']),
+      shape: serializer.fromJson<String>(json['shape']),
+      position: serializer.fromJson<Position>(json['position']),
+      isLocked: serializer.fromJson<bool>(json['isLocked']),
+      svgFileName: serializer.fromJson<String?>(json['svgFileName']),
+      svgFileUrl: serializer.fromJson<String?>(json['svgFileUrl']),
+      svgHash: serializer.fromJson<String?>(json['svgHash']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'draftRadicalId': serializer.toJson<int>(draftRadicalId),
+      'shape': serializer.toJson<String>(shape),
+      'position': serializer.toJson<Position>(position),
+      'isLocked': serializer.toJson<bool>(isLocked),
+      'svgFileName': serializer.toJson<String?>(svgFileName),
+      'svgFileUrl': serializer.toJson<String?>(svgFileUrl),
+      'svgHash': serializer.toJson<String?>(svgHash),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DraftRadicalVariantEntry copyWith({
+    int? id,
+    int? draftRadicalId,
+    String? shape,
+    Position? position,
+    bool? isLocked,
+    Value<String?> svgFileName = const Value.absent(),
+    Value<String?> svgFileUrl = const Value.absent(),
+    Value<String?> svgHash = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => DraftRadicalVariantEntry(
+    id: id ?? this.id,
+    draftRadicalId: draftRadicalId ?? this.draftRadicalId,
+    shape: shape ?? this.shape,
+    position: position ?? this.position,
+    isLocked: isLocked ?? this.isLocked,
+    svgFileName: svgFileName.present ? svgFileName.value : this.svgFileName,
+    svgFileUrl: svgFileUrl.present ? svgFileUrl.value : this.svgFileUrl,
+    svgHash: svgHash.present ? svgHash.value : this.svgHash,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DraftRadicalVariantEntry copyWithCompanion(
+    DraftRadicalVariantEntriesCompanion data,
+  ) {
+    return DraftRadicalVariantEntry(
+      id: data.id.present ? data.id.value : this.id,
+      draftRadicalId: data.draftRadicalId.present
+          ? data.draftRadicalId.value
+          : this.draftRadicalId,
+      shape: data.shape.present ? data.shape.value : this.shape,
+      position: data.position.present ? data.position.value : this.position,
+      isLocked: data.isLocked.present ? data.isLocked.value : this.isLocked,
+      svgFileName: data.svgFileName.present
+          ? data.svgFileName.value
+          : this.svgFileName,
+      svgFileUrl: data.svgFileUrl.present
+          ? data.svgFileUrl.value
+          : this.svgFileUrl,
+      svgHash: data.svgHash.present ? data.svgHash.value : this.svgHash,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalVariantEntry(')
+          ..write('id: $id, ')
+          ..write('draftRadicalId: $draftRadicalId, ')
+          ..write('shape: $shape, ')
+          ..write('position: $position, ')
+          ..write('isLocked: $isLocked, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    draftRadicalId,
+    shape,
+    position,
+    isLocked,
+    svgFileName,
+    svgFileUrl,
+    svgHash,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DraftRadicalVariantEntry &&
+          other.id == this.id &&
+          other.draftRadicalId == this.draftRadicalId &&
+          other.shape == this.shape &&
+          other.position == this.position &&
+          other.isLocked == this.isLocked &&
+          other.svgFileName == this.svgFileName &&
+          other.svgFileUrl == this.svgFileUrl &&
+          other.svgHash == this.svgHash &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DraftRadicalVariantEntriesCompanion
+    extends UpdateCompanion<DraftRadicalVariantEntry> {
+  final Value<int> id;
+  final Value<int> draftRadicalId;
+  final Value<String> shape;
+  final Value<Position> position;
+  final Value<bool> isLocked;
+  final Value<String?> svgFileName;
+  final Value<String?> svgFileUrl;
+  final Value<String?> svgHash;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const DraftRadicalVariantEntriesCompanion({
+    this.id = const Value.absent(),
+    this.draftRadicalId = const Value.absent(),
+    this.shape = const Value.absent(),
+    this.position = const Value.absent(),
+    this.isLocked = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DraftRadicalVariantEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int draftRadicalId,
+    required String shape,
+    required Position position,
+    this.isLocked = const Value.absent(),
+    this.svgFileName = const Value.absent(),
+    this.svgFileUrl = const Value.absent(),
+    this.svgHash = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : draftRadicalId = Value(draftRadicalId),
+       shape = Value(shape),
+       position = Value(position);
+  static Insertable<DraftRadicalVariantEntry> custom({
+    Expression<int>? id,
+    Expression<int>? draftRadicalId,
+    Expression<String>? shape,
+    Expression<String>? position,
+    Expression<bool>? isLocked,
+    Expression<String>? svgFileName,
+    Expression<String>? svgFileUrl,
+    Expression<String>? svgHash,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (draftRadicalId != null) 'draft_radical_id': draftRadicalId,
+      if (shape != null) 'shape': shape,
+      if (position != null) 'position': position,
+      if (isLocked != null) 'is_locked': isLocked,
+      if (svgFileName != null) 'svg_file_name': svgFileName,
+      if (svgFileUrl != null) 'svg_file_url': svgFileUrl,
+      if (svgHash != null) 'svg_hash': svgHash,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DraftRadicalVariantEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? draftRadicalId,
+    Value<String>? shape,
+    Value<Position>? position,
+    Value<bool>? isLocked,
+    Value<String?>? svgFileName,
+    Value<String?>? svgFileUrl,
+    Value<String?>? svgHash,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return DraftRadicalVariantEntriesCompanion(
+      id: id ?? this.id,
+      draftRadicalId: draftRadicalId ?? this.draftRadicalId,
+      shape: shape ?? this.shape,
+      position: position ?? this.position,
+      isLocked: isLocked ?? this.isLocked,
+      svgFileName: svgFileName ?? this.svgFileName,
+      svgFileUrl: svgFileUrl ?? this.svgFileUrl,
+      svgHash: svgHash ?? this.svgHash,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (draftRadicalId.present) {
+      map['draft_radical_id'] = Variable<int>(draftRadicalId.value);
+    }
+    if (shape.present) {
+      map['shape'] = Variable<String>(shape.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<String>(
+        $DraftRadicalVariantEntriesTable.$converterposition.toSql(
+          position.value,
+        ),
+      );
+    }
+    if (isLocked.present) {
+      map['is_locked'] = Variable<bool>(isLocked.value);
+    }
+    if (svgFileName.present) {
+      map['svg_file_name'] = Variable<String>(svgFileName.value);
+    }
+    if (svgFileUrl.present) {
+      map['svg_file_url'] = Variable<String>(svgFileUrl.value);
+    }
+    if (svgHash.present) {
+      map['svg_hash'] = Variable<String>(svgHash.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalVariantEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('draftRadicalId: $draftRadicalId, ')
+          ..write('shape: $shape, ')
+          ..write('position: $position, ')
+          ..write('isLocked: $isLocked, ')
+          ..write('svgFileName: $svgFileName, ')
+          ..write('svgFileUrl: $svgFileUrl, ')
+          ..write('svgHash: $svgHash, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $RadicalEntriesTable extends RadicalEntries
     with TableInfo<$RadicalEntriesTable, RadicalEntry> {
   @override
@@ -11196,6 +12558,10 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $SourceVocabLevelEntriesTable(this);
   late final $JmdictFuriganaEntriesTable jmdictFuriganaEntries =
       $JmdictFuriganaEntriesTable(this);
+  late final $DraftRadicalEntriesTable draftRadicalEntries =
+      $DraftRadicalEntriesTable(this);
+  late final $DraftRadicalVariantEntriesTable draftRadicalVariantEntries =
+      $DraftRadicalVariantEntriesTable(this);
   late final $RadicalEntriesTable radicalEntries = $RadicalEntriesTable(this);
   late final $RadicalI18nEntriesTable radicalI18nEntries =
       $RadicalI18nEntriesTable(this);
@@ -11235,6 +12601,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     sourceJlptLevelEntries,
     sourceVocabLevelEntries,
     jmdictFuriganaEntries,
+    draftRadicalEntries,
+    draftRadicalVariantEntries,
     radicalEntries,
     radicalI18nEntries,
     radicalVariantEntries,
@@ -11251,6 +12619,15 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'draft_radical_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('draft_radical_variant_entries', kind: UpdateKind.delete),
+      ],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'radical_entries',

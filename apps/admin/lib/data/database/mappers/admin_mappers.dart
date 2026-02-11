@@ -2,6 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../../domain/entities/data_import.dart';
+import '../../../domain/entities/draft_radical.dart';
+import '../../../domain/entities/draft_radical_variant.dart';
 import '../../../domain/entities/jlpt_level.dart';
 import '../../../domain/entities/jmdict_furigana.dart';
 import '../../../domain/entities/kanji_component_review.dart';
@@ -259,6 +261,69 @@ extension RadicalVariantEntryToDomain on RadicalVariantEntry {
   RadicalVariant toDomain() => RadicalVariant(
         id: id,
         radicalId: radicalId,
+        shape: shape,
+        position: position,
+        isLocked: isLocked,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- DraftRadical ↔ DraftRadicalEntry --
+
+extension DraftRadicalToCompanion on DraftRadical {
+  DraftRadicalEntriesCompanion toCompanion() => DraftRadicalEntriesCompanion(
+        masterSymbol: Value(masterSymbol),
+        strokeCount: Value(strokeCount),
+        impactScore: Value(impactScore),
+        minJlptLevel: Value(minJlptLevel),
+        minGrade: Value(minGrade),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+        isOfficial: Value(isOfficial),
+      );
+}
+
+extension DraftRadicalEntryToDomain on DraftRadicalEntry {
+  DraftRadical toDomain() => DraftRadical(
+        id: id,
+        masterSymbol: masterSymbol,
+        strokeCount: strokeCount,
+        impactScore: impactScore,
+        minJlptLevel: minJlptLevel,
+        minGrade: minGrade,
+        svgFileName: svgFileName,
+        svgFileUrl: svgFileUrl,
+        svgHash: svgHash,
+        isOfficial: isOfficial,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- DraftRadicalVariant ↔ DraftRadicalVariantEntry --
+
+extension DraftRadicalVariantToCompanion on DraftRadicalVariant {
+  DraftRadicalVariantEntriesCompanion toCompanion() =>
+      DraftRadicalVariantEntriesCompanion(
+        draftRadicalId: Value(draftRadicalId),
+        shape: Value(shape),
+        position: Value(position),
+        isLocked: Value(isLocked),
+        svgFileName: Value(svgFileName),
+        svgFileUrl: Value(svgFileUrl),
+        svgHash: Value(svgHash),
+      );
+}
+
+extension DraftRadicalVariantEntryToDomain on DraftRadicalVariantEntry {
+  DraftRadicalVariant toDomain() => DraftRadicalVariant(
+        id: id,
+        draftRadicalId: draftRadicalId,
         shape: shape,
         position: position,
         isLocked: isLocked,

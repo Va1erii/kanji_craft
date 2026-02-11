@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:kanji_craft_admin/domain/entities/data_import.dart';
+import 'package:kanji_craft_admin/domain/entities/draft_radical.dart';
+import 'package:kanji_craft_admin/domain/entities/draft_radical_variant.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
 import 'package:kanji_craft_admin/domain/entities/jmdict_furigana.dart';
@@ -8,6 +10,7 @@ import 'package:kanji_craft_admin/domain/entities/kanji_component_review.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_admin/domain/entities/vocab_level.dart';
+import 'package:kanji_craft_core/domain/entities/radical/position.dart';
 import 'package:kanji_craft_core/domain/entities/verification_status.dart';
 
 final _epoch = DateTime.utc(2025, 1, 1);
@@ -208,4 +211,58 @@ JmdictFurigana fakeJmdictFurigana({
             {'ruby': text.substring(0, 1), 'rt': reading.substring(0, 1)},
             {'ruby': text.substring(1)},
           ]),
+    );
+
+DraftRadical fakeDraftRadical({
+  int? id,
+  String masterSymbol = '木',
+  int? strokeCount = 4,
+  int? impactScore,
+  int? minJlptLevel,
+  int? minGrade,
+  String? svgFileName,
+  String? svgFileUrl,
+  String? svgHash,
+  bool isOfficial = false,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) =>
+    DraftRadical(
+      id: id ?? _nextId++,
+      masterSymbol: masterSymbol,
+      strokeCount: strokeCount,
+      impactScore: impactScore,
+      minJlptLevel: minJlptLevel,
+      minGrade: minGrade,
+      svgFileName: svgFileName,
+      svgFileUrl: svgFileUrl,
+      svgHash: svgHash,
+      isOfficial: isOfficial,
+      createdAt: createdAt ?? _epoch,
+      updatedAt: updatedAt ?? _epoch,
+    );
+
+DraftRadicalVariant fakeDraftRadicalVariant({
+  int? id,
+  int draftRadicalId = 1,
+  String shape = '木',
+  Position position = Position.unknown,
+  bool isLocked = false,
+  String? svgFileName,
+  String? svgFileUrl,
+  String? svgHash,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) =>
+    DraftRadicalVariant(
+      id: id ?? _nextId++,
+      draftRadicalId: draftRadicalId,
+      shape: shape,
+      position: position,
+      isLocked: isLocked,
+      svgFileName: svgFileName,
+      svgFileUrl: svgFileUrl,
+      svgHash: svgHash,
+      createdAt: createdAt ?? _epoch,
+      updatedAt: updatedAt ?? _epoch,
     );

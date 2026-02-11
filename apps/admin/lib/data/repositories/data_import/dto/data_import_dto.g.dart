@@ -46,6 +46,7 @@ const _$ImportSourceEnumMap = {
   ImportSource.kanjivg: 'kanjivg',
   ImportSource.kanjidic: 'kanjidic',
   ImportSource.jmdict: 'jmdict',
+  ImportSource.jmdictFurigana: 'jmdictFurigana',
 };
 
 const _$ImportStatusEnumMap = {

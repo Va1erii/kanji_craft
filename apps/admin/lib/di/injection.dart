@@ -109,6 +109,7 @@ Future<void> configureDependencies() async {
       kanjiVgRepository: getIt<RawKanjiVgRepository>(),
       kanjidicRepository: getIt<RawKanjidicRepository>(),
       jmdictRepository: getIt<RawJmdictRepository>(),
+      jmdictFuriganaRepository: getIt<JmdictFuriganaRepository>(),
       sourceParser: getIt<SourceParser>(),
     ),
   );

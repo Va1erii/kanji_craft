@@ -44,3 +44,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/jlpt_mapping.csv
+    - assets/n1.csv
+    - assets/n2.csv
+    - assets/n3.csv
+    - assets/n4.csv
+    - assets/n5.csv

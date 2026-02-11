@@ -6,8 +6,10 @@ import 'package:kanji_craft_core/design_system/theme/app_theme.dart';
 
 import 'app_router.dart';
 import 'data/services/jlpt_mapping_parser.dart';
+import 'data/services/jlpt_vocab_mapping_parser.dart';
 import 'di/injection.dart';
 import 'domain/repositories/source_jlpt_level_repository.dart';
+import 'domain/repositories/source_vocab_level_repository.dart';
 import 'presentation/data_import/bloc/data_import_bloc.dart';
 import 'presentation/hydration/bloc/hydration_bloc.dart';
 import 'presentation/hydration/bloc/hydration_event.dart';
@@ -16,6 +18,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
   await _loadJlptMappingIfNeeded();
+  await _loadVocabLevelsIfNeeded();
   runApp(const KanjiCraftAdmin());
 }
 
@@ -26,6 +29,20 @@ Future<void> _loadJlptMappingIfNeeded() async {
 
   final csv = await rootBundle.loadString('assets/jlpt_mapping.csv');
   final levels = JlptMappingParser.parse(csv);
+  await repo.replaceAll(levels);
+}
+
+Future<void> _loadVocabLevelsIfNeeded() async {
+  final repo = getIt<SourceVocabLevelRepository>();
+  final count = await repo.count();
+  if (count > 0) return;
+
+  final filesByLevel = <int, String>{};
+  for (var level = 1; level <= 5; level++) {
+    filesByLevel[level] =
+        await rootBundle.loadString('assets/n$level.csv');
+  }
+  final levels = JlptVocabMappingParser.parseAll(filesByLevel);
   await repo.replaceAll(levels);
 }
 

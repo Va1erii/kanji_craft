@@ -3,10 +3,12 @@ import 'dart:io';
 import '../entities/data_import.dart';
 import '../entities/import_source.dart';
 import '../entities/import_status.dart';
+import '../entities/jmdict_furigana.dart';
 import '../entities/raw_jmdict.dart';
 import '../entities/raw_kanjidic.dart';
 import '../entities/raw_kanjivg.dart';
 import '../repositories/data_import_repository.dart';
+import '../repositories/jmdict_furigana_repository.dart';
 import '../repositories/raw_jmdict_repository.dart';
 import '../repositories/raw_kanjidic_repository.dart';
 import '../repositories/raw_kanjivg_repository.dart';
@@ -73,6 +75,13 @@ _SourceConfig _sourceConfig(ImportSource source) => switch (source) {
           ],
           isOptionalFile: null,
         ),
+      ImportSource.jmdictFurigana => (
+          folderPattern: RegExp(r'jmdictfurigana[_-](.+)'),
+          requiredFiles: [
+            (String name) => name == 'JmdictFurigana.json.tar.gz',
+          ],
+          isOptionalFile: null,
+        ),
     };
 
 /// Orchestrates the full ingestion pipeline for a source data folder.
@@ -95,17 +104,20 @@ class IngestSourceData {
     required RawKanjiVgRepository kanjiVgRepository,
     required RawKanjidicRepository kanjidicRepository,
     required RawJmdictRepository jmdictRepository,
+    required JmdictFuriganaRepository jmdictFuriganaRepository,
     required SourceParser sourceParser,
   })  : _importRepository = importRepository,
         _kanjiVgRepository = kanjiVgRepository,
         _kanjidicRepository = kanjidicRepository,
         _jmdictRepository = jmdictRepository,
+        _jmdictFuriganaRepository = jmdictFuriganaRepository,
         _sourceParser = sourceParser;
 
   final DataImportRepository _importRepository;
   final RawKanjiVgRepository _kanjiVgRepository;
   final RawKanjidicRepository _kanjidicRepository;
   final RawJmdictRepository _jmdictRepository;
+  final JmdictFuriganaRepository _jmdictFuriganaRepository;
   final SourceParser _sourceParser;
 
   static const _batchSize = 500;
@@ -190,7 +202,11 @@ class IngestSourceData {
         importId: dataImport.id,
       );
 
-      yield* _insertEntries(source: source, entries: result.entries);
+      yield* _insertEntries(
+        source: source,
+        entries: result.entries,
+        importId: dataImport.id,
+      );
 
       final updated = await _importRepository.updateStatus(
         id: dataImport.id,
@@ -214,6 +230,7 @@ class IngestSourceData {
   Stream<IngestionProgress> _insertEntries({
     required ImportSource source,
     required List<Object> entries,
+    required int importId,
   }) =>
       switch (source) {
         ImportSource.kanjivg => _batchInsert(
@@ -228,6 +245,13 @@ class IngestSourceData {
             entries.cast<RawJmdict>(),
             (batch) => _jmdictRepository.insertBatch(batch),
           ),
+        ImportSource.jmdictFurigana => _batchInsert(
+            entries.cast<JmdictFurigana>(),
+            (batch) => _jmdictFuriganaRepository.insertBatch(
+                  batch,
+                  importId: importId,
+                ),
+          ),
       };
 
   Future<void> _deleteRawRows({
@@ -241,6 +265,8 @@ class IngestSourceData {
         await _kanjidicRepository.deleteByImportId(importId);
       case ImportSource.jmdict:
         await _jmdictRepository.deleteByImportId(importId);
+      case ImportSource.jmdictFurigana:
+        await _jmdictFuriganaRepository.deleteByImportId(importId);
     }
   }
 

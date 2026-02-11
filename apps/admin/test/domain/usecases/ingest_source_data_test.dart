@@ -7,6 +7,7 @@ import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dar
 import 'package:kanji_craft_admin/domain/repositories/raw_jmdict_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjivg_repository.dart';
+import 'package:kanji_craft_admin/domain/repositories/jmdict_furigana_repository.dart';
 import 'package:kanji_craft_admin/domain/services/parse_result.dart';
 import 'package:kanji_craft_admin/domain/services/source_parser.dart';
 import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
@@ -23,6 +24,9 @@ class MockRawKanjidicRepository extends Mock
 
 class MockRawJmdictRepository extends Mock implements RawJmdictRepository {}
 
+class MockJmdictFuriganaRepository extends Mock
+    implements JmdictFuriganaRepository {}
+
 class MockSourceParser extends Mock implements SourceParser {}
 
 /// Creates a subdirectory with an exact name inside the system temp dir.
@@ -37,6 +41,7 @@ void main() {
   late MockRawKanjiVgRepository mockKanjiVgRepo;
   late MockRawKanjidicRepository mockKanjidicRepo;
   late MockRawJmdictRepository mockJmdictRepo;
+  late MockJmdictFuriganaRepository mockJmdictFuriganaRepo;
   late MockSourceParser mockParser;
   late IngestSourceData useCase;
 
@@ -46,12 +51,14 @@ void main() {
     mockKanjiVgRepo = MockRawKanjiVgRepository();
     mockKanjidicRepo = MockRawKanjidicRepository();
     mockJmdictRepo = MockRawJmdictRepository();
+    mockJmdictFuriganaRepo = MockJmdictFuriganaRepository();
     mockParser = MockSourceParser();
     useCase = IngestSourceData(
       importRepository: mockImportRepo,
       kanjiVgRepository: mockKanjiVgRepo,
       kanjidicRepository: mockKanjidicRepo,
       jmdictRepository: mockJmdictRepo,
+      jmdictFuriganaRepository: mockJmdictFuriganaRepo,
       sourceParser: mockParser,
     );
   });
@@ -104,6 +111,11 @@ void main() {
     when(() => mockKanjidicRepo.deleteByImportId(any()))
         .thenAnswer((_) async {});
     when(() => mockJmdictRepo.deleteByImportId(any()))
+        .thenAnswer((_) async {});
+    when(() => mockJmdictFuriganaRepo.insertBatch(any(),
+            importId: any(named: 'importId')))
+        .thenAnswer((_) async {});
+    when(() => mockJmdictFuriganaRepo.deleteByImportId(any()))
         .thenAnswer((_) async {});
   }
 

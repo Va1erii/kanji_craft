@@ -4,6 +4,7 @@ export 'design_system/theme/app_theme.dart';
 // Top-level enums
 export 'domain/entities/item_type.dart';
 export 'domain/entities/logic_hint.dart';
+export 'domain/entities/pos_tag.dart';
 export 'domain/entities/radical_type.dart';
 export 'domain/entities/reading_priority.dart';
 export 'domain/entities/study_path.dart';

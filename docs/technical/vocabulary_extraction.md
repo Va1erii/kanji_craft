@@ -382,6 +382,21 @@ Some JMdict entries exist only to point to other entries via `xref` and have no 
 ### Missing example sentences
 Not every vocabulary word has Tanaka Corpus examples. Words without sentences simply have no `vocabulary_sentences` row. The UI gracefully hides the sentence section.
 
+## Warnings
+
+The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+
+| Condition | Severity | Rationale |
+|---|---|---|
+| Orphan kanji in word (character not in `kanji` table), JLPT-mapped word | high | Learner-facing gap — word in a JLPT study path will have a permanent Ghost Kanji |
+| Orphan kanji in word, non-JLPT word | low | Informational — word still imported with Ghost rendering for the missing character |
+| Word with no readings after Step 2 | high | Data integrity — every word must have at least one reading; indicates a parser bug |
+| Word with no English (`en`) glosses after Step 3 | high | Data integrity — JMdict always has English glosses; indicates a parser or filter bug |
+| Word not found in `jmdict_furigana` | low | Informational — heuristic segmentation used as fallback; may produce less accurate segments |
+| Kanji segment with unresolved `kanji_id` during segmentation | low | Informational — kanji segment created without FK reference; renders as Ghost in the UI |
+
+**JLPT-aware severity:** The "orphan kanji" condition uses a two-tier pattern — `high` if the word is JLPT-mapped (via `source_vocab_levels` or kanji-derived level), `low` otherwise.
+
 ## Business Rules
 
 1. Every `raw_jmdict` entry that meets selection criteria produces exactly one `vocabulary` row (upsert on `word`).

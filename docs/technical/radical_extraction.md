@@ -246,6 +246,17 @@ If all kanji containing a radical have `null` for `min_grade` or `min_jlpt_level
 
 A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanjidic` (e.g. rare components, non-standard decompositions). The radical row is still created — it just won't have readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
 
+## Warnings
+
+The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+
+| Condition | Severity | Rationale |
+|---|---|---|
+| Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
+| Compound child without own `raw_kanjivg` entry (element has children in parent tree but no standalone entry) | low | Informational — indicates missing KanjiVG coverage for a sub-component |
+
+Both conditions are non-blocking — the extraction continues with degraded data rather than failing.
+
 ## Output Summary
 
 | Table | What gets created | Source |

@@ -466,6 +466,31 @@ flutter run -d macos --target lib/pipeline/ingest_kanjivg.dart
 # Triggered from Admin Dashboard after review is complete
 ```
 
+## Warning Pattern
+
+All extraction phases use the `Warning` class (`apps/admin/lib/domain/entities/warning.dart`) to surface issues during pipeline execution. Warnings are collected per phase and displayed in the Admin Tool's phase cards.
+
+```dart
+enum WarningSeverity { low, high }
+
+class Warning {
+  const Warning(this.message, {this.severity = WarningSeverity.low});
+  final String message;
+  final WarningSeverity severity;
+}
+```
+
+**Severity guidelines:**
+
+| Severity | When to use | Admin action |
+|---|---|---|
+| `high` | Learner-facing content gap or data integrity violation — an item in a JLPT study path is missing data, or a prerequisite invariant is broken | Investigate before promotion |
+| `low` | Informational — expected data gaps for rare/ungraded characters, or non-critical quality notes | Review at leisure |
+
+**JLPT-aware severity:** Many conditions use a two-tier pattern — `high` if the affected entity is JLPT-mapped (will appear in a study path), `low` otherwise. This ensures admin attention focuses on learner-visible content.
+
+Each phase's dedicated doc contains a **Warnings** section with a table listing all conditions, their severity, and rationale. See [radical_extraction.md](radical_extraction.md), [kanji_composition.md](kanji_composition.md), [component_linking.md](component_linking.md), [svg_processing.md](svg_processing.md), [vocabulary_extraction.md](vocabulary_extraction.md).
+
 ## Related Docs
 
 - [ingestion.md](ingestion.md) — Phase 1 correctness invariants, known gaps, and recovery procedures

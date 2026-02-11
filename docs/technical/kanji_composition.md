@@ -316,6 +316,21 @@ Same outcome as "Kanji outside JLPT set" — `min_jlpt_level = null`. The kanji 
 ### Kanji with empty readings
 Should not occur — KANJIDIC2 guarantees at least one `ja_on` or `ja_kun` reading per character. If encountered, log a warning and create the kanji row without readings. Content validation tooling should flag these for review.
 
+## Warnings
+
+The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+
+| Condition | Severity | Rationale |
+|---|---|---|
+| JLPT-mapped kanji missing from KANJIDIC import | high | Learner-facing gap — kanji expected in a study path won't exist in the dataset |
+| No draft kanji ID for character after batch insert | high | Internal error — kanji row insertion failed silently |
+| Kanji with no readings (empty `ja_on` and `ja_kun`), JLPT-mapped | high | Learner-facing content gap — kanji in study path will have no readings |
+| Kanji with no readings, non-JLPT | low | Informational — may be a rare or ungraded character |
+| Missing English (`en`) meanings, JLPT-mapped | high | Learner-facing content gap — kanji in study path will have no English meanings |
+| Missing English (`en`) meanings, non-JLPT | low | Informational — may be a rare character with no English coverage in KANJIDIC2 |
+
+**JLPT-aware severity:** The "no readings" and "missing English" conditions use a two-tier pattern — `high` if the kanji appears in the JLPT mapping table (`source_jlpt_levels`), `low` otherwise. This focuses admin attention on learner-visible content.
+
 ## Output Summary
 
 | Table | What gets created | Source |

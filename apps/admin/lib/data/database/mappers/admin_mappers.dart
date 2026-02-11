@@ -372,3 +372,122 @@ extension KanjiComponentEntryToDomain on KanjiComponentEntry {
         updatedAt: updatedAt,
       );
 }
+
+// -- Vocabulary ↔ VocabularyEntry --
+
+extension VocabularyToCompanion on Vocabulary {
+  VocabularyEntriesCompanion toCompanion() => VocabularyEntriesCompanion(
+        word: Value(word),
+        minJlptLevel: Value(minJlptLevel),
+        frequencyRank: Value(frequencyRank),
+      );
+}
+
+extension VocabularyEntryToDomain on VocabularyEntry {
+  Vocabulary toDomain() => Vocabulary(
+        id: id,
+        word: word,
+        minJlptLevel: minJlptLevel,
+        frequencyRank: frequencyRank,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- VocabularyReading ↔ VocabularyReadingEntry --
+
+extension VocabularyReadingToCompanion on VocabularyReading {
+  VocabularyReadingEntriesCompanion toCompanion() =>
+      VocabularyReadingEntriesCompanion(
+        vocabularyId: Value(vocabularyId),
+        reading: Value(reading),
+        priority: Value(priority),
+      );
+}
+
+extension VocabularyReadingEntryToDomain on VocabularyReadingEntry {
+  VocabularyReading toDomain() => VocabularyReading(
+        id: id,
+        vocabularyId: vocabularyId,
+        reading: reading,
+        priority: priority,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- VocabularyI18n ↔ VocabularyI18nEntry --
+
+extension VocabularyI18nToCompanion on VocabularyI18n {
+  VocabularyI18nEntriesCompanion toCompanion() =>
+      VocabularyI18nEntriesCompanion(
+        vocabularyId: Value(vocabularyId),
+        langCode: Value(langCode),
+        meanings: Value(meanings),
+        systemMnemonic: Value(systemMnemonic),
+        searchTags: Value(searchTags),
+      );
+}
+
+extension VocabularyI18nEntryToDomain on VocabularyI18nEntry {
+  VocabularyI18n toDomain() => VocabularyI18n(
+        id: id,
+        vocabularyId: vocabularyId,
+        langCode: langCode,
+        meanings: meanings,
+        systemMnemonic: systemMnemonic,
+        searchTags: searchTags,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- VocabularyKanji ↔ VocabularyKanjiEntry --
+
+extension VocabularyKanjiToCompanion on VocabularyKanji {
+  VocabularyKanjiEntriesCompanion toCompanion() =>
+      VocabularyKanjiEntriesCompanion(
+        vocabularyId: Value(vocabularyId),
+        kanjiId: Value(kanjiId),
+        position: Value(position),
+      );
+}
+
+extension VocabularyKanjiEntryToDomain on VocabularyKanjiEntry {
+  VocabularyKanji toDomain() => VocabularyKanji(
+        id: id,
+        vocabularyId: vocabularyId,
+        kanjiId: kanjiId,
+        position: position,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- VocabularySentence ↔ VocabularySentenceEntry --
+
+extension VocabularySentenceToCompanion on VocabularySentence {
+  VocabularySentenceEntriesCompanion toCompanion() =>
+      VocabularySentenceEntriesCompanion(
+        vocabularyId: Value(vocabularyId),
+        langCode: Value(langCode),
+        sentenceJa: Value(sentenceJa),
+        sentenceFurigana: Value(sentenceFurigana),
+        sentenceTranslated: Value(sentenceTranslated),
+        verificationStatus: Value(verificationStatus),
+      );
+}
+
+extension VocabularySentenceEntryToDomain on VocabularySentenceEntry {
+  VocabularySentence toDomain() => VocabularySentence(
+        id: id,
+        vocabularyId: vocabularyId,
+        langCode: langCode,
+        sentenceJa: sentenceJa,
+        sentenceFurigana: sentenceFurigana,
+        sentenceTranslated: sentenceTranslated,
+        verificationStatus: verificationStatus,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}

@@ -27,6 +27,11 @@ import 'tables/raw_kanjidic_table.dart';
 import 'tables/raw_kanjivg_table.dart';
 import 'tables/source_jlpt_level_table.dart';
 import 'tables/sync_metadata_table.dart';
+import 'tables/vocabulary_i18n_table.dart';
+import 'tables/vocabulary_kanji_table.dart';
+import 'tables/vocabulary_reading_table.dart';
+import 'tables/vocabulary_sentence_table.dart';
+import 'tables/vocabulary_table.dart';
 
 part 'admin_database.g.dart';
 
@@ -46,6 +51,11 @@ part 'admin_database.g.dart';
     KanjiReadingEntries,
     KanjiI18nEntries,
     KanjiComponentEntries,
+    VocabularyEntries,
+    VocabularyReadingEntries,
+    VocabularyI18nEntries,
+    VocabularyKanjiEntries,
+    VocabularySentenceEntries,
   ],
 )
 class AdminDatabase extends _$AdminDatabase {
@@ -54,7 +64,7 @@ class AdminDatabase extends _$AdminDatabase {
   AdminDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -96,6 +106,13 @@ class AdminDatabase extends _$AdminDatabase {
             await m.createTable(kanjiReadingEntries);
             await m.createTable(kanjiI18nEntries);
             await m.createTable(kanjiComponentEntries);
+          }
+          if (from < 8) {
+            await m.createTable(vocabularyEntries);
+            await m.createTable(vocabularyReadingEntries);
+            await m.createTable(vocabularyI18nEntries);
+            await m.createTable(vocabularyKanjiEntries);
+            await m.createTable(vocabularySentenceEntries);
           }
         },
       );

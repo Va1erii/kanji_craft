@@ -96,6 +96,8 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `raw_kanjivg.md` | RawKanjiVg staging table | Components is recursive JSONB tree |
 | `raw_kanjidic.md` | RawKanjidic staging table | Meanings grouped by lang_code in JSONB |
 | `raw_jmdict.md` | RawJmdict staging table | Composite PK: import_id + ent_seq |
+| `jmdict_furigana.md` | JmdictFurigana staging table | Composite PK: (import_id, text, reading); tracked in data_imports |
+| `source_vocab_levels.md` | SourceVocabLevel reference table | Composite PK: (expression, reading); local-only, not tracked in data_imports |
 
 ### Technical Docs (`docs/technical/`) — read when implementing pipeline or infrastructure
 

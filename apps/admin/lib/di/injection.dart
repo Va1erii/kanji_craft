@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:get_it/get_it.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/database/admin_database.dart';
@@ -15,6 +19,7 @@ import '../data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.da
 import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import '../data/repositories/source_vocab_level/drift_source_vocab_level_repository.dart';
 import '../data/services/drift_admin_state_writer.dart';
+import '../data/services/file_svg_cache.dart';
 import '../data/services/source_parser_impl.dart';
 import '../data/services/supabase_admin_state_reader.dart';
 import '../domain/repositories/data_import_repository.dart';
@@ -29,6 +34,7 @@ import '../domain/repositories/source_jlpt_level_repository.dart';
 import '../domain/repositories/source_vocab_level_repository.dart';
 import '../domain/services/admin_state_reader.dart';
 import '../domain/services/admin_state_writer.dart';
+import '../domain/services/svg_cache.dart';
 import '../data/services/radical_scanner.dart';
 import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
@@ -102,6 +108,10 @@ Future<void> configureDependencies() async {
   );
 
   // -- Services --
+  final appSupportDir = await getApplicationSupportDirectory();
+  getIt.registerLazySingleton<SvgCache>(
+    () => FileSvgCache(Directory(p.join(appSupportDir.path, 'svg_cache'))),
+  );
   getIt.registerLazySingleton<RadicalScanner>(
     () => RadicalScanner(),
   );
@@ -139,6 +149,7 @@ Future<void> configureDependencies() async {
       kanjidicRepository: getIt<RawKanjidicRepository>(),
       jmdictRepository: getIt<RawJmdictRepository>(),
       jmdictFuriganaRepository: getIt<JmdictFuriganaRepository>(),
+      svgCache: getIt<SvgCache>(),
       supabaseDataImportDataSource: getIt<SupabaseDataImportDataSource>(),
     ),
   );
@@ -160,6 +171,7 @@ Future<void> configureDependencies() async {
     () => ProcessSvgs(
       radicalRepository: getIt<RadicalRepository>(),
       kanjiRepository: getIt<KanjiRepository>(),
+      svgCache: getIt<SvgCache>(),
       supabaseUrl: _supabaseUrl,
     ),
   );

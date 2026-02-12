@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import '../entities/warning.dart';
 import '../repositories/kanji_repository.dart';
 import '../repositories/radical_repository.dart';
+import '../services/svg_cache.dart';
 
 /// Result returned by [ProcessSvgs] after matching SVGs to entities.
 class SvgProcessingResult {
@@ -34,13 +35,16 @@ class ProcessSvgs {
   ProcessSvgs({
     required RadicalRepository radicalRepository,
     required KanjiRepository kanjiRepository,
+    required SvgCache svgCache,
     required String supabaseUrl,
   })  : _radicalRepository = radicalRepository,
         _kanjiRepository = kanjiRepository,
+        _svgCache = svgCache,
         _supabaseUrl = supabaseUrl;
 
   final RadicalRepository _radicalRepository;
   final KanjiRepository _kanjiRepository;
+  final SvgCache _svgCache;
   final String _supabaseUrl;
 
   Future<SvgProcessingResult> call(String archivePath) async {
@@ -58,6 +62,9 @@ class ProcessSvgs {
         svgBytesMap[basename] = file.content;
       }
     }
+
+    // Step 1b: Persist SVG bytes to local cache.
+    await _svgCache.putAll(svgBytesMap);
 
     // Step 2: Compute SHA-256 hashes.
     final svgHashMap = <String, String>{};

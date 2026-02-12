@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kanji_craft_admin/data/database/admin_database.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji/drift_kanji_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/radical/drift_radical_repository.dart';
+import 'package:kanji_craft_admin/data/services/file_svg_cache.dart';
 import 'package:kanji_craft_admin/domain/entities/warning.dart';
 import 'package:kanji_craft_admin/domain/usecases/process_svgs.dart';
 
@@ -41,6 +42,8 @@ void main() {
   late AdminDatabase db;
   late DriftRadicalRepository radicalRepo;
   late DriftKanjiRepository kanjiRepo;
+  late Directory svgCacheDir;
+  late FileSvgCache svgCache;
   late ProcessSvgs processSvgs;
 
   setUp(() {
@@ -49,14 +52,22 @@ void main() {
     final repos = createReposFromDb(db);
     radicalRepo = repos.radicals;
     kanjiRepo = repos.kanji;
+    svgCacheDir = Directory.systemTemp.createTempSync('svg_cache_test_');
+    svgCache = FileSvgCache(svgCacheDir);
     processSvgs = ProcessSvgs(
       radicalRepository: radicalRepo,
       kanjiRepository: kanjiRepo,
+      svgCache: svgCache,
       supabaseUrl: _supabaseUrl,
     );
   });
 
-  tearDown(() => db.close());
+  tearDown(() {
+    db.close();
+    if (svgCacheDir.existsSync()) {
+      svgCacheDir.deleteSync(recursive: true);
+    }
+  });
 
   group('characterToSvgFilename', () {
     test('BMP character pads to 5 digits', () {
@@ -318,6 +329,79 @@ void main() {
         highWarnings.any((w) => w.message.contains('氵')),
         isTrue,
       );
+    });
+
+    test('SVG bytes are cached during processing', () async {
+      final svgMizu = [60, 115, 118, 103, 62, 109, 105, 122, 117];
+      final svgKi = [60, 115, 118, 103, 62, 107, 105];
+
+      final zipPath = _createTestZip({
+        '06c34.svg': svgMizu, // 水
+        '06728.svg': svgKi, // 木
+      });
+
+      await radicalRepo.upsertDraftRadical(fakeDraftRadical(
+        masterSymbol: '水',
+      ));
+
+      await processSvgs.call(zipPath);
+
+      // Both SVGs should be cached, even though only 水 matched.
+      expect(await svgCache.count(), 2);
+      expect(await svgCache.contains('06c34.svg'), isTrue);
+      expect(await svgCache.contains('06728.svg'), isTrue);
+
+      final cachedMizu = await svgCache.get('06c34.svg');
+      expect(cachedMizu, svgMizu);
+    });
+
+    test('unmatched SVGs are also cached', () async {
+      final zipPath = _createTestZip({
+        '0abcd.svg': [4, 5, 6],
+        '0ffff.svg': [7, 8, 9],
+      });
+
+      await processSvgs.call(zipPath);
+
+      expect(await svgCache.count(), 2);
+      expect(await svgCache.get('0abcd.svg'), [4, 5, 6]);
+      expect(await svgCache.get('0ffff.svg'), [7, 8, 9]);
+    });
+
+    test('cached SVG is retrievable by path', () async {
+      final svgBytes = [60, 115, 118, 103, 62];
+      final zipPath = _createTestZip({'06c34.svg': svgBytes});
+
+      await radicalRepo.upsertDraftRadical(fakeDraftRadical(
+        masterSymbol: '水',
+      ));
+
+      await processSvgs.call(zipPath);
+
+      final path = await svgCache.getPath('06c34.svg');
+      expect(path, isNotNull);
+      expect(File(path!).readAsBytesSync(), svgBytes);
+    });
+
+    test('re-running processing overwrites cache', () async {
+      final svgV1 = [1, 2, 3];
+      final svgV2 = [4, 5, 6];
+
+      final zipPath1 = _createTestZip({'06c34.svg': svgV1});
+      await processSvgs.call(zipPath1);
+      expect(await svgCache.get('06c34.svg'), svgV1);
+
+      final zipPath2 = _createTestZip({'06c34.svg': svgV2});
+      await processSvgs.call(zipPath2);
+      expect(await svgCache.get('06c34.svg'), svgV2);
+    });
+
+    test('empty ZIP produces empty cache', () async {
+      final zipPath = _createTestZip({});
+
+      await processSvgs.call(zipPath);
+
+      expect(await svgCache.count(), 0);
     });
   });
 }

@@ -4,6 +4,7 @@ import '../repositories/jmdict_furigana_repository.dart';
 import '../repositories/raw_jmdict_repository.dart';
 import '../repositories/raw_kanjidic_repository.dart';
 import '../repositories/raw_kanjivg_repository.dart';
+import '../services/svg_cache.dart';
 import '../../data/repositories/data_import/supabase_data_import_datasource.dart';
 
 /// Deletes an import and its associated raw rows from both local DB and
@@ -15,12 +16,14 @@ class ClearImport {
     required RawKanjidicRepository kanjidicRepository,
     required RawJmdictRepository jmdictRepository,
     required JmdictFuriganaRepository jmdictFuriganaRepository,
+    required SvgCache svgCache,
     required SupabaseDataImportDataSource supabaseDataImportDataSource,
   })  : _importRepository = importRepository,
         _kanjiVgRepository = kanjiVgRepository,
         _kanjidicRepository = kanjidicRepository,
         _jmdictRepository = jmdictRepository,
         _jmdictFuriganaRepository = jmdictFuriganaRepository,
+        _svgCache = svgCache,
         _supabaseDataImportDataSource = supabaseDataImportDataSource;
 
   final DataImportRepository _importRepository;
@@ -28,6 +31,7 @@ class ClearImport {
   final RawKanjidicRepository _kanjidicRepository;
   final RawJmdictRepository _jmdictRepository;
   final JmdictFuriganaRepository _jmdictFuriganaRepository;
+  final SvgCache _svgCache;
   final SupabaseDataImportDataSource _supabaseDataImportDataSource;
 
   Future<void> call(int importId) async {
@@ -46,6 +50,7 @@ class ClearImport {
     switch (source) {
       case ImportSource.kanjivg:
         await _kanjiVgRepository.deleteByImportId(importId);
+        await _svgCache.clear();
       case ImportSource.kanjidic:
         await _kanjidicRepository.deleteByImportId(importId);
       case ImportSource.jmdict:

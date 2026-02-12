@@ -6,6 +6,7 @@ import 'package:kanji_craft_admin/domain/repositories/jmdict_furigana_repository
 import 'package:kanji_craft_admin/domain/repositories/raw_jmdict_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/domain/repositories/raw_kanjivg_repository.dart';
+import 'package:kanji_craft_admin/domain/services/svg_cache.dart';
 import 'package:kanji_craft_admin/domain/usecases/clear_import.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -23,6 +24,8 @@ class MockRawJmdictRepository extends Mock implements RawJmdictRepository {}
 class MockJmdictFuriganaRepository extends Mock
     implements JmdictFuriganaRepository {}
 
+class MockSvgCache extends Mock implements SvgCache {}
+
 class MockSupabaseDataImportDataSource extends Mock
     implements SupabaseDataImportDataSource {}
 
@@ -32,6 +35,7 @@ void main() {
   late MockRawKanjidicRepository mockKanjidicRepo;
   late MockRawJmdictRepository mockJmdictRepo;
   late MockJmdictFuriganaRepository mockJmdictFuriganaRepo;
+  late MockSvgCache mockSvgCache;
   late MockSupabaseDataImportDataSource mockSupabaseDs;
   late ClearImport useCase;
 
@@ -42,6 +46,7 @@ void main() {
     mockKanjidicRepo = MockRawKanjidicRepository();
     mockJmdictRepo = MockRawJmdictRepository();
     mockJmdictFuriganaRepo = MockJmdictFuriganaRepository();
+    mockSvgCache = MockSvgCache();
     mockSupabaseDs = MockSupabaseDataImportDataSource();
     useCase = ClearImport(
       importRepository: mockImportRepo,
@@ -49,6 +54,7 @@ void main() {
       kanjidicRepository: mockKanjidicRepo,
       jmdictRepository: mockJmdictRepo,
       jmdictFuriganaRepository: mockJmdictFuriganaRepo,
+      svgCache: mockSvgCache,
       supabaseDataImportDataSource: mockSupabaseDs,
     );
   });
@@ -56,6 +62,7 @@ void main() {
   void stubDeletesForSource(ImportSource source) {
     when(() => mockImportRepo.delete(any())).thenAnswer((_) async {});
     when(() => mockSupabaseDs.delete(any())).thenAnswer((_) async {});
+    when(() => mockSvgCache.clear()).thenAnswer((_) async {});
     when(() => mockKanjiVgRepo.deleteByImportId(any()))
         .thenAnswer((_) async {});
     when(() => mockKanjidicRepo.deleteByImportId(any()))
@@ -81,6 +88,7 @@ void main() {
       await useCase.call(importId);
 
       verify(() => mockKanjiVgRepo.deleteByImportId(importId)).called(1);
+      verify(() => mockSvgCache.clear()).called(1);
       verify(() => mockImportRepo.delete(importId)).called(1);
       verify(() => mockSupabaseDs.delete(importId)).called(1);
       verifyNever(() => mockKanjidicRepo.deleteByImportId(any()));
@@ -103,6 +111,7 @@ void main() {
       verify(() => mockKanjidicRepo.deleteByImportId(importId)).called(1);
       verify(() => mockImportRepo.delete(importId)).called(1);
       verify(() => mockSupabaseDs.delete(importId)).called(1);
+      verifyNever(() => mockSvgCache.clear());
       verifyNever(() => mockKanjiVgRepo.deleteByImportId(any()));
       verifyNever(() => mockJmdictRepo.deleteByImportId(any()));
       verifyNever(() => mockJmdictFuriganaRepo.deleteByImportId(any()));
@@ -123,6 +132,7 @@ void main() {
       verify(() => mockJmdictRepo.deleteByImportId(importId)).called(1);
       verify(() => mockImportRepo.delete(importId)).called(1);
       verify(() => mockSupabaseDs.delete(importId)).called(1);
+      verifyNever(() => mockSvgCache.clear());
       verifyNever(() => mockKanjiVgRepo.deleteByImportId(any()));
       verifyNever(() => mockKanjidicRepo.deleteByImportId(any()));
       verifyNever(() => mockJmdictFuriganaRepo.deleteByImportId(any()));
@@ -145,6 +155,7 @@ void main() {
           .called(1);
       verify(() => mockImportRepo.delete(importId)).called(1);
       verify(() => mockSupabaseDs.delete(importId)).called(1);
+      verifyNever(() => mockSvgCache.clear());
       verifyNever(() => mockKanjiVgRepo.deleteByImportId(any()));
       verifyNever(() => mockKanjidicRepo.deleteByImportId(any()));
       verifyNever(() => mockJmdictRepo.deleteByImportId(any()));
@@ -158,6 +169,7 @@ void main() {
 
       verifyNever(() => mockImportRepo.delete(any()));
       verifyNever(() => mockSupabaseDs.delete(any()));
+      verifyNever(() => mockSvgCache.clear());
       verifyNever(() => mockKanjiVgRepo.deleteByImportId(any()));
       verifyNever(() => mockKanjidicRepo.deleteByImportId(any()));
       verifyNever(() => mockJmdictRepo.deleteByImportId(any()));

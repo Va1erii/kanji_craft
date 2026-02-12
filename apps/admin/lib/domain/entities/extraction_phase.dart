@@ -34,17 +34,10 @@ enum ExtractionPhase {
     isImplemented: true,
     requiredSources: {ImportSource.jmdict, ImportSource.jmdictFurigana},
   ),
-  aiHeuristics(
-    label: 'AI Heuristics',
-    description: 'Generate logic hints and component metadata',
-    phaseNumber: '2.6',
-    isImplemented: false,
-    requiredSources: {},
-  ),
   aiEnrichment(
     label: 'AI Enrichment',
-    description: 'Generate mnemonics and example sentences',
-    phaseNumber: '2.7',
+    description: 'Logic hints, mnemonics, translations, and furigana',
+    phaseNumber: '2.6',
     isImplemented: false,
     requiredSources: {},
   );
@@ -71,7 +64,6 @@ enum ExtractionPhase {
         kanjiComposition => const {},
         svgProcessing => const {radicalExtraction, kanjiComposition},
         vocabularyExtraction => const {kanjiComposition},
-        aiHeuristics => const {kanjiComposition, svgProcessing},
-        aiEnrichment => const {vocabularyExtraction},
+        aiEnrichment => const {kanjiComposition, svgProcessing, vocabularyExtraction},
       };
 }

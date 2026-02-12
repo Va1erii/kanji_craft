@@ -281,29 +281,18 @@ JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline, using th
 
 See [vocabulary_extraction.md](vocabulary_extraction.md) for the full algorithm, [vocabulary.md](../entities/vocabulary.md) for the entity spec.
 
-### 2.6 AI Heuristics (Logic Hint Estimation)
+### 2.6 AI Enrichment
 
-For every new `KanjiComponent`, the system estimates `logic_hint` (semantic vs phonetic).
+Combines algorithmic logic hint estimation with AI-assisted content generation (mnemonics, translations, furigana annotation). This phase has two sub-phases:
 
-**Algorithm — Onyomi Matching:**
+- **Sub-phase A (Automated):** Estimates `logic_hint` (semantic vs phonetic) for every `kanji_component` using onyomi matching. Creates `kanji_component_reviews` rows with `verification_status = draft` and `ai_confidence` scores.
+- **Sub-phase B (Manual CSV workflow):** Exports content to CSV files for enrichment via chat-based AI tools (no programmatic API access). Five batch types cover radical mnemonics, kanji mnemonics, sentence translation, furigana annotation, and vocabulary mnemonics.
 
-1. Fetch onyomi for the kanji (e.g. 忙 = ボウ).
-2. Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi (e.g. 亡 = ボウ, モウ). Radicals don't store readings directly (see [radical.md](../entities/radical.md) rule #5).
-3. If match → set `logic_hint = phonetic`, create a `kanji_component_reviews` row with `verification_status = draft`.
-4. If no match → set `logic_hint = semantic`, create a `kanji_component_reviews` row with `verification_status = draft`.
-
-All new components start with a `draft` review row regardless of confidence. The `ai_confidence` score (0.0–1.0) on the review row helps prioritize the review queue — lowest confidence first.
+All AI-generated artifacts require human review (Phase 3) before remote sync.
 
 On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
-### 2.7 AI Enrichment
-
-Runs after vocabulary extraction. Handles tasks requiring AI that are not part of the core extraction:
-
-1. **AI Translation (non-English sentences):** For each target language other than English, use AI to translate the English source sentences. Insert into `vocabulary_sentence_i18n` with the target `lang_code` and set `vocabulary_sentences.verification_status = 'draft'`. The AI model (local or API) is configured per environment.
-2. **Furigana annotation:** Add `[kanji](reading)` bracket notation to `vocabulary_sentences.original_text` where the source sentence lacks furigana.
-
-These AI-generated artifacts require human review (Phase 3) before remote sync.
+See [ai_enrichment.md](ai_enrichment.md) for the full algorithm, CSV formats, validation rules, and batch specifications.
 
 ## Phase 3: Verification (Human-in-the-Loop)
 
@@ -498,6 +487,7 @@ Each phase's dedicated doc contains a **Warnings** section with a table listing 
 - [kanji_composition.md](kanji_composition.md) — kanji creation from KANJIDIC2
 - [component_linking.md](component_linking.md) — component linking and radical metadata derivation
 - [vocabulary_extraction.md](vocabulary_extraction.md) — vocabulary extraction from JMdict (Phase 2.5)
+- [ai_enrichment.md](ai_enrichment.md) — AI enrichment: logic hints, mnemonics, translations, furigana (Phase 2.6)
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table

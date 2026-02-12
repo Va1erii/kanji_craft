@@ -110,6 +110,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
 | `svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
 | `vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
+| `ai_enrichment.md` | Phase 2.6: logic hints, mnemonics, translations, furigana CSV workflow | Implementing AI enrichment or CSV batch export/import |
 | `supabase.md` | Auth, database, storage, RLS, migrations | Any Supabase/migration work |
 | `offline.md` | Client sync, conflict resolution | Client-side data sync |
 | `admin_workflow.md` | Admin tool UI/UX flow | Admin presentation layer |

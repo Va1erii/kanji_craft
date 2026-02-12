@@ -32,6 +32,9 @@ abstract class DataImportRepository {
     required String sourceVersion,
   });
 
+  /// Deletes an import by [id].
+  Future<void> delete(int id);
+
   /// Lists all imports, most recent first.
   Future<List<DataImport>> listAll();
 

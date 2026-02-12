@@ -82,4 +82,34 @@ class DriftKanjiRepository implements KanjiRepository {
     final result = await query.getSingle();
     return result.read(c)!;
   }
+
+  @override
+  Future<void> batchUpdateDraftKanjiSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  ) async {
+    await _db.batch((b) {
+      for (final u in updates) {
+        b.update(
+          _db.draftKanjiEntries,
+          DraftKanjiEntriesCompanion(
+            svgFileName: Value(u.svgFileName),
+            svgFileUrl: Value(u.svgFileUrl),
+            svgHash: Value(u.svgHash),
+          ),
+          where: (t) => t.id.equals(u.id),
+        );
+      }
+    });
+  }
+
+  @override
+  Future<int> countDraftKanjiWithSvg() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftKanjiEntries)
+      ..addColumns([c])
+      ..where(_db.draftKanjiEntries.svgFileName.isNotNull());
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
 }

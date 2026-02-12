@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dart';
+import 'package:kanji_craft_admin/domain/usecases/clear_import.dart';
 import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
 
 import 'data_import_event.dart';
@@ -12,14 +13,17 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
   DataImportBloc({
     required DataImportRepository importRepository,
     required IngestSourceData ingestSourceData,
+    required ClearImport clearImport,
   })  : _importRepository = importRepository,
         _ingestSourceData = ingestSourceData,
+        _clearImport = clearImport,
         super(const DataImportState.initial()) {
     on<DataImportEvent>(_onEvent);
   }
 
   final DataImportRepository _importRepository;
   final IngestSourceData _ingestSourceData;
+  final ClearImport _clearImport;
 
   Future<void> _onEvent(
     DataImportEvent event,
@@ -29,6 +33,7 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
       load: () => _onLoad(emit),
       startIngestion: (source, folderPath) =>
           _onStartIngestion(source, folderPath, emit),
+      clearImport: (importId) => _onClearImport(importId, emit),
     );
   }
 
@@ -125,6 +130,22 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
       emit(DataImportState.error(e.toString()));
       final refreshed = await _importRepository.listAll();
       emit(DataImportState.loaded(imports: refreshed));
+    }
+  }
+
+  Future<void> _onClearImport(
+    int importId,
+    Emitter<DataImportState> emit,
+  ) async {
+    try {
+      await _clearImport.call(importId);
+      final imports = await _importRepository.listAll();
+      emit(DataImportState.loaded(imports: imports));
+    } on Exception catch (e, st) {
+      log('Failed to clear import', error: e, stackTrace: st, name: 'DataImportBloc');
+      emit(DataImportState.error(e.toString()));
+      final imports = await _importRepository.listAll();
+      emit(DataImportState.loaded(imports: imports));
     }
   }
 }

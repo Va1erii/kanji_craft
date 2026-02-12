@@ -218,6 +218,50 @@ void main() {
       });
     });
 
+    group('delete', () {
+      test('removes the import row', () async {
+        final created = await repo.create(
+          source: ImportSource.kanjivg,
+          sourceVersion: '1.0',
+        );
+
+        await repo.delete(created.id);
+
+        final found = await repo.getById(created.id);
+        expect(found, isNull);
+      });
+
+      test('does not affect other imports', () async {
+        final first = await repo.create(
+          source: ImportSource.kanjivg,
+          sourceVersion: '1.0',
+        );
+        final second = await repo.create(
+          source: ImportSource.kanjidic,
+          sourceVersion: '2.0',
+        );
+
+        await repo.delete(first.id);
+
+        final remaining = await repo.listAll();
+        expect(remaining, hasLength(1));
+        expect(remaining.single.id, second.id);
+      });
+
+      test('is a no-op for non-existent id', () async {
+        await repo.create(
+          source: ImportSource.kanjivg,
+          sourceVersion: '1.0',
+        );
+
+        // Should not throw.
+        await repo.delete(999);
+
+        final list = await repo.listAll();
+        expect(list, hasLength(1));
+      });
+    });
+
     group('listAll', () {
       test('returns imports ordered by createdAt desc', () async {
         await repo.create(

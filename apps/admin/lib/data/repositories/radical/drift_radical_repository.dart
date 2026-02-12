@@ -111,4 +111,64 @@ class DriftRadicalRepository implements RadicalRepository {
     final result = await query.getSingle();
     return result.read(c)!;
   }
+
+  @override
+  Future<void> batchUpdateDraftRadicalSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  ) async {
+    await _db.batch((b) {
+      for (final u in updates) {
+        b.update(
+          _db.draftRadicalEntries,
+          DraftRadicalEntriesCompanion(
+            svgFileName: Value(u.svgFileName),
+            svgFileUrl: Value(u.svgFileUrl),
+            svgHash: Value(u.svgHash),
+          ),
+          where: (t) => t.id.equals(u.id),
+        );
+      }
+    });
+  }
+
+  @override
+  Future<void> batchUpdateDraftRadicalVariantSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  ) async {
+    await _db.batch((b) {
+      for (final u in updates) {
+        b.update(
+          _db.draftRadicalVariantEntries,
+          DraftRadicalVariantEntriesCompanion(
+            svgFileName: Value(u.svgFileName),
+            svgFileUrl: Value(u.svgFileUrl),
+            svgHash: Value(u.svgHash),
+          ),
+          where: (t) => t.id.equals(u.id),
+        );
+      }
+    });
+  }
+
+  @override
+  Future<int> countDraftRadicalsWithSvg() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftRadicalEntries)
+      ..addColumns([c])
+      ..where(_db.draftRadicalEntries.svgFileName.isNotNull());
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
+
+  @override
+  Future<int> countDraftRadicalVariantsWithSvg() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftRadicalVariantEntries)
+      ..addColumns([c])
+      ..where(_db.draftRadicalVariantEntries.svgFileName.isNotNull());
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
 }

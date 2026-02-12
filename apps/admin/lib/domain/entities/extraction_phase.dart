@@ -22,10 +22,10 @@ enum ExtractionPhase {
   ),
   svgProcessing(
     label: 'SVG Processing',
-    description: 'Process and store component SVG assets',
+    description: 'Match SVG files to radicals, variants, and kanji',
     phaseNumber: '2.4',
-    isImplemented: false,
-    requiredSources: {},
+    isImplemented: true,
+    requiredSources: {ImportSource.kanjivg},
   ),
   aiHeuristics(
     label: 'AI Heuristics',

@@ -34,7 +34,9 @@ import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
 import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/hydrate_local_db.dart';
+import '../domain/usecases/clear_import.dart';
 import '../domain/usecases/ingest_source_data.dart';
+import '../domain/usecases/process_svgs.dart';
 import '../presentation/data_import/bloc/data_import_bloc.dart';
 import '../presentation/data_import/bloc/extraction_bloc.dart';
 import '../presentation/hydration/bloc/hydration_bloc.dart';
@@ -130,6 +132,16 @@ Future<void> configureDependencies() async {
       sourceParser: getIt<SourceParser>(),
     ),
   );
+  getIt.registerLazySingleton<ClearImport>(
+    () => ClearImport(
+      importRepository: getIt<DataImportRepository>(),
+      kanjiVgRepository: getIt<RawKanjiVgRepository>(),
+      kanjidicRepository: getIt<RawKanjidicRepository>(),
+      jmdictRepository: getIt<RawJmdictRepository>(),
+      jmdictFuriganaRepository: getIt<JmdictFuriganaRepository>(),
+      supabaseDataImportDataSource: getIt<SupabaseDataImportDataSource>(),
+    ),
+  );
   getIt.registerLazySingleton<ExtractRadicals>(
     () => ExtractRadicals(
       rawKanjiVgRepository: getIt<RawKanjiVgRepository>(),
@@ -144,6 +156,13 @@ Future<void> configureDependencies() async {
       sourceJlptLevelRepository: getIt<SourceJlptLevelRepository>(),
     ),
   );
+  getIt.registerLazySingleton<ProcessSvgs>(
+    () => ProcessSvgs(
+      radicalRepository: getIt<RadicalRepository>(),
+      kanjiRepository: getIt<KanjiRepository>(),
+      supabaseUrl: _supabaseUrl,
+    ),
+  );
   getIt.registerLazySingleton<HydrateLocalDb>(
     () => HydrateLocalDb(
       reader: getIt<AdminStateReader>(),
@@ -156,6 +175,7 @@ Future<void> configureDependencies() async {
     () => DataImportBloc(
       importRepository: getIt<DataImportRepository>(),
       ingestSourceData: getIt<IngestSourceData>(),
+      clearImport: getIt<ClearImport>(),
     ),
   );
   getIt.registerFactory<HydrationBloc>(
@@ -165,6 +185,7 @@ Future<void> configureDependencies() async {
     () => ExtractionBloc(
       extractRadicals: getIt<ExtractRadicals>(),
       composeKanji: getIt<ComposeKanji>(),
+      processSvgs: getIt<ProcessSvgs>(),
     ),
   );
 }

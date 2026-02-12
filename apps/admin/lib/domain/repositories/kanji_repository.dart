@@ -26,4 +26,13 @@ abstract class KanjiRepository {
 
   /// Returns the number of draft kanji i18n rows.
   Future<int> countDraftKanjiI18n();
+
+  /// Batch-updates SVG fields on draft kanji rows.
+  Future<void> batchUpdateDraftKanjiSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  );
+
+  /// Returns the number of draft kanji with non-null svg_file_name.
+  Future<int> countDraftKanjiWithSvg();
 }

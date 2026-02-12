@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:kanji_craft_admin/domain/entities/data_import.dart';
+import 'package:kanji_craft_admin/domain/entities/draft_kanji.dart';
 import 'package:kanji_craft_admin/domain/entities/draft_radical.dart';
 import 'package:kanji_craft_admin/domain/entities/draft_radical_variant.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
@@ -211,6 +212,33 @@ JmdictFurigana fakeJmdictFurigana({
             {'ruby': text.substring(0, 1), 'rt': reading.substring(0, 1)},
             {'ruby': text.substring(1)},
           ]),
+    );
+
+DraftKanji fakeDraftKanji({
+  int? id,
+  String character = '木',
+  int strokeCount = 4,
+  int frequencyRank = 1000,
+  int? minJlptLevel,
+  int? minGrade,
+  String? svgFileName,
+  String? svgFileUrl,
+  String? svgHash,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) =>
+    DraftKanji(
+      id: id ?? _nextId++,
+      character: character,
+      strokeCount: strokeCount,
+      frequencyRank: frequencyRank,
+      minJlptLevel: minJlptLevel,
+      minGrade: minGrade,
+      svgFileName: svgFileName,
+      svgFileUrl: svgFileUrl,
+      svgHash: svgHash,
+      createdAt: createdAt ?? _epoch,
+      updatedAt: updatedAt ?? _epoch,
     );
 
 DraftRadical fakeDraftRadical({

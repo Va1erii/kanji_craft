@@ -10,4 +10,7 @@ sealed class DataImportEvent with _$DataImportEvent {
     required ImportSource source,
     required String folderPath,
   }) = _StartIngestion;
+  const factory DataImportEvent.clearImport({
+    required int importId,
+  }) = _ClearImport;
 }

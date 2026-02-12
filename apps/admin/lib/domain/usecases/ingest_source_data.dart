@@ -212,7 +212,7 @@ class IngestSourceData {
         id: dataImport.id,
         status: ImportStatus.ingested,
         recordCount: result.parsedCount,
-        metadata: result.toMetadata(),
+        metadata: {...result.toMetadata(), 'folder_path': folderPath},
       );
 
       yield IngestionComplete(updated);

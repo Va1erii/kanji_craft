@@ -19,6 +19,7 @@ Identifies which external dataset an import run targets.
 | `kanjivg` | KanjiVG stroke and component data |
 | `kanjidic` | KANJIDIC2 dictionary data |
 | `jmdict` | JMdict vocabulary and sentence data |
+| `jmdictFurigana` | Pre-computed furigana mappings from JmdictFurigana |
 
 ### ImportStatus (Enum)
 
@@ -62,11 +63,13 @@ Import context varies: a KanjiVG import might store the source archive hash and 
 ## Relationships
 
 ```
-DataImport ──1:N──→ RawKanjiVg      (one import, many raw rows; see raw_kanjivg.md)
-DataImport ──1:N──→ RawKanjidic     (one import, many raw rows; see raw_kanjidic.md)
+DataImport ──1:N──→ RawKanjiVg       (one import, many raw rows; see raw_kanjivg.md)
+DataImport ──1:N──→ RawKanjidic      (one import, many raw rows; see raw_kanjidic.md)
+DataImport ──1:N──→ RawJmdict        (one import, many raw rows; see raw_jmdict.md)
+DataImport ──1:N──→ JmdictFurigana   (one import, many raw rows; see jmdict_furigana.md)
 ```
 
-A `DataImport` row with `source: kanjivg` only has children in `raw_kanjivg`; one with `source: kanjidic` only has children in `raw_kanjidic`. The FK is not polymorphic — both raw tables have their own `import_id` column pointing here.
+Each `DataImport` row has children in exactly one raw table, determined by its `source` value. The FK is not polymorphic — all raw tables have their own `import_id` column pointing here.
 
 ## Business Rules
 

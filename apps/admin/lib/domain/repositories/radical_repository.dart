@@ -28,4 +28,24 @@ abstract class RadicalRepository {
 
   /// Returns the number of draft radical variants.
   Future<int> countDraftRadicalVariants();
+
+  /// Batch-updates SVG fields on draft radical rows.
+  ///
+  /// Each entry maps a draft radical ID to its SVG metadata.
+  Future<void> batchUpdateDraftRadicalSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  );
+
+  /// Batch-updates SVG fields on draft radical variant rows.
+  Future<void> batchUpdateDraftRadicalVariantSvg(
+    List<({int id, String svgFileName, String svgFileUrl, String svgHash})>
+        updates,
+  );
+
+  /// Returns the number of draft radicals with non-null svg_file_name.
+  Future<int> countDraftRadicalsWithSvg();
+
+  /// Returns the number of draft radical variants with non-null svg_file_name.
+  Future<int> countDraftRadicalVariantsWithSvg();
 }

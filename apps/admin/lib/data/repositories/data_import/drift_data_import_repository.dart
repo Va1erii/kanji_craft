@@ -102,6 +102,12 @@ class DriftDataImportRepository implements DataImportRepository {
   }
 
   @override
+  Future<void> delete(int id) async {
+    await (_db.delete(_db.dataImportEntries)..where((t) => t.id.equals(id)))
+        .go();
+  }
+
+  @override
   Future<List<DataImport>> listAll() async {
     final entries = await (_db.select(_db.dataImportEntries)
           ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))

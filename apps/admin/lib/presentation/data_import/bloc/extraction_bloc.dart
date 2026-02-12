@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +10,7 @@ import '../../../domain/entities/import_status.dart';
 import '../../../domain/entities/warning.dart';
 import '../../../domain/usecases/compose_kanji.dart';
 import '../../../domain/usecases/extract_radicals.dart';
+import '../../../domain/usecases/process_svgs.dart';
 import 'extraction_event.dart';
 import 'extraction_state.dart';
 
@@ -16,14 +18,17 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   ExtractionBloc({
     required ExtractRadicals extractRadicals,
     required ComposeKanji composeKanji,
+    required ProcessSvgs processSvgs,
   })  : _extractRadicals = extractRadicals,
         _composeKanji = composeKanji,
+        _processSvgs = processSvgs,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
   }
 
   final ExtractRadicals _extractRadicals;
   final ComposeKanji _composeKanji;
+  final ProcessSvgs _processSvgs;
   List<DataImport> _imports = const [];
 
   Future<void> _onEvent(
@@ -96,6 +101,15 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
               '${result.i18nCount} i18n',
           warnings: result.warnings,
         );
+      case ExtractionPhase.svgProcessing:
+        final archivePath = _resolveKanjiVgZipPath();
+        final result = await _processSvgs.call(archivePath);
+        return (
+          summary: '${result.radicalCount} radicals, '
+              '${result.variantCount} variants, '
+              '${result.kanjiCount} kanji',
+          warnings: result.warnings,
+        );
       default:
         throw UnimplementedError('${phase.label} is not implemented');
     }
@@ -106,6 +120,40 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         .where((i) => i.source == source && i.status == ImportStatus.ingested)
         .first
         .id;
+  }
+
+  /// Resolves the KanjiVG ZIP file path from the import's folder_path metadata.
+  String _resolveKanjiVgZipPath() {
+    final import = _imports.firstWhere(
+      (i) => i.source == ImportSource.kanjivg &&
+          i.status == ImportStatus.ingested,
+    );
+    final folderPath = import.metadata?['folder_path'] as String?;
+    if (folderPath == null) {
+      throw Exception(
+        'KanjiVG import is missing folder_path in metadata. '
+        'Please re-ingest the KanjiVG source to populate it.',
+      );
+    }
+    final dir = Directory(folderPath);
+    if (!dir.existsSync()) {
+      throw Exception(
+        'KanjiVG folder no longer exists: $folderPath\n'
+        'Please re-ingest the KanjiVG source.',
+      );
+    }
+    final zipFile = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) {
+          final name = f.uri.pathSegments.last;
+          return name.endsWith('.zip') && name.contains('main');
+        })
+        .firstOrNull;
+    if (zipFile == null) {
+      throw Exception('No ZIP file found in KanjiVG folder: $folderPath');
+    }
+    return zipFile.path;
   }
 
   /// Recompute statuses for all phases in enum order.
@@ -175,6 +223,8 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         return _extractRadicals.checkExistingResult();
       case ExtractionPhase.kanjiComposition:
         return _composeKanji.checkExistingResult();
+      case ExtractionPhase.svgProcessing:
+        return _processSvgs.checkExistingResult();
       default:
         return null;
     }

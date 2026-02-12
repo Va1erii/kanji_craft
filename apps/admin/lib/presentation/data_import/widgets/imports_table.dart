@@ -8,11 +8,13 @@ class ImportsTable extends StatelessWidget {
   const ImportsTable({
     required this.imports,
     this.activeIngestions = const {},
+    this.onClear,
     super.key,
   });
 
   final List<DataImport> imports;
   final Map<int, IngestionProgress?> activeIngestions;
+  final void Function(int importId)? onClear;
 
   static final _dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
@@ -40,6 +42,7 @@ class ImportsTable extends StatelessWidget {
           DataColumn(label: Text('Records'), numeric: true),
           DataColumn(label: Text('Skipped'), numeric: true),
           DataColumn(label: Text('Started')),
+          DataColumn(label: Text('Actions')),
         ],
         rows: [
           for (final entry in imports)
@@ -51,6 +54,15 @@ class ImportsTable extends StatelessWidget {
               DataCell(Text(entry.recordCount?.toString() ?? '-')),
               DataCell(Text(_skippedCount(entry))),
               DataCell(Text(_dateFormat.format(entry.startedAt))),
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Clear import',
+                  onPressed: onClear != null
+                      ? () => onClear!(entry.id)
+                      : null,
+                ),
+              ),
             ]),
         ],
       ),

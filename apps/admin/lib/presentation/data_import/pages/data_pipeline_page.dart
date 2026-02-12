@@ -100,6 +100,12 @@ class _DataPipelinePageState extends State<DataPipelinePage> {
                           ImportsTable(
                             imports: imports,
                             activeIngestions: activeIngestions,
+                            onClear: (importId) =>
+                                context.read<DataImportBloc>().add(
+                                      DataImportEvent.clearImport(
+                                        importId: importId,
+                                      ),
+                                    ),
                           ),
                         ],
                       ),

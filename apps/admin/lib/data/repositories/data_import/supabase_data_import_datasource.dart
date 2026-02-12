@@ -83,6 +83,10 @@ class SupabaseDataImportDataSource {
     return DataImportDto.fromJson(response).toDomain();
   }
 
+  Future<void> delete(int id) async {
+    await _client.from(_table).delete().eq('id', id);
+  }
+
   Future<List<DataImport>> listAll() async {
     final response = await _client
         .from(_table)

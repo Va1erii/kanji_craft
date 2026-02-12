@@ -31,7 +31,7 @@ enum ExtractionPhase {
     label: 'Vocabulary Extraction',
     description: 'Extract vocabulary, readings, and kanji links from JMdict',
     phaseNumber: '2.5',
-    isImplemented: false,
+    isImplemented: true,
     requiredSources: {ImportSource.jmdict, ImportSource.jmdictFurigana},
   ),
   aiHeuristics(

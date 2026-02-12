@@ -10,6 +10,7 @@ import '../../../domain/entities/import_status.dart';
 import '../../../domain/entities/warning.dart';
 import '../../../domain/usecases/compose_kanji.dart';
 import '../../../domain/usecases/extract_radicals.dart';
+import '../../../domain/usecases/extract_vocabulary.dart';
 import '../../../domain/usecases/process_svgs.dart';
 import 'extraction_event.dart';
 import 'extraction_state.dart';
@@ -19,9 +20,11 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     required ExtractRadicals extractRadicals,
     required ComposeKanji composeKanji,
     required ProcessSvgs processSvgs,
+    required ExtractVocabulary extractVocabulary,
   })  : _extractRadicals = extractRadicals,
         _composeKanji = composeKanji,
         _processSvgs = processSvgs,
+        _extractVocabulary = extractVocabulary,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
   }
@@ -29,6 +32,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   final ExtractRadicals _extractRadicals;
   final ComposeKanji _composeKanji;
   final ProcessSvgs _processSvgs;
+  final ExtractVocabulary _extractVocabulary;
   List<DataImport> _imports = const [];
 
   Future<void> _onEvent(
@@ -108,6 +112,19 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
           summary: '${result.radicalCount} radicals, '
               '${result.variantCount} variants, '
               '${result.kanjiCount} kanji',
+          warnings: result.warnings,
+        );
+      case ExtractionPhase.vocabularyExtraction:
+        final jmdictImportId = _importIdFor(ImportSource.jmdict);
+        final furiganaImportId = _importIdFor(ImportSource.jmdictFurigana);
+        final result =
+            await _extractVocabulary.call(jmdictImportId, furiganaImportId);
+        return (
+          summary: '${result.vocabularyCount} vocabulary, '
+              '${result.readingCount} readings, '
+              '${result.i18nCount} i18n, '
+              '${result.kanjiLinkCount} kanji links, '
+              '${result.sentenceCount} sentences',
           warnings: result.warnings,
         );
       default:
@@ -225,6 +242,8 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         return _composeKanji.checkExistingResult();
       case ExtractionPhase.svgProcessing:
         return _processSvgs.checkExistingResult();
+      case ExtractionPhase.vocabularyExtraction:
+        return _extractVocabulary.checkExistingResult();
       default:
         return null;
     }

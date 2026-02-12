@@ -8,6 +8,7 @@ import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
 import 'package:kanji_craft_admin/domain/entities/jmdict_furigana.dart';
 import 'package:kanji_craft_admin/domain/entities/kanji_component_review.dart';
+import 'package:kanji_craft_admin/domain/entities/raw_jmdict.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_admin/domain/entities/vocab_level.dart';
@@ -293,4 +294,36 @@ DraftRadicalVariant fakeDraftRadicalVariant({
       svgHash: svgHash,
       createdAt: createdAt ?? _epoch,
       updatedAt: updatedAt ?? _epoch,
+    );
+
+const _kanjiElementSentinel = [JmdictKanjiElement(keb: '_sentinel_')];
+
+RawJmdict fakeRawJmdict({
+  int importId = 1,
+  int? entSeq,
+  List<JmdictKanjiElement>? kanjiElements = _kanjiElementSentinel,
+  List<JmdictReadingElement>? readingElements,
+  List<JmdictSense>? senses,
+  List<JmdictExample>? examples,
+}) =>
+    RawJmdict(
+      importId: importId,
+      entSeq: entSeq ?? _nextId++,
+      kanjiElements: identical(kanjiElements, _kanjiElementSentinel)
+          ? [const JmdictKanjiElement(keb: '食べる', kePri: ['ichi1'])]
+          : kanjiElements,
+      readingElements: readingElements ??
+          [
+            const JmdictReadingElement(reb: 'たべる', rePri: ['ichi1']),
+          ],
+      senses: senses ??
+          [
+            const JmdictSense(
+              pos: ['v1', 'vt'],
+              glosses: {
+                'en': ['to eat'],
+              },
+            ),
+          ],
+      examples: examples,
     );

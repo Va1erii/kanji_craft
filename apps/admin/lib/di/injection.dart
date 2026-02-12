@@ -15,6 +15,7 @@ import '../data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
 import '../data/repositories/kanji/drift_kanji_repository.dart';
 import '../data/repositories/radical/drift_radical_repository.dart';
 import '../data/repositories/raw_kanjivg/drift_raw_kanjivg_repository.dart';
+import '../data/repositories/vocabulary/drift_vocabulary_repository.dart';
 import '../data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.dart';
 import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import '../data/repositories/source_vocab_level/drift_source_vocab_level_repository.dart';
@@ -29,6 +30,7 @@ import '../domain/repositories/raw_kanjidic_repository.dart';
 import '../domain/repositories/kanji_repository.dart';
 import '../domain/repositories/radical_repository.dart';
 import '../domain/repositories/raw_kanjivg_repository.dart';
+import '../domain/repositories/vocabulary_repository.dart';
 import '../domain/repositories/jmdict_furigana_repository.dart';
 import '../domain/repositories/source_jlpt_level_repository.dart';
 import '../domain/repositories/source_vocab_level_repository.dart';
@@ -39,6 +41,7 @@ import '../data/services/radical_scanner.dart';
 import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
 import '../domain/usecases/extract_radicals.dart';
+import '../domain/usecases/extract_vocabulary.dart';
 import '../domain/usecases/hydrate_local_db.dart';
 import '../domain/usecases/clear_import.dart';
 import '../domain/usecases/ingest_source_data.dart';
@@ -97,6 +100,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<KanjiRepository>(
     () => DriftKanjiRepository(getIt<AdminDatabase>()),
+  );
+  getIt.registerLazySingleton<VocabularyRepository>(
+    () => DriftVocabularyRepository(getIt<AdminDatabase>()),
   );
 
   // -- Supabase datasources --
@@ -175,6 +181,15 @@ Future<void> configureDependencies() async {
       supabaseUrl: _supabaseUrl,
     ),
   );
+  getIt.registerLazySingleton<ExtractVocabulary>(
+    () => ExtractVocabulary(
+      rawJmdictRepository: getIt<RawJmdictRepository>(),
+      kanjiRepository: getIt<KanjiRepository>(),
+      sourceVocabLevelRepository: getIt<SourceVocabLevelRepository>(),
+      jmdictFuriganaRepository: getIt<JmdictFuriganaRepository>(),
+      vocabularyRepository: getIt<VocabularyRepository>(),
+    ),
+  );
   getIt.registerLazySingleton<HydrateLocalDb>(
     () => HydrateLocalDb(
       reader: getIt<AdminStateReader>(),
@@ -198,6 +213,7 @@ Future<void> configureDependencies() async {
       extractRadicals: getIt<ExtractRadicals>(),
       composeKanji: getIt<ComposeKanji>(),
       processSvgs: getIt<ProcessSvgs>(),
+      extractVocabulary: getIt<ExtractVocabulary>(),
     ),
   );
 }

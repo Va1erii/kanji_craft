@@ -119,7 +119,7 @@ The table is loaded by truncating all existing rows and bulk-inserting from all 
 
 ## Relationship to Vocabulary Extraction
 
-During vocabulary extraction (Phase 2.6), the pipeline matches `raw_jmdict` entries against `source_vocab_levels` to determine `vocabulary.min_jlpt_level`:
+During vocabulary extraction (Phase 2.5), the pipeline matches `raw_jmdict` entries against `source_vocab_levels` to determine `vocabulary.min_jlpt_level`:
 
 1. Get the headword (`keb`) and primary reading (`reb`) from the JMdict entry.
 2. Query `source_vocab_levels` matching **both** `expression` and `reading`.

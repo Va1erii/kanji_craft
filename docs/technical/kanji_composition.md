@@ -95,14 +95,14 @@ For each kanji, extract readings from `raw_kanjidic.readings` and insert into `d
 
 ### Step 3: Create I18n Rows
 
-For each kanji, create localized meaning rows in `draft_kanji_i18n` for **every language** present in the raw data. All languages are stored in drafts — target language filtering (default: `['en', 'es']`) is applied later during AI enrichment (Phase 2.5/2.7) and promotion to content tables.
+For each kanji, create localized meaning rows in `draft_kanji_i18n` for **every language** present in the raw data. All languages are stored in drafts — target language filtering (default: `['en', 'es']`) is applied later during AI enrichment (Phase 2.6/2.7) and promotion to content tables.
 
 For each language key in `raw_kanjidic.meanings`:
 
 1. Look up `raw_kanjidic.meanings[lang_code]`.
 2. If the meanings array is non-empty:
    - `meanings` ← the array as-is (preserves source ordering, which is priority order).
-   - `system_mnemonic` ← empty string placeholder. Populated by AI in Phase 2.5 or manually by admin.
+   - `system_mnemonic` ← empty string placeholder. Populated by AI in Phase 2.6 or manually by admin.
    - `search_tags` ← empty array. Populated later during content enrichment.
 3. If the meanings array is empty, **skip** — do not create a draft i18n row.
 
@@ -179,9 +179,9 @@ Phase 2.2 Passes 3-4: Component linking + radical metadata (populates kanji_comp
     |
 Phase 2.4: SVG Processing (populates svg fields on radicals, radical_variants, kanji)
     |
-Phase 2.5: AI Heuristics (populates logic_hint, creates kanji_component_reviews)
+Phase 2.5: Vocabulary extraction (needs kanji table for vocabulary_kanji)
     |
-Phase 2.6: Vocabulary extraction (needs kanji table for vocabulary_kanji)
+Phase 2.6: AI Heuristics (populates logic_hint, creates kanji_component_reviews)
 ```
 
 Steps 1–3 (kanji creation) depend only on `raw_kanjidic` and can run independently of radical extraction. Steps 4–5 (component linking and metadata derivation) depend on both the kanji rows from Steps 1–3 and the radical rows from Passes 1–2.
@@ -344,7 +344,7 @@ Tables populated by **this phase but documented elsewhere:**
 
 Tables populated by **later phases** (not this algorithm):
 - `kanji.svg_*` fields — SVG Processing (Phase 2.4)
-- `kanji_component_reviews` — AI Heuristics (Phase 2.5)
+- `kanji_component_reviews` — AI Heuristics (Phase 2.6)
 
 ## Related Docs
 

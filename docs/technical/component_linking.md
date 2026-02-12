@@ -9,7 +9,7 @@ This phase corresponds to:
 - **Kanji composition Steps 4–5** in [kanji_composition.md](kanji_composition.md)
 - **Pipeline Phase 2.3 (latter half)** in [pipeline.md](pipeline.md)
 
-**What this phase does NOT do:** Radical/variant registration (Passes 1–2), kanji row creation (Steps 1–3), SVG processing (Phase 2.4), or logic_hint refinement via AI (Phase 2.5). Those are documented separately and merely referenced here for sequencing.
+**What this phase does NOT do:** Radical/variant registration (Passes 1–2), kanji row creation (Steps 1–3), SVG processing (Phase 2.4), or logic_hint refinement via AI (Phase 2.6). Those are documented separately and merely referenced here for sequencing.
 
 ## Source Data
 
@@ -62,7 +62,7 @@ For each direct child identified in Step 1:
    | `kanji_id` | From step 1 | FK to `kanji` |
    | `radical_id` | From step 2 | FK to `radicals` (always the master, not the variant) |
    | `position` | From step 3 | Where this radical sits inside this kanji |
-   | `logic_hint` | `semantic` | Default; refined by AI Heuristics in Phase 2.5 |
+   | `logic_hint` | `semantic` | Default; refined by AI Heuristics in Phase 2.6 |
    | `radical_type` | From step 4 | Dictionary classification role in this kanji |
    | `is_primary` | Computed | `true` only when `radical_type == general` (generated column in Postgres, getter in Dart) |
 
@@ -387,7 +387,7 @@ The first two conditions are non-blocking per row (the affected kanji/component 
 ## Business Rules
 
 1. `kanji_id` + `radical_id` + `position` must be unique — a radical appears at a given position in a given kanji exactly once.
-2. Every `kanji_components` row must have a `logic_hint` value. Default to `semantic` during this phase; refined by AI Heuristics (Phase 2.5).
+2. Every `kanji_components` row must have a `logic_hint` value. Default to `semantic` during this phase; refined by AI Heuristics (Phase 2.6).
 3. Every `kanji_components` row must have a `radical_type` value. Default to `component` when the KanjiVG node has no `kvg:radical` attribute.
 4. `is_primary` is computed, not stored explicitly: `true` only when `radical_type == general`.
 5. A kanji should have at most one component with `radical_type = general`.
@@ -408,12 +408,12 @@ The first two conditions are non-blocking per row (the affected kanji/component 
 | `radicals.min_jlpt_level` | Updated from MAX across containing kanji | Step 3c |
 
 Tables populated by **later phases** (not this algorithm):
-- `kanji_components.logic_hint` refinement — AI Heuristics (Phase 2.5)
-- `kanji_component_reviews` — AI Heuristics (Phase 2.5)
+- `kanji_components.logic_hint` refinement — AI Heuristics (Phase 2.6)
+- `kanji_component_reviews` — AI Heuristics (Phase 2.6)
 
-## Subsequent Phase: AI Heuristics (Phase 2.5)
+## Subsequent Phase: AI Heuristics (Phase 2.6)
 
-After component linking and SVG processing are complete, Phase 2.5 refines the `logic_hint` on each `kanji_components` row and creates the corresponding review entries. This is documented in [pipeline.md §2.5](pipeline.md#25-ai-heuristics-logic-hint-estimation) and summarized here for context:
+After component linking and SVG processing are complete, Phase 2.6 refines the `logic_hint` on each `kanji_components` row and creates the corresponding review entries. This is documented in [pipeline.md §2.6](pipeline.md#26-ai-heuristics-logic-hint-estimation) and summarized here for context:
 
 1. For each `kanji_components` row, fetch onyomi for the kanji and for the radical's `master_symbol` (looked up in `raw_kanjidic`).
 2. If onyomi match → set `logic_hint = phonetic`. If no match → keep `logic_hint = semantic`.
@@ -448,9 +448,9 @@ Phase 2.3 Steps 4-5: Component linking + metadata derivation  <-- THIS DOC
     |
 Phase 2.4: SVG Processing (populates svg fields on radicals, radical_variants, kanji)
     |
-Phase 2.5: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
+Phase 2.5: Vocabulary extraction (needs kanji table for vocabulary_kanji)
     |
-Phase 2.6: Vocabulary extraction (needs kanji table for vocabulary_kanji)
+Phase 2.6: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
 ```
 
 Steps 1–2 (linking) depend on both the `kanji` rows from kanji composition and the `radicals` rows from radical extraction. Step 3 (metadata derivation) depends on Step 2 (all links must exist before aggregation).

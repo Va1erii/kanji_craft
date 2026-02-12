@@ -4,7 +4,7 @@
 
 Staging table for pre-computed furigana mappings imported from the [JmdictFurigana](https://github.com/Doublevil/JmdictFurigana) dataset. Each row stores the furigana breakdown for a single `(text, reading)` pair — mapping a word and its pronunciation to an ordered list of `ruby`/`rt` segments that split the reading across individual characters.
 
-The pipeline uses this table during vocabulary extraction (Phase 2.6) to construct the `vocabulary.segments` JSONB field, which powers Ghost Kanji rendering in the client app.
+The pipeline uses this table during vocabulary extraction (Phase 2.5) to construct the `vocabulary.segments` JSONB field, which powers Ghost Kanji rendering in the client app.
 
 See [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) for the source file format and [vocabulary_extraction.md](../technical/vocabulary_extraction.md) for how segments are constructed.
 
@@ -62,7 +62,7 @@ Each element in the `furigana` JSONB array:
 
 ```
 data_imports  ──1:N──→  jmdict_furigana   (one import, many furigana entries)
-jmdict_furigana  ─used by─→  vocabulary.segments  (furigana → VocabularySegment during Phase 2.6)
+jmdict_furigana  ─used by─→  vocabulary.segments  (furigana → VocabularySegment during Phase 2.5)
 ```
 
 No direct FK to `vocabulary` or `kanji` — the link is resolved at extraction time by matching `text` against JMdict headwords and looking up kanji characters in the `kanji` table.
@@ -107,7 +107,7 @@ This table does not yet exist in the Supabase schema. The entity spec is documen
 ## Related Docs
 
 - [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) — Source file format (JSON structure, segment types, statistics)
-- [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How furigana data feeds into vocabulary segments (Phase 2.6)
+- [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How furigana data feeds into vocabulary segments (Phase 2.5)
 - [vocabulary.md](vocabulary.md) — VocabularySegment format (target of the transformation)
 - [raw_jmdict.md](raw_jmdict.md) — JMdict staging table (the dictionary this dataset complements)
 - [data_import.md](data_import.md) — Import tracking entity

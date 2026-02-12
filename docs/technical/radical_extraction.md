@@ -105,7 +105,7 @@ For each unique element from Pass 1:
 
 For each `raw_kanjivg` entry, create `kanji_components` linking the kanji to its direct child radicals. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [component_linking.md](component_linking.md).
 
-**Summary:** For each kanji, parse its component tree one level deep, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.5). Upsert key: `(kanji_id, radical_id, position)`.
+**Summary:** For each kanji, parse its component tree one level deep, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.6). Upsert key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
@@ -267,7 +267,7 @@ Both conditions are non-blocking — the extraction continues with degraded data
 
 Tables populated by **later phases** (not this algorithm):
 - `radical_i18n` — names and mnemonics (Phase 2.3, KANJIDIC meanings + AI)
-- `kanji_component_reviews` — verification state (Phase 2.5, AI Heuristics)
+- `kanji_component_reviews` — verification state (Phase 2.6, AI Heuristics)
 - SVG fields on `radicals` and `radical_variants` — (Phase 2.4, SVG Processing)
 
 ## Ordering Constraint

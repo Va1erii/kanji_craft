@@ -261,22 +261,7 @@ After radicals and kanji are created, the pipeline processes SVG files from the 
 
 **Hash stability:** If a new KanjiVG version ships identical bytes for a given character, the hash stays the same. Only characters with actual SVG changes get a new hash. This enables efficient delta uploads during promotion (Phase 4).
 
-### 2.5 AI Heuristics (Logic Hint Estimation)
-
-For every new `KanjiComponent`, the system estimates `logic_hint` (semantic vs phonetic).
-
-**Algorithm — Onyomi Matching:**
-
-1. Fetch onyomi for the kanji (e.g. 忙 = ボウ).
-2. Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi (e.g. 亡 = ボウ, モウ). Radicals don't store readings directly (see [radical.md](../entities/radical.md) rule #5).
-3. If match → set `logic_hint = phonetic`, create a `kanji_component_reviews` row with `verification_status = draft`.
-4. If no match → set `logic_hint = semantic`, create a `kanji_component_reviews` row with `verification_status = draft`.
-
-All new components start with a `draft` review row regardless of confidence. The `ai_confidence` score (0.0–1.0) on the review row helps prioritize the review queue — lowest confidence first.
-
-On completion: set `data_imports.status` = `processed`, populate `processed_at`.
-
-### 2.6 Vocabulary Extraction
+### 2.5 Vocabulary Extraction
 
 JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline, using three additional reference tables loaded during Phase 1: `source_vocab_levels` (JLPT word levels), `jmdict_furigana` (per-character furigana mappings), and the `kanji` table (for FK resolution).
 
@@ -295,6 +280,21 @@ JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline, using th
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` and segment `kanji_id` references require the `kanji` table. Reference tables (`source_vocab_levels`, `jmdict_furigana`) must be loaded during Phase 1.
 
 See [vocabulary_extraction.md](vocabulary_extraction.md) for the full algorithm, [vocabulary.md](../entities/vocabulary.md) for the entity spec.
+
+### 2.6 AI Heuristics (Logic Hint Estimation)
+
+For every new `KanjiComponent`, the system estimates `logic_hint` (semantic vs phonetic).
+
+**Algorithm — Onyomi Matching:**
+
+1. Fetch onyomi for the kanji (e.g. 忙 = ボウ).
+2. Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi (e.g. 亡 = ボウ, モウ). Radicals don't store readings directly (see [radical.md](../entities/radical.md) rule #5).
+3. If match → set `logic_hint = phonetic`, create a `kanji_component_reviews` row with `verification_status = draft`.
+4. If no match → set `logic_hint = semantic`, create a `kanji_component_reviews` row with `verification_status = draft`.
+
+All new components start with a `draft` review row regardless of confidence. The `ai_confidence` score (0.0–1.0) on the review row helps prioritize the review queue — lowest confidence first.
+
+On completion: set `data_imports.status` = `processed`, populate `processed_at`.
 
 ### 2.7 AI Enrichment
 
@@ -497,7 +497,7 @@ Each phase's dedicated doc contains a **Warnings** section with a table listing 
 - [radical_extraction.md](radical_extraction.md) — Passes 1–2 radical/variant registration
 - [kanji_composition.md](kanji_composition.md) — kanji creation from KANJIDIC2
 - [component_linking.md](component_linking.md) — component linking and radical metadata derivation
-- [vocabulary_extraction.md](vocabulary_extraction.md) — vocabulary extraction from JMdict (Phase 2.6)
+- [vocabulary_extraction.md](vocabulary_extraction.md) — vocabulary extraction from JMdict (Phase 2.5)
 - [data_import.md](../entities/data_import.md) — import tracking entity
 - [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
 - [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table

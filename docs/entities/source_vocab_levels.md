@@ -2,7 +2,7 @@
 
 ## Overview
 
-Local reference table mapping vocabulary words to their JLPT N1–N5 levels. Populated from the [Open Anki JLPT Decks](https://github.com/jamsinclair/open-anki-jlpt-decks) CSV files during Phase 1 ingestion. The pipeline uses this table during vocabulary extraction (Phase 2.6) to resolve `vocabulary.min_jlpt_level` — taking precedence over kanji-derived levels.
+Local reference table mapping vocabulary words to their JLPT N1–N5 levels. Populated from the [Open Anki JLPT Decks](https://github.com/jamsinclair/open-anki-jlpt-decks) CSV files during Phase 1 ingestion. The pipeline uses this table during vocabulary extraction (Phase 2.5) to resolve `vocabulary.min_jlpt_level` — taking precedence over kanji-derived levels.
 
 This table solves the "Eki Problem": some words are tested at a JLPT level that differs from their constituent kanji levels (e.g., 駅 is an N5 vocabulary word but uses an N4 kanji). See [vocabulary_extraction.md §JLPT Level Strategy](../technical/vocabulary_extraction.md#jlpt-level-strategy).
 
@@ -28,7 +28,7 @@ One row per unique `(expression, reading)` pair. The `(expression, reading)` com
 ## Relationships
 
 ```
-source_vocab_levels  ─used by─→  vocabulary.min_jlpt_level  (lookup during Phase 2.6)
+source_vocab_levels  ─used by─→  vocabulary.min_jlpt_level  (lookup during Phase 2.5)
 ```
 
 No FK relationships — this is a standalone reference table consumed by the extraction algorithm.
@@ -88,7 +88,7 @@ The table mirrors the pattern of `source_jlpt_levels` (see [migration 2026021101
 ## Related Docs
 
 - [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md) — Source CSV format (tag parsing, duplicate resolution, edge cases)
-- [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How `source_vocab_levels` feeds into `vocabulary.min_jlpt_level` (Phase 2.6)
+- [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How `source_vocab_levels` feeds into `vocabulary.min_jlpt_level` (Phase 2.5)
 - [vocabulary.md](vocabulary.md) — Vocabulary entity spec (target schema)
 - [pipeline.md](../technical/pipeline.md) — Pipeline orchestration (Phase 1 loading)
 - [attributions.md](../legal/attributions.md) — License and credit requirements

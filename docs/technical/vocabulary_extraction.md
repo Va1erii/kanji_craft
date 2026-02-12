@@ -448,9 +448,9 @@ Phase 2.3 Steps 4-5: Component linking + metadata derivation (populates kanji_co
     |
 Phase 2.4: SVG Processing (populates svg fields on radicals, radical_variants, kanji)
     |
-Phase 2.5: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
+Phase 2.5: Vocabulary extraction  <-- THIS DOC
     |
-Phase 2.6: Vocabulary extraction  <-- THIS DOC
+Phase 2.6: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
     |
 Phase 2.7: AI Enrichment (sentence translation, furigana annotation)
 ```

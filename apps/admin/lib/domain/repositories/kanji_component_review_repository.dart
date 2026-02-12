@@ -27,4 +27,7 @@ abstract class KanjiComponentReviewRepository {
 
   /// Bulk upserts reviews (insert or replace on conflict).
   Future<void> upsertAll(List<KanjiComponentReview> reviews);
+
+  /// Returns the total number of review rows.
+  Future<int> count();
 }

@@ -110,4 +110,13 @@ class DriftKanjiComponentReviewRepository
       }
     });
   }
+
+  @override
+  Future<int> count() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.kanjiComponentReviewEntries)
+      ..addColumns([c]);
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
 }

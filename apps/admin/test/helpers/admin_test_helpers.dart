@@ -3,6 +3,7 @@ import 'package:kanji_craft_admin/data/database/admin_database.dart';
 import 'package:kanji_craft_admin/data/repositories/data_import/drift_data_import_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji_component_review/drift_kanji_component_review_repository.dart';
+import 'package:kanji_craft_admin/data/repositories/kanji_component/drift_kanji_component_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji/drift_kanji_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/radical/drift_radical_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/raw_jmdict/drift_raw_jmdict_repository.dart';
@@ -19,6 +20,7 @@ AdminDatabase createTestDatabase() =>
   DriftRawKanjiVgRepository kanjiVg,
   DriftRawKanjidicRepository kanjidic,
   DriftKanjiComponentReviewRepository reviews,
+  DriftKanjiComponentRepository kanjiComponents,
   DriftRadicalRepository radicals,
   DriftKanjiRepository kanji,
   DriftRawJmdictRepository rawJmdict,
@@ -30,6 +32,7 @@ AdminDatabase createTestDatabase() =>
       kanjiVg: DriftRawKanjiVgRepository(db),
       kanjidic: DriftRawKanjidicRepository(db),
       reviews: DriftKanjiComponentReviewRepository(db),
+      kanjiComponents: DriftKanjiComponentRepository(db),
       radicals: DriftRadicalRepository(db),
       kanji: DriftKanjiRepository(db),
       rawJmdict: DriftRawJmdictRepository(db),

@@ -9,6 +9,7 @@ import '../../../domain/entities/import_source.dart';
 import '../../../domain/entities/import_status.dart';
 import '../../../domain/entities/warning.dart';
 import '../../../domain/usecases/compose_kanji.dart';
+import '../../../domain/usecases/estimate_logic_hints.dart';
 import '../../../domain/usecases/extract_radicals.dart';
 import '../../../domain/usecases/extract_vocabulary.dart';
 import '../../../domain/usecases/process_svgs.dart';
@@ -21,10 +22,12 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     required ComposeKanji composeKanji,
     required ProcessSvgs processSvgs,
     required ExtractVocabulary extractVocabulary,
+    required EstimateLogicHints estimateLogicHints,
   })  : _extractRadicals = extractRadicals,
         _composeKanji = composeKanji,
         _processSvgs = processSvgs,
         _extractVocabulary = extractVocabulary,
+        _estimateLogicHints = estimateLogicHints,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
   }
@@ -33,6 +36,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   final ComposeKanji _composeKanji;
   final ProcessSvgs _processSvgs;
   final ExtractVocabulary _extractVocabulary;
+  final EstimateLogicHints _estimateLogicHints;
   List<DataImport> _imports = const [];
 
   Future<void> _onEvent(
@@ -127,8 +131,16 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
               '${result.sentenceCount} sentences',
           warnings: result.warnings,
         );
-      default:
-        throw UnimplementedError('${phase.label} is not implemented');
+      case ExtractionPhase.aiEnrichment:
+        final kanjidicImportId = _importIdFor(ImportSource.kanjidic);
+        final result = await _estimateLogicHints.call(kanjidicImportId);
+        return (
+          summary: '${result.componentCount} components, '
+              '${result.phoneticCount} phonetic, '
+              '${result.semanticCount} semantic, '
+              '${result.skippedCount} skipped',
+          warnings: result.warnings,
+        );
     }
   }
 
@@ -244,8 +256,8 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         return _processSvgs.checkExistingResult();
       case ExtractionPhase.vocabularyExtraction:
         return _extractVocabulary.checkExistingResult();
-      default:
-        return null;
+      case ExtractionPhase.aiEnrichment:
+        return _estimateLogicHints.checkExistingResult();
     }
   }
 }

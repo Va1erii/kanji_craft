@@ -12,7 +12,10 @@ import 'package:kanji_craft_admin/domain/entities/raw_jmdict.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjidic.dart';
 import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_admin/domain/entities/vocab_level.dart';
+import 'package:kanji_craft_core/domain/entities/kanji/kanji_component.dart';
+import 'package:kanji_craft_core/domain/entities/logic_hint.dart';
 import 'package:kanji_craft_core/domain/entities/radical/position.dart';
+import 'package:kanji_craft_core/domain/entities/radical_type.dart';
 import 'package:kanji_craft_core/domain/entities/verification_status.dart';
 
 final _epoch = DateTime.utc(2025, 1, 1);
@@ -326,4 +329,25 @@ RawJmdict fakeRawJmdict({
             ),
           ],
       examples: examples,
+    );
+
+KanjiComponent fakeKanjiComponent({
+  int? id,
+  int kanjiId = 1,
+  int radicalId = 1,
+  Position position = Position.unknown,
+  LogicHint logicHint = LogicHint.semantic,
+  RadicalType radicalType = RadicalType.component,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) =>
+    KanjiComponent(
+      id: id ?? _nextId++,
+      kanjiId: kanjiId,
+      radicalId: radicalId,
+      position: position,
+      logicHint: logicHint,
+      radicalType: radicalType,
+      createdAt: createdAt ?? _epoch,
+      updatedAt: updatedAt ?? _epoch,
     );

@@ -38,8 +38,8 @@ enum ExtractionPhase {
     label: 'AI Enrichment',
     description: 'Logic hints, mnemonics, translations, and furigana',
     phaseNumber: '2.6',
-    isImplemented: false,
-    requiredSources: {},
+    isImplemented: true,
+    requiredSources: {ImportSource.kanjidic},
   );
 
   const ExtractionPhase({

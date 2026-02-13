@@ -7,7 +7,9 @@ import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/enrichment_batch_type.dart';
 import '../../../domain/entities/import_source.dart';
 import '../../../domain/entities/import_status.dart';
+import '../../../domain/usecases/export_kanji_mnemonics.dart';
 import '../../../domain/usecases/export_radical_mnemonics.dart';
+import '../../../domain/usecases/import_kanji_mnemonics.dart';
 import '../../../domain/usecases/import_radical_mnemonics.dart';
 import 'enrichment_event.dart';
 import 'enrichment_state.dart';
@@ -19,9 +21,13 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
   EnrichmentBloc({
     required ExportRadicalMnemonics exportRadicalMnemonics,
     required ImportRadicalMnemonics importRadicalMnemonics,
+    required ExportKanjiMnemonics exportKanjiMnemonics,
+    required ImportKanjiMnemonics importKanjiMnemonics,
     required BookmarkService bookmarkService,
   })  : _exportRadicalMnemonics = exportRadicalMnemonics,
         _importRadicalMnemonics = importRadicalMnemonics,
+        _exportKanjiMnemonics = exportKanjiMnemonics,
+        _importKanjiMnemonics = importKanjiMnemonics,
         _bookmarkService = bookmarkService,
         super(const EnrichmentState()) {
     on<EnrichmentEvent>(_onEvent);
@@ -30,6 +36,8 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
 
   final ExportRadicalMnemonics _exportRadicalMnemonics;
   final ImportRadicalMnemonics _importRadicalMnemonics;
+  final ExportKanjiMnemonics _exportKanjiMnemonics;
+  final ImportKanjiMnemonics _importKanjiMnemonics;
   final BookmarkService _bookmarkService;
   List<DataImport> _imports = const [];
 
@@ -108,11 +116,11 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
     try {
       switch (batchType) {
         case EnrichmentBatchType.radicalMnemonics:
-          final offset = subBatchIndex * state.batchSize;
+          final offset = subBatchIndex * batchType.batchSize;
           final result = await _exportRadicalMnemonics.call(
             outputDir: state.outputDir,
             kanjidicImportId: _importIdFor(ImportSource.kanjidic),
-            batchSize: state.batchSize,
+            batchSize: batchType.batchSize,
             offset: offset,
           );
           _emitSubBatchUpdate(
@@ -125,6 +133,21 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
             emit,
           );
         case EnrichmentBatchType.kanjiMnemonics:
+          final offset = subBatchIndex * batchType.batchSize;
+          final result = await _exportKanjiMnemonics.call(
+            outputDir: state.outputDir,
+            batchSize: batchType.batchSize,
+            offset: offset,
+          );
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            SubBatchExported(
+              filePath: result.filePath,
+              warnings: result.warnings,
+            ),
+            emit,
+          );
         case EnrichmentBatchType.sentenceTranslation:
         case EnrichmentBatchType.sentenceFurigana:
           _emitSubBatchUpdate(
@@ -178,6 +201,17 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
             emit,
           );
         case EnrichmentBatchType.kanjiMnemonics:
+          final result = await _importKanjiMnemonics.call(filePath);
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            SubBatchImported(
+              importedCount: result.importedCount,
+              rejectedCount: result.rejectedCount,
+              warnings: result.warnings,
+            ),
+            emit,
+          );
         case EnrichmentBatchType.sentenceTranslation:
         case EnrichmentBatchType.sentenceFurigana:
           _emitSubBatchUpdate(
@@ -236,7 +270,7 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
       // Query total count for this batch type.
       final totalCount = await _queryTotalCount(batchType);
       final subBatchCount =
-          totalCount > 0 ? (totalCount + state.batchSize - 1) ~/ state.batchSize : 0;
+          totalCount > 0 ? (totalCount + batchType.batchSize - 1) ~/ batchType.batchSize : 0;
 
       // Preserve existing sub-batch statuses where indices match.
       final existing = state.batches[batchType];
@@ -263,6 +297,7 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
         case EnrichmentBatchType.radicalMnemonics:
           return await _exportRadicalMnemonics.queryTotalCount();
         case EnrichmentBatchType.kanjiMnemonics:
+          return await _exportKanjiMnemonics.queryTotalCount();
         case EnrichmentBatchType.sentenceTranslation:
         case EnrichmentBatchType.sentenceFurigana:
           return 0;

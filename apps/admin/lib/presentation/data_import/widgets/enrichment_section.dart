@@ -51,7 +51,7 @@ class EnrichmentSection extends StatelessWidget {
                             .totalCount,
                     status: (state.batches[batchType] as BatchTypeReady)
                         .subBatches[i],
-                    batchSize: state.batchSize,
+                    batchSize: batchType.batchSize,
                     hasOutputDir: state.outputDir.isNotEmpty,
                   ),
             ],

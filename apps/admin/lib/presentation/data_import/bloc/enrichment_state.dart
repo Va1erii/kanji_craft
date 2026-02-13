@@ -74,6 +74,5 @@ sealed class EnrichmentState with _$EnrichmentState {
   const factory EnrichmentState({
     @Default('') String outputDir,
     @Default({}) Map<EnrichmentBatchType, BatchTypeStatus> batches,
-    @Default(150) int batchSize,
   }) = _EnrichmentState;
 }

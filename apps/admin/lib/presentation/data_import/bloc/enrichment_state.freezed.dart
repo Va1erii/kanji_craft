@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$EnrichmentState {
 
- String get outputDir; Map<EnrichmentBatchType, BatchTypeStatus> get batches; int get batchSize;
+ String get outputDir; Map<EnrichmentBatchType, BatchTypeStatus> get batches;
 /// Create a copy of EnrichmentState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $EnrichmentStateCopyWith<EnrichmentState> get copyWith => _$EnrichmentStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EnrichmentState&&(identical(other.outputDir, outputDir) || other.outputDir == outputDir)&&const DeepCollectionEquality().equals(other.batches, batches)&&(identical(other.batchSize, batchSize) || other.batchSize == batchSize));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EnrichmentState&&(identical(other.outputDir, outputDir) || other.outputDir == outputDir)&&const DeepCollectionEquality().equals(other.batches, batches));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,outputDir,const DeepCollectionEquality().hash(batches),batchSize);
+int get hashCode => Object.hash(runtimeType,outputDir,const DeepCollectionEquality().hash(batches));
 
 @override
 String toString() {
-  return 'EnrichmentState(outputDir: $outputDir, batches: $batches, batchSize: $batchSize)';
+  return 'EnrichmentState(outputDir: $outputDir, batches: $batches)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $EnrichmentStateCopyWith<$Res>  {
   factory $EnrichmentStateCopyWith(EnrichmentState value, $Res Function(EnrichmentState) _then) = _$EnrichmentStateCopyWithImpl;
 @useResult
 $Res call({
- String outputDir, Map<EnrichmentBatchType, BatchTypeStatus> batches, int batchSize
+ String outputDir, Map<EnrichmentBatchType, BatchTypeStatus> batches
 });
 
 
@@ -62,12 +62,11 @@ class _$EnrichmentStateCopyWithImpl<$Res>
 
 /// Create a copy of EnrichmentState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? outputDir = null,Object? batches = null,Object? batchSize = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? outputDir = null,Object? batches = null,}) {
   return _then(_self.copyWith(
 outputDir: null == outputDir ? _self.outputDir : outputDir // ignore: cast_nullable_to_non_nullable
 as String,batches: null == batches ? _self.batches : batches // ignore: cast_nullable_to_non_nullable
-as Map<EnrichmentBatchType, BatchTypeStatus>,batchSize: null == batchSize ? _self.batchSize : batchSize // ignore: cast_nullable_to_non_nullable
-as int,
+as Map<EnrichmentBatchType, BatchTypeStatus>,
   ));
 }
 
@@ -149,10 +148,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches,  int batchSize)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _EnrichmentState() when $default != null:
-return $default(_that.outputDir,_that.batches,_that.batchSize);case _:
+return $default(_that.outputDir,_that.batches);case _:
   return orElse();
 
 }
@@ -170,10 +169,10 @@ return $default(_that.outputDir,_that.batches,_that.batchSize);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches,  int batchSize)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches)  $default,) {final _that = this;
 switch (_that) {
 case _EnrichmentState():
-return $default(_that.outputDir,_that.batches,_that.batchSize);}
+return $default(_that.outputDir,_that.batches);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -187,10 +186,10 @@ return $default(_that.outputDir,_that.batches,_that.batchSize);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches,  int batchSize)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String outputDir,  Map<EnrichmentBatchType, BatchTypeStatus> batches)?  $default,) {final _that = this;
 switch (_that) {
 case _EnrichmentState() when $default != null:
-return $default(_that.outputDir,_that.batches,_that.batchSize);case _:
+return $default(_that.outputDir,_that.batches);case _:
   return null;
 
 }
@@ -202,7 +201,7 @@ return $default(_that.outputDir,_that.batches,_that.batchSize);case _:
 
 
 class _EnrichmentState implements EnrichmentState {
-  const _EnrichmentState({this.outputDir = '', final  Map<EnrichmentBatchType, BatchTypeStatus> batches = const {}, this.batchSize = 150}): _batches = batches;
+  const _EnrichmentState({this.outputDir = '', final  Map<EnrichmentBatchType, BatchTypeStatus> batches = const {}}): _batches = batches;
   
 
 @override@JsonKey() final  String outputDir;
@@ -213,7 +212,6 @@ class _EnrichmentState implements EnrichmentState {
   return EqualUnmodifiableMapView(_batches);
 }
 
-@override@JsonKey() final  int batchSize;
 
 /// Create a copy of EnrichmentState
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +223,16 @@ _$EnrichmentStateCopyWith<_EnrichmentState> get copyWith => __$EnrichmentStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EnrichmentState&&(identical(other.outputDir, outputDir) || other.outputDir == outputDir)&&const DeepCollectionEquality().equals(other._batches, _batches)&&(identical(other.batchSize, batchSize) || other.batchSize == batchSize));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EnrichmentState&&(identical(other.outputDir, outputDir) || other.outputDir == outputDir)&&const DeepCollectionEquality().equals(other._batches, _batches));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,outputDir,const DeepCollectionEquality().hash(_batches),batchSize);
+int get hashCode => Object.hash(runtimeType,outputDir,const DeepCollectionEquality().hash(_batches));
 
 @override
 String toString() {
-  return 'EnrichmentState(outputDir: $outputDir, batches: $batches, batchSize: $batchSize)';
+  return 'EnrichmentState(outputDir: $outputDir, batches: $batches)';
 }
 
 
@@ -245,7 +243,7 @@ abstract mixin class _$EnrichmentStateCopyWith<$Res> implements $EnrichmentState
   factory _$EnrichmentStateCopyWith(_EnrichmentState value, $Res Function(_EnrichmentState) _then) = __$EnrichmentStateCopyWithImpl;
 @override @useResult
 $Res call({
- String outputDir, Map<EnrichmentBatchType, BatchTypeStatus> batches, int batchSize
+ String outputDir, Map<EnrichmentBatchType, BatchTypeStatus> batches
 });
 
 
@@ -262,12 +260,11 @@ class __$EnrichmentStateCopyWithImpl<$Res>
 
 /// Create a copy of EnrichmentState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? outputDir = null,Object? batches = null,Object? batchSize = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? outputDir = null,Object? batches = null,}) {
   return _then(_EnrichmentState(
 outputDir: null == outputDir ? _self.outputDir : outputDir // ignore: cast_nullable_to_non_nullable
 as String,batches: null == batches ? _self._batches : batches // ignore: cast_nullable_to_non_nullable
-as Map<EnrichmentBatchType, BatchTypeStatus>,batchSize: null == batchSize ? _self.batchSize : batchSize // ignore: cast_nullable_to_non_nullable
-as int,
+as Map<EnrichmentBatchType, BatchTypeStatus>,
   ));
 }
 

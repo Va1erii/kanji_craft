@@ -112,4 +112,107 @@ class DriftKanjiRepository implements KanjiRepository {
     final result = await query.getSingle();
     return result.read(c)!;
   }
+
+  // -- Draft Kanji I18n --
+
+  @override
+  Future<DraftKanjiI18n> upsertDraftKanjiI18n(DraftKanjiI18n i18n) async {
+    final existing = await (_db.select(_db.draftKanjiI18nEntries)
+          ..where(
+            (t) =>
+                t.draftKanjiId.equals(i18n.draftKanjiId) &
+                t.langCode.equals(i18n.langCode),
+          ))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (_db.update(_db.draftKanjiI18nEntries)
+            ..where((t) => t.id.equals(existing.id)))
+          .write(i18n.toCompanion());
+      return (await (_db.select(_db.draftKanjiI18nEntries)
+                ..where((t) => t.id.equals(existing.id)))
+              .getSingle())
+          .toDomain();
+    } else {
+      final entry = await _db
+          .into(_db.draftKanjiI18nEntries)
+          .insertReturning(i18n.toCompanion());
+      return entry.toDomain();
+    }
+  }
+
+  @override
+  Future<List<DraftKanjiI18n>> getAllDraftKanjiI18n() async {
+    final entries = await (_db.select(_db.draftKanjiI18nEntries)
+          ..orderBy([(t) => OrderingTerm.asc(t.draftKanjiId)]))
+        .get();
+    return entries.map((e) => e.toDomain()).toList();
+  }
+
+  @override
+  Future<int> countDraftKanjiI18nWithMnemonic() async {
+    final c = countAll();
+    final query = _db.selectOnly(_db.draftKanjiI18nEntries)
+      ..addColumns([c])
+      ..where(_db.draftKanjiI18nEntries.systemMnemonic.length.isBiggerThan(
+        const Constant(0),
+      ));
+    final result = await query.getSingle();
+    return result.read(c)!;
+  }
+
+  @override
+  Future<void> batchUpdateDraftKanjiI18nEnrichment(
+    List<({int id, String systemMnemonic, List<String> searchTags})> updates,
+  ) async {
+    await _db.batch((b) {
+      for (final u in updates) {
+        b.update(
+          _db.draftKanjiI18nEntries,
+          DraftKanjiI18nEntriesCompanion(
+            systemMnemonic: Value(u.systemMnemonic),
+            searchTags: Value(u.searchTags),
+          ),
+          where: (t) => t.id.equals(u.id),
+        );
+      }
+    });
+  }
+
+  // -- Export helpers --
+
+  @override
+  Future<List<DraftKanji>> getDraftKanjiForExport({
+    required int limit,
+    required int offset,
+  }) async {
+    // Sort: min_jlpt_level DESC NULLS LAST, min_grade ASC NULLS LAST,
+    // frequency_rank ASC.
+    final t = _db.draftKanjiEntries;
+    final query = _db.select(t)
+      ..orderBy([
+        // COALESCE(min_jlpt_level, 0) DESC — nulls become 0 (sort last)
+        (t) => OrderingTerm(
+              expression:
+                  CustomExpression('COALESCE(${t.minJlptLevel.name}, 0)'),
+              mode: OrderingMode.desc,
+            ),
+        // COALESCE(min_grade, 99) ASC — nulls become 99 (sort last)
+        (t) => OrderingTerm(
+              expression:
+                  CustomExpression('COALESCE(${t.minGrade.name}, 99)'),
+              mode: OrderingMode.asc,
+            ),
+        // frequency_rank ASC
+        (t) => OrderingTerm.asc(t.frequencyRank),
+      ])
+      ..limit(limit, offset: offset);
+    final entries = await query.get();
+    return entries.map((e) => e.toDomain()).toList();
+  }
+
+  @override
+  Future<int> countDraftKanjiForExport() async {
+    return countDraftKanji();
+  }
 }

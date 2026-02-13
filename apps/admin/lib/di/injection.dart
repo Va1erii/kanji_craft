@@ -44,9 +44,11 @@ import '../domain/services/svg_cache.dart';
 import '../data/services/radical_scanner.dart';
 import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
+import '../domain/usecases/export_kanji_mnemonics.dart';
 import '../domain/usecases/export_radical_mnemonics.dart';
 import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/estimate_logic_hints.dart';
+import '../domain/usecases/import_kanji_mnemonics.dart';
 import '../domain/usecases/import_radical_mnemonics.dart';
 import '../domain/usecases/link_components.dart';
 import '../domain/usecases/extract_vocabulary.dart';
@@ -242,6 +244,20 @@ Future<void> configureDependencies() async {
       csvService: getIt<CsvService>(),
     ),
   );
+  getIt.registerLazySingleton<ExportKanjiMnemonics>(
+    () => ExportKanjiMnemonics(
+      kanjiRepository: getIt<KanjiRepository>(),
+      radicalRepository: getIt<RadicalRepository>(),
+      kanjiComponentRepository: getIt<KanjiComponentRepository>(),
+      csvService: getIt<CsvService>(),
+    ),
+  );
+  getIt.registerLazySingleton<ImportKanjiMnemonics>(
+    () => ImportKanjiMnemonics(
+      kanjiRepository: getIt<KanjiRepository>(),
+      csvService: getIt<CsvService>(),
+    ),
+  );
   getIt.registerLazySingleton<HydrateLocalDb>(
     () => HydrateLocalDb(
       reader: getIt<AdminStateReader>(),
@@ -276,6 +292,8 @@ Future<void> configureDependencies() async {
     () => EnrichmentBloc(
       exportRadicalMnemonics: getIt<ExportRadicalMnemonics>(),
       importRadicalMnemonics: getIt<ImportRadicalMnemonics>(),
+      exportKanjiMnemonics: getIt<ExportKanjiMnemonics>(),
+      importKanjiMnemonics: getIt<ImportKanjiMnemonics>(),
       bookmarkService: getIt<BookmarkService>(),
     ),
   );

@@ -20,6 +20,7 @@ import '../data/repositories/vocabulary/drift_vocabulary_repository.dart';
 import '../data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.dart';
 import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import '../data/repositories/source_vocab_level/drift_source_vocab_level_repository.dart';
+import '../data/services/bookmark_service.dart';
 import '../data/services/csv_service.dart';
 import '../data/services/drift_admin_state_writer.dart';
 import '../data/services/file_svg_cache.dart';
@@ -128,6 +129,9 @@ Future<void> configureDependencies() async {
   final appSupportDir = await getApplicationSupportDirectory();
   getIt.registerLazySingleton<SvgCache>(
     () => FileSvgCache(Directory(p.join(appSupportDir.path, 'svg_cache'))),
+  );
+  getIt.registerLazySingleton<BookmarkService>(
+    () => BookmarkService(appSupportDir),
   );
   getIt.registerLazySingleton<RadicalScanner>(
     () => RadicalScanner(),
@@ -265,6 +269,7 @@ Future<void> configureDependencies() async {
     () => EnrichmentBloc(
       exportRadicalMnemonics: getIt<ExportRadicalMnemonics>(),
       importRadicalMnemonics: getIt<ImportRadicalMnemonics>(),
+      bookmarkService: getIt<BookmarkService>(),
     ),
   );
 }

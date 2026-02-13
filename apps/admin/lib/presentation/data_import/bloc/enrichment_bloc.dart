@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/services/bookmark_service.dart';
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/enrichment_batch_type.dart';
 import '../../../domain/entities/import_source.dart';
@@ -11,19 +12,45 @@ import '../../../domain/usecases/import_radical_mnemonics.dart';
 import 'enrichment_event.dart';
 import 'enrichment_state.dart';
 
+/// Bookmark key for persisting the CSV output directory across app launches.
+const _outputDirBookmarkKey = 'enrichment_output_dir';
+
 class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
   EnrichmentBloc({
     required ExportRadicalMnemonics exportRadicalMnemonics,
     required ImportRadicalMnemonics importRadicalMnemonics,
+    required BookmarkService bookmarkService,
   })  : _exportRadicalMnemonics = exportRadicalMnemonics,
         _importRadicalMnemonics = importRadicalMnemonics,
+        _bookmarkService = bookmarkService,
         super(const EnrichmentState()) {
     on<EnrichmentEvent>(_onEvent);
+    _restoreOutputDir();
   }
 
   final ExportRadicalMnemonics _exportRadicalMnemonics;
   final ImportRadicalMnemonics _importRadicalMnemonics;
+  final BookmarkService _bookmarkService;
   List<DataImport> _imports = const [];
+
+  /// Restore the persisted output directory bookmark on startup.
+  Future<void> _restoreOutputDir() async {
+    try {
+      final path =
+          await _bookmarkService.resolveBookmark(_outputDirBookmarkKey);
+      if (path != null) {
+        // ignore: invalid_use_of_visible_for_testing_member
+        emit(state.copyWith(outputDir: path));
+      }
+    } catch (e, st) {
+      log(
+        'Failed to restore output directory bookmark',
+        error: e,
+        stackTrace: st,
+        name: 'EnrichmentBloc',
+      );
+    }
+  }
 
   Future<void> _onEvent(
     EnrichmentEvent event,
@@ -51,6 +78,17 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
     String path,
     Emitter<EnrichmentState> emit,
   ) async {
+    try {
+      await _bookmarkService.saveBookmark(_outputDirBookmarkKey, path);
+      await _bookmarkService.startAccess(path);
+    } catch (e, st) {
+      log(
+        'Failed to save output directory bookmark',
+        error: e,
+        stackTrace: st,
+        name: 'EnrichmentBloc',
+      );
+    }
     emit(state.copyWith(outputDir: path));
   }
 
@@ -239,5 +277,11 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
         .where((i) => i.source == source && i.status == ImportStatus.ingested)
         .first
         .id;
+  }
+
+  @override
+  Future<void> close() async {
+    await _bookmarkService.stopAll();
+    return super.close();
   }
 }

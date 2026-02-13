@@ -121,9 +121,6 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `jlpt_mapping_format.md` | JLPT kanji mapping CSV format |
 | `jlpt_vocab_mapping_format.md` | JLPT vocabulary mapping CSV format (Tanos word lists) |
 | `jmdict_furigana_format.md` | JmdictFurigana JSON format (per-character furigana for segments) |
-| `raw_kanjivg.md` | RawKanjiVg staging table — components is recursive JSONB tree |
-| `raw_kanjidic.md` | RawKanjidic staging table — meanings grouped by lang_code in JSONB |
-| `raw_jmdict.md` | RawJmdict staging table — composite PK: import_id + ent_seq |
 
 ## Database Schema Digest
 

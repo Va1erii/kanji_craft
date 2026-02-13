@@ -80,18 +80,19 @@ supabase/migrations/                   # Timestamped SQL migrations
 
 Read specific docs only when relevant to the task. Do not load all docs at once.
 
-### Entity Specs (`docs/entities/`) — read when implementing or modifying entities
+### Domain Specs (`docs/domain/`) — read when implementing or modifying entities
 
 | Doc | Covers | Key decisions |
 |---|---|---|
 | `radical.md` | Radical, RadicalI18n, RadicalVariant, Position enum | master_symbol is canonical identity; variants are shapes at positions |
 | `kanji.md` | Kanji, KanjiReading, KanjiI18n | frequency_rank always populated (synthetic for unranked) |
-| `kanji_component.md` | KanjiComponent, KanjiComponentReview, LogicHint, RadicalType | logic_hint is per-kanji-radical pair, not global; is_primary is generated from radical_type |
+| `kanji_component.md` | KanjiComponent, LogicHint, RadicalType | logic_hint is per-kanji-radical pair, not global; is_primary is generated from radical_type |
 | `vocabulary.md` | Vocabulary, VocabularyReading/I18n/Kanji/Sentence | furigana uses `{kanji\|reading}` per-character notation |
 | `srs.md` | SrsCard, ReviewLog, Rating, CardState | FSRS algorithm; difficulty 0 = new, 1-10 after first review |
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
 | `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
+| `teaching.md` | Teaching strategy, phono-semantic patterns, SRS card types | Color coding, sound match indicators, question formats |
 
 ### Technical Docs (`docs/technical/`) — read when implementing pipeline or infrastructure
 
@@ -139,7 +140,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 ## Key Architectural Decisions
 
-1. **Docs-first design:** Entity specs in `docs/entities/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
+1. **Docs-first design:** Domain specs in `docs/domain/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
 2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files.
 3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
 4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.

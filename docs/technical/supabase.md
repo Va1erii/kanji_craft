@@ -41,7 +41,7 @@ Supabase is the backend-as-a-service for the app, providing three core services:
 
 ### Naming Convention
 
-Every entity in `docs/entities/` maps to a Supabase Postgres table. Table names use `snake_case`, plural form (e.g. `UserSettings` → `user_settings`, `Radical` → `radicals`).
+Every entity in `docs/domain/` maps to a Supabase Postgres table. Table names use `snake_case`, plural form (e.g. `UserSettings` → `user_settings`, `Radical` → `radicals`).
 
 ### Data Categories
 

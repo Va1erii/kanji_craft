@@ -374,7 +374,7 @@ Structural-only `<g>` group — handled by flattening (see §Structural Group Fl
 
 ### Variant without `original`
 
-If a node has `variant == true` but `original` is null, log a warning. Treat the element as its own master symbol (non-variant). See [raw_kanjivg.md](../entities/raw_kanjivg.md) edge case.
+If a node has `variant == true` but `original` is null, log a warning. Treat the element as its own master symbol (non-variant). See [raw_kanjivg.md](../domain/raw_kanjivg.md) edge case.
 
 ### Kanji with no children (leaf kanji)
 
@@ -382,7 +382,7 @@ Characters like 一, 丨, 丶 have no sub-components. No `kanji_components` rows
 
 ### Self-referential radical
 
-A kanji's `master_symbol` in `radicals` may equal its `character` in `kanji` (e.g. 木). The `kanji_components` for kanji 木 are empty (leaf), but `kanji_components` for 休 reference radical 木. Both rows exist independently — see [radical.md rule #10](../entities/radical.md).
+A kanji's `master_symbol` in `radicals` may equal its `character` in `kanji` (e.g. 木). The `kanji_components` for kanji 木 are empty (leaf), but `kanji_components` for 休 reference radical 木. Both rows exist independently — see [radical.md rule #10](../domain/radical.md).
 
 ### Duplicate component positions
 
@@ -489,10 +489,10 @@ Steps 1–2 (linking) depend on both the `kanji` rows from kanji composition and
 
 ## Related Docs
 
-- [kanji_component.md](../entities/kanji_component.md) — KanjiComponent entity spec (target schema, business rules, edge cases)
-- [radical.md](../entities/radical.md) — Radical entity spec (master_symbol, variants, metadata fields)
-- [kanji.md](../entities/kanji.md) — Kanji entity spec (min_grade, min_jlpt_level used in metadata derivation)
-- [raw_kanjivg.md](../entities/raw_kanjivg.md) — Source staging table (component tree shape, KanjiVG attributes)
+- [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity spec (target schema, business rules, edge cases)
+- [radical.md](../domain/radical.md) — Radical entity spec (master_symbol, variants, metadata fields)
+- [kanji.md](../domain/kanji.md) — Kanji entity spec (min_grade, min_jlpt_level used in metadata derivation)
+- [raw_kanjivg.md](../domain/raw_kanjivg.md) — Source staging table (component tree shape, KanjiVG attributes)
 - [kanjivg_format.md](../sources/kanjivg_format.md) — KanjiVG SVG format (position values, radical markers, split parts)
 - [radical_extraction.md](radical_extraction.md) — Passes 1–2 (radical registration) and full worked examples
 - [kanji_composition.md](kanji_composition.md) — Steps 1–3 (kanji creation) and JLPT level mapping

@@ -200,7 +200,7 @@ Before parsing, create a new `data_imports` row to track this batch.
 | `source_version` | e.g. "2024-04-01" |
 | `status` | `pending` |
 
-See [data_import.md](../entities/data_import.md).
+See [data_import.md](../domain/data_import.md).
 
 ### 1.2 Parsing & Insertion
 
@@ -220,7 +220,7 @@ Common rules:
 - On success: set `data_imports.status` = `ingested`, populate `record_count`.
 - On failure: set `status` = `failed`, populate `error_message`.
 
-See [raw_kanjidic.md](../entities/raw_kanjidic.md), [raw_kanjivg.md](../entities/raw_kanjivg.md).
+See [raw_kanjidic.md](../domain/raw_kanjidic.md), [raw_kanjivg.md](../domain/raw_kanjivg.md).
 
 ## Phase 2: Transformation (Raw → Local Production)
 
@@ -243,7 +243,7 @@ A Dart/SQL logic layer (triggered via Admin Tool) processes the active `import_i
 3. Scan in-scope entries with ghost flattening — resolve effective children, collect radical candidates.
 4. Upsert into `radicals` table. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
 
-See [radical.md](../entities/radical.md), [radical_extraction.md](radical_extraction.md).
+See [radical.md](../domain/radical.md), [radical_extraction.md](radical_extraction.md).
 
 ### 2.3 Kanji & Component Composition
 
@@ -284,7 +284,7 @@ JMdict data is processed separately from the KanjiVG/KANJIDIC pipeline, using th
 
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.3), because `vocabulary_kanji` and segment `kanji_id` references require the `kanji` table. Reference tables (`source_vocab_levels`, `jmdict_furigana`) must be loaded during Phase 1.
 
-See [vocabulary_extraction.md](vocabulary_extraction.md) for the full algorithm, [vocabulary.md](../entities/vocabulary.md) for the entity spec.
+See [vocabulary_extraction.md](vocabulary_extraction.md) for the full algorithm, [vocabulary.md](../domain/vocabulary.md) for the entity spec.
 
 ### 2.6 AI Enrichment
 
@@ -314,8 +314,8 @@ Entities that require human review use the `verification_status` enum:
 | `flagged` | Identified as problematic/error. Excluded from sync |
 
 This status is tracked in two places:
-- **`kanji_component_reviews`** — separate 1:1 table for component review metadata (`ai_confidence`, etc.). See [kanji_component.md](../entities/kanji_component.md).
-- **`vocabulary_sentences.verification_status`** — column directly on the sentence row (option A: simpler than a separate review table since sentences only need a status flag). See [vocabulary.md](../entities/vocabulary.md).
+- **`kanji_component_reviews`** — separate 1:1 table for component review metadata (`ai_confidence`, etc.). See [kanji_component.md](../domain/kanji_component.md).
+- **`vocabulary_sentences.verification_status`** — column directly on the sentence row (option A: simpler than a separate review table since sentences only need a status flag). See [vocabulary.md](../domain/vocabulary.md).
 
 ### 3.2 Review Queue (Admin Dashboard)
 
@@ -441,7 +441,7 @@ pending → ingested → processing → processed
  failed    failed      failed
 ```
 
-Each transition updates the corresponding timestamp on `data_imports`. See [data_import.md](../entities/data_import.md) for the full status enum.
+Each transition updates the corresponding timestamp on `data_imports`. See [data_import.md](../domain/data_import.md) for the full status enum.
 
 ## Commands
 
@@ -493,14 +493,14 @@ Each phase's dedicated doc contains a **Warnings** section with a table listing 
 - [component_linking.md](component_linking.md) — component linking and radical metadata derivation
 - [vocabulary_extraction.md](vocabulary_extraction.md) — vocabulary extraction from JMdict (Phase 2.5)
 - [ai_enrichment.md](ai_enrichment.md) — AI enrichment: logic hints, mnemonics, translations, furigana (Phase 2.6)
-- [data_import.md](../entities/data_import.md) — import tracking entity
-- [raw_kanjidic.md](../entities/raw_kanjidic.md) — KANJIDIC2 staging table
-- [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table
-- [raw_jmdict.md](../entities/raw_jmdict.md) — JMdict staging table
-- [kanji_component.md](../entities/kanji_component.md) — component entity and KanjiComponentReview (admin review state)
-- [radical.md](../entities/radical.md) — radical extraction target
-- [kanji.md](../entities/kanji.md) — kanji creation target
-- [vocabulary.md](../entities/vocabulary.md) — vocabulary extraction target
+- [data_import.md](../domain/data_import.md) — import tracking entity
+- [raw_kanjidic.md](../domain/raw_kanjidic.md) — KANJIDIC2 staging table
+- [raw_kanjivg.md](../domain/raw_kanjivg.md) — KanjiVG staging table
+- [raw_jmdict.md](../domain/raw_jmdict.md) — JMdict staging table
+- [kanji_component.md](../domain/kanji_component.md) — component entity and KanjiComponentReview (admin review state)
+- [radical.md](../domain/radical.md) — radical extraction target
+- [kanji.md](../domain/kanji.md) — kanji creation target
+- [vocabulary.md](../domain/vocabulary.md) — vocabulary extraction target
 - [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md) — JLPT kanji mapping CSV format
 - [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md) — JLPT vocabulary mapping CSV format
 - [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) — JmdictFurigana JSON format

@@ -5,7 +5,7 @@ description: Generates Supabase migration SQL files from entity docs. Use when t
 
 # Migration Skill
 
-Generate Supabase PostgreSQL migration files by translating entity specs from `docs/entities/` into SQL.
+Generate Supabase PostgreSQL migration files by translating entity specs from `docs/domain/` into SQL.
 
 ## Arguments
 
@@ -14,9 +14,9 @@ Generate Supabase PostgreSQL migration files by translating entity specs from `d
 ## Workflow
 
 1. **Gather scope.** Use the argument and conversation context to determine which entity groups are in scope.
-2. **Read entity docs.** Read all referenced `docs/entities/*.md` files. Extract every field, type, relationship, constraint, enum, and business rule.
+2. **Read entity docs.** Read all referenced `docs/domain/*.md` files. Extract every field, type, relationship, constraint, enum, and business rule.
 3. **Check completeness — stop if insufficient.** Before generating any SQL, verify the entity docs provide enough information to produce a correct migration. If any of the following are missing or ambiguous, **do not proceed** — instead, list exactly what is missing and ask the user to update the entity docs first:
-   - A referenced entity doc file does not exist in `docs/entities/`
+   - A referenced entity doc file does not exist in `docs/domain/`
    - An entity is missing its field table (no fields defined)
    - Field types are missing or unclear (cannot determine Postgres type)
    - Relationships reference entities with no corresponding doc

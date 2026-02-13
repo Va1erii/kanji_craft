@@ -73,11 +73,11 @@ The table is loaded by truncating all existing rows and bulk-inserting from the 
 
 KANJIDIC2 includes a `jlpt` field using the **pre-2010 scale** (levels 1–4). That value is stored as-is in `raw_kanjidic.jlpt` for reference only. The pipeline **ignores** `raw_kanjidic.jlpt` when populating `kanji.min_jlpt_level` — it uses `source_jlpt_levels` exclusively.
 
-See [raw_kanjidic.md](../entities/raw_kanjidic.md) and [kanjidic_format.md](kanjidic_format.md#jlpt-level) for details on the pre-2010 field.
+See [raw_kanjidic.md](../domain/raw_kanjidic.md) and [kanjidic_format.md](kanjidic_format.md#jlpt-level) for details on the pre-2010 field.
 
 ## Related Docs
 
-- [raw_kanjidic.md](../entities/raw_kanjidic.md) — Staging table (stores old JLPT 1–4 for reference)
+- [raw_kanjidic.md](../domain/raw_kanjidic.md) — Staging table (stores old JLPT 1–4 for reference)
 - [kanjidic_format.md](kanjidic_format.md) — KANJIDIC2 format reference (JLPT field explanation)
 - [kanji_composition.md](../technical/kanji_composition.md) — How `source_jlpt_levels` feeds into `kanji.min_jlpt_level`
 - [pipeline.md](../technical/pipeline.md) — Pipeline orchestration (source loading)

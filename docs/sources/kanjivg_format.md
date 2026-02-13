@@ -204,6 +204,6 @@ These are known inconsistencies in the KanjiVG dataset that our pipeline must ha
 ## Related Docs
 
 - [radical_extraction.md](radical_extraction.md) — Algorithm that consumes KanjiVG component trees
-- [raw_kanjivg.md](../entities/raw_kanjivg.md) — Staging table schema (how parsed KanjiVG data is stored)
+- [raw_kanjivg.md](../domain/raw_kanjivg.md) — Staging table schema (how parsed KanjiVG data is stored)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration
 - [KanjiVG Wiki](https://github.com/KanjiVG/kanjivg/wiki) — Upstream documentation

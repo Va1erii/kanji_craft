@@ -10,7 +10,7 @@ This phase sits between radical extraction Passes 1–2 (which create `radicals`
 
 ## Source Data
 
-The primary source is `raw_kanjidic` — the staging table populated by KANJIDIC2 ingestion (pipeline Phase 1.2). Each row contains the complete dictionary entry for a single character as structured JSONB. See [raw_kanjidic.md](../entities/raw_kanjidic.md) for the table schema and [kanjidic_format.md](../sources/kanjidic_format.md) for field-level mapping from the source XML.
+The primary source is `raw_kanjidic` — the staging table populated by KANJIDIC2 ingestion (pipeline Phase 1.2). Each row contains the complete dictionary entry for a single character as structured JSONB. See [raw_kanjidic.md](../domain/raw_kanjidic.md) for the table schema and [kanjidic_format.md](../sources/kanjidic_format.md) for field-level mapping from the source XML.
 
 Key fields consumed by this phase:
 
@@ -305,7 +305,7 @@ Readings like `やす.む` (for 休む) are stored as-is in `kanji_readings.read
 Readings like `-び` and `-か` (for 日 in compounds like 祝日) are stored as-is. The dash indicates the reading only occurs as part of a compound, not independently.
 
 ### Languages with no meanings
-If a language key in `raw_kanjidic.meanings` has an empty array, no `draft_kanji_i18n` row is created for that language-kanji pair. This is expected — not all languages have meanings for every character. The client falls back to English at query time (see [kanji.md](../entities/kanji.md) edge cases).
+If a language key in `raw_kanjidic.meanings` has an empty array, no `draft_kanji_i18n` row is created for that language-kanji pair. This is expected — not all languages have meanings for every character. The client falls back to English at query time (see [kanji.md](../domain/kanji.md) edge cases).
 
 ### Kanji in raw_kanjidic but not in raw_kanjivg
 A kanji row is created from KANJIDIC2 data even if no matching KanjiVG entry exists. Steps 1–3 succeed, but Step 4 (component linking) produces no `kanji_components` rows for this character. This is logged as a warning — it means the kanji exists as a learnable item but has no decomposition tree. The admin should investigate missing KanjiVG coverage.
@@ -348,9 +348,9 @@ Tables populated by **later phases** (not this algorithm):
 
 ## Related Docs
 
-- [kanji.md](../entities/kanji.md) — Kanji entity spec (target schema)
-- [kanji_component.md](../entities/kanji_component.md) — KanjiComponent entity and review state
-- [raw_kanjidic.md](../entities/raw_kanjidic.md) — Source staging table schema
+- [kanji.md](../domain/kanji.md) — Kanji entity spec (target schema)
+- [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity and review state
+- [raw_kanjidic.md](../domain/raw_kanjidic.md) — Source staging table schema
 - [kanjidic_format.md](../sources/kanjidic_format.md) — KANJIDIC2 XML format reference (JLPT mapping, grade values)
 - [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Steps 4–5)
 - [radical_extraction.md](radical_extraction.md) — Passes 1–2 (radical/variant registration)

@@ -4,7 +4,7 @@
 
 This document defines the correctness rules that the Phase 1 ingestion layer must enforce. It covers only the ingestion phase — parsing source files and inserting rows into raw staging tables (`raw_kanjivg`, `raw_kanjidic`, `raw_jmdict`).
 
-For the full pipeline lifecycle (ingestion → transformation → verification → promotion), see [pipeline.md](pipeline.md). For entity schemas and field-level rules, see the entity docs: [data_import.md](../entities/data_import.md), [raw_kanjivg.md](../entities/raw_kanjivg.md), [raw_kanjidic.md](../entities/raw_kanjidic.md).
+For the full pipeline lifecycle (ingestion → transformation → verification → promotion), see [pipeline.md](pipeline.md). For entity schemas and field-level rules, see the entity docs: [data_import.md](../domain/data_import.md), [raw_kanjivg.md](../domain/raw_kanjivg.md), [raw_kanjidic.md](../domain/raw_kanjidic.md).
 
 ## Invariants
 
@@ -12,7 +12,7 @@ For the full pipeline lifecycle (ingestion → transformation → verification �
 
 1. **Single active import per source.** Only one import per `ImportSource` can be in a non-terminal status (`pending`, `ingested`, `processing`) at a time. Starting a second concurrent import for the same source must throw immediately. Terminal statuses (`processed`, `failed`) do not block new imports. *(Implemented: `getActiveBySource` check in `IngestionService`.)*
 
-2. **Version uniqueness against processed imports.** The same `(source, source_version)` pair must not be re-ingested if a `processed` import with that version already exists ([data_import.md](../entities/data_import.md) rule #2). A failed import of the same version may be retried. *(Implemented: `hasProcessedVersion` check in `IngestSourceData` use case.)*
+2. **Version uniqueness against processed imports.** The same `(source, source_version)` pair must not be re-ingested if a `processed` import with that version already exists ([data_import.md](../domain/data_import.md) rule #2). A failed import of the same version may be retried. *(Implemented: `hasProcessedVersion` check in `IngestSourceData` use case.)*
 
 3. **Folder validation.** The pipeline operates on folders, not individual files. Before parsing begins, the service must validate that: (a) the folder name matches the expected pattern for the source (`kanjidic-{version}/`, `jmdict-{version}/`, `kanjivg-{version}/`), (b) all required files are present (see [pipeline.md — Folder Preparation](pipeline.md#folder-preparation)), and (c) the `source_version` is extracted from the folder name. *(Partially implemented: the import dialog detects files, but `IngestionService` does not validate folder structure or required file presence.)*
 

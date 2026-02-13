@@ -110,7 +110,7 @@ For each target language:
    - Aggregate glosses across all senses into a single `meanings` array (preserving sense ordering).
    - `system_mnemonic` ← `null`. Populated later during content enrichment or manually by admin.
    - `search_tags` ← empty array. Populated later during content enrichment.
-4. If no senses have glosses for the target language, **skip** — do not create an i18n row. Fallback to English happens at query time (see [vocabulary.md](../entities/vocabulary.md) edge cases).
+4. If no senses have glosses for the target language, **skip** — do not create an i18n row. Fallback to English happens at query time (see [vocabulary.md](../domain/vocabulary.md) edge cases).
 
 **Sense filtering:**
 
@@ -167,7 +167,7 @@ Extract example sentences from `raw_jmdict.examples` (Tanaka Corpus).
 
 ## Segmentation (Ghost Kanji Support)
 
-To support Ghost Kanji rendering (showing unlearned kanji in gray with furigana), the `segments` JSONB field must be constructed during extraction. Segments follow the `VocabularySegment` format defined in [vocabulary.md §Segments Format](../entities/vocabulary.md#segments-format).
+To support Ghost Kanji rendering (showing unlearned kanji in gray with furigana), the `segments` JSONB field must be constructed during extraction. Segments follow the `VocabularySegment` format defined in [vocabulary.md §Segments Format](../domain/vocabulary.md#segments-format).
 
 **Source:** `jmdict_furigana` — a reference table mapping vocabulary words to per-character reading breakdowns, ingested from the [JmdictFurigana](https://github.com/Doublevil/JmdictFurigana) dataset.
 
@@ -292,7 +292,7 @@ If a word is not in `source_vocab_levels` and all its kanji have `null` JLPT lev
 
 ## POS Tag Extraction
 
-The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` codes across all senses of the entry, mapped to the curated `PosTag` enum (see [shared_types.md §PosTag](../entities/shared_types.md#postag-enum)).
+The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` codes across all senses of the entry, mapped to the curated `PosTag` enum (see [shared_types.md §PosTag](../domain/shared_types.md#postag-enum)).
 
 **Collection logic:**
 
@@ -459,8 +459,8 @@ Steps 1–3 depend on `raw_jmdict`, `source_vocab_levels`, `jmdict_furigana`, an
 
 ## Related Docs
 
-- [vocabulary.md](../entities/vocabulary.md) — Vocabulary entity spec (target schema, segments format, business rules)
-- [raw_jmdict.md](../entities/raw_jmdict.md) — Source staging table schema (JSONB structure, edge cases)
+- [vocabulary.md](../domain/vocabulary.md) — Vocabulary entity spec (target schema, segments format, business rules)
+- [raw_jmdict.md](../domain/raw_jmdict.md) — Source staging table schema (JSONB structure, edge cases)
 - [jmdict_format.md](../sources/jmdict_format.md) — JMdict XML format reference (priority codes, sense inheritance)
 - [kanji_composition.md](kanji_composition.md) — Prerequisite phase (kanji table creation)
 - [component_linking.md](component_linking.md) — Component linking (kanji-radical bridge)

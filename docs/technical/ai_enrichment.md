@@ -33,7 +33,7 @@ Estimates `logic_hint` (semantic vs phonetic) for every `kanji_component` row us
 For each `kanji_component` row:
 
 1. **Fetch kanji onyomi:** Query `raw_kanjidic` for the parent kanji's onyomi readings.
-2. **Fetch radical onyomi:** Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi. Radicals don't store readings directly (see [radical.md](../entities/radical.md) rule #5) — this lookup treats the master symbol as a kanji to retrieve any readings it may have.
+2. **Fetch radical onyomi:** Look up the radical's `master_symbol` as a character in `raw_kanjidic` to get its onyomi. Radicals don't store readings directly (see [radical.md](../domain/radical.md) rule #5) — this lookup treats the master symbol as a kanji to retrieve any readings it may have.
 3. **Compare:**
    - **Match found** → at least one onyomi of the radical matches an onyomi of the kanji.
    - **No match** → no onyomi overlap, or radical's master symbol has no entry in `raw_kanjidic`.
@@ -241,7 +241,7 @@ Add `[kanji](reading)` furigana notation to Japanese sentences that lack it.
 
 **Batch size:** Only sentences whose `original_text` does not already contain `[` (no existing furigana notation).
 
-**Target:** Update `vocabulary_sentences.original_text` with the annotated version. See [vocabulary.md §Furigana Notation](../entities/vocabulary.md#furigana-notation) for the exact format specification.
+**Target:** Update `vocabulary_sentences.original_text` with the annotated version. See [vocabulary.md §Furigana Notation](../domain/vocabulary.md#furigana-notation) for the exact format specification.
 
 ---
 
@@ -339,7 +339,7 @@ See Import Warnings table in the Validation Rules section above.
 ## Related Docs
 
 - [pipeline.md](pipeline.md) — overall pipeline orchestration (this phase is §2.6)
-- [radical.md](../entities/radical.md) — radical entity spec (target for Batch 1)
-- [kanji.md](../entities/kanji.md) — kanji entity spec (target for Batch 2)
-- [kanji_component.md](../entities/kanji_component.md) — component entity and KanjiComponentReview (target for Sub-phase A)
-- [vocabulary.md](../entities/vocabulary.md) — vocabulary entity spec (target for Batches 3–5), furigana notation spec
+- [radical.md](../domain/radical.md) — radical entity spec (target for Batch 1)
+- [kanji.md](../domain/kanji.md) — kanji entity spec (target for Batch 2)
+- [kanji_component.md](../domain/kanji_component.md) — component entity and KanjiComponentReview (target for Sub-phase A)
+- [vocabulary.md](../domain/vocabulary.md) — vocabulary entity spec (target for Batches 3–5), furigana notation spec

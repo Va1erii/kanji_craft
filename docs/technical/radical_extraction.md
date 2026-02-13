@@ -124,7 +124,7 @@ A character that appears as a component of another kanji exists in **two tables*
 - `radicals` row — its identity as a building block (referenced by `kanji_components.radical_id`)
 - `kanji` row — its identity as a learnable item with readings, meanings, and its own SRS card
 
-This dual identity is by design (see [radical.md rule #10](../entities/radical.md)). `kanji_components` always references `radicals.id`, never `kanji.id`.
+This dual identity is by design (see [radical.md rule #10](../domain/radical.md)). `kanji_components` always references `radicals.id`, never `kanji.id`.
 
 Examples: 言, 吾, 木, 金, 山, 口, 五 — all are both radicals and kanji.
 
@@ -203,7 +203,7 @@ For each unique element from Pass 1:
      - `is_locked` — `true` if this variant was **only** ever seen in a single position across all kanji trees.
      - SVG fields — from SVG Processing (Phase 2.4).
    - For every radical whose `master_symbol` was NOT seen as a variant of anything (it is its own canonical form):
-     - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../entities/radical.md): every radical has at least one variant.)
+     - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../domain/radical.md): every radical has at least one variant.)
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
@@ -384,7 +384,7 @@ A single kanji may have two children with `radical` markers — one `'general'` 
 
 ### Variant without `original`
 
-If a node has `variant == true` but `original` is null ([raw_kanjivg.md edge case](../entities/raw_kanjivg.md)), log a warning. Treat the element as its own master symbol (non-variant). The admin can manually link it during review.
+If a node has `variant == true` but `original` is null ([raw_kanjivg.md edge case](../domain/raw_kanjivg.md)), log a warning. Treat the element as its own master symbol (non-variant). The admin can manually link it during review.
 
 ### Kanji with no children (leaf kanji)
 
@@ -458,10 +458,10 @@ Pass 0 (scope set) requires `raw_kanjidic` and `source_jlpt_level_entries` to be
 
 ## Related Docs
 
-- [radical.md](../entities/radical.md) — Radical entity spec
-- [kanji.md](../entities/kanji.md) — Kanji entity spec
-- [kanji_component.md](../entities/kanji_component.md) — KanjiComponent entity and review state
-- [raw_kanjivg.md](../entities/raw_kanjivg.md) — KanjiVG staging table and component tree shape
+- [radical.md](../domain/radical.md) — Radical entity spec
+- [kanji.md](../domain/kanji.md) — Kanji entity spec
+- [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity and review state
+- [raw_kanjivg.md](../domain/raw_kanjivg.md) — KanjiVG staging table and component tree shape
 - [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Passes 3–4)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
 - [ingestion.md](ingestion.md) — Phase 1 correctness invariants

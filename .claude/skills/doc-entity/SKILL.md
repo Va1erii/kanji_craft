@@ -16,9 +16,9 @@ Generate or update a Markdown doc for a domain entity group following the projec
 This is a **docs-first** skill. The doc is a design spec — it is written *before* code exists, not generated from it. The user describes the entity group they want to design and the skill produces the spec that will later guide implementation.
 
 1. **Gather intent from the user.** Use the argument and conversation context to understand what entity group the user wants to design. Ask clarifying questions if the domain concept is unclear.
-2. **Read existing docs** in `docs/entities/` for context on related groups and to stay consistent with established conventions, naming, and cross-references.
+2. **Read existing docs** in `docs/domain/` for context on related groups and to stay consistent with established conventions, naming, and cross-references.
 3. **Draft the doc** following the template and rules below. The doc defines the entities, fields, relationships, and business rules that code must later implement.
-4. **Write the file** to `docs/entities/<group>.md`.
+4. **Write the file** to `docs/domain/<group>.md`.
 5. **Check cross-references.** If the entity group references other groups, verify those doc files exist and mention them. Do not create docs for other groups — just note if a referenced doc is missing.
 6. **Update the glossary.** Read `docs/glossary.md` and add any new domain terms, abbreviations, or concepts introduced by this entity group. Remove terms that no longer apply. Do not duplicate definitions — keep entries concise and link to the entity doc for details.
 

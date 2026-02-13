@@ -142,7 +142,7 @@ Interleaved kanji and kana segments:
 
 ## Mapping to Vocabulary Segments
 
-The pipeline transforms JmdictFurigana entries into the `VocabularySegment` format (see [vocabulary.md §Segments Format](../entities/vocabulary.md#segments-format)):
+The pipeline transforms JmdictFurigana entries into the `VocabularySegment` format (see [vocabulary.md §Segments Format](../domain/vocabulary.md#segments-format)):
 
 | JmdictFurigana | VocabularySegment | Transformation |
 |---|---|---|
@@ -202,7 +202,7 @@ In rare cases, a vocabulary word may not have a matching entry. The pipeline fal
 ## Related Docs
 
 - [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How furigana data feeds into vocabulary segments
-- [vocabulary.md](../entities/vocabulary.md) — VocabularySegment format (target schema)
+- [vocabulary.md](../domain/vocabulary.md) — VocabularySegment format (target schema)
 - [jmdict_format.md](jmdict_format.md) — JMdict XML format (the dictionary this dataset is derived from)
 - [pipeline.md](../technical/pipeline.md) — Pipeline orchestration (source loading)
 - [attributions.md](../legal/attributions.md) — License and credit requirements

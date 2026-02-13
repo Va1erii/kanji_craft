@@ -341,8 +341,8 @@ When a new version of source data is released (e.g. KanjiVG update):
 - [pipeline.md](pipeline.md) — pipeline architecture, phases, and technical details
 - [offline.md](offline.md) — client-side sync after promotion
 - [supabase.md](supabase.md) — database infrastructure and storage
-- [Radical entity](../entities/radical.md)
-- [Kanji entity](../entities/kanji.md)
-- [Kanji Component entity](../entities/kanji_component.md)
-- [Vocabulary entity](../entities/vocabulary.md)
-- [Data Import entity](../entities/data_import.md)
+- [Radical entity](../domain/radical.md)
+- [Kanji entity](../domain/kanji.md)
+- [Kanji Component entity](../domain/kanji_component.md)
+- [Vocabulary entity](../domain/vocabulary.md)
+- [Data Import entity](../domain/data_import.md)

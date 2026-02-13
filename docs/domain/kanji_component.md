@@ -8,12 +8,26 @@ A kanji component is the connection between a radical and a kanji — it records
 
 ### LogicHint (Enum)
 
-Describes the role a radical plays inside a specific kanji.
+Describes the role a radical plays inside a specific kanji. About 80% of Jōyō kanji are phono-semantic compounds (形声文字, keisei moji) — they combine a meaning radical with a sound radical in predictable positions.
 
 | Value | Description |
 |---|---|
-| `semantic` | The radical contributes to the kanji's meaning. e.g. 氵 (Water) + 目 (Eye) = 涙 (Tear) |
-| `phonetic` | The radical contributes to the kanji's reading (pronunciation), not its meaning. e.g. 亡 (BOU) in 忙 (BOU) |
+| `semantic` | The radical contributes to the kanji's meaning. e.g. 氵 (Water) in 清 (Pure) — water categorizes the concept |
+| `phonetic` | The radical contributes to the kanji's reading (pronunciation), not its meaning. e.g. 青 (SEI) in 清 (SEI) — the reading carries over |
+
+**Position-based prediction patterns:**
+
+| Structure | Semantic (meaning) | Phonetic (sound) | Example |
+|---|---|---|---|
+| Left-Right (⿰) | Left | Right | 江 (River): 氵 Water + 工 KOU → reading KOU |
+| Top-Bottom (⿱) | Top | Bottom | 花 (Flower): 艹 Grass + 化 KA → reading KA |
+| Enclosure (⿴) | Outside | Inside | 聞 (Hear): 門 Gate + 耳 ear → reading MON/BUN |
+
+The left-right pattern is by far the most common. When a kanji has a recognized radical on the left (hen position), it almost always provides the meaning category, while the right side (tsukuri) provides the sound.
+
+**Phonetic families:** Radicals that act as phonetic components create "sound families" — groups of kanji that share the same reading. e.g. 青 (SEI) → 清 (SEI), 晴 (SEI), 精 (SEI). Recognizing the phonetic component lets learners predict readings for unfamiliar kanji.
+
+See [teaching.md](teaching.md) for how the app uses these patterns in lessons (color coding, sound match indicators, card types).
 
 ### RadicalType (Enum)
 
@@ -83,7 +97,7 @@ Kanji  ──1:N──→ KanjiComponent    (one kanji is composed of many radic
 ## Edge Cases
 
 - **Kanji with no components:** Should not happen in production. Every kanji is composed of at least one radical. Flag in content validation tooling.
-- **Ambiguous logic_hint:** Some radicals arguably contribute both meaning and sound. Pick the dominant role and document the ambiguity in the content pipeline, not in the data model. The review queue surfaces these via low `ai_confidence` scores.
+- **Ambiguous logic_hint:** Some radicals arguably contribute both meaning and sound. Pick the dominant role — the position-based patterns above resolve most ambiguity. Remaining cases are handled in the content pipeline, not in the data model.
 - **Radical duplicates a kanji character:** Some `radical_id` entries in `kanji_components` point to radicals whose `master_symbol` matches a kanji `character` (e.g., 木 as radical and kanji). This is by design — see radical.md. The `kanji_components` FK always points to `radicals.id`, never to `kanji.id`.
 - **Multiple radical classifications in one kanji:** KanjiVG may mark one component as `general` and another as `nelson` in the same kanji (when references disagree on which component is "the" radical). Both are stored. `is_primary` only matches `general`.
 - **No `general` radical in a kanji:** Some kanji in KanjiVG have no component marked with `kvg:radical="general"`. All components default to `component`. The app's dictionary mode falls back to showing no radical rather than guessing.

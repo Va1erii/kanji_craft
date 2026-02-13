@@ -18,7 +18,7 @@ Character coverage by JIS standard:
 | JIS X 0212 | 5,801 | Supplementary set — rare kanji, variant forms |
 | JIS X 0213 | 952 (additional) | Extended set — adds characters not in 0208 or 0212 |
 
-This document is a reference for the KANJIDIC format as consumed by our ingestion parser ([kanjidic_parser.dart](../../apps/admin/lib/data/services/kanjidic_parser.dart)) and stored in the [raw_kanjidic](../entities/raw_kanjidic.md) staging table.
+This document is a reference for the KANJIDIC format as consumed by our ingestion parser ([kanjidic_parser.dart](../../apps/admin/lib/data/services/kanjidic_parser.dart)) and stored in the [raw_kanjidic](../domain/raw_kanjidic.md) staging table.
 
 **Source file:** `kanjidic2.xml.gz` (gzip-compressed XML, ~3.5 MB compressed, ~12 MB uncompressed).
 
@@ -288,7 +288,7 @@ Meanings without `m_lang` attribute default to English. Other languages use ISO 
 
 Available languages in KANJIDIC2: `en` (always present), `fr`, `es`, `pt`. Coverage varies — English has meanings for all characters; other languages are partial.
 
-Our parser → `raw_kanjidic.meanings` as `{en: [...], fr?: [...], es?: [...], pt?: [...]}`. **Our supported languages:** `en` and `es` (see [shared_types.md](../entities/shared_types.md)). All languages are preserved in raw; filtering to supported languages happens during transformation.
+Our parser → `raw_kanjidic.meanings` as `{en: [...], fr?: [...], es?: [...], pt?: [...]}`. **Our supported languages:** `en` and `es` (see [shared_types.md](../domain/shared_types.md)). All languages are preserved in raw; filtering to supported languages happens during transformation.
 
 ### Nanori
 
@@ -464,7 +464,7 @@ These KANJIDIC2 fields exist in the source but are not extracted by our parser:
 
 ## Related Docs
 
-- [raw_kanjidic.md](../entities/raw_kanjidic.md) — Staging table schema (how parsed KANJIDIC2 data is stored)
+- [raw_kanjidic.md](../domain/raw_kanjidic.md) — Staging table schema (how parsed KANJIDIC2 data is stored)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
 - [ingestion.md](ingestion.md) — Phase 1 correctness invariants
 - [radical_extraction.md](radical_extraction.md) — How KANJIDIC data feeds into radical metadata derivation (Pass 4)

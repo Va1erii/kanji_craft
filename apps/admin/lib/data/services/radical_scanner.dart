@@ -192,6 +192,7 @@ class RadicalScanner {
     List<RawKanjiVg> entries, {
     required Set<String> keepSet,
     required Map<String, KanjiVgComponent> treeMap,
+    Map<String, int> frequencies = const {},
   }) {
     final masters = <String, _MasterBuilder>{};
     final warnings = <Warning>[];
@@ -212,6 +213,7 @@ class RadicalScanner {
         } else {
           // Ghost radical — try to flatten.
           final ghostTree = treeMap[masterSymbol];
+          final freq = frequencies[masterSymbol] ?? 0;
           if (ghostTree != null && ghostTree.children.isNotEmpty) {
             final flattened = _resolveEffective(
               ghostTree,
@@ -222,14 +224,37 @@ class RadicalScanner {
             );
             effectiveChildren.addAll(flattened);
             ghostsFlattenedCount++;
+            // Frequent ghosts (just below threshold) — worth reviewing.
+            if (freq >= 3) {
+              warnings.add(Warning(
+                'Frequent ghost "$masterSymbol" flattened '
+                '(freq=$freq) in ${entry.character}',
+                severity: WarningSeverity.high,
+              ));
+            } else if (freq < 2) {
+              warnings.add(Warning(
+                'Rare ghost "$masterSymbol" flattened '
+                '(freq=$freq) in ${entry.character}',
+                severity: WarningSeverity.low,
+              ));
+            }
           } else {
             // Unflattenable ghost — keep as leaf radical.
             effectiveChildren.add(child);
+            final freq = frequencies[masterSymbol] ?? 0;
+            final WarningSeverity severity;
+            if (ghostTree == null) {
+              // No KanjiVG entry — medium (can't verify structure).
+              severity = WarningSeverity.medium;
+            } else {
+              // Has entry but no children — medium.
+              severity = WarningSeverity.medium;
+            }
             warnings.add(Warning(
               'Ghost radical "$masterSymbol" unflattenable '
-              '(${ghostTree == null ? "no KanjiVG entry" : "no children"}) '
-              'in ${entry.character}',
-              severity: WarningSeverity.low,
+              '(${ghostTree == null ? "no KanjiVG entry" : "no children"}, '
+              'freq=$freq) in ${entry.character}',
+              severity: severity,
             ));
           }
         }
@@ -324,7 +349,7 @@ class RadicalScanner {
           warnings.add(Warning(
             'Ghost radical "$masterSymbol" unflattenable '
             '(${ghostTree == null ? "no KanjiVG entry" : "no children"})',
-            severity: WarningSeverity.low,
+            severity: WarningSeverity.medium,
           ));
         }
       }

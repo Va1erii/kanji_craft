@@ -1,6 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
+import '../../../data/services/csv_service.dart';
 import '../../../domain/entities/extraction_phase.dart';
 import '../../../domain/entities/warning.dart';
 import '../bloc/extraction_bloc.dart';
@@ -184,10 +187,58 @@ class PhaseRow extends StatelessWidget {
 
   String _warningChipLabel(List<Warning> warnings) {
     final high = warnings.where((w) => w.severity == WarningSeverity.high).length;
-    final low = warnings.length - high;
-    if (high == 0) return '$low warning${low == 1 ? '' : 's'}';
-    if (low == 0) return '$high high';
-    return '$high high, $low low';
+    final medium =
+        warnings.where((w) => w.severity == WarningSeverity.medium).length;
+    final low = warnings.where((w) => w.severity == WarningSeverity.low).length;
+    final parts = <String>[
+      if (high > 0) '$high high',
+      if (medium > 0) '$medium med',
+      if (low > 0) '$low low',
+    ];
+    if (parts.isEmpty) return '0 warnings';
+    return parts.join(', ');
+  }
+
+  static (IconData, Color) _warningIcon(
+    WarningSeverity severity,
+    ColorScheme colorScheme,
+  ) =>
+      switch (severity) {
+        WarningSeverity.high => (Icons.error_outline, colorScheme.error),
+        WarningSeverity.medium => (
+            Icons.warning_amber_rounded,
+            colorScheme.tertiary,
+          ),
+        WarningSeverity.low => (Icons.info_outline, colorScheme.outline),
+      };
+
+  Future<void> _exportWarningsCsv(
+    BuildContext context,
+    List<Warning> warnings,
+  ) async {
+    final path = await FilePicker.platform.saveFile(
+      dialogTitle: 'Save warnings CSV',
+      fileName: '${phase.name}_warnings.csv',
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    if (path == null) return;
+
+    final csvService = GetIt.instance<CsvService>();
+    await csvService.writeCsv(
+      filePath: path,
+      headers: ['phase', 'severity', 'message'],
+      rows: [
+        for (final w in warnings)
+          [phase.label, w.severity.name, w.message],
+      ],
+    );
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Exported ${warnings.length} warnings to $path')),
+      );
+    }
   }
 
   void _showWarningsDialog(BuildContext context, List<Warning> warnings) {
@@ -208,19 +259,16 @@ class PhaseRow extends StatelessWidget {
               separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (_, index) {
                 final warning = sorted[index];
-                final isHigh = warning.severity == WarningSeverity.high;
+                final (icon, iconColor) = _warningIcon(
+                  warning.severity,
+                  colorScheme,
+                );
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        isHigh ? Icons.error_outline : Icons.info_outline,
-                        size: 18,
-                        color: isHigh
-                            ? colorScheme.error
-                            : colorScheme.outline,
-                      ),
+                      Icon(icon, size: 18, color: iconColor),
                       const SizedBox(width: 8),
                       Expanded(child: SelectableText(warning.message)),
                     ],
@@ -230,6 +278,10 @@ class PhaseRow extends StatelessWidget {
             ),
           ),
           actions: [
+            TextButton(
+              onPressed: () => _exportWarningsCsv(context, sorted),
+              child: const Text('Export CSV'),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),

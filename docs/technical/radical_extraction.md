@@ -420,10 +420,12 @@ The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Wa
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
-| Ghost radical unflattenable (not in keep set, no tree or no children) | low | Informational — leaf radical created from a component that couldn't be decomposed |
+| Frequent ghost flattened (freq ≥ 3, below threshold) | high | Near-threshold component — admin should review whether to lower threshold or add to keep set |
 | Recursion depth exceeded during ghost flattening | high | Should not happen with real KanjiVG data — indicates circular reference or unexpectedly deep nesting |
-| Ghost radical flattened | — | Not a warning — expected behaviour. Logged at debug level only |
+| Ghost radical unflattenable (no KanjiVG entry) | medium | Leaf radical created from a component with no tree — can't verify structure |
+| Ghost radical unflattenable (no children) | medium | Leaf radical from a childless KanjiVG entry — atomic shape the learner memorizes directly |
+| Rare ghost flattened (freq < 2) | low | Expected behaviour for infrequent intermediates — informational only |
+| Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
 | `raw_kanjivg` entry skipped (character not in JLPT/grade scope) | — | Not a warning — expected behaviour. Logged at debug level only |
 
 ## Output Summary

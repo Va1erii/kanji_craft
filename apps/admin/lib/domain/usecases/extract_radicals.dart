@@ -105,6 +105,7 @@ class ExtractRadicals {
       rawEntries,
       keepSet: keepSet,
       treeMap: treeMap,
+      frequencies: frequencies,
     );
     log(
       'Scan complete: ${scanResult.masters.length} radicals, '

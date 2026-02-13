@@ -255,6 +255,7 @@ Future<void> configureDependencies() async {
       importRepository: getIt<DataImportRepository>(),
       ingestSourceData: getIt<IngestSourceData>(),
       clearImport: getIt<ClearImport>(),
+      bookmarkService: getIt<BookmarkService>(),
     ),
   );
   getIt.registerFactory<HydrationBloc>(
@@ -268,6 +269,7 @@ Future<void> configureDependencies() async {
       extractVocabulary: getIt<ExtractVocabulary>(),
       linkComponents: getIt<LinkComponents>(),
       estimateLogicHints: getIt<EstimateLogicHints>(),
+      bookmarkService: getIt<BookmarkService>(),
     ),
   );
   getIt.registerFactory<EnrichmentBloc>(

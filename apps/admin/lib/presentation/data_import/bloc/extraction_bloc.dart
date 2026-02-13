@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../data/services/bookmark_service.dart';
 import '../../../domain/entities/data_import.dart';
 import '../../../domain/entities/extraction_phase.dart';
 import '../../../domain/entities/import_source.dart';
@@ -14,6 +15,7 @@ import '../../../domain/usecases/extract_radicals.dart';
 import '../../../domain/usecases/extract_vocabulary.dart';
 import '../../../domain/usecases/link_components.dart';
 import '../../../domain/usecases/process_svgs.dart';
+import 'data_import_bloc.dart' show sourceFolderBookmarkKey;
 import 'extraction_event.dart';
 import 'extraction_state.dart';
 
@@ -25,12 +27,14 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     required ExtractVocabulary extractVocabulary,
     required LinkComponents linkComponents,
     required EstimateLogicHints estimateLogicHints,
+    required BookmarkService bookmarkService,
   })  : _extractRadicals = extractRadicals,
         _composeKanji = composeKanji,
         _processSvgs = processSvgs,
         _extractVocabulary = extractVocabulary,
         _linkComponents = linkComponents,
         _estimateLogicHints = estimateLogicHints,
+        _bookmarkService = bookmarkService,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
   }
@@ -41,6 +45,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   final ExtractVocabulary _extractVocabulary;
   final LinkComponents _linkComponents;
   final EstimateLogicHints _estimateLogicHints;
+  final BookmarkService _bookmarkService;
   List<DataImport> _imports = const [];
 
   Future<void> _onEvent(
@@ -127,7 +132,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
           warnings: [...composeResult.warnings, ...linkResult.warnings],
         );
       case ExtractionPhase.svgProcessing:
-        final archivePath = _resolveKanjiVgZipPath();
+        final archivePath = await _resolveKanjiVgZipPath();
         final result = await _processSvgs.call(archivePath);
         return (
           summary: '${result.radicalCount} radicals, '
@@ -169,7 +174,10 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   }
 
   /// Resolves the KanjiVG ZIP file path from the import's folder_path metadata.
-  String _resolveKanjiVgZipPath() {
+  ///
+  /// On macOS, restores the security-scoped bookmark so the folder remains
+  /// accessible after app relaunch.
+  Future<String> _resolveKanjiVgZipPath() async {
     final import = _imports.firstWhere(
       (i) => i.source == ImportSource.kanjivg &&
           i.status == ImportStatus.ingested,
@@ -181,6 +189,21 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
         'Please re-ingest the KanjiVG source to populate it.',
       );
     }
+
+    // Restore macOS security-scoped bookmark before accessing the folder.
+    try {
+      await _bookmarkService.resolveBookmark(
+        sourceFolderBookmarkKey(ImportSource.kanjivg),
+      );
+    } catch (e, st) {
+      log(
+        'Failed to resolve bookmark for KanjiVG folder',
+        error: e,
+        stackTrace: st,
+        name: 'ExtractionBloc',
+      );
+    }
+
     final dir = Directory(folderPath);
     if (!dir.existsSync()) {
       throw Exception(

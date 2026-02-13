@@ -6,17 +6,24 @@ import 'package:kanji_craft_admin/domain/repositories/data_import_repository.dar
 import 'package:kanji_craft_admin/domain/usecases/clear_import.dart';
 import 'package:kanji_craft_admin/domain/usecases/ingest_source_data.dart';
 
+import '../../../data/services/bookmark_service.dart';
 import 'data_import_event.dart';
 import 'data_import_state.dart';
+
+/// Bookmark key for persisting a source folder across app relaunches.
+String sourceFolderBookmarkKey(ImportSource source) =>
+    'source_folder_${source.name}';
 
 class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
   DataImportBloc({
     required DataImportRepository importRepository,
     required IngestSourceData ingestSourceData,
     required ClearImport clearImport,
+    required BookmarkService bookmarkService,
   })  : _importRepository = importRepository,
         _ingestSourceData = ingestSourceData,
         _clearImport = clearImport,
+        _bookmarkService = bookmarkService,
         super(const DataImportState.initial()) {
     on<DataImportEvent>(_onEvent);
   }
@@ -24,6 +31,7 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
   final DataImportRepository _importRepository;
   final IngestSourceData _ingestSourceData;
   final ClearImport _clearImport;
+  final BookmarkService _bookmarkService;
 
   Future<void> _onEvent(
     DataImportEvent event,
@@ -99,6 +107,21 @@ class DataImportBloc extends Bloc<DataImportEvent, DataImportState> {
             // loop. Yield so the framework can render the progress update.
             await Future<void>.delayed(Duration.zero);
           case IngestionComplete():
+            // Persist a macOS security-scoped bookmark so the folder
+            // remains accessible after app relaunch.
+            try {
+              await _bookmarkService.saveBookmark(
+                sourceFolderBookmarkKey(source),
+                folderPath,
+              );
+            } catch (e, st) {
+              log(
+                'Failed to save bookmark for $folderPath',
+                error: e,
+                stackTrace: st,
+                name: 'DataImportBloc',
+              );
+            }
             final imports = await _importRepository.listAll();
             final activeIngestions = state is DataImportLoaded
                 ? Map<int, IngestionProgress?>.from(

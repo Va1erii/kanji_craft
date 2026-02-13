@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:kanji_craft_admin/domain/entities/data_import.dart';
 import 'package:kanji_craft_admin/domain/entities/draft_kanji.dart';
 import 'package:kanji_craft_admin/domain/entities/draft_radical.dart';
+import 'package:kanji_craft_admin/domain/entities/draft_radical_i18n.dart';
 import 'package:kanji_craft_admin/domain/entities/draft_radical_variant.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/import_status.dart';
@@ -241,6 +242,27 @@ DraftKanji fakeDraftKanji({
       svgFileName: svgFileName,
       svgFileUrl: svgFileUrl,
       svgHash: svgHash,
+      createdAt: createdAt ?? _epoch,
+      updatedAt: updatedAt ?? _epoch,
+    );
+
+DraftRadicalI18n fakeDraftRadicalI18n({
+  int? id,
+  int draftRadicalId = 1,
+  String langCode = 'en',
+  String name = 'tree',
+  String systemMnemonic = '',
+  List<String> searchTags = const [],
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) =>
+    DraftRadicalI18n(
+      id: id ?? _nextId++,
+      draftRadicalId: draftRadicalId,
+      langCode: langCode,
+      name: name,
+      systemMnemonic: systemMnemonic,
+      searchTags: searchTags,
       createdAt: createdAt ?? _epoch,
       updatedAt: updatedAt ?? _epoch,
     );

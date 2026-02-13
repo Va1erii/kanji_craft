@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/data_import_bloc.dart';
 import '../bloc/data_import_event.dart';
 import '../bloc/data_import_state.dart';
+import '../bloc/enrichment_bloc.dart';
+import '../bloc/enrichment_event.dart';
 import '../bloc/extraction_bloc.dart';
 import '../bloc/extraction_event.dart';
+import '../widgets/enrichment_section.dart';
 import '../widgets/extraction_section.dart';
 import '../widgets/imports_table.dart';
 import '../widgets/new_import_dialog.dart';
@@ -22,11 +25,14 @@ class _DataPipelinePageState extends State<DataPipelinePage> {
   void initState() {
     super.initState();
     // If DataImportBloc already has loaded state (e.g. page revisited),
-    // seed ExtractionBloc immediately.
+    // seed ExtractionBloc and EnrichmentBloc immediately.
     final importState = context.read<DataImportBloc>().state;
     if (importState is DataImportLoaded) {
       context.read<ExtractionBloc>().add(
             ExtractionEvent.importsUpdated(imports: importState.imports),
+          );
+      context.read<EnrichmentBloc>().add(
+            EnrichmentEvent.importsUpdated(imports: importState.imports),
           );
     }
   }
@@ -49,13 +55,16 @@ class _DataPipelinePageState extends State<DataPipelinePage> {
             );
           },
         ),
-        // Bridge import data into ExtractionBloc.
+        // Bridge import data into ExtractionBloc and EnrichmentBloc.
         BlocListener<DataImportBloc, DataImportState>(
           listenWhen: (prev, curr) => curr is DataImportLoaded,
           listener: (context, state) {
             if (state is DataImportLoaded) {
               context.read<ExtractionBloc>().add(
                     ExtractionEvent.importsUpdated(imports: state.imports),
+                  );
+              context.read<EnrichmentBloc>().add(
+                    EnrichmentEvent.importsUpdated(imports: state.imports),
                   );
             }
           },
@@ -96,6 +105,8 @@ class _DataPipelinePageState extends State<DataPipelinePage> {
                           SourceRequirementsRow(imports: imports),
                           const SizedBox(height: 24),
                           const ExtractionSection(),
+                          const SizedBox(height: 24),
+                          const EnrichmentSection(),
                           const SizedBox(height: 24),
                           ImportsTable(
                             imports: imports,

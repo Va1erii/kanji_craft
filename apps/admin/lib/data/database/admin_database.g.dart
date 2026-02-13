@@ -5760,6 +5760,528 @@ class DraftRadicalVariantEntriesCompanion
   }
 }
 
+class $DraftRadicalI18nEntriesTable extends DraftRadicalI18nEntries
+    with TableInfo<$DraftRadicalI18nEntriesTable, DraftRadicalI18nEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DraftRadicalI18nEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _draftRadicalIdMeta = const VerificationMeta(
+    'draftRadicalId',
+  );
+  @override
+  late final GeneratedColumn<int> draftRadicalId = GeneratedColumn<int>(
+    'draft_radical_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES draft_radical_entries (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _langCodeMeta = const VerificationMeta(
+    'langCode',
+  );
+  @override
+  late final GeneratedColumn<String> langCode = GeneratedColumn<String>(
+    'lang_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _systemMnemonicMeta = const VerificationMeta(
+    'systemMnemonic',
+  );
+  @override
+  late final GeneratedColumn<String> systemMnemonic = GeneratedColumn<String>(
+    'system_mnemonic',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> searchTags =
+      GeneratedColumn<String>(
+        'search_tags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      ).withConverter<List<String>>(
+        $DraftRadicalI18nEntriesTable.$convertersearchTags,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    draftRadicalId,
+    langCode,
+    name,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'draft_radical_i18n_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DraftRadicalI18nEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('draft_radical_id')) {
+      context.handle(
+        _draftRadicalIdMeta,
+        draftRadicalId.isAcceptableOrUnknown(
+          data['draft_radical_id']!,
+          _draftRadicalIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_draftRadicalIdMeta);
+    }
+    if (data.containsKey('lang_code')) {
+      context.handle(
+        _langCodeMeta,
+        langCode.isAcceptableOrUnknown(data['lang_code']!, _langCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_langCodeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('system_mnemonic')) {
+      context.handle(
+        _systemMnemonicMeta,
+        systemMnemonic.isAcceptableOrUnknown(
+          data['system_mnemonic']!,
+          _systemMnemonicMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {draftRadicalId, langCode},
+  ];
+  @override
+  DraftRadicalI18nEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DraftRadicalI18nEntry(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      draftRadicalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}draft_radical_id'],
+      )!,
+      langCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}lang_code'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      systemMnemonic: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}system_mnemonic'],
+      )!,
+      searchTags: $DraftRadicalI18nEntriesTable.$convertersearchTags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}search_tags'],
+        )!,
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DraftRadicalI18nEntriesTable createAlias(String alias) {
+    return $DraftRadicalI18nEntriesTable(attachedDatabase, alias);
+  }
+
+  static TypeConverter<List<String>, String> $convertersearchTags =
+      const NonNullableStringListConverter();
+}
+
+class DraftRadicalI18nEntry extends DataClass
+    implements Insertable<DraftRadicalI18nEntry> {
+  final int id;
+  final int draftRadicalId;
+  final String langCode;
+  final String name;
+  final String systemMnemonic;
+  final List<String> searchTags;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const DraftRadicalI18nEntry({
+    required this.id,
+    required this.draftRadicalId,
+    required this.langCode,
+    required this.name,
+    required this.systemMnemonic,
+    required this.searchTags,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['draft_radical_id'] = Variable<int>(draftRadicalId);
+    map['lang_code'] = Variable<String>(langCode);
+    map['name'] = Variable<String>(name);
+    map['system_mnemonic'] = Variable<String>(systemMnemonic);
+    {
+      map['search_tags'] = Variable<String>(
+        $DraftRadicalI18nEntriesTable.$convertersearchTags.toSql(searchTags),
+      );
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DraftRadicalI18nEntriesCompanion toCompanion(bool nullToAbsent) {
+    return DraftRadicalI18nEntriesCompanion(
+      id: Value(id),
+      draftRadicalId: Value(draftRadicalId),
+      langCode: Value(langCode),
+      name: Value(name),
+      systemMnemonic: Value(systemMnemonic),
+      searchTags: Value(searchTags),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DraftRadicalI18nEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DraftRadicalI18nEntry(
+      id: serializer.fromJson<int>(json['id']),
+      draftRadicalId: serializer.fromJson<int>(json['draftRadicalId']),
+      langCode: serializer.fromJson<String>(json['langCode']),
+      name: serializer.fromJson<String>(json['name']),
+      systemMnemonic: serializer.fromJson<String>(json['systemMnemonic']),
+      searchTags: serializer.fromJson<List<String>>(json['searchTags']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'draftRadicalId': serializer.toJson<int>(draftRadicalId),
+      'langCode': serializer.toJson<String>(langCode),
+      'name': serializer.toJson<String>(name),
+      'systemMnemonic': serializer.toJson<String>(systemMnemonic),
+      'searchTags': serializer.toJson<List<String>>(searchTags),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DraftRadicalI18nEntry copyWith({
+    int? id,
+    int? draftRadicalId,
+    String? langCode,
+    String? name,
+    String? systemMnemonic,
+    List<String>? searchTags,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => DraftRadicalI18nEntry(
+    id: id ?? this.id,
+    draftRadicalId: draftRadicalId ?? this.draftRadicalId,
+    langCode: langCode ?? this.langCode,
+    name: name ?? this.name,
+    systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+    searchTags: searchTags ?? this.searchTags,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DraftRadicalI18nEntry copyWithCompanion(
+    DraftRadicalI18nEntriesCompanion data,
+  ) {
+    return DraftRadicalI18nEntry(
+      id: data.id.present ? data.id.value : this.id,
+      draftRadicalId: data.draftRadicalId.present
+          ? data.draftRadicalId.value
+          : this.draftRadicalId,
+      langCode: data.langCode.present ? data.langCode.value : this.langCode,
+      name: data.name.present ? data.name.value : this.name,
+      systemMnemonic: data.systemMnemonic.present
+          ? data.systemMnemonic.value
+          : this.systemMnemonic,
+      searchTags: data.searchTags.present
+          ? data.searchTags.value
+          : this.searchTags,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalI18nEntry(')
+          ..write('id: $id, ')
+          ..write('draftRadicalId: $draftRadicalId, ')
+          ..write('langCode: $langCode, ')
+          ..write('name: $name, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    draftRadicalId,
+    langCode,
+    name,
+    systemMnemonic,
+    searchTags,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DraftRadicalI18nEntry &&
+          other.id == this.id &&
+          other.draftRadicalId == this.draftRadicalId &&
+          other.langCode == this.langCode &&
+          other.name == this.name &&
+          other.systemMnemonic == this.systemMnemonic &&
+          other.searchTags == this.searchTags &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DraftRadicalI18nEntriesCompanion
+    extends UpdateCompanion<DraftRadicalI18nEntry> {
+  final Value<int> id;
+  final Value<int> draftRadicalId;
+  final Value<String> langCode;
+  final Value<String> name;
+  final Value<String> systemMnemonic;
+  final Value<List<String>> searchTags;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const DraftRadicalI18nEntriesCompanion({
+    this.id = const Value.absent(),
+    this.draftRadicalId = const Value.absent(),
+    this.langCode = const Value.absent(),
+    this.name = const Value.absent(),
+    this.systemMnemonic = const Value.absent(),
+    this.searchTags = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  DraftRadicalI18nEntriesCompanion.insert({
+    this.id = const Value.absent(),
+    required int draftRadicalId,
+    required String langCode,
+    required String name,
+    this.systemMnemonic = const Value.absent(),
+    this.searchTags = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : draftRadicalId = Value(draftRadicalId),
+       langCode = Value(langCode),
+       name = Value(name);
+  static Insertable<DraftRadicalI18nEntry> custom({
+    Expression<int>? id,
+    Expression<int>? draftRadicalId,
+    Expression<String>? langCode,
+    Expression<String>? name,
+    Expression<String>? systemMnemonic,
+    Expression<String>? searchTags,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (draftRadicalId != null) 'draft_radical_id': draftRadicalId,
+      if (langCode != null) 'lang_code': langCode,
+      if (name != null) 'name': name,
+      if (systemMnemonic != null) 'system_mnemonic': systemMnemonic,
+      if (searchTags != null) 'search_tags': searchTags,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  DraftRadicalI18nEntriesCompanion copyWith({
+    Value<int>? id,
+    Value<int>? draftRadicalId,
+    Value<String>? langCode,
+    Value<String>? name,
+    Value<String>? systemMnemonic,
+    Value<List<String>>? searchTags,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return DraftRadicalI18nEntriesCompanion(
+      id: id ?? this.id,
+      draftRadicalId: draftRadicalId ?? this.draftRadicalId,
+      langCode: langCode ?? this.langCode,
+      name: name ?? this.name,
+      systemMnemonic: systemMnemonic ?? this.systemMnemonic,
+      searchTags: searchTags ?? this.searchTags,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (draftRadicalId.present) {
+      map['draft_radical_id'] = Variable<int>(draftRadicalId.value);
+    }
+    if (langCode.present) {
+      map['lang_code'] = Variable<String>(langCode.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (systemMnemonic.present) {
+      map['system_mnemonic'] = Variable<String>(systemMnemonic.value);
+    }
+    if (searchTags.present) {
+      map['search_tags'] = Variable<String>(
+        $DraftRadicalI18nEntriesTable.$convertersearchTags.toSql(
+          searchTags.value,
+        ),
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DraftRadicalI18nEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('draftRadicalId: $draftRadicalId, ')
+          ..write('langCode: $langCode, ')
+          ..write('name: $name, ')
+          ..write('systemMnemonic: $systemMnemonic, ')
+          ..write('searchTags: $searchTags, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DraftKanjiEntriesTable extends DraftKanjiEntries
     with TableInfo<$DraftKanjiEntriesTable, DraftKanjiEntry> {
   @override
@@ -14239,6 +14761,8 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       $DraftRadicalEntriesTable(this);
   late final $DraftRadicalVariantEntriesTable draftRadicalVariantEntries =
       $DraftRadicalVariantEntriesTable(this);
+  late final $DraftRadicalI18nEntriesTable draftRadicalI18nEntries =
+      $DraftRadicalI18nEntriesTable(this);
   late final $DraftKanjiEntriesTable draftKanjiEntries =
       $DraftKanjiEntriesTable(this);
   late final $DraftKanjiReadingEntriesTable draftKanjiReadingEntries =
@@ -14286,6 +14810,7 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
     jmdictFuriganaEntries,
     draftRadicalEntries,
     draftRadicalVariantEntries,
+    draftRadicalI18nEntries,
     draftKanjiEntries,
     draftKanjiReadingEntries,
     draftKanjiI18nEntries,
@@ -14312,6 +14837,15 @@ abstract class _$AdminDatabase extends GeneratedDatabase {
       ),
       result: [
         TableUpdate('draft_radical_variant_entries', kind: UpdateKind.delete),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'draft_radical_entries',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('draft_radical_i18n_entries', kind: UpdateKind.delete),
       ],
     ),
     WritePropagation(

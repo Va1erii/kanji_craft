@@ -1,4 +1,5 @@
 import '../entities/draft_radical.dart';
+import '../entities/draft_radical_i18n.dart';
 import '../entities/draft_radical_variant.dart';
 
 abstract class RadicalRepository {
@@ -57,4 +58,42 @@ abstract class RadicalRepository {
     List<({int id, int? impactScore, int? minGrade, int? minJlptLevel})>
         updates,
   );
+
+  // -- Draft Radical I18n --
+
+  /// Upserts a draft radical i18n row (by draftRadicalId + langCode).
+  /// Returns the saved entity.
+  Future<DraftRadicalI18n> upsertDraftRadicalI18n(DraftRadicalI18n i18n);
+
+  /// Inserts a batch of draft radical i18n rows.
+  Future<void> insertDraftRadicalI18nBatch(List<DraftRadicalI18n> rows);
+
+  /// Returns all draft radical i18n rows.
+  Future<List<DraftRadicalI18n>> getAllDraftRadicalI18n();
+
+  /// Returns the number of draft radical i18n rows.
+  Future<int> countDraftRadicalI18n();
+
+  /// Returns the number of draft radical i18n rows with non-empty mnemonic.
+  Future<int> countDraftRadicalI18nWithMnemonic();
+
+  /// Batch-updates enrichment fields on draft radical i18n rows.
+  Future<void> batchUpdateDraftRadicalI18nEnrichment(
+    List<({int id, String systemMnemonic, List<String> searchTags})> updates,
+  );
+
+  /// Deletes all draft radical i18n rows.
+  Future<void> deleteAllDraftRadicalI18n();
+
+  /// Returns draft radicals sorted for CSV export.
+  ///
+  /// Sort order: min_jlpt_level DESC NULLS LAST, min_grade ASC NULLS LAST,
+  /// impact_score DESC.
+  Future<List<DraftRadical>> getDraftRadicalsForExport({
+    required int limit,
+    required int offset,
+  });
+
+  /// Returns total count of draft radicals eligible for export.
+  Future<int> countDraftRadicalsForExport();
 }

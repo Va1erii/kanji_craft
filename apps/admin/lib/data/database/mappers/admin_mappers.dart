@@ -6,6 +6,7 @@ import '../../../domain/entities/draft_kanji.dart';
 import '../../../domain/entities/draft_kanji_i18n.dart';
 import '../../../domain/entities/draft_kanji_reading.dart';
 import '../../../domain/entities/draft_radical.dart';
+import '../../../domain/entities/draft_radical_i18n.dart';
 import '../../../domain/entities/draft_radical_variant.dart';
 import '../../../domain/entities/jlpt_level.dart';
 import '../../../domain/entities/jmdict_furigana.dart';
@@ -333,6 +334,32 @@ extension DraftRadicalVariantEntryToDomain on DraftRadicalVariantEntry {
         svgFileName: svgFileName,
         svgFileUrl: svgFileUrl,
         svgHash: svgHash,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+}
+
+// -- DraftRadicalI18n ↔ DraftRadicalI18nEntry --
+
+extension DraftRadicalI18nToCompanion on DraftRadicalI18n {
+  DraftRadicalI18nEntriesCompanion toCompanion() =>
+      DraftRadicalI18nEntriesCompanion(
+        draftRadicalId: Value(draftRadicalId),
+        langCode: Value(langCode),
+        name: Value(name),
+        systemMnemonic: Value(systemMnemonic),
+        searchTags: Value(searchTags),
+      );
+}
+
+extension DraftRadicalI18nEntryToDomain on DraftRadicalI18nEntry {
+  DraftRadicalI18n toDomain() => DraftRadicalI18n(
+        id: id,
+        draftRadicalId: draftRadicalId,
+        langCode: langCode,
+        name: name,
+        systemMnemonic: systemMnemonic,
+        searchTags: searchTags,
         createdAt: createdAt,
         updatedAt: updatedAt,
       );

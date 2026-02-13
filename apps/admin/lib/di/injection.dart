@@ -20,6 +20,7 @@ import '../data/repositories/vocabulary/drift_vocabulary_repository.dart';
 import '../data/repositories/jmdict_furigana/drift_jmdict_furigana_repository.dart';
 import '../data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import '../data/repositories/source_vocab_level/drift_source_vocab_level_repository.dart';
+import '../data/services/csv_service.dart';
 import '../data/services/drift_admin_state_writer.dart';
 import '../data/services/file_svg_cache.dart';
 import '../data/services/source_parser_impl.dart';
@@ -42,8 +43,10 @@ import '../domain/services/svg_cache.dart';
 import '../data/services/radical_scanner.dart';
 import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
+import '../domain/usecases/export_radical_mnemonics.dart';
 import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/estimate_logic_hints.dart';
+import '../domain/usecases/import_radical_mnemonics.dart';
 import '../domain/usecases/link_components.dart';
 import '../domain/usecases/extract_vocabulary.dart';
 import '../domain/usecases/hydrate_local_db.dart';
@@ -51,6 +54,7 @@ import '../domain/usecases/clear_import.dart';
 import '../domain/usecases/ingest_source_data.dart';
 import '../domain/usecases/process_svgs.dart';
 import '../presentation/data_import/bloc/data_import_bloc.dart';
+import '../presentation/data_import/bloc/enrichment_bloc.dart';
 import '../presentation/data_import/bloc/extraction_bloc.dart';
 import '../presentation/hydration/bloc/hydration_bloc.dart';
 
@@ -130,6 +134,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<SourceParser>(
     () => SourceParserImpl(),
+  );
+  getIt.registerLazySingleton<CsvService>(
+    () => CsvService(),
   );
   getIt.registerLazySingleton<AdminStateReader>(
     () => SupabaseAdminStateReader(
@@ -213,6 +220,19 @@ Future<void> configureDependencies() async {
       radicalRepository: getIt<RadicalRepository>(),
     ),
   );
+  getIt.registerLazySingleton<ExportRadicalMnemonics>(
+    () => ExportRadicalMnemonics(
+      radicalRepository: getIt<RadicalRepository>(),
+      rawKanjidicRepository: getIt<RawKanjidicRepository>(),
+      csvService: getIt<CsvService>(),
+    ),
+  );
+  getIt.registerLazySingleton<ImportRadicalMnemonics>(
+    () => ImportRadicalMnemonics(
+      radicalRepository: getIt<RadicalRepository>(),
+      csvService: getIt<CsvService>(),
+    ),
+  );
   getIt.registerLazySingleton<HydrateLocalDb>(
     () => HydrateLocalDb(
       reader: getIt<AdminStateReader>(),
@@ -239,6 +259,12 @@ Future<void> configureDependencies() async {
       extractVocabulary: getIt<ExtractVocabulary>(),
       linkComponents: getIt<LinkComponents>(),
       estimateLogicHints: getIt<EstimateLogicHints>(),
+    ),
+  );
+  getIt.registerFactory<EnrichmentBloc>(
+    () => EnrichmentBloc(
+      exportRadicalMnemonics: getIt<ExportRadicalMnemonics>(),
+      importRadicalMnemonics: getIt<ImportRadicalMnemonics>(),
     ),
   );
 }

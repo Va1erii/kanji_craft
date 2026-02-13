@@ -19,33 +19,23 @@ void main() {
   late EstimateLogicHints estimateLogicHints;
   late int kanjidicImportId;
 
-  /// Insert a content kanji row and return its auto-generated ID.
-  Future<int> insertContentKanji(String character) async {
-    return db.into(db.kanjiEntries).insert(
-          KanjiEntriesCompanion.insert(
+  /// Insert a draft kanji row and return its auto-generated ID.
+  /// EstimateLogicHints resolves kanji characters via draft tables.
+  Future<int> insertDraftKanji(String character) async {
+    return db.into(db.draftKanjiEntries).insert(
+          DraftKanjiEntriesCompanion.insert(
             character: character,
             strokeCount: 4,
             frequencyRank: 100,
-            svgFileName: '$character.svg',
-            svgFileUrl: 'https://example.com/$character.svg',
-            svgHash: 'hash_$character',
           ),
         );
   }
 
-  /// Insert a content radical row and return its auto-generated ID.
-  Future<int> insertContentRadical(String masterSymbol) async {
-    return db.into(db.radicalEntries).insert(
-          RadicalEntriesCompanion.insert(
-            masterSymbol: masterSymbol,
-            strokeCount: 3,
-            impactScore: 5,
-            minJlptLevel: 3,
-            minGrade: 2,
-            svgFileName: '$masterSymbol.svg',
-            svgFileUrl: 'https://example.com/$masterSymbol.svg',
-            svgHash: 'hash_$masterSymbol',
-          ),
+  /// Insert a draft radical row and return its auto-generated ID.
+  /// EstimateLogicHints resolves radical symbols via draft tables.
+  Future<int> insertDraftRadical(String masterSymbol) async {
+    return db.into(db.draftRadicalEntries).insert(
+          DraftRadicalEntriesCompanion.insert(masterSymbol: masterSymbol),
         );
   }
 
@@ -93,8 +83,8 @@ void main() {
   group('EstimateLogicHints', () {
     test('phonetic match — onyomi overlap → phonetic, 0.9', () async {
       // Setup: 忙 (BOU) contains 亡 (BOU) — onyomi overlap.
-      final kanjiId = await insertContentKanji('忙');
-      final radicalId = await insertContentRadical('亡');
+      final kanjiId = await insertDraftKanji('忙');
+      final radicalId = await insertDraftRadical('亡');
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       // Seed raw_kanjidic with matching onyomi.
@@ -131,8 +121,8 @@ void main() {
     test('semantic no-match — radical has onyomi, none overlap → semantic, 0.6',
         () async {
       // Setup: 想 (SOU) contains 木 (MOKU/BOKU) — no onyomi overlap.
-      final kanjiId = await insertContentKanji('想');
-      final radicalId = await insertContentRadical('木');
+      final kanjiId = await insertDraftKanji('想');
+      final radicalId = await insertDraftRadical('木');
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -162,8 +152,8 @@ void main() {
 
     test('radical not in raw_kanjidic → semantic, 0.3', () async {
       // Setup: kanji exists in kanjidic, but radical does not.
-      final kanjiId = await insertContentKanji('忙');
-      final radicalId = await insertContentRadical('⺖'); // custom radical
+      final kanjiId = await insertDraftKanji('忙');
+      final radicalId = await insertDraftRadical('⺖'); // custom radical
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -196,8 +186,8 @@ void main() {
 
     test('kanji has no onyomi → semantic, 0.5', () async {
       // Setup: kun-only kanji.
-      final kanjiId = await insertContentKanji('畑');
-      final radicalId = await insertContentRadical('火');
+      final kanjiId = await insertDraftKanji('畑');
+      final radicalId = await insertDraftRadical('火');
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -233,8 +223,8 @@ void main() {
     });
 
     test('idempotent re-run — existing reviews are skipped', () async {
-      final kanjiId = await insertContentKanji('忙');
-      final radicalId = await insertContentRadical('亡');
+      final kanjiId = await insertDraftKanji('忙');
+      final radicalId = await insertDraftRadical('亡');
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -279,8 +269,8 @@ void main() {
     test('JLPT-mapped component with low confidence → high severity warning',
         () async {
       // Setup: JLPT kanji with a radical not in kanjidic → confidence 0.3.
-      final kanjiId = await insertContentKanji('海');
-      final radicalId = await insertContentRadical('⺡'); // custom radical
+      final kanjiId = await insertDraftKanji('海');
+      final radicalId = await insertDraftRadical('⺡'); // custom radical
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -309,10 +299,10 @@ void main() {
 
     test('multiple components processed correctly', () async {
       // Setup: 2 kanji, each with 1 component.
-      final kanji1Id = await insertContentKanji('忙');
-      final kanji2Id = await insertContentKanji('想');
-      final radical1Id = await insertContentRadical('亡');
-      final radical2Id = await insertContentRadical('心');
+      final kanji1Id = await insertDraftKanji('忙');
+      final kanji2Id = await insertDraftKanji('想');
+      final radical1Id = await insertDraftRadical('亡');
+      final radical2Id = await insertDraftRadical('心');
 
       await insertComponent(kanjiId: kanji1Id, radicalId: radical1Id);
       await insertComponent(kanjiId: kanji2Id, radicalId: radical2Id);
@@ -358,8 +348,8 @@ void main() {
     });
 
     test('checkExistingResult returns summary when reviews exist', () async {
-      final kanjiId = await insertContentKanji('忙');
-      final radicalId = await insertContentRadical('亡');
+      final kanjiId = await insertDraftKanji('忙');
+      final radicalId = await insertDraftRadical('亡');
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([

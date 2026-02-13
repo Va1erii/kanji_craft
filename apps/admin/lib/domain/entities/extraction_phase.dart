@@ -15,10 +15,11 @@ enum ExtractionPhase {
   ),
   kanjiComposition(
     label: 'Kanji Composition',
-    description: 'Create kanji rows, readings, and i18n from KANJIDIC',
+    description:
+        'Create kanji rows, readings, i18n from KANJIDIC; link components',
     phaseNumber: '2.3',
     isImplemented: true,
-    requiredSources: {ImportSource.kanjidic},
+    requiredSources: {ImportSource.kanjidic, ImportSource.kanjivg},
   ),
   svgProcessing(
     label: 'SVG Processing',
@@ -61,7 +62,7 @@ enum ExtractionPhase {
   /// Expressed as a getter to avoid forward references within the enum.
   Set<ExtractionPhase> get requiredPhases => switch (this) {
         radicalExtraction => const {},
-        kanjiComposition => const {},
+        kanjiComposition => const {radicalExtraction},
         svgProcessing => const {radicalExtraction, kanjiComposition},
         vocabularyExtraction => const {kanjiComposition},
         aiEnrichment => const {kanjiComposition, svgProcessing, vocabularyExtraction},

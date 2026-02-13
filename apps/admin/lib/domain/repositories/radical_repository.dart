@@ -48,4 +48,13 @@ abstract class RadicalRepository {
 
   /// Returns the number of draft radical variants with non-null svg_file_name.
   Future<int> countDraftRadicalVariantsWithSvg();
+
+  /// Batch-updates derived metadata fields on draft radical rows.
+  ///
+  /// Used by component linking (Step 3) to set impact_score, min_grade,
+  /// and min_jlpt_level computed from kanji associations.
+  Future<void> batchUpdateDraftRadicalMetadata(
+    List<({int id, int? impactScore, int? minGrade, int? minJlptLevel})>
+        updates,
+  );
 }

@@ -7,18 +7,23 @@ abstract class KanjiComponentRepository {
   /// Returns the total number of kanji component rows.
   Future<int> count();
 
+  /// Deletes all kanji component rows (idempotent re-run support).
+  Future<void> deleteAll();
+
+  /// Batch-upserts components on `(kanji_id, radical_id, position)`.
+  Future<void> upsertBatch(List<KanjiComponent> components);
+
   /// Updates the `logic_hint` for a single component.
   Future<void> updateLogicHint({
     required int id,
     required LogicHint logicHint,
   });
 
-  /// Returns a map of kanji ID → character from the content `kanji_entries`
-  /// table. Used by [EstimateLogicHints] to resolve component FKs.
+  /// Returns a map of draft kanji ID → character.
+  /// Component FKs reference draft kanji IDs during extraction.
   Future<Map<int, String>> getKanjiCharMap();
 
-  /// Returns a map of radical ID → master_symbol from the content
-  /// `radical_entries` table. Used by [EstimateLogicHints] to resolve
-  /// component FKs.
+  /// Returns a map of draft radical ID → master_symbol.
+  /// Component FKs reference draft radical IDs during extraction.
   Future<Map<int, String>> getRadicalSymbolMap();
 }

@@ -25,6 +25,24 @@ class DriftKanjiComponentRepository implements KanjiComponentRepository {
   }
 
   @override
+  Future<void> deleteAll() async {
+    await _db.delete(_db.kanjiComponentEntries).go();
+  }
+
+  @override
+  Future<void> upsertBatch(List<KanjiComponent> components) async {
+    await _db.batch((b) {
+      for (final c in components) {
+        b.insert(
+          _db.kanjiComponentEntries,
+          c.toCompanion(),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  @override
   Future<void> updateLogicHint({
     required int id,
     required LogicHint logicHint,
@@ -41,13 +59,13 @@ class DriftKanjiComponentRepository implements KanjiComponentRepository {
 
   @override
   Future<Map<int, String>> getKanjiCharMap() async {
-    final entries = await _db.select(_db.kanjiEntries).get();
+    final entries = await _db.select(_db.draftKanjiEntries).get();
     return {for (final e in entries) e.id: e.character};
   }
 
   @override
   Future<Map<int, String>> getRadicalSymbolMap() async {
-    final entries = await _db.select(_db.radicalEntries).get();
+    final entries = await _db.select(_db.draftRadicalEntries).get();
     return {for (final e in entries) e.id: e.masterSymbol};
   }
 }

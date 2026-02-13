@@ -12,6 +12,7 @@ import '../../../domain/usecases/compose_kanji.dart';
 import '../../../domain/usecases/estimate_logic_hints.dart';
 import '../../../domain/usecases/extract_radicals.dart';
 import '../../../domain/usecases/extract_vocabulary.dart';
+import '../../../domain/usecases/link_components.dart';
 import '../../../domain/usecases/process_svgs.dart';
 import 'extraction_event.dart';
 import 'extraction_state.dart';
@@ -22,11 +23,13 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
     required ComposeKanji composeKanji,
     required ProcessSvgs processSvgs,
     required ExtractVocabulary extractVocabulary,
+    required LinkComponents linkComponents,
     required EstimateLogicHints estimateLogicHints,
   })  : _extractRadicals = extractRadicals,
         _composeKanji = composeKanji,
         _processSvgs = processSvgs,
         _extractVocabulary = extractVocabulary,
+        _linkComponents = linkComponents,
         _estimateLogicHints = estimateLogicHints,
         super(const ExtractionState()) {
     on<ExtractionEvent>(_onEvent);
@@ -36,6 +39,7 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   final ComposeKanji _composeKanji;
   final ProcessSvgs _processSvgs;
   final ExtractVocabulary _extractVocabulary;
+  final LinkComponents _linkComponents;
   final EstimateLogicHints _estimateLogicHints;
   List<DataImport> _imports = const [];
 
@@ -101,13 +105,17 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
           warnings: result.warnings,
         );
       case ExtractionPhase.kanjiComposition:
-        final importId = _importIdFor(ImportSource.kanjidic);
-        final result = await _composeKanji.call(importId);
+        final kanjidicImportId = _importIdFor(ImportSource.kanjidic);
+        final composeResult = await _composeKanji.call(kanjidicImportId);
+        final kanjivgImportId = _importIdFor(ImportSource.kanjivg);
+        final linkResult = await _linkComponents.call(kanjivgImportId);
         return (
-          summary: '${result.kanjiCount} kanji, '
-              '${result.readingCount} readings, '
-              '${result.i18nCount} i18n',
-          warnings: result.warnings,
+          summary: '${composeResult.kanjiCount} kanji, '
+              '${composeResult.readingCount} readings, '
+              '${composeResult.i18nCount} i18n, '
+              '${linkResult.componentCount} components, '
+              '${linkResult.radicalsUpdated} radicals updated',
+          warnings: [...composeResult.warnings, ...linkResult.warnings],
         );
       case ExtractionPhase.svgProcessing:
         final archivePath = _resolveKanjiVgZipPath();
@@ -251,7 +259,11 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
       case ExtractionPhase.radicalExtraction:
         return _extractRadicals.checkExistingResult();
       case ExtractionPhase.kanjiComposition:
-        return _composeKanji.checkExistingResult();
+        final kanjiResult = await _composeKanji.checkExistingResult();
+        if (kanjiResult == null) return null;
+        final componentResult = await _linkComponents.checkExistingResult();
+        if (componentResult != null) return '$kanjiResult, $componentResult';
+        return kanjiResult;
       case ExtractionPhase.svgProcessing:
         return _processSvgs.checkExistingResult();
       case ExtractionPhase.vocabularyExtraction:

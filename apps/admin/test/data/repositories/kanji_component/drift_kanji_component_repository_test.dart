@@ -119,17 +119,78 @@ void main() {
       expect(result.first.logicHint, LogicHint.phonetic);
     });
 
-    test('getKanjiCharMap returns kanji id-to-character map', () async {
-      final id1 = await insertContentKanji('忙');
-      final id2 = await insertContentKanji('死');
+    test('deleteAll removes all components', () async {
+      final kanjiId = await insertContentKanji('忙');
+      final radicalId = await insertContentRadical('亡');
+      await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
+      expect(await repo.count(), 1);
+
+      await repo.deleteAll();
+      expect(await repo.count(), 0);
+    });
+
+    test('upsertBatch inserts components', () async {
+      final kanjiId = await insertContentKanji('忙');
+      final radId1 = await insertContentRadical('忄');
+      final radId2 = await insertContentRadical('亡');
+      final now = DateTime.now();
+
+      await repo.upsertBatch([
+        KanjiComponent(
+          id: 0,
+          kanjiId: kanjiId,
+          radicalId: radId1,
+          position: Position.hen,
+          logicHint: LogicHint.semantic,
+          radicalType: RadicalType.component,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        KanjiComponent(
+          id: 0,
+          kanjiId: kanjiId,
+          radicalId: radId2,
+          position: Position.tsukuri,
+          logicHint: LogicHint.phonetic,
+          radicalType: RadicalType.general,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ]);
+
+      final result = await repo.getAll();
+      expect(result, hasLength(2));
+      expect(result.map((c) => c.position).toSet(),
+          {Position.hen, Position.tsukuri});
+    });
+
+    test('getKanjiCharMap returns draft kanji id-to-character map', () async {
+      final id1 = await db.into(db.draftKanjiEntries).insert(
+            DraftKanjiEntriesCompanion.insert(
+              character: '忙',
+              strokeCount: 6,
+              frequencyRank: 100,
+            ),
+          );
+      final id2 = await db.into(db.draftKanjiEntries).insert(
+            DraftKanjiEntriesCompanion.insert(
+              character: '死',
+              strokeCount: 6,
+              frequencyRank: 200,
+            ),
+          );
 
       final result = await repo.getKanjiCharMap();
       expect(result, {id1: '忙', id2: '死'});
     });
 
-    test('getRadicalSymbolMap returns radical id-to-symbol map', () async {
-      final id1 = await insertContentRadical('亡');
-      final id2 = await insertContentRadical('心');
+    test('getRadicalSymbolMap returns draft radical id-to-symbol map', () async {
+      final id1 = await db.into(db.draftRadicalEntries).insert(
+            DraftRadicalEntriesCompanion.insert(masterSymbol: '亡'),
+          );
+      final id2 = await db.into(db.draftRadicalEntries).insert(
+            DraftRadicalEntriesCompanion.insert(masterSymbol: '心'),
+          );
 
       final result = await repo.getRadicalSymbolMap();
       expect(result, {id1: '亡', id2: '心'});

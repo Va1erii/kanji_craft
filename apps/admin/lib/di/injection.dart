@@ -44,6 +44,7 @@ import '../domain/services/source_parser.dart';
 import '../domain/usecases/compose_kanji.dart';
 import '../domain/usecases/extract_radicals.dart';
 import '../domain/usecases/estimate_logic_hints.dart';
+import '../domain/usecases/link_components.dart';
 import '../domain/usecases/extract_vocabulary.dart';
 import '../domain/usecases/hydrate_local_db.dart';
 import '../domain/usecases/clear_import.dart';
@@ -196,6 +197,14 @@ Future<void> configureDependencies() async {
       vocabularyRepository: getIt<VocabularyRepository>(),
     ),
   );
+  getIt.registerLazySingleton<LinkComponents>(
+    () => LinkComponents(
+      rawKanjiVgRepository: getIt<RawKanjiVgRepository>(),
+      kanjiComponentRepository: getIt<KanjiComponentRepository>(),
+      radicalRepository: getIt<RadicalRepository>(),
+      kanjiRepository: getIt<KanjiRepository>(),
+    ),
+  );
   getIt.registerLazySingleton<EstimateLogicHints>(
     () => EstimateLogicHints(
       kanjiComponentRepository: getIt<KanjiComponentRepository>(),
@@ -227,6 +236,7 @@ Future<void> configureDependencies() async {
       composeKanji: getIt<ComposeKanji>(),
       processSvgs: getIt<ProcessSvgs>(),
       extractVocabulary: getIt<ExtractVocabulary>(),
+      linkComponents: getIt<LinkComponents>(),
       estimateLogicHints: getIt<EstimateLogicHints>(),
     ),
   );

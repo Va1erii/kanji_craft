@@ -171,4 +171,24 @@ class DriftRadicalRepository implements RadicalRepository {
     final result = await query.getSingle();
     return result.read(c)!;
   }
+
+  @override
+  Future<void> batchUpdateDraftRadicalMetadata(
+    List<({int id, int? impactScore, int? minGrade, int? minJlptLevel})>
+        updates,
+  ) async {
+    await _db.batch((b) {
+      for (final u in updates) {
+        b.update(
+          _db.draftRadicalEntries,
+          DraftRadicalEntriesCompanion(
+            impactScore: Value(u.impactScore),
+            minGrade: Value(u.minGrade),
+            minJlptLevel: Value(u.minJlptLevel),
+          ),
+          where: (t) => t.id.equals(u.id),
+        );
+      }
+    });
+  }
 }

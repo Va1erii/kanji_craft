@@ -173,6 +173,47 @@ void main() {
       });
     });
 
+    group('batchUpdateDraftRadicalMetadata', () {
+      test('updates impact_score, min_grade, and min_jlpt_level', () async {
+        final r1 = await repo.upsertDraftRadical(
+          fakeDraftRadical(masterSymbol: '木'),
+        );
+        final r2 = await repo.upsertDraftRadical(
+          fakeDraftRadical(masterSymbol: '人'),
+        );
+
+        await repo.batchUpdateDraftRadicalMetadata([
+          (id: r1.id, impactScore: 5, minGrade: 2, minJlptLevel: 4),
+          (id: r2.id, impactScore: 8, minGrade: 1, minJlptLevel: 5),
+        ]);
+
+        final updated1 = await repo.getDraftRadicalByMasterSymbol('木');
+        expect(updated1!.impactScore, 5);
+        expect(updated1.minGrade, 2);
+        expect(updated1.minJlptLevel, 4);
+
+        final updated2 = await repo.getDraftRadicalByMasterSymbol('人');
+        expect(updated2!.impactScore, 8);
+        expect(updated2.minGrade, 1);
+        expect(updated2.minJlptLevel, 5);
+      });
+
+      test('handles null metadata values', () async {
+        final r = await repo.upsertDraftRadical(
+          fakeDraftRadical(masterSymbol: '木'),
+        );
+
+        await repo.batchUpdateDraftRadicalMetadata([
+          (id: r.id, impactScore: 3, minGrade: null, minJlptLevel: null),
+        ]);
+
+        final updated = await repo.getDraftRadicalByMasterSymbol('木');
+        expect(updated!.impactScore, 3);
+        expect(updated.minGrade, isNull);
+        expect(updated.minJlptLevel, isNull);
+      });
+    });
+
     group('nullable deferred fields', () {
       test('stores and retrieves null values for deferred fields', () async {
         final radical = await repo.upsertDraftRadical(

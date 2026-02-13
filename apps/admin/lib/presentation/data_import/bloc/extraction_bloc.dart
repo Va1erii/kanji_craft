@@ -97,18 +97,27 @@ class ExtractionBloc extends Bloc<ExtractionEvent, ExtractionState> {
   ) async {
     switch (phase) {
       case ExtractionPhase.radicalExtraction:
-        final importId = _importIdFor(ImportSource.kanjivg);
-        final result = await _extractRadicals.call(importId);
+        final kanjivgImportId = _importIdFor(ImportSource.kanjivg);
+        final kanjidicImportId = _importIdFor(ImportSource.kanjidic);
+        final result = await _extractRadicals.call(
+          kanjivgImportId: kanjivgImportId,
+          kanjidicImportId: kanjidicImportId,
+        );
         return (
           summary: '${result.radicalCount} radicals, '
-              '${result.variantCount} variants',
+              '${result.variantCount} variants '
+              '(${result.scopeSize} kanji in scope, '
+              '${result.keepSetSize} keep set)',
           warnings: result.warnings,
         );
       case ExtractionPhase.kanjiComposition:
         final kanjidicImportId = _importIdFor(ImportSource.kanjidic);
         final composeResult = await _composeKanji.call(kanjidicImportId);
         final kanjivgImportId = _importIdFor(ImportSource.kanjivg);
-        final linkResult = await _linkComponents.call(kanjivgImportId);
+        final linkResult = await _linkComponents.call(
+          kanjivgImportId: kanjivgImportId,
+          kanjidicImportId: kanjidicImportId,
+        );
         return (
           summary: '${composeResult.kanjiCount} kanji, '
               '${composeResult.readingCount} readings, '

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../data/services/radical_scanner.dart';
@@ -5,55 +7,122 @@ import '../entities/draft_radical.dart';
 import '../entities/draft_radical_variant.dart';
 import '../entities/warning.dart';
 import '../repositories/radical_repository.dart';
+import '../repositories/raw_kanjidic_repository.dart';
 import '../repositories/raw_kanjivg_repository.dart';
+import '../repositories/source_jlpt_level_repository.dart';
 
-/// Result returned by [ExtractRadicals] after Passes 1-2.
+const _tag = 'ExtractRadicals';
+
+/// Result returned by [ExtractRadicals] after Passes 0-2.
 class ExtractionResult {
   const ExtractionResult({
     required this.radicalCount,
     required this.variantCount,
+    required this.scopeSize,
+    required this.keepSetSize,
     this.warnings = const [],
   });
 
   final int radicalCount;
   final int variantCount;
+
+  /// Number of kanji in the JLPT/grade scope set.
+  final int scopeSize;
+
+  /// Number of elements in the keep set.
+  final int keepSetSize;
   final List<Warning> warnings;
 }
 
-/// Orchestrates radical extraction Passes 1-2:
+/// Orchestrates radical extraction Passes 0-2:
 ///
-/// 1. Loads raw KanjiVG data for the given import.
-/// 2. Runs [RadicalScanner] (Pass 1) to collect radical candidates.
-/// 3. Registers draft radicals and variants via [RadicalRepository] (Pass 2).
+/// 0. Builds JLPT/grade scope set from raw_kanjidic + source_jlpt_levels.
+/// 1. Builds keep set (scope + official + high-frequency), then runs
+///    [RadicalScanner] with ghost flattening to collect radical candidates.
+/// 2. Registers draft radicals and variants via [RadicalRepository] (Pass 2).
 class ExtractRadicals {
   ExtractRadicals({
     required RawKanjiVgRepository rawKanjiVgRepository,
     required RadicalRepository radicalRepository,
     required RadicalScanner scanner,
+    required RawKanjidicRepository rawKanjidicRepository,
+    required SourceJlptLevelRepository sourceJlptLevelRepository,
   })  : _rawKanjiVgRepository = rawKanjiVgRepository,
         _radicalRepository = radicalRepository,
-        _scanner = scanner;
+        _scanner = scanner,
+        _rawKanjidicRepository = rawKanjidicRepository,
+        _sourceJlptLevelRepository = sourceJlptLevelRepository;
 
   final RawKanjiVgRepository _rawKanjiVgRepository;
   final RadicalRepository _radicalRepository;
   final RadicalScanner _scanner;
+  final RawKanjidicRepository _rawKanjidicRepository;
+  final SourceJlptLevelRepository _sourceJlptLevelRepository;
 
-  Future<ExtractionResult> call(int importId) async {
-    // Load raw data.
-    final rawEntries = await _rawKanjiVgRepository.getByImportId(importId);
+  Future<ExtractionResult> call({
+    required int kanjivgImportId,
+    required int kanjidicImportId,
+  }) async {
+    // Pass 0: Build scope set.
+    log('Building JLPT/grade scope set...', name: _tag);
+    final scopeSet = await _buildScopeSet(kanjidicImportId);
+    log('Scope set: ${scopeSet.length} characters', name: _tag);
 
-    // Pass 1: Scan.
-    final scanResult = _scanner.scan(rawEntries);
+    // Load raw data and filter to scope.
+    log('Loading raw_kanjivg entries...', name: _tag);
+    final allEntries =
+        await _rawKanjiVgRepository.getByImportId(kanjivgImportId);
+    final rawEntries =
+        allEntries.where((e) => scopeSet.contains(e.character)).toList();
+    log(
+      'Filtered ${allEntries.length} → ${rawEntries.length} in-scope entries',
+      name: _tag,
+    );
 
-    // Build stroke count lookup from raw entries.
+    // 1a. Build official set from ALL entries.
+    log('Building official Kangxi radical set...', name: _tag);
+    final officialSet = _scanner.buildOfficialSet(allEntries);
+    log('Official Kangxi radicals: ${officialSet.length}', name: _tag);
+
+    // 1b. Count raw frequencies from in-scope entries.
+    log('Counting raw frequencies...', name: _tag);
+    final frequencies = _scanner.countFrequencies(rawEntries);
+
+    // 1c. Build keep set.
+    final keepSet = RadicalScanner.buildKeepSet(
+      scopeSet: scopeSet,
+      officialSet: officialSet,
+      frequencies: frequencies,
+    );
+    log('Keep set: ${keepSet.length} elements', name: _tag);
+
+    // Build tree map for ghost lookups.
+    final treeMap = _scanner.buildTreeMap(allEntries);
+
+    // Pass 1: Scan with ghost flattening.
+    log('Scanning radical candidates...', name: _tag);
+    final scanResult = _scanner.scan(
+      rawEntries,
+      keepSet: keepSet,
+      treeMap: treeMap,
+    );
+    log(
+      'Scan complete: ${scanResult.masters.length} radicals, '
+      '${scanResult.ghostsFlattenedCount} ghosts flattened',
+      name: _tag,
+    );
+
+    // Build stroke count lookup from ALL raw entries (not just in-scope)
+    // so variant masters outside scope can still get stroke counts.
     final strokeCountMap = {
-      for (final e in rawEntries) e.character: e.strokeCount,
+      for (final e in allEntries) e.character: e.strokeCount,
     };
 
     // Clear previous draft data (idempotent).
     await _radicalRepository.deleteAllDraftRadicals();
 
     // Pass 2: Register.
+    log('Registering ${scanResult.masters.length} radicals...', name: _tag);
     final now = DateTime.now();
     var variantCount = 0;
 
@@ -98,9 +167,17 @@ class ExtractRadicals {
       }
     }
 
+    log(
+      'Extraction complete: ${scanResult.masters.length} radicals, '
+      '$variantCount variants from ${rawEntries.length} in-scope kanji',
+      name: _tag,
+    );
+
     return ExtractionResult(
       radicalCount: scanResult.masters.length,
       variantCount: variantCount,
+      scopeSize: scopeSet.length,
+      keepSetSize: keepSet.length,
       warnings: scanResult.warnings,
     );
   }
@@ -111,6 +188,47 @@ class ExtractRadicals {
     if (radicals == 0) return null;
     final variants = await _radicalRepository.countDraftRadicalVariants();
     return '$radicals radicals, $variants variants';
+  }
+
+  /// Builds the JLPT/grade scope set (Pass 0).
+  ///
+  /// Returns characters that have a non-null grade in raw_kanjidic OR appear
+  /// in source_jlpt_level_entries.
+  Future<Set<String>> _buildScopeSet(int kanjidicImportId) async {
+    final scope = <String>{};
+
+    // Set A: characters with a school grade.
+    try {
+      final kanjidicEntries =
+          await _rawKanjidicRepository.getByImportId(kanjidicImportId);
+      for (final entry in kanjidicEntries) {
+        if (entry.grade != null) {
+          scope.add(entry.literal);
+        }
+      }
+      log('Graded characters: ${scope.length}', name: _tag);
+    } on Exception catch (e, st) {
+      log('Failed to load raw_kanjidic for scope', error: e, stackTrace: st, name: _tag);
+      rethrow;
+    }
+
+    // Set B: JLPT-mapped characters.
+    try {
+      final jlptEntries = await _sourceJlptLevelRepository.getAll();
+      final jlptChars = jlptEntries.map((e) => e.character).toSet();
+      final before = scope.length;
+      scope.addAll(jlptChars);
+      log(
+        'JLPT characters: ${jlptChars.length} '
+        '(${scope.length - before} new)',
+        name: _tag,
+      );
+    } on Exception catch (e, st) {
+      log('Failed to load JLPT levels for scope', error: e, stackTrace: st, name: _tag);
+      rethrow;
+    }
+
+    return scope;
   }
 
   /// Returns the position with the highest count, defaulting to unknown.

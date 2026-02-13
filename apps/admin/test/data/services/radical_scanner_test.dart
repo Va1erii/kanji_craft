@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanji_craft_admin/data/services/radical_scanner.dart';
+import 'package:kanji_craft_admin/domain/entities/raw_kanjivg.dart';
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../helpers/admin_fixtures.dart';
@@ -10,6 +11,27 @@ void main() {
   setUp(() {
     scanner = RadicalScanner();
   });
+
+  /// Scan with a keep set that keeps all elements (no ghost flattening).
+  /// Used by existing tests that don't exercise ghost flattening.
+  RadicalScanResult scanKeepAll(List<RawKanjiVg> entries) {
+    // Collect every element seen in any tree to build a universal keep set.
+    final keepSet = <String>{};
+    void walk(KanjiVgComponent c) {
+      if (c.element.isNotEmpty) keepSet.add(c.element);
+      if (c.original != null) keepSet.add(c.original!);
+      for (final child in c.children) {
+        walk(child);
+      }
+    }
+    for (final e in entries) {
+      keepSet.add(e.character);
+      walk(e.components);
+    }
+
+    final treeMap = scanner.buildTreeMap(entries);
+    return scanner.scan(entries, keepSet: keepSet, treeMap: treeMap);
+  }
 
   group('RadicalScanner', () {
     group('simple decomposition', () {
@@ -37,7 +59,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         expect(result.masters, hasLength(2));
 
@@ -79,7 +101,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // Only direct children: 言 and 吾
         expect(result.masters, hasLength(2));
@@ -111,7 +133,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         expect(result.masters, contains('水'));
         expect(result.masters['水']!.variants, contains('氵'));
@@ -142,7 +164,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // 甘 becomes its own master
         expect(result.masters, contains('甘'));
@@ -175,7 +197,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         expect(result.masters, hasLength(2));
         expect(result.masters, contains('辶'));
@@ -201,7 +223,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // Position should come from part 2 (first non-null position)
         final shinnyou = result.masters['辶']!;
@@ -218,7 +240,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         expect(result.masters, isEmpty);
       });
@@ -245,7 +267,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // Both children should be promoted past the empty group
         expect(result.masters, hasLength(2));
@@ -277,7 +299,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         expect(result.masters, hasLength(2));
         expect(result.masters, contains('木'));
@@ -349,7 +371,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // 亻 appears 2 times at hen
         final jin = result.masters['人']!;
@@ -388,7 +410,7 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // 木 should be official (seen with radical=general in 村)
         expect(result.masters['木']!.isOfficial, isTrue);
@@ -397,7 +419,7 @@ void main() {
 
     group('edge cases', () {
       test('empty entries list produces empty result', () {
-        final result = scanner.scan([]);
+        final result = scanner.scan([], keepSet: {}, treeMap: {});
         expect(result.masters, isEmpty);
       });
 
@@ -421,10 +443,150 @@ void main() {
           ),
         ];
 
-        final result = scanner.scan(entries);
+        final result = scanKeepAll(entries);
 
         // nelson does not set isOfficial
         expect(result.masters['人']!.isOfficial, isFalse);
+      });
+    });
+
+    group('keep set helpers', () {
+      test('buildOfficialSet collects radical=general from all entries', () {
+        final entries = [
+          fakeRawKanjiVg(
+            character: '休',
+            components: fakeComponent(
+              element: '休',
+              children: [
+                fakeComponent(
+                  element: '亻',
+                  variant: true,
+                  original: '人',
+                  radical: 'general',
+                ),
+                fakeComponent(element: '木'),
+              ],
+            ),
+          ),
+          fakeRawKanjiVg(
+            character: '村',
+            components: fakeComponent(
+              element: '村',
+              children: [
+                fakeComponent(element: '木', radical: 'general'),
+                fakeComponent(element: '寸'),
+              ],
+            ),
+          ),
+        ];
+
+        final officials = scanner.buildOfficialSet(entries);
+        expect(officials, containsAll(['人', '木']));
+        expect(officials, isNot(contains('寸')));
+      });
+
+      test('countFrequencies deduplicates per kanji', () {
+        final entries = [
+          // 林 has 木 twice — should count as 1
+          fakeRawKanjiVg(
+            character: '林',
+            components: fakeComponent(
+              element: '林',
+              children: [
+                fakeComponent(element: '木', position: 'left'),
+                fakeComponent(element: '木', position: 'right'),
+              ],
+            ),
+          ),
+          // 休 also has 木
+          fakeRawKanjiVg(
+            character: '休',
+            components: fakeComponent(
+              element: '休',
+              children: [
+                fakeComponent(element: '木', position: 'right'),
+              ],
+            ),
+          ),
+        ];
+
+        final freq = scanner.countFrequencies(entries);
+        expect(freq['木'], 2); // appears in 2 kanji, not 3
+      });
+
+      test('buildKeepSet merges scope, official, and high-frequency', () {
+        final keepSet = RadicalScanner.buildKeepSet(
+          scopeSet: {'A', 'B'},
+          officialSet: {'C'},
+          frequencies: {'D': 3, 'E': 2, 'F': 5},
+          threshold: 3,
+        );
+        expect(keepSet, containsAll(['A', 'B', 'C', 'D', 'F']));
+        expect(keepSet, isNot(contains('E'))); // freq 2 < threshold 3
+      });
+    });
+
+    group('ghost flattening in scan', () {
+      test('flattens ghost radical during scan', () {
+        // X has child G (ghost, not in keep set).
+        // G's tree has children A and B (in keep set).
+        final entries = [
+          fakeRawKanjiVg(
+            character: 'X',
+            components: fakeComponent(
+              element: 'X',
+              children: [
+                fakeComponent(element: 'G', position: 'right'),
+              ],
+            ),
+          ),
+        ];
+
+        // G's tree (for ghost lookup)
+        final gEntry = fakeRawKanjiVg(
+          character: 'G',
+          components: fakeComponent(
+            element: 'G',
+            children: [
+              fakeComponent(element: 'A', position: 'top'),
+              fakeComponent(element: 'B', position: 'bottom'),
+            ],
+          ),
+        );
+
+        final treeMap = scanner.buildTreeMap([...entries, gEntry]);
+        final keepSet = {'X', 'A', 'B'}; // G not in keep set
+
+        final result = scanner.scan(entries, keepSet: keepSet, treeMap: treeMap);
+
+        expect(result.masters.keys, containsAll(['A', 'B']));
+        expect(result.masters.keys, isNot(contains('G')));
+        expect(result.ghostsFlattenedCount, 1);
+      });
+
+      test('unflattenable ghost becomes leaf', () {
+        final entries = [
+          fakeRawKanjiVg(
+            character: 'X',
+            components: fakeComponent(
+              element: 'X',
+              children: [
+                fakeComponent(element: 'G', position: 'right'),
+              ],
+            ),
+          ),
+        ];
+
+        // G has no entry → unflattenable
+        final treeMap = scanner.buildTreeMap(entries);
+        final keepSet = {'X'}; // G not in keep set
+
+        final result = scanner.scan(entries, keepSet: keepSet, treeMap: treeMap);
+
+        // G is kept as unflattenable leaf
+        expect(result.masters, contains('G'));
+        expect(result.warnings.any((w) => w.message.contains('unflattenable')),
+            isTrue);
       });
     });
   });

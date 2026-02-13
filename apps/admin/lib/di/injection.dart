@@ -182,6 +182,8 @@ Future<void> configureDependencies() async {
       rawKanjiVgRepository: getIt<RawKanjiVgRepository>(),
       radicalRepository: getIt<RadicalRepository>(),
       scanner: getIt<RadicalScanner>(),
+      rawKanjidicRepository: getIt<RawKanjidicRepository>(),
+      sourceJlptLevelRepository: getIt<SourceJlptLevelRepository>(),
     ),
   );
   getIt.registerLazySingleton<ComposeKanji>(
@@ -214,6 +216,9 @@ Future<void> configureDependencies() async {
       kanjiComponentRepository: getIt<KanjiComponentRepository>(),
       radicalRepository: getIt<RadicalRepository>(),
       kanjiRepository: getIt<KanjiRepository>(),
+      rawKanjidicRepository: getIt<RawKanjidicRepository>(),
+      sourceJlptLevelRepository: getIt<SourceJlptLevelRepository>(),
+      scanner: getIt<RadicalScanner>(),
     ),
   );
   getIt.registerLazySingleton<EstimateLogicHints>(

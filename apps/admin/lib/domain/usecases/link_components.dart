@@ -3,12 +3,14 @@ import 'dart:math' as math;
 
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
-import '../entities/raw_kanjivg.dart';
+import '../../data/services/radical_scanner.dart';
 import '../entities/warning.dart';
 import '../repositories/kanji_component_repository.dart';
 import '../repositories/kanji_repository.dart';
 import '../repositories/radical_repository.dart';
+import '../repositories/raw_kanjidic_repository.dart';
 import '../repositories/raw_kanjivg_repository.dart';
+import '../repositories/source_jlpt_level_repository.dart';
 
 const _tag = 'LinkComponents';
 
@@ -30,9 +32,9 @@ class LinkComponentsResult {
 /// Component linking (Phase 2.3 Steps 4–5): creates kanji_component rows
 /// and derives radical metadata from kanji associations.
 ///
-/// For each raw_kanjivg entry, parses the component tree to identify
-/// direct child radicals, then upserts `kanji_components` rows. After
-/// all links are created, computes impact_score, min_grade, and
+/// For each raw_kanjivg entry, resolves effective children (after ghost
+/// flattening via [RadicalScanner]), then upserts `kanji_components` rows.
+/// After all links are created, computes impact_score, min_grade, and
 /// min_jlpt_level on each radical.
 class LinkComponents {
   LinkComponents({
@@ -40,24 +42,58 @@ class LinkComponents {
     required KanjiComponentRepository kanjiComponentRepository,
     required RadicalRepository radicalRepository,
     required KanjiRepository kanjiRepository,
+    required RawKanjidicRepository rawKanjidicRepository,
+    required SourceJlptLevelRepository sourceJlptLevelRepository,
+    required RadicalScanner scanner,
   })  : _rawKanjiVgRepository = rawKanjiVgRepository,
         _kanjiComponentRepository = kanjiComponentRepository,
         _radicalRepository = radicalRepository,
-        _kanjiRepository = kanjiRepository;
+        _kanjiRepository = kanjiRepository,
+        _rawKanjidicRepository = rawKanjidicRepository,
+        _sourceJlptLevelRepository = sourceJlptLevelRepository,
+        _scanner = scanner;
 
   final RawKanjiVgRepository _rawKanjiVgRepository;
   final KanjiComponentRepository _kanjiComponentRepository;
   final RadicalRepository _radicalRepository;
   final KanjiRepository _kanjiRepository;
+  final RawKanjidicRepository _rawKanjidicRepository;
+  final SourceJlptLevelRepository _sourceJlptLevelRepository;
+  final RadicalScanner _scanner;
 
-  Future<LinkComponentsResult> call(int kanjivgImportId) async {
+  Future<LinkComponentsResult> call({
+    required int kanjivgImportId,
+    required int kanjidicImportId,
+  }) async {
     final warnings = <Warning>[];
 
-    // 1. Load source data.
+    // 0. Build JLPT/grade scope set.
+    log('Building JLPT/grade scope set...', name: _tag);
+    final scopeSet = await _buildScopeSet(kanjidicImportId);
+    log('Scope set: ${scopeSet.length} characters', name: _tag);
+
+    // 1. Load source data and filter to scope.
     log('Loading raw_kanjivg entries...', name: _tag);
-    final rawEntries =
+    final allEntries =
         await _rawKanjiVgRepository.getByImportId(kanjivgImportId);
-    log('Loaded ${rawEntries.length} raw_kanjivg entries', name: _tag);
+    final rawEntries =
+        allEntries.where((e) => scopeSet.contains(e.character)).toList();
+    log(
+      'Filtered ${allEntries.length} → ${rawEntries.length} in-scope entries',
+      name: _tag,
+    );
+
+    // Build keep set + tree map for ghost flattening (same as ExtractRadicals).
+    log('Building keep set for ghost flattening...', name: _tag);
+    final officialSet = _scanner.buildOfficialSet(allEntries);
+    final frequencies = _scanner.countFrequencies(rawEntries);
+    final keepSet = RadicalScanner.buildKeepSet(
+      scopeSet: scopeSet,
+      officialSet: officialSet,
+      frequencies: frequencies,
+    );
+    final treeMap = _scanner.buildTreeMap(allEntries);
+    log('Keep set: ${keepSet.length} elements', name: _tag);
 
     log('Loading draft kanji...', name: _tag);
     final draftKanji = await _kanjiRepository.getAllDraftKanji();
@@ -86,16 +122,23 @@ class LinkComponents {
         continue;
       }
 
-      final directChildren = _parseDirectChildren(raw.components);
-      if (directChildren.isEmpty) continue;
+      final effectiveChildren = _scanner.resolveEffectiveChildren(
+        raw.components,
+        keepSet: keepSet,
+        treeMap: treeMap,
+      );
+      if (effectiveChildren.isEmpty) continue;
 
       kanjiProcessed++;
 
-      for (final child in directChildren) {
+      // Deduplicate by master symbol — first occurrence wins (keeps position).
+      final seenMasters = <String>{};
+      for (final child in effectiveChildren) {
         // Resolve radical.
         final masterSymbol = (child.variant == true && child.original != null)
             ? child.original!
             : child.element;
+        if (!seenMasters.add(masterSymbol)) continue;
 
         final radicalId = radicalIdMap[masterSymbol];
         if (radicalId == null) {
@@ -163,97 +206,7 @@ class LinkComponents {
   }
 
   // ---------------------------------------------------------------------------
-  // Step 1: Parse Direct Children
-  // ---------------------------------------------------------------------------
-
-  /// Extracts direct children from the root component tree.
-  ///
-  /// 1. Flattens structural groups (empty element nodes).
-  /// 2. Merges split parts (same element, different part values).
-  List<_DirectChild> _parseDirectChildren(KanjiVgComponent root) {
-    // Get root's children.
-    var children = root.children.toList();
-
-    // Flatten structural groups — promote children of empty-element nodes.
-    children = _flattenStructuralGroups(children);
-
-    // Merge split parts.
-    return _mergeSplitParts(children);
-  }
-
-  /// Recursively promotes children of nodes with empty elements.
-  List<KanjiVgComponent> _flattenStructuralGroups(
-    List<KanjiVgComponent> children,
-  ) {
-    final result = <KanjiVgComponent>[];
-    for (final child in children) {
-      if (child.element.isEmpty) {
-        // Promote this node's children.
-        result.addAll(_flattenStructuralGroups(child.children));
-      } else {
-        result.add(child);
-      }
-    }
-    return result;
-  }
-
-  /// Groups nodes by element (+ optional number) and merges split parts.
-  List<_DirectChild> _mergeSplitParts(List<KanjiVgComponent> children) {
-    // Group by (element, number) for split-part detection.
-    final groups = <(String, int?), List<KanjiVgComponent>>{};
-    final insertionOrder = <(String, int?)>[];
-
-    for (final child in children) {
-      final key = (child.element, child.number);
-      if (!groups.containsKey(key)) {
-        groups[key] = [];
-        insertionOrder.add(key);
-      }
-      groups[key]!.add(child);
-    }
-
-    final result = <_DirectChild>[];
-    for (final key in insertionOrder) {
-      final parts = groups[key]!;
-
-      if (parts.length == 1 && parts.first.part == null) {
-        // Single node, no splitting — use as-is.
-        final node = parts.first;
-        result.add(_DirectChild(
-          element: node.element,
-          position: node.position,
-          variant: node.variant,
-          original: node.original,
-          radical: node.radical,
-        ));
-      } else {
-        // Multiple parts or explicit part attribute — merge.
-        // Use position from the first part that carries one.
-        String? position;
-        String? radical;
-        bool? variant;
-        String? original;
-        for (final p in parts) {
-          position ??= p.position;
-          radical ??= p.radical;
-          variant ??= p.variant;
-          original ??= p.original;
-        }
-        result.add(_DirectChild(
-          element: key.$1,
-          position: position,
-          variant: variant,
-          original: original,
-          radical: radical,
-        ));
-      }
-    }
-
-    return result;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Step 2 helpers: Position and RadicalType mapping
+  // Position and RadicalType mapping
   // ---------------------------------------------------------------------------
 
   /// Maps KanjiVG position string to [Position] enum.
@@ -280,7 +233,7 @@ class LinkComponents {
       };
 
   // ---------------------------------------------------------------------------
-  // Step 3: Derive Radical Metadata
+  // Derive Radical Metadata
   // ---------------------------------------------------------------------------
 
   /// Computes impact_score, min_grade, and min_jlpt_level for each radical
@@ -360,6 +313,29 @@ class LinkComponents {
     return updates.length;
   }
 
+  /// Builds the JLPT/grade scope set.
+  ///
+  /// Same logic as ExtractRadicals Pass 0 — characters with a non-null grade
+  /// in raw_kanjidic OR appearing in source_jlpt_level_entries.
+  Future<Set<String>> _buildScopeSet(int kanjidicImportId) async {
+    final scope = <String>{};
+
+    final kanjidicEntries =
+        await _rawKanjidicRepository.getByImportId(kanjidicImportId);
+    for (final entry in kanjidicEntries) {
+      if (entry.grade != null) {
+        scope.add(entry.literal);
+      }
+    }
+
+    final jlptEntries = await _sourceJlptLevelRepository.getAll();
+    for (final entry in jlptEntries) {
+      scope.add(entry.character);
+    }
+
+    return scope;
+  }
+
   /// Maps kanji count to impact_score on a 1–10 scale.
   static int _computeImpactScore(int kanjiCount) {
     if (kanjiCount <= 5) return 1;
@@ -373,21 +349,4 @@ class LinkComponents {
     if (kanjiCount <= 400) return 9;
     return 10;
   }
-}
-
-/// Intermediate representation of a direct child after flattening/merging.
-class _DirectChild {
-  const _DirectChild({
-    required this.element,
-    this.position,
-    this.variant,
-    this.original,
-    this.radical,
-  });
-
-  final String element;
-  final String? position;
-  final bool? variant;
-  final String? original;
-  final String? radical;
 }

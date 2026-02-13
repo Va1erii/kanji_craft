@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:kanji_craft_core/kanji_craft_core.dart';
 
 import '../../domain/entities/raw_kanjivg.dart';
@@ -5,13 +7,20 @@ import '../../domain/entities/warning.dart';
 
 /// Result of scanning raw KanjiVG entries for radical candidates.
 class RadicalScanResult {
-  const RadicalScanResult({required this.masters, this.warnings = const []});
+  const RadicalScanResult({
+    required this.masters,
+    this.warnings = const [],
+    this.ghostsFlattenedCount = 0,
+  });
 
   /// Master radicals keyed by masterSymbol.
   final Map<String, MasterInfo> masters;
 
   /// Warnings encountered during scanning (e.g. variant without original).
   final List<Warning> warnings;
+
+  /// Number of ghost radicals flattened during scanning.
+  final int ghostsFlattenedCount;
 }
 
 /// Information about a master radical collected during scanning.
@@ -49,6 +58,26 @@ class VariantInfo {
   final Map<Position, int> positionCounts;
 }
 
+/// A direct child component after structural flattening + part merging.
+///
+/// Used by both [RadicalScanner.scan] and `LinkComponents` for resolving
+/// effective children (after ghost flattening).
+class ComponentChild {
+  const ComponentChild({
+    required this.element,
+    required this.position,
+    required this.variant,
+    required this.original,
+    required this.radical,
+  });
+
+  final String element;
+  final String? position;
+  final bool? variant;
+  final String? original;
+  final String? radical;
+}
+
 /// Maps KanjiVG position strings to [Position] enum values.
 Position mapKanjiVgPosition(String? kanjivgPosition) =>
     switch (kanjivgPosition) {
@@ -62,21 +91,151 @@ Position mapKanjiVgPosition(String? kanjivgPosition) =>
       _ => Position.unknown,
     };
 
+const _tag = 'RadicalScanner';
+
 /// Scans raw KanjiVG entries to extract radical candidates (Pass 1).
 ///
 /// This is a pure function with no side effects — it does not touch the
 /// database.
 class RadicalScanner {
+  /// Scans ALL entries for components with radical='general', returns master
+  /// symbols. Used to build the official Kangxi radical set.
+  Set<String> buildOfficialSet(List<RawKanjiVg> allEntries) {
+    final officials = <String>{};
+    for (final entry in allEntries) {
+      _collectOfficialsFromTree(entry.components, officials);
+    }
+    return officials;
+  }
+
+  /// Recursively walks a component tree to find radical='general' nodes.
+  void _collectOfficialsFromTree(
+    KanjiVgComponent node,
+    Set<String> officials,
+  ) {
+    if (node.radical == 'general' && node.element.isNotEmpty) {
+      final masterSymbol =
+          (node.variant == true && node.original != null)
+              ? node.original!
+              : node.element;
+      officials.add(masterSymbol);
+    }
+    for (final child in node.children) {
+      _collectOfficialsFromTree(child, officials);
+    }
+  }
+
+  /// Counts how many in-scope kanji each element appears in as direct child
+  /// (after structural flattening + part merging, BEFORE ghost flattening).
+  /// Deduplicates per kanji (same element in one kanji counts once).
+  Map<String, int> countFrequencies(List<RawKanjiVg> inScopeEntries) {
+    final freq = <String, int>{};
+    for (final entry in inScopeEntries) {
+      final children = collectDirectChildren(entry.components);
+      final seen = <String>{};
+      for (final child in children) {
+        final masterSymbol =
+            (child.variant == true && child.original != null)
+                ? child.original!
+                : child.element;
+        if (seen.add(masterSymbol)) {
+          freq[masterSymbol] = (freq[masterSymbol] ?? 0) + 1;
+        }
+      }
+    }
+    return freq;
+  }
+
+  /// Builds character → root component map from ALL entries for ghost lookups.
+  Map<String, KanjiVgComponent> buildTreeMap(List<RawKanjiVg> allEntries) {
+    return {for (final e in allEntries) e.character: e.components};
+  }
+
+  /// Merges scope + official + high-frequency into keep set.
+  static Set<String> buildKeepSet({
+    required Set<String> scopeSet,
+    required Set<String> officialSet,
+    required Map<String, int> frequencies,
+    int threshold = 3,
+  }) {
+    final keepSet = <String>{};
+    keepSet.addAll(scopeSet);
+    keepSet.addAll(officialSet);
+    for (final entry in frequencies.entries) {
+      if (entry.value >= threshold) {
+        keepSet.add(entry.key);
+      }
+    }
+    return keepSet;
+  }
+
+  /// Public entry point for resolving effective children (used by
+  /// LinkComponents). Applies ghost flattening to the root component.
+  List<ComponentChild> resolveEffectiveChildren(
+    KanjiVgComponent root, {
+    required Set<String> keepSet,
+    required Map<String, KanjiVgComponent> treeMap,
+  }) {
+    final warnings = <Warning>[];
+    final result = _resolveEffective(root, keepSet, treeMap, 0, warnings);
+    for (final w in warnings) {
+      log(w.message, name: _tag);
+    }
+    return result;
+  }
+
   /// Scans all entries and returns a [RadicalScanResult] with radical
   /// candidates and their variant/position information.
-  RadicalScanResult scan(List<RawKanjiVg> entries) {
+  ///
+  /// Uses the [keepSet] and [treeMap] for ghost radical flattening.
+  RadicalScanResult scan(
+    List<RawKanjiVg> entries, {
+    required Set<String> keepSet,
+    required Map<String, KanjiVgComponent> treeMap,
+  }) {
     final masters = <String, _MasterBuilder>{};
     final warnings = <Warning>[];
+    var ghostsFlattenedCount = 0;
 
     for (final entry in entries) {
-      final directChildren = _collectDirectChildren(entry.components);
+      final directChildren = collectDirectChildren(entry.components);
+      final effectiveChildren = <ComponentChild>[];
 
       for (final child in directChildren) {
+        final masterSymbol =
+            (child.variant == true && child.original != null)
+                ? child.original!
+                : child.element;
+
+        if (keepSet.contains(masterSymbol)) {
+          effectiveChildren.add(child);
+        } else {
+          // Ghost radical — try to flatten.
+          final ghostTree = treeMap[masterSymbol];
+          if (ghostTree != null && ghostTree.children.isNotEmpty) {
+            final flattened = _resolveEffective(
+              ghostTree,
+              keepSet,
+              treeMap,
+              1,
+              warnings,
+            );
+            effectiveChildren.addAll(flattened);
+            ghostsFlattenedCount++;
+          } else {
+            // Unflattenable ghost — keep as leaf radical.
+            effectiveChildren.add(child);
+            warnings.add(Warning(
+              'Ghost radical "$masterSymbol" unflattenable '
+              '(${ghostTree == null ? "no KanjiVG entry" : "no children"}) '
+              'in ${entry.character}',
+              severity: WarningSeverity.low,
+            ));
+          }
+        }
+      }
+
+      for (final child in effectiveChildren) {
         final String masterSymbol;
         final String shape;
         final bool isExplicitVariant;
@@ -120,13 +279,64 @@ class RadicalScanner {
     return RadicalScanResult(
       masters: masters.map((k, v) => MapEntry(k, v.build())),
       warnings: warnings,
+      ghostsFlattenedCount: ghostsFlattenedCount,
     );
+  }
+
+  /// Resolves effective children with ghost flattening (recursive).
+  List<ComponentChild> _resolveEffective(
+    KanjiVgComponent root,
+    Set<String> keepSet,
+    Map<String, KanjiVgComponent> treeMap,
+    int depth,
+    List<Warning> warnings,
+  ) {
+    if (depth > 10) {
+      warnings.add(Warning(
+        'Ghost flattening recursion depth exceeded (>10) '
+        'at element "${root.element}"',
+        severity: WarningSeverity.high,
+      ));
+      return collectDirectChildren(root);
+    }
+
+    final directChildren = collectDirectChildren(root);
+    final result = <ComponentChild>[];
+
+    for (final child in directChildren) {
+      final masterSymbol =
+          (child.variant == true && child.original != null)
+              ? child.original!
+              : child.element;
+
+      if (keepSet.contains(masterSymbol)) {
+        result.add(child);
+      } else {
+        // Ghost radical — try to flatten.
+        final ghostTree = treeMap[masterSymbol];
+        if (ghostTree != null && ghostTree.children.isNotEmpty) {
+          result.addAll(
+            _resolveEffective(ghostTree, keepSet, treeMap, depth + 1, warnings),
+          );
+        } else {
+          // Unflattenable ghost — keep as leaf.
+          result.add(child);
+          warnings.add(Warning(
+            'Ghost radical "$masterSymbol" unflattenable '
+            '(${ghostTree == null ? "no KanjiVG entry" : "no children"})',
+            severity: WarningSeverity.low,
+          ));
+        }
+      }
+    }
+
+    return result;
   }
 
   /// Collects direct children from a root component, flattening structural
   /// groups (empty elements) and merging split parts (same element, different
   /// `part` values).
-  List<_ChildInfo> _collectDirectChildren(KanjiVgComponent root) {
+  List<ComponentChild> collectDirectChildren(KanjiVgComponent root) {
     // 1. Flatten structural groups (empty element nodes).
     final flat = <KanjiVgComponent>[];
     for (final child in root.children) {
@@ -146,7 +356,7 @@ class RadicalScanner {
       }
     }
 
-    final result = <_ChildInfo>[];
+    final result = <ComponentChild>[];
 
     // Each part group becomes one merged child.
     for (final parts in partGroups.values) {
@@ -155,7 +365,7 @@ class RadicalScanner {
 
     // Non-part children contribute individually.
     for (final child in nonPart) {
-      result.add(_ChildInfo(
+      result.add(ComponentChild(
         element: child.element,
         position: child.position,
         variant: child.variant,
@@ -180,7 +390,7 @@ class RadicalScanner {
 
   /// Merges split parts into a single child, taking position/variant/original/
   /// radical from the first part that carries each attribute.
-  _ChildInfo _mergePartChildren(List<KanjiVgComponent> parts) {
+  ComponentChild _mergePartChildren(List<KanjiVgComponent> parts) {
     String? position;
     bool? variant;
     String? original;
@@ -193,7 +403,7 @@ class RadicalScanner {
       radical ??= part.radical;
     }
 
-    return _ChildInfo(
+    return ComponentChild(
       element: parts.first.element,
       position: position,
       variant: variant,
@@ -206,22 +416,6 @@ class RadicalScanner {
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
-
-class _ChildInfo {
-  const _ChildInfo({
-    required this.element,
-    required this.position,
-    required this.variant,
-    required this.original,
-    required this.radical,
-  });
-
-  final String element;
-  final String? position;
-  final bool? variant;
-  final String? original;
-  final String? radical;
-}
 
 class _MasterBuilder {
   _MasterBuilder(this.masterSymbol);

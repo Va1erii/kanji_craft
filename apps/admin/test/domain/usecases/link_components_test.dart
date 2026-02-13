@@ -3,7 +3,10 @@ import 'package:kanji_craft_admin/data/database/admin_database.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji/drift_kanji_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji_component/drift_kanji_component_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/radical/drift_radical_repository.dart';
+import 'package:kanji_craft_admin/data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/raw_kanjivg/drift_raw_kanjivg_repository.dart';
+import 'package:kanji_craft_admin/data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
+import 'package:kanji_craft_admin/data/services/radical_scanner.dart';
 import 'package:kanji_craft_admin/domain/entities/warning.dart';
 import 'package:kanji_craft_admin/domain/usecases/link_components.dart';
 import 'package:kanji_craft_core/kanji_craft_core.dart';
@@ -14,18 +17,23 @@ import '../../helpers/admin_test_helpers.dart';
 void main() {
   late AdminDatabase db;
   late DriftRawKanjiVgRepository rawKanjiVgRepo;
+  late DriftRawKanjidicRepository kanjidicRepo;
+  late DriftSourceJlptLevelRepository sourceJlptLevelRepo;
   late DriftKanjiComponentRepository componentRepo;
   late DriftRadicalRepository radicalRepo;
   late DriftKanjiRepository kanjiRepo;
   late LinkComponents useCase;
 
   const importId = 1;
+  const kanjidicImportId = 2;
 
   setUp(() {
     resetFixtureIds();
     db = createTestDatabase();
     final repos = createReposFromDb(db);
     rawKanjiVgRepo = repos.kanjiVg;
+    kanjidicRepo = repos.kanjidic;
+    sourceJlptLevelRepo = repos.sourceJlptLevel;
     componentRepo = repos.kanjiComponents;
     radicalRepo = repos.radicals;
     kanjiRepo = repos.kanji;
@@ -35,10 +43,25 @@ void main() {
       kanjiComponentRepository: componentRepo,
       radicalRepository: radicalRepo,
       kanjiRepository: kanjiRepo,
+      rawKanjidicRepository: kanjidicRepo,
+      sourceJlptLevelRepository: sourceJlptLevelRepo,
+      scanner: RadicalScanner(),
     );
   });
 
   tearDown(() => db.close());
+
+  /// Insert kanjidic entries with grade to put characters in scope.
+  Future<void> putInScope(List<String> characters) async {
+    await kanjidicRepo.insertBatch([
+      for (final char in characters)
+        fakeRawKanjidic(
+          importId: kanjidicImportId,
+          literal: char,
+          grade: 1,
+        ),
+    ]);
+  }
 
   /// Insert a draft kanji via batch insert and return its DB-assigned ID.
   Future<int> insertDraftKanji(
@@ -70,6 +93,7 @@ void main() {
       final kanjiId = await insertDraftKanji('忙');
       final rad1Id = await insertDraftRadical('忄');
       final rad2Id = await insertDraftRadical('亡');
+      await putInScope(['忙']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -85,7 +109,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 2);
       expect(result.kanjiProcessed, 1);
@@ -107,6 +134,7 @@ void main() {
     test('flattens structural groups (empty element nodes)', () async {
       await insertDraftKanji('森');
       final radId = await insertDraftRadical('木');
+      await putInScope(['森']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -129,7 +157,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       // '木' appears twice but merged by (element, number) grouping.
       // Position comes from the first part ('top' → kanmuri).
@@ -145,6 +176,7 @@ void main() {
       await insertDraftKanji('道');
       final nyoRadId = await insertDraftRadical('辶');
       final topRadId = await insertDraftRadical('首');
+      await putInScope(['道']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -161,7 +193,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 2);
 
@@ -178,6 +213,7 @@ void main() {
     test('resolves variant to original radical', () async {
       await insertDraftKanji('仁');
       final radId = await insertDraftRadical('人');
+      await putInScope(['仁']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -198,7 +234,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       // '人' resolves via variant→original; '二' not in radicals → warning.
       expect(result.componentCount, 1);
@@ -216,6 +255,7 @@ void main() {
     test('maps radical attribute to RadicalType', () async {
       await insertDraftKanji('木');
       await insertDraftRadical('木');
+      await putInScope(['木']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -230,7 +270,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
       expect(result.componentCount, 1);
 
       final components = await componentRepo.getAll();
@@ -239,6 +282,7 @@ void main() {
 
     test('skips kanji not in draft table', () async {
       await insertDraftRadical('木');
+      await putInScope(['木']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -251,7 +295,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 0);
       expect(result.kanjiProcessed, 0);
@@ -260,6 +307,7 @@ void main() {
 
     test('warns when radical not found', () async {
       await insertDraftKanji('明');
+      await putInScope(['明']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -275,7 +323,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 0);
       expect(result.kanjiProcessed, 1);
@@ -291,6 +342,7 @@ void main() {
       await insertDraftKanji('忙', minGrade: 3, minJlptLevel: 3);
       await insertDraftKanji('忘', minGrade: 6, minJlptLevel: 2);
       await insertDraftRadical('亡');
+      await putInScope(['忙', '忘']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -311,7 +363,10 @@ void main() {
         ),
       ]);
 
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 2);
       expect(result.radicalsUpdated, 1);
@@ -331,6 +386,7 @@ void main() {
       await insertDraftKanji('忙');
       await insertDraftRadical('忄');
       await insertDraftRadical('亡');
+      await putInScope(['忙']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -347,11 +403,17 @@ void main() {
       ]);
 
       // First run.
-      await useCase.call(importId);
+      await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
       expect(await componentRepo.count(), 2);
 
       // Second run — same result, no duplicates.
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
       expect(result.componentCount, 2);
       expect(await componentRepo.count(), 2);
     });
@@ -359,6 +421,7 @@ void main() {
     test('checkExistingResult returns summary when components exist', () async {
       await insertDraftKanji('忙');
       await insertDraftRadical('亡');
+      await putInScope(['忙']);
 
       await rawKanjiVgRepo.insertBatch([
         fakeRawKanjiVg(
@@ -371,7 +434,10 @@ void main() {
         ),
       ]);
 
-      await useCase.call(importId);
+      await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       final existing = await useCase.checkExistingResult();
       expect(existing, isNotNull);
@@ -384,12 +450,149 @@ void main() {
     });
 
     test('empty raw entries produces no components', () async {
-      final result = await useCase.call(importId);
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
 
       expect(result.componentCount, 0);
       expect(result.kanjiProcessed, 0);
       expect(result.radicalsUpdated, 0);
       expect(result.warnings, isEmpty);
+    });
+  });
+
+  group('Ghost flattening in component linking', () {
+    test('flattens ghost radical in component linking', () async {
+      // X's direct child G is a ghost → flattened.
+      // G's children A and B are in scope and registered as radicals.
+      final kanjiId = await insertDraftKanji('X');
+      final radAId = await insertDraftRadical('A');
+      final radBId = await insertDraftRadical('B');
+      await putInScope(['X', 'A', 'B']);
+
+      await rawKanjiVgRepo.insertBatch([
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'X',
+          components: fakeComponent(
+            element: 'X',
+            children: [
+              fakeComponent(element: 'G', position: 'right'),
+            ],
+          ),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'G',
+          strokeCount: 5,
+          components: fakeComponent(
+            element: 'G',
+            children: [
+              fakeComponent(element: 'A', position: 'top'),
+              fakeComponent(element: 'B', position: 'bottom'),
+            ],
+          ),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'A',
+          strokeCount: 3,
+          components: fakeComponent(element: 'A', children: []),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'B',
+          strokeCount: 4,
+          components: fakeComponent(element: 'B', children: []),
+        ),
+      ]);
+
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
+
+      // Ghost G is flattened → components link to A and B, not G.
+      expect(result.componentCount, 2);
+      expect(result.kanjiProcessed, 1);
+
+      final components = await componentRepo.getAll();
+      expect(components, hasLength(2));
+
+      final compA = components.firstWhere((c) => c.radicalId == radAId);
+      expect(compA.kanjiId, kanjiId);
+      expect(compA.position, Position.kanmuri); // 'top' → kanmuri
+
+      final compB = components.firstWhere((c) => c.radicalId == radBId);
+      expect(compB.kanjiId, kanjiId);
+      expect(compB.position, Position.ashi); // 'bottom' → ashi
+    });
+
+    test('ghost flattening consistent with extraction', () async {
+      // Both ExtractRadicals and LinkComponents should produce the same
+      // radical set for the same input.
+      await insertDraftKanji('X');
+      await insertDraftRadical('A');
+      await insertDraftRadical('B');
+      // Don't register G as a radical (it's a ghost).
+      await putInScope(['X', 'A', 'B']);
+
+      await rawKanjiVgRepo.insertBatch([
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'X',
+          components: fakeComponent(
+            element: 'X',
+            children: [
+              fakeComponent(element: 'G', position: 'right'),
+            ],
+          ),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'G',
+          strokeCount: 5,
+          components: fakeComponent(
+            element: 'G',
+            children: [
+              fakeComponent(element: 'A', position: 'top'),
+              fakeComponent(element: 'B', position: 'bottom'),
+            ],
+          ),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'A',
+          strokeCount: 3,
+          components: fakeComponent(element: 'A', children: []),
+        ),
+        fakeRawKanjiVg(
+          importId: importId,
+          character: 'B',
+          strokeCount: 4,
+          components: fakeComponent(element: 'B', children: []),
+        ),
+      ]);
+
+      final result = await useCase.call(
+        kanjivgImportId: importId,
+        kanjidicImportId: kanjidicImportId,
+      );
+
+      // A and B are linked — G is not (it's a ghost).
+      final components = await componentRepo.getAll();
+      final linkedRadicalIds = components.map((c) => c.radicalId).toSet();
+
+      final draftRadicals = await radicalRepo.getAllDraftRadicals();
+      final radicalA =
+          draftRadicals.firstWhere((r) => r.masterSymbol == 'A');
+      final radicalB =
+          draftRadicals.firstWhere((r) => r.masterSymbol == 'B');
+
+      expect(linkedRadicalIds, contains(radicalA.id));
+      expect(linkedRadicalIds, contains(radicalB.id));
+      expect(result.componentCount, 2);
     });
   });
 }

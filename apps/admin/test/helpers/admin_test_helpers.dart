@@ -9,6 +9,7 @@ import 'package:kanji_craft_admin/data/repositories/radical/drift_radical_reposi
 import 'package:kanji_craft_admin/data/repositories/raw_jmdict/drift_raw_jmdict_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/raw_kanjivg/drift_raw_kanjivg_repository.dart';
+import 'package:kanji_craft_admin/data/repositories/source_jlpt_level/drift_source_jlpt_level_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/source_vocab_level/drift_source_vocab_level_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/vocabulary/drift_vocabulary_repository.dart';
 
@@ -27,6 +28,7 @@ AdminDatabase createTestDatabase() =>
   DriftSourceVocabLevelRepository sourceVocabLevel,
   DriftJmdictFuriganaRepository jmdictFurigana,
   DriftVocabularyRepository vocabulary,
+  DriftSourceJlptLevelRepository sourceJlptLevel,
 }) createReposFromDb(AdminDatabase db) => (
       imports: DriftDataImportRepository(db),
       kanjiVg: DriftRawKanjiVgRepository(db),
@@ -39,4 +41,5 @@ AdminDatabase createTestDatabase() =>
       sourceVocabLevel: DriftSourceVocabLevelRepository(db),
       jmdictFurigana: DriftJmdictFuriganaRepository(db),
       vocabulary: DriftVocabularyRepository(db),
+      sourceJlptLevel: DriftSourceJlptLevelRepository(db),
     );

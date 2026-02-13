@@ -11,7 +11,7 @@ enum ExtractionPhase {
     description: 'Scan KanjiVG for radical masters and shape variants',
     phaseNumber: '2.2',
     isImplemented: true,
-    requiredSources: {ImportSource.kanjivg},
+    requiredSources: {ImportSource.kanjivg, ImportSource.kanjidic},
   ),
   kanjiComposition(
     label: 'Kanji Composition',

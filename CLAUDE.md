@@ -122,19 +122,15 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 ## Database Schema Digest
 
-**21 tables:** 12 content + 5 user + 3 staging + 1 admin review. See `supabase/migrations/` for full DDL.
+**18 tables:** 12 content + 5 user + 1 admin review. See `supabase/migrations/` for full DDL.
 
 **Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
-**Staging (admin-only, local):** `data_imports`, `raw_kanjivg`, `raw_kanjidic`, `raw_jmdict`
-
 **Admin review (Remote admin schema):** `kanji_component_reviews`
 
-**Reference (local Drift only):** `source_jlpt_level_entries`, `sync_metadata_entries`
-
-**13 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `import_source`, `import_status`, `verification_status`
+**11 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `verification_status`
 
 **Key constraints:**
 - `kanji_components` unique on `(kanji_id, radical_id, position)`

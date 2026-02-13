@@ -91,9 +91,9 @@ A specific visual form a radical takes when placed in a particular position insi
 | `shape` | `String` | The specific form, e.g. "氵" |
 | `position` | `Position` | Where this shape appears |
 | `is_locked` | `bool` | If `true`, this shape never moves to another position (e.g. 氵 is always left) |
-| `svg_file_name` | `String` | Local asset filename for the variant SVG, e.g. "06c35.svg" |
-| `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
-| `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
+| `svg_file_name` | `String?` | Local asset filename for the variant SVG, e.g. "06c35.svg". Null if no SVG exists — client should render `shape` as text fallback |
+| `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
+| `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
 
 **Why `is_locked`?**
 

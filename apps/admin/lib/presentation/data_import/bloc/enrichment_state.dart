@@ -5,42 +5,35 @@ import '../../../domain/entities/warning.dart';
 
 part 'enrichment_state.freezed.dart';
 
-sealed class BatchStatus {
-  const BatchStatus();
+// -- Sub-batch status (per chunk) --
+
+sealed class SubBatchStatus {
+  const SubBatchStatus();
 }
 
-final class BatchIdle extends BatchStatus {
-  const BatchIdle();
+final class SubBatchPending extends SubBatchStatus {
+  const SubBatchPending();
 }
 
-final class BatchReady extends BatchStatus {
-  const BatchReady(this.totalCount);
-  final int totalCount;
+final class SubBatchExporting extends SubBatchStatus {
+  const SubBatchExporting();
 }
 
-final class BatchExporting extends BatchStatus {
-  const BatchExporting();
-}
-
-final class BatchExported extends BatchStatus {
-  const BatchExported({
-    required this.exportedCount,
-    required this.totalCount,
-    required this.lastFilePath,
+final class SubBatchExported extends SubBatchStatus {
+  const SubBatchExported({
+    required this.filePath,
     this.warnings = const [],
   });
-  final int exportedCount;
-  final int totalCount;
-  final String lastFilePath;
+  final String filePath;
   final List<Warning> warnings;
 }
 
-final class BatchImporting extends BatchStatus {
-  const BatchImporting();
+final class SubBatchImporting extends SubBatchStatus {
+  const SubBatchImporting();
 }
 
-final class BatchImported extends BatchStatus {
-  const BatchImported({
+final class SubBatchImported extends SubBatchStatus {
+  const SubBatchImported({
     required this.importedCount,
     required this.rejectedCount,
     this.warnings = const [],
@@ -50,17 +43,37 @@ final class BatchImported extends BatchStatus {
   final List<Warning> warnings;
 }
 
-final class BatchFailed extends BatchStatus {
-  const BatchFailed(this.error);
+final class SubBatchFailed extends SubBatchStatus {
+  const SubBatchFailed(this.error);
   final String error;
 }
+
+// -- Batch type status (top-level, per EnrichmentBatchType) --
+
+sealed class BatchTypeStatus {
+  const BatchTypeStatus();
+}
+
+final class BatchTypeIdle extends BatchTypeStatus {
+  const BatchTypeIdle();
+}
+
+final class BatchTypeReady extends BatchTypeStatus {
+  const BatchTypeReady({
+    required this.totalCount,
+    required this.subBatches,
+  });
+  final int totalCount;
+  final List<SubBatchStatus> subBatches;
+}
+
+// -- Top-level enrichment state --
 
 @freezed
 sealed class EnrichmentState with _$EnrichmentState {
   const factory EnrichmentState({
     @Default('') String outputDir,
-    @Default({}) Map<EnrichmentBatchType, BatchStatus> batches,
+    @Default({}) Map<EnrichmentBatchType, BatchTypeStatus> batches,
     @Default(150) int batchSize,
-    @Default({}) Map<EnrichmentBatchType, int> exportOffsets,
   }) = _EnrichmentState;
 }

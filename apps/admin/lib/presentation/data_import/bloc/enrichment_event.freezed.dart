@@ -55,14 +55,14 @@ extension EnrichmentEventPatterns on EnrichmentEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _ImportsUpdated value)?  importsUpdated,TResult Function( _SetOutputDir value)?  setOutputDir,TResult Function( _ExportBatch value)?  exportBatch,TResult Function( _ImportBatch value)?  importBatch,TResult Function( _RefreshStatus value)?  refreshStatus,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _ImportsUpdated value)?  importsUpdated,TResult Function( _SetOutputDir value)?  setOutputDir,TResult Function( _ExportSubBatch value)?  exportSubBatch,TResult Function( _ImportSubBatch value)?  importSubBatch,TResult Function( _RefreshStatus value)?  refreshStatus,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _ImportsUpdated() when importsUpdated != null:
 return importsUpdated(_that);case _SetOutputDir() when setOutputDir != null:
-return setOutputDir(_that);case _ExportBatch() when exportBatch != null:
-return exportBatch(_that);case _ImportBatch() when importBatch != null:
-return importBatch(_that);case _RefreshStatus() when refreshStatus != null:
+return setOutputDir(_that);case _ExportSubBatch() when exportSubBatch != null:
+return exportSubBatch(_that);case _ImportSubBatch() when importSubBatch != null:
+return importSubBatch(_that);case _RefreshStatus() when refreshStatus != null:
 return refreshStatus(_that);case _:
   return orElse();
 
@@ -81,14 +81,14 @@ return refreshStatus(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _ImportsUpdated value)  importsUpdated,required TResult Function( _SetOutputDir value)  setOutputDir,required TResult Function( _ExportBatch value)  exportBatch,required TResult Function( _ImportBatch value)  importBatch,required TResult Function( _RefreshStatus value)  refreshStatus,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _ImportsUpdated value)  importsUpdated,required TResult Function( _SetOutputDir value)  setOutputDir,required TResult Function( _ExportSubBatch value)  exportSubBatch,required TResult Function( _ImportSubBatch value)  importSubBatch,required TResult Function( _RefreshStatus value)  refreshStatus,}){
 final _that = this;
 switch (_that) {
 case _ImportsUpdated():
 return importsUpdated(_that);case _SetOutputDir():
-return setOutputDir(_that);case _ExportBatch():
-return exportBatch(_that);case _ImportBatch():
-return importBatch(_that);case _RefreshStatus():
+return setOutputDir(_that);case _ExportSubBatch():
+return exportSubBatch(_that);case _ImportSubBatch():
+return importSubBatch(_that);case _RefreshStatus():
 return refreshStatus(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -103,14 +103,14 @@ return refreshStatus(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _ImportsUpdated value)?  importsUpdated,TResult? Function( _SetOutputDir value)?  setOutputDir,TResult? Function( _ExportBatch value)?  exportBatch,TResult? Function( _ImportBatch value)?  importBatch,TResult? Function( _RefreshStatus value)?  refreshStatus,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _ImportsUpdated value)?  importsUpdated,TResult? Function( _SetOutputDir value)?  setOutputDir,TResult? Function( _ExportSubBatch value)?  exportSubBatch,TResult? Function( _ImportSubBatch value)?  importSubBatch,TResult? Function( _RefreshStatus value)?  refreshStatus,}){
 final _that = this;
 switch (_that) {
 case _ImportsUpdated() when importsUpdated != null:
 return importsUpdated(_that);case _SetOutputDir() when setOutputDir != null:
-return setOutputDir(_that);case _ExportBatch() when exportBatch != null:
-return exportBatch(_that);case _ImportBatch() when importBatch != null:
-return importBatch(_that);case _RefreshStatus() when refreshStatus != null:
+return setOutputDir(_that);case _ExportSubBatch() when exportSubBatch != null:
+return exportSubBatch(_that);case _ImportSubBatch() when importSubBatch != null:
+return importSubBatch(_that);case _RefreshStatus() when refreshStatus != null:
 return refreshStatus(_that);case _:
   return null;
 
@@ -128,13 +128,13 @@ return refreshStatus(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<DataImport> imports)?  importsUpdated,TResult Function( String path)?  setOutputDir,TResult Function( EnrichmentBatchType batchType)?  exportBatch,TResult Function( EnrichmentBatchType batchType,  String filePath)?  importBatch,TResult Function()?  refreshStatus,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<DataImport> imports)?  importsUpdated,TResult Function( String path)?  setOutputDir,TResult Function( EnrichmentBatchType batchType,  int subBatchIndex)?  exportSubBatch,TResult Function( EnrichmentBatchType batchType,  int subBatchIndex,  String filePath)?  importSubBatch,TResult Function()?  refreshStatus,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ImportsUpdated() when importsUpdated != null:
 return importsUpdated(_that.imports);case _SetOutputDir() when setOutputDir != null:
-return setOutputDir(_that.path);case _ExportBatch() when exportBatch != null:
-return exportBatch(_that.batchType);case _ImportBatch() when importBatch != null:
-return importBatch(_that.batchType,_that.filePath);case _RefreshStatus() when refreshStatus != null:
+return setOutputDir(_that.path);case _ExportSubBatch() when exportSubBatch != null:
+return exportSubBatch(_that.batchType,_that.subBatchIndex);case _ImportSubBatch() when importSubBatch != null:
+return importSubBatch(_that.batchType,_that.subBatchIndex,_that.filePath);case _RefreshStatus() when refreshStatus != null:
 return refreshStatus();case _:
   return orElse();
 
@@ -153,13 +153,13 @@ return refreshStatus();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<DataImport> imports)  importsUpdated,required TResult Function( String path)  setOutputDir,required TResult Function( EnrichmentBatchType batchType)  exportBatch,required TResult Function( EnrichmentBatchType batchType,  String filePath)  importBatch,required TResult Function()  refreshStatus,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<DataImport> imports)  importsUpdated,required TResult Function( String path)  setOutputDir,required TResult Function( EnrichmentBatchType batchType,  int subBatchIndex)  exportSubBatch,required TResult Function( EnrichmentBatchType batchType,  int subBatchIndex,  String filePath)  importSubBatch,required TResult Function()  refreshStatus,}) {final _that = this;
 switch (_that) {
 case _ImportsUpdated():
 return importsUpdated(_that.imports);case _SetOutputDir():
-return setOutputDir(_that.path);case _ExportBatch():
-return exportBatch(_that.batchType);case _ImportBatch():
-return importBatch(_that.batchType,_that.filePath);case _RefreshStatus():
+return setOutputDir(_that.path);case _ExportSubBatch():
+return exportSubBatch(_that.batchType,_that.subBatchIndex);case _ImportSubBatch():
+return importSubBatch(_that.batchType,_that.subBatchIndex,_that.filePath);case _RefreshStatus():
 return refreshStatus();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -174,13 +174,13 @@ return refreshStatus();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<DataImport> imports)?  importsUpdated,TResult? Function( String path)?  setOutputDir,TResult? Function( EnrichmentBatchType batchType)?  exportBatch,TResult? Function( EnrichmentBatchType batchType,  String filePath)?  importBatch,TResult? Function()?  refreshStatus,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<DataImport> imports)?  importsUpdated,TResult? Function( String path)?  setOutputDir,TResult? Function( EnrichmentBatchType batchType,  int subBatchIndex)?  exportSubBatch,TResult? Function( EnrichmentBatchType batchType,  int subBatchIndex,  String filePath)?  importSubBatch,TResult? Function()?  refreshStatus,}) {final _that = this;
 switch (_that) {
 case _ImportsUpdated() when importsUpdated != null:
 return importsUpdated(_that.imports);case _SetOutputDir() when setOutputDir != null:
-return setOutputDir(_that.path);case _ExportBatch() when exportBatch != null:
-return exportBatch(_that.batchType);case _ImportBatch() when importBatch != null:
-return importBatch(_that.batchType,_that.filePath);case _RefreshStatus() when refreshStatus != null:
+return setOutputDir(_that.path);case _ExportSubBatch() when exportSubBatch != null:
+return exportSubBatch(_that.batchType,_that.subBatchIndex);case _ImportSubBatch() when importSubBatch != null:
+return importSubBatch(_that.batchType,_that.subBatchIndex,_that.filePath);case _RefreshStatus() when refreshStatus != null:
 return refreshStatus();case _:
   return null;
 
@@ -330,43 +330,44 @@ as String,
 /// @nodoc
 
 
-class _ExportBatch implements EnrichmentEvent {
-  const _ExportBatch({required this.batchType});
+class _ExportSubBatch implements EnrichmentEvent {
+  const _ExportSubBatch({required this.batchType, required this.subBatchIndex});
   
 
  final  EnrichmentBatchType batchType;
+ final  int subBatchIndex;
 
 /// Create a copy of EnrichmentEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$ExportBatchCopyWith<_ExportBatch> get copyWith => __$ExportBatchCopyWithImpl<_ExportBatch>(this, _$identity);
+_$ExportSubBatchCopyWith<_ExportSubBatch> get copyWith => __$ExportSubBatchCopyWithImpl<_ExportSubBatch>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExportBatch&&(identical(other.batchType, batchType) || other.batchType == batchType));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExportSubBatch&&(identical(other.batchType, batchType) || other.batchType == batchType)&&(identical(other.subBatchIndex, subBatchIndex) || other.subBatchIndex == subBatchIndex));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,batchType);
+int get hashCode => Object.hash(runtimeType,batchType,subBatchIndex);
 
 @override
 String toString() {
-  return 'EnrichmentEvent.exportBatch(batchType: $batchType)';
+  return 'EnrichmentEvent.exportSubBatch(batchType: $batchType, subBatchIndex: $subBatchIndex)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$ExportBatchCopyWith<$Res> implements $EnrichmentEventCopyWith<$Res> {
-  factory _$ExportBatchCopyWith(_ExportBatch value, $Res Function(_ExportBatch) _then) = __$ExportBatchCopyWithImpl;
+abstract mixin class _$ExportSubBatchCopyWith<$Res> implements $EnrichmentEventCopyWith<$Res> {
+  factory _$ExportSubBatchCopyWith(_ExportSubBatch value, $Res Function(_ExportSubBatch) _then) = __$ExportSubBatchCopyWithImpl;
 @useResult
 $Res call({
- EnrichmentBatchType batchType
+ EnrichmentBatchType batchType, int subBatchIndex
 });
 
 
@@ -374,19 +375,20 @@ $Res call({
 
 }
 /// @nodoc
-class __$ExportBatchCopyWithImpl<$Res>
-    implements _$ExportBatchCopyWith<$Res> {
-  __$ExportBatchCopyWithImpl(this._self, this._then);
+class __$ExportSubBatchCopyWithImpl<$Res>
+    implements _$ExportSubBatchCopyWith<$Res> {
+  __$ExportSubBatchCopyWithImpl(this._self, this._then);
 
-  final _ExportBatch _self;
-  final $Res Function(_ExportBatch) _then;
+  final _ExportSubBatch _self;
+  final $Res Function(_ExportSubBatch) _then;
 
 /// Create a copy of EnrichmentEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? batchType = null,}) {
-  return _then(_ExportBatch(
+@pragma('vm:prefer-inline') $Res call({Object? batchType = null,Object? subBatchIndex = null,}) {
+  return _then(_ExportSubBatch(
 batchType: null == batchType ? _self.batchType : batchType // ignore: cast_nullable_to_non_nullable
-as EnrichmentBatchType,
+as EnrichmentBatchType,subBatchIndex: null == subBatchIndex ? _self.subBatchIndex : subBatchIndex // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 
@@ -396,44 +398,45 @@ as EnrichmentBatchType,
 /// @nodoc
 
 
-class _ImportBatch implements EnrichmentEvent {
-  const _ImportBatch({required this.batchType, required this.filePath});
+class _ImportSubBatch implements EnrichmentEvent {
+  const _ImportSubBatch({required this.batchType, required this.subBatchIndex, required this.filePath});
   
 
  final  EnrichmentBatchType batchType;
+ final  int subBatchIndex;
  final  String filePath;
 
 /// Create a copy of EnrichmentEvent
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$ImportBatchCopyWith<_ImportBatch> get copyWith => __$ImportBatchCopyWithImpl<_ImportBatch>(this, _$identity);
+_$ImportSubBatchCopyWith<_ImportSubBatch> get copyWith => __$ImportSubBatchCopyWithImpl<_ImportSubBatch>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImportBatch&&(identical(other.batchType, batchType) || other.batchType == batchType)&&(identical(other.filePath, filePath) || other.filePath == filePath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImportSubBatch&&(identical(other.batchType, batchType) || other.batchType == batchType)&&(identical(other.subBatchIndex, subBatchIndex) || other.subBatchIndex == subBatchIndex)&&(identical(other.filePath, filePath) || other.filePath == filePath));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,batchType,filePath);
+int get hashCode => Object.hash(runtimeType,batchType,subBatchIndex,filePath);
 
 @override
 String toString() {
-  return 'EnrichmentEvent.importBatch(batchType: $batchType, filePath: $filePath)';
+  return 'EnrichmentEvent.importSubBatch(batchType: $batchType, subBatchIndex: $subBatchIndex, filePath: $filePath)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$ImportBatchCopyWith<$Res> implements $EnrichmentEventCopyWith<$Res> {
-  factory _$ImportBatchCopyWith(_ImportBatch value, $Res Function(_ImportBatch) _then) = __$ImportBatchCopyWithImpl;
+abstract mixin class _$ImportSubBatchCopyWith<$Res> implements $EnrichmentEventCopyWith<$Res> {
+  factory _$ImportSubBatchCopyWith(_ImportSubBatch value, $Res Function(_ImportSubBatch) _then) = __$ImportSubBatchCopyWithImpl;
 @useResult
 $Res call({
- EnrichmentBatchType batchType, String filePath
+ EnrichmentBatchType batchType, int subBatchIndex, String filePath
 });
 
 
@@ -441,19 +444,20 @@ $Res call({
 
 }
 /// @nodoc
-class __$ImportBatchCopyWithImpl<$Res>
-    implements _$ImportBatchCopyWith<$Res> {
-  __$ImportBatchCopyWithImpl(this._self, this._then);
+class __$ImportSubBatchCopyWithImpl<$Res>
+    implements _$ImportSubBatchCopyWith<$Res> {
+  __$ImportSubBatchCopyWithImpl(this._self, this._then);
 
-  final _ImportBatch _self;
-  final $Res Function(_ImportBatch) _then;
+  final _ImportSubBatch _self;
+  final $Res Function(_ImportSubBatch) _then;
 
 /// Create a copy of EnrichmentEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? batchType = null,Object? filePath = null,}) {
-  return _then(_ImportBatch(
+@pragma('vm:prefer-inline') $Res call({Object? batchType = null,Object? subBatchIndex = null,Object? filePath = null,}) {
+  return _then(_ImportSubBatch(
 batchType: null == batchType ? _self.batchType : batchType // ignore: cast_nullable_to_non_nullable
-as EnrichmentBatchType,filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
+as EnrichmentBatchType,subBatchIndex: null == subBatchIndex ? _self.subBatchIndex : subBatchIndex // ignore: cast_nullable_to_non_nullable
+as int,filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

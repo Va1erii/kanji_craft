@@ -15,14 +15,16 @@ sealed class EnrichmentEvent with _$EnrichmentEvent {
     required String path,
   }) = _SetOutputDir;
 
-  const factory EnrichmentEvent.exportBatch({
+  const factory EnrichmentEvent.exportSubBatch({
     required EnrichmentBatchType batchType,
-  }) = _ExportBatch;
+    required int subBatchIndex,
+  }) = _ExportSubBatch;
 
-  const factory EnrichmentEvent.importBatch({
+  const factory EnrichmentEvent.importSubBatch({
     required EnrichmentBatchType batchType,
+    required int subBatchIndex,
     required String filePath,
-  }) = _ImportBatch;
+  }) = _ImportSubBatch;
 
   const factory EnrichmentEvent.refreshStatus() = _RefreshStatus;
 }

@@ -161,18 +161,6 @@ class ImportRadicalMnemonics {
       }
     }
 
-    // Row count mismatch warning.
-    final totalDraftRadicals =
-        await _radicalRepository.countDraftRadicalsForExport();
-    if (parsed.rows.length != totalDraftRadicals &&
-        parsed.rows.isNotEmpty) {
-      warnings.add(Warning(
-        'CSV has ${parsed.rows.length} rows but expected $totalDraftRadicals '
-        'total draft radicals — rows may have been added or removed',
-        severity: WarningSeverity.high,
-      ));
-    }
-
     log(
       'Import complete: $importedCount imported, $skippedCount skipped, '
       '$rejectedCount rejected, ${warnings.length} warnings',

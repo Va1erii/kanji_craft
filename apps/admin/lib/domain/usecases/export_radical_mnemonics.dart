@@ -166,6 +166,10 @@ class ExportRadicalMnemonics {
     );
   }
 
+  /// Returns the total count of draft radicals eligible for export.
+  Future<int> queryTotalCount() =>
+      _radicalRepository.countDraftRadicalsForExport();
+
   /// Returns a summary string if draft radical i18n rows already exist.
   Future<String?> checkExistingExportResult() async {
     final i18nCount = await _radicalRepository.countDraftRadicalI18n();

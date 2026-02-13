@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,12 +27,34 @@ class EnrichmentSection extends StatelessWidget {
             const SizedBox(height: 8),
             _OutputDirRow(outputDir: state.outputDir),
             const SizedBox(height: 4),
-            for (final batchType in EnrichmentBatchType.values)
-              _BatchRow(
+            for (final batchType in EnrichmentBatchType.values) ...[
+              _BatchTypeRow(
                 batchType: batchType,
-                status: state.batches[batchType] ?? const BatchIdle(),
-                hasOutputDir: state.outputDir.isNotEmpty,
+                status: state.batches[batchType] ?? const BatchTypeIdle(),
               ),
+              if (state.batches[batchType] is BatchTypeReady)
+                for (var i = 0;
+                    i <
+                        (state.batches[batchType] as BatchTypeReady)
+                            .subBatches
+                            .length;
+                    i++)
+                  _SubBatchRow(
+                    batchType: batchType,
+                    index: i,
+                    totalSubBatches:
+                        (state.batches[batchType] as BatchTypeReady)
+                            .subBatches
+                            .length,
+                    totalCount:
+                        (state.batches[batchType] as BatchTypeReady)
+                            .totalCount,
+                    status: (state.batches[batchType] as BatchTypeReady)
+                        .subBatches[i],
+                    batchSize: state.batchSize,
+                    hasOutputDir: state.outputDir.isNotEmpty,
+                  ),
+            ],
           ],
         );
       },
@@ -86,16 +110,16 @@ class _OutputDirRow extends StatelessWidget {
   }
 }
 
-class _BatchRow extends StatelessWidget {
-  const _BatchRow({
+// -- Parent batch type row --
+
+class _BatchTypeRow extends StatelessWidget {
+  const _BatchTypeRow({
     required this.batchType,
     required this.status,
-    required this.hasOutputDir,
   });
 
   final EnrichmentBatchType batchType;
-  final BatchStatus status;
-  final bool hasOutputDir;
+  final BatchTypeStatus status;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +156,7 @@ class _BatchRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            _actionArea(context, colorScheme),
+            _summaryArea(theme, colorScheme),
           ],
         ),
       ),
@@ -141,32 +165,18 @@ class _BatchRow extends StatelessWidget {
 
   Widget _statusIcon(ColorScheme colorScheme) {
     return switch (status) {
-      BatchIdle() =>
+      BatchTypeIdle() =>
         Icon(Icons.circle_outlined, size: 20, color: colorScheme.outline),
-      BatchReady() =>
+      BatchTypeReady() =>
         Icon(Icons.edit_note, size: 20, color: colorScheme.primary),
-      BatchExporting() || BatchImporting() => SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: colorScheme.primary,
-          ),
-        ),
-      BatchExported() =>
-        Icon(Icons.file_download_done, size: 20, color: colorScheme.tertiary),
-      BatchImported() =>
-        Icon(Icons.check_circle, size: 20, color: colorScheme.tertiary),
-      BatchFailed() =>
-        Icon(Icons.error, size: 20, color: colorScheme.error),
     };
   }
 
-  Widget _actionArea(BuildContext context, ColorScheme colorScheme) {
-    final textStyle = Theme.of(context).textTheme.labelSmall;
+  Widget _summaryArea(ThemeData theme, ColorScheme colorScheme) {
+    final textStyle = theme.textTheme.labelSmall;
 
     return switch (status) {
-      BatchIdle() => Chip(
+      BatchTypeIdle() => Chip(
           label: Text('Needs source data',
               style: textStyle?.copyWith(color: colorScheme.outline)),
           backgroundColor: Colors.transparent,
@@ -174,138 +184,184 @@ class _BatchRow extends StatelessWidget {
           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           visualDensity: VisualDensity.compact,
         ),
-      BatchReady(:final totalCount) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (totalCount > 0)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text('$totalCount radicals',
-                    style: textStyle?.copyWith(
-                        color: colorScheme.onSurfaceVariant)),
-              ),
-            FilledButton.tonal(
-              onPressed: hasOutputDir
-                  ? () => context.read<EnrichmentBloc>().add(
-                        EnrichmentEvent.exportBatch(batchType: batchType),
-                      )
-                  : null,
-              child: const Text('Export'),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: () => _pickAndImport(context),
-              child: const Text('Import'),
-            ),
-          ],
+      BatchTypeReady(:final totalCount, :final subBatches) => Text(
+          '$totalCount items, ${subBatches.length} sub-batch${subBatches.length == 1 ? '' : 'es'}',
+          style: textStyle?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
-      BatchExporting() || BatchImporting() => Row(
-          mainAxisSize: MainAxisSize.min,
+    };
+  }
+}
+
+// -- Sub-batch row --
+
+class _SubBatchRow extends StatelessWidget {
+  const _SubBatchRow({
+    required this.batchType,
+    required this.index,
+    required this.totalSubBatches,
+    required this.totalCount,
+    required this.status,
+    required this.batchSize,
+    required this.hasOutputDir,
+  });
+
+  final EnrichmentBatchType batchType;
+  final int index;
+  final int totalSubBatches;
+  final int totalCount;
+  final SubBatchStatus status;
+  final int batchSize;
+  final bool hasOutputDir;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final start = index * batchSize + 1;
+    final end = math.min((index + 1) * batchSize, totalCount);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4)
+            .copyWith(left: 36),
+        child: Row(
           children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(width: 8),
+            _statusIcon(colorScheme),
+            const SizedBox(width: 12),
             Text(
-              status is BatchExporting ? 'Exporting...' : 'Importing...',
-              style: textStyle,
+              '${index + 1}/$totalSubBatches ($start\u2013$end)',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                alignment: WrapAlignment.end,
+                children: _actionWidgets(context, theme, colorScheme),
+              ),
             ),
           ],
         ),
-      BatchExported(
-        :final exportedCount,
-        :final totalCount,
-        :final warnings,
-      ) =>
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Chip(
-              label: Text(
-                'Exported $exportedCount / $totalCount',
+      ),
+    );
+  }
+
+  Widget _statusIcon(ColorScheme colorScheme) {
+    return switch (status) {
+      SubBatchPending() =>
+        Icon(Icons.circle_outlined, size: 18, color: colorScheme.outline),
+      SubBatchExporting() || SubBatchImporting() => SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: colorScheme.primary,
+          ),
+        ),
+      SubBatchExported() =>
+        Icon(Icons.file_download_done, size: 18, color: colorScheme.tertiary),
+      SubBatchImported() =>
+        Icon(Icons.check_circle, size: 18, color: colorScheme.tertiary),
+      SubBatchFailed() =>
+        Icon(Icons.error, size: 18, color: colorScheme.error),
+    };
+  }
+
+  List<Widget> _actionWidgets(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
+    final textStyle = theme.textTheme.labelSmall;
+
+    return switch (status) {
+      SubBatchPending() => [
+          FilledButton.tonal(
+            onPressed: hasOutputDir ? () => _export(context) : null,
+            child: const Text('Export'),
+          ),
+          OutlinedButton(
+            onPressed: () => _pickAndImport(context),
+            child: const Text('Import'),
+          ),
+        ],
+      SubBatchExporting() => [
+          Text('Exporting...', style: textStyle),
+        ],
+      SubBatchExported(:final warnings) => [
+          Chip(
+            label: Text('Exported',
                 style: textStyle?.copyWith(
-                    color: colorScheme.onTertiaryContainer),
-              ),
-              backgroundColor: colorScheme.tertiaryContainer,
-              side: BorderSide.none,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
+                    color: colorScheme.onTertiaryContainer)),
+            backgroundColor: colorScheme.tertiaryContainer,
+            side: BorderSide.none,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+          if (warnings.isNotEmpty)
+            _warningChip(context, warnings, textStyle, colorScheme),
+          FilledButton.tonal(
+            onPressed: hasOutputDir ? () => _export(context) : null,
+            child: const Text('Re-export'),
+          ),
+          OutlinedButton(
+            onPressed: () => _pickAndImport(context),
+            child: const Text('Import'),
+          ),
+        ],
+      SubBatchImporting() => [
+          Text('Importing...', style: textStyle),
+        ],
+      SubBatchImported(:final importedCount, :final rejectedCount, :final warnings) => [
+          Chip(
+            label: Text(
+              '$importedCount imported'
+              '${rejectedCount > 0 ? ', $rejectedCount rejected' : ''}',
+              style: textStyle?.copyWith(
+                  color: colorScheme.onTertiaryContainer),
             ),
-            if (warnings.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              _warningChip(context, warnings, textStyle, colorScheme),
-            ],
-            const SizedBox(width: 8),
-            if (exportedCount < totalCount)
-              FilledButton.tonal(
-                onPressed: hasOutputDir
-                    ? () => context.read<EnrichmentBloc>().add(
-                          EnrichmentEvent.exportBatch(batchType: batchType),
-                        )
-                    : null,
-                child: const Text('Export Next'),
-              ),
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: () => _pickAndImport(context),
-              child: const Text('Import'),
-            ),
-          ],
-        ),
-      BatchImported(:final importedCount, :final rejectedCount, :final warnings) =>
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Chip(
-              label: Text(
-                '$importedCount imported'
-                '${rejectedCount > 0 ? ', $rejectedCount rejected' : ''}',
+            backgroundColor: colorScheme.tertiaryContainer,
+            side: BorderSide.none,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+          if (warnings.isNotEmpty)
+            _warningChip(context, warnings, textStyle, colorScheme),
+          FilledButton.tonal(
+            onPressed: hasOutputDir ? () => _export(context) : null,
+            child: const Text('Re-export'),
+          ),
+          OutlinedButton(
+            onPressed: () => _pickAndImport(context),
+            child: const Text('Import Another'),
+          ),
+        ],
+      SubBatchFailed(:final error) => [
+          Chip(
+            label: Text(error,
                 style: textStyle?.copyWith(
-                    color: colorScheme.onTertiaryContainer),
-              ),
-              backgroundColor: colorScheme.tertiaryContainer,
-              side: BorderSide.none,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-            if (warnings.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              _warningChip(context, warnings, textStyle, colorScheme),
-            ],
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: () => _pickAndImport(context),
-              child: const Text('Import Another'),
-            ),
-          ],
-        ),
-      BatchFailed(:final error) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Chip(
-              label: Text(
-                error,
-                style: textStyle?.copyWith(
-                    color: colorScheme.onErrorContainer),
-              ),
-              backgroundColor: colorScheme.errorContainer,
-              side: BorderSide.none,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: hasOutputDir
-                  ? () => context.read<EnrichmentBloc>().add(
-                        EnrichmentEvent.exportBatch(batchType: batchType),
-                      )
-                  : null,
-              child: const Text('Retry Export'),
-            ),
-          ],
-        ),
+                    color: colorScheme.onErrorContainer)),
+            backgroundColor: colorScheme.errorContainer,
+            side: BorderSide.none,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+          TextButton(
+            onPressed: hasOutputDir ? () => _export(context) : null,
+            child: const Text('Retry'),
+          ),
+          OutlinedButton(
+            onPressed: () => _pickAndImport(context),
+            child: const Text('Import'),
+          ),
+        ],
     };
   }
 
@@ -389,6 +445,15 @@ class _BatchRow extends StatelessWidget {
     );
   }
 
+  void _export(BuildContext context) {
+    context.read<EnrichmentBloc>().add(
+          EnrichmentEvent.exportSubBatch(
+            batchType: batchType,
+            subBatchIndex: index,
+          ),
+        );
+  }
+
   Future<void> _pickAndImport(BuildContext context) async {
     final result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Select enriched CSV file',
@@ -397,8 +462,9 @@ class _BatchRow extends StatelessWidget {
     );
     if (result != null && result.files.single.path != null && context.mounted) {
       context.read<EnrichmentBloc>().add(
-            EnrichmentEvent.importBatch(
+            EnrichmentEvent.importSubBatch(
               batchType: batchType,
+              subBatchIndex: index,
               filePath: result.files.single.path!,
             ),
           );

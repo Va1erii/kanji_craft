@@ -59,9 +59,10 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
     await event.when(
       importsUpdated: (imports) => _onImportsUpdated(imports, emit),
       setOutputDir: (path) => _onSetOutputDir(path, emit),
-      exportBatch: (batchType) => _onExportBatch(batchType, emit),
-      importBatch: (batchType, filePath) =>
-          _onImportBatch(batchType, filePath, emit),
+      exportSubBatch: (batchType, subBatchIndex) =>
+          _onExportSubBatch(batchType, subBatchIndex, emit),
+      importSubBatch: (batchType, subBatchIndex, filePath) =>
+          _onImportSubBatch(batchType, subBatchIndex, filePath, emit),
       refreshStatus: () => _onRefreshStatus(emit),
     );
   }
@@ -92,114 +93,113 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
     emit(state.copyWith(outputDir: path));
   }
 
-  Future<void> _onExportBatch(
+  Future<void> _onExportSubBatch(
     EnrichmentBatchType batchType,
+    int subBatchIndex,
     Emitter<EnrichmentState> emit,
   ) async {
-    emit(state.copyWith(
-      batches: {...state.batches, batchType: const BatchExporting()},
-    ));
+    _emitSubBatchUpdate(
+      batchType,
+      subBatchIndex,
+      const SubBatchExporting(),
+      emit,
+    );
 
     try {
       switch (batchType) {
         case EnrichmentBatchType.radicalMnemonics:
-          final offset =
-              state.exportOffsets[EnrichmentBatchType.radicalMnemonics] ?? 0;
+          final offset = subBatchIndex * state.batchSize;
           final result = await _exportRadicalMnemonics.call(
             outputDir: state.outputDir,
             kanjidicImportId: _importIdFor(ImportSource.kanjidic),
             batchSize: state.batchSize,
             offset: offset,
           );
-          // Advance offset after successful export.
-          final newOffset = offset + result.rowCount;
-          emit(state.copyWith(
-            batches: {
-              ...state.batches,
-              batchType: BatchExported(
-                exportedCount: newOffset,
-                totalCount: result.totalCount,
-                lastFilePath: result.filePath,
-                warnings: result.warnings,
-              ),
-            },
-            exportOffsets: {
-              ...state.exportOffsets,
-              EnrichmentBatchType.radicalMnemonics: newOffset,
-            },
-          ));
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            SubBatchExported(
+              filePath: result.filePath,
+              warnings: result.warnings,
+            ),
+            emit,
+          );
         case EnrichmentBatchType.kanjiMnemonics:
         case EnrichmentBatchType.sentenceTranslation:
         case EnrichmentBatchType.sentenceFurigana:
-          emit(state.copyWith(
-            batches: {
-              ...state.batches,
-              batchType: const BatchFailed('Not yet implemented'),
-            },
-          ));
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            const SubBatchFailed('Not yet implemented'),
+            emit,
+          );
       }
     } on Exception catch (e, st) {
       log(
-        'Export ${batchType.label} failed',
+        'Export ${batchType.label} sub-batch $subBatchIndex failed',
         error: e,
         stackTrace: st,
         name: 'EnrichmentBloc',
       );
-      emit(state.copyWith(
-        batches: {
-          ...state.batches,
-          batchType: BatchFailed(e.toString()),
-        },
-      ));
+      _emitSubBatchUpdate(
+        batchType,
+        subBatchIndex,
+        SubBatchFailed(e.toString()),
+        emit,
+      );
     }
   }
 
-  Future<void> _onImportBatch(
+  Future<void> _onImportSubBatch(
     EnrichmentBatchType batchType,
+    int subBatchIndex,
     String filePath,
     Emitter<EnrichmentState> emit,
   ) async {
-    emit(state.copyWith(
-      batches: {...state.batches, batchType: const BatchImporting()},
-    ));
+    _emitSubBatchUpdate(
+      batchType,
+      subBatchIndex,
+      const SubBatchImporting(),
+      emit,
+    );
 
     try {
       switch (batchType) {
         case EnrichmentBatchType.radicalMnemonics:
           final result = await _importRadicalMnemonics.call(filePath);
-          emit(state.copyWith(
-            batches: {
-              ...state.batches,
-              batchType: BatchImported(
-                importedCount: result.importedCount,
-                rejectedCount: result.rejectedCount,
-                warnings: result.warnings,
-              ),
-            },
-          ));
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            SubBatchImported(
+              importedCount: result.importedCount,
+              rejectedCount: result.rejectedCount,
+              warnings: result.warnings,
+            ),
+            emit,
+          );
         case EnrichmentBatchType.kanjiMnemonics:
         case EnrichmentBatchType.sentenceTranslation:
         case EnrichmentBatchType.sentenceFurigana:
-          emit(state.copyWith(
-            batches: {
-              ...state.batches,
-              batchType: const BatchFailed('Not yet implemented'),
-            },
-          ));
+          _emitSubBatchUpdate(
+            batchType,
+            subBatchIndex,
+            const SubBatchFailed('Not yet implemented'),
+            emit,
+          );
       }
     } on Exception catch (e, st) {
       log(
-        'Import ${batchType.label} failed',
+        'Import ${batchType.label} sub-batch $subBatchIndex failed',
         error: e,
         stackTrace: st,
         name: 'EnrichmentBloc',
       );
-      emit(state.copyWith(
-        batches: {
-          ...state.batches,
-          batchType: BatchFailed(e.toString()),
-        },
-      ));
+      _emitSubBatchUpdate(
+        batchType,
+        subBatchIndex,
+        SubBatchFailed(e.toString()),
+        emit,
+      );
     }
   }
 
@@ -213,21 +213,9 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
         .map((i) => i.source)
         .toSet();
 
-    final batches = <EnrichmentBatchType, BatchStatus>{};
+    final batches = <EnrichmentBatchType, BatchTypeStatus>{};
 
     for (final batchType in EnrichmentBatchType.values) {
-      final current = state.batches[batchType];
-
-      // Preserve terminal/active states.
-      if (current is BatchExported ||
-          current is BatchImported ||
-          current is BatchExporting ||
-          current is BatchImporting ||
-          current is BatchFailed) {
-        batches[batchType] = current!;
-        continue;
-      }
-
       // Check if required sources are ingested.
       final ready = switch (batchType) {
         EnrichmentBatchType.radicalMnemonics =>
@@ -241,35 +229,78 @@ class EnrichmentBloc extends Bloc<EnrichmentEvent, EnrichmentState> {
       };
 
       if (!ready) {
-        batches[batchType] = const BatchIdle();
+        batches[batchType] = const BatchTypeIdle();
         continue;
       }
 
-      // Check for existing enrichment data.
-      final existing = await _checkExistingResult(batchType);
-      if (existing != null) {
-        batches[batchType] = BatchReady(existing);
-        continue;
-      }
+      // Query total count for this batch type.
+      final totalCount = await _queryTotalCount(batchType);
+      final subBatchCount =
+          totalCount > 0 ? (totalCount + state.batchSize - 1) ~/ state.batchSize : 0;
 
-      batches[batchType] = const BatchReady(0);
+      // Preserve existing sub-batch statuses where indices match.
+      final existing = state.batches[batchType];
+      final existingSubBatches =
+          existing is BatchTypeReady ? existing.subBatches : const <SubBatchStatus>[];
+
+      final subBatches = List.generate(subBatchCount, (i) {
+        if (i < existingSubBatches.length) return existingSubBatches[i];
+        return const SubBatchPending();
+      });
+
+      batches[batchType] = BatchTypeReady(
+        totalCount: totalCount,
+        subBatches: subBatches,
+      );
     }
 
     emit(state.copyWith(batches: batches));
   }
 
-  Future<int?> _checkExistingResult(EnrichmentBatchType batchType) async {
-    switch (batchType) {
-      case EnrichmentBatchType.radicalMnemonics:
-        final count =
-            await _exportRadicalMnemonics.checkExistingExportResult();
-        if (count == null) return null;
-        return 0; // Has data, return non-null to indicate ready.
-      case EnrichmentBatchType.kanjiMnemonics:
-      case EnrichmentBatchType.sentenceTranslation:
-      case EnrichmentBatchType.sentenceFurigana:
-        return null;
+  Future<int> _queryTotalCount(EnrichmentBatchType batchType) async {
+    try {
+      switch (batchType) {
+        case EnrichmentBatchType.radicalMnemonics:
+          return await _exportRadicalMnemonics.queryTotalCount();
+        case EnrichmentBatchType.kanjiMnemonics:
+        case EnrichmentBatchType.sentenceTranslation:
+        case EnrichmentBatchType.sentenceFurigana:
+          return 0;
+      }
+    } catch (e, st) {
+      log(
+        'Failed to query total count for ${batchType.label}',
+        error: e,
+        stackTrace: st,
+        name: 'EnrichmentBloc',
+      );
+      return 0;
     }
+  }
+
+  /// Immutably updates a single sub-batch status within the state map.
+  void _emitSubBatchUpdate(
+    EnrichmentBatchType batchType,
+    int index,
+    SubBatchStatus newStatus,
+    Emitter<EnrichmentState> emit,
+  ) {
+    final current = state.batches[batchType];
+    if (current is! BatchTypeReady) return;
+    if (index < 0 || index >= current.subBatches.length) return;
+
+    final updatedSubBatches = [...current.subBatches];
+    updatedSubBatches[index] = newStatus;
+
+    emit(state.copyWith(
+      batches: {
+        ...state.batches,
+        batchType: BatchTypeReady(
+          totalCount: current.totalCount,
+          subBatches: updatedSubBatches,
+        ),
+      },
+    ));
   }
 
   int _importIdFor(ImportSource source) {

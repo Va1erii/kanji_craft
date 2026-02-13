@@ -91,7 +91,6 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `srs.md` | SrsCard, ReviewLog, Rating, CardState | FSRS algorithm; difficulty 0 = new, 1-10 after first review |
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
-| `data_import.md` | DataImport, ImportSource, ImportStatus | Lives in Remote admin schema; one active import per source |
 | `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
 | `jmdict_furigana.md` | JmdictFurigana staging table | Composite PK: (import_id, text, reading); tracked in data_imports |
 | `source_vocab_levels.md` | SourceVocabLevel reference table | Composite PK: (expression, reading); local-only, not tracked in data_imports |

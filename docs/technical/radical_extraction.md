@@ -6,6 +6,28 @@ Radical extraction turns the nested KanjiVG component trees (stored in `raw_kanj
 
 **Core principle:** Each kanji decomposes into its **direct children only** — never flattened to all leaves. Children that are themselves compound characters get their own decomposition from their own `raw_kanjivg` entry, creating a multi-level learning chain.
 
+## Scope: JLPT/Grade Kanji Only
+
+KanjiVG covers ~6,700 characters. Processing all of them produces ~1,400+ radicals — far too many for a pedagogical app. Most of these come from rare, non-educational kanji that learners will never encounter.
+
+**The filter:** Radical extraction only processes `raw_kanjivg` entries whose character is **educationally relevant** — defined as appearing in `raw_kanjidic` with a non-null `grade`, OR appearing in `source_jlpt_level_entries`. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or school grades 1–8.
+
+**How the scope set is built (before Pass 1):**
+
+1. Query `raw_kanjidic` for characters where `grade IS NOT NULL` → set A.
+2. Query `source_jlpt_level_entries` for all `kanji_character` values → set B.
+3. Scope set = A ∪ B.
+
+Only `raw_kanjivg` entries whose `character` is in the scope set are scanned in Passes 1–2 and linked in Passes 3–4.
+
+**Consequences:**
+
+- Components of in-scope kanji become radicals — even if the component itself is not in scope (e.g. 吾 is a component of 語, so 吾 gets registered as a radical regardless of 吾's own JLPT/grade status).
+- Components that **only** appear in out-of-scope kanji are never registered. They don't reach learners, so they don't need to be learned.
+- An in-scope component that is also a kanji gets full progressive decomposition (its own tree is processed). An out-of-scope component that was registered as a radical (because it appears in an in-scope kanji) becomes a **leaf radical** — no further decomposition. The learner memorizes the shape directly.
+
+**Expected count:** ~350–550 unique radicals (vs ~1,400 unfiltered), depending on KanjiVG version.
+
 ## Progressive Decomposition
 
 Consider the kanji 語 (Language). In KanjiVG it decomposes as:
@@ -36,6 +58,8 @@ Step 3: Learn radical 言 (+ learn kanji 吾)
 Step 4: Unlock kanji 語 (requires 言 + 吾 mastered)
 ```
 
+**Note:** This chain only forms when all intermediate characters (吾) are in the JLPT/grade scope. If 吾 were out of scope, it would be a leaf radical — 語 decomposes into [言, 吾], but 吾 has no further breakdown. The learner memorizes 吾 as an atomic shape.
+
 ### Dual Identity
 
 A character that appears as a component of another kanji exists in **two tables**:
@@ -51,16 +75,31 @@ Examples: 言, 吾, 木, 金, 山, 口, 五 — all are both radicals and kanji.
 
 The extraction runs in four passes over the active `raw_kanjivg` import. Each pass is idempotent — re-running with the same data produces the same result.
 
-### Pass 1: Scan — Collect Radical Candidates
+### Pass 0: Build Scope Set
 
-Walk every `raw_kanjivg` entry's component tree. For each kanji's root node, collect its **direct children** (one level deep). Build a global set of unique elements.
+Before scanning, compute the set of educationally relevant kanji characters (see §Scope above).
 
 ```
-Input:  raw_kanjivg rows for the active import_id
+Input:  raw_kanjidic rows for the active import_id + source_jlpt_level_entries
+Output: Set<String> scopeCharacters
+```
+
+1. Query `raw_kanjidic` for the active import: collect `character` where `grade IS NOT NULL`.
+2. Query `source_jlpt_level_entries`: collect all `kanji_character` values.
+3. Merge into `scopeCharacters = graded ∪ jlpt`.
+
+This set is used by Passes 1–4 to filter which `raw_kanjivg` entries are processed.
+
+### Pass 1: Scan — Collect Radical Candidates
+
+Walk every **in-scope** `raw_kanjivg` entry's component tree. For each kanji's root node, collect its **direct children** (one level deep). Build a global set of unique elements.
+
+```
+Input:  raw_kanjivg rows for the active import_id WHERE character IN scopeCharacters
 Output: Set<RadicalCandidate>
 ```
 
-For each `raw_kanjivg` row:
+For each `raw_kanjivg` row whose `character` is in `scopeCharacters`:
 1. Get the root node's `children` array.
 2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element` or are leaves.
 3. For each direct child node with a non-empty `element`:
@@ -103,9 +142,9 @@ For each unique element from Pass 1:
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
-For each `raw_kanjivg` entry, create `kanji_components` linking the kanji to its direct child radicals. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [component_linking.md](component_linking.md).
+For each **in-scope** `raw_kanjivg` entry, create `kanji_components` linking the kanji to its direct child radicals. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [component_linking.md](component_linking.md).
 
-**Summary:** For each kanji, parse its component tree one level deep, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.6). Upsert key: `(kanji_id, radical_id, position)`.
+**Summary:** For each in-scope kanji, parse its component tree one level deep, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.6). Upsert key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
@@ -210,9 +249,9 @@ In the SRS progression, 一 is a pure radical — learnable directly with no pre
 
 ## Edge Cases
 
-### Component element missing from `raw_kanjivg`
+### Component element missing from `raw_kanjivg` or out of scope
 
-A child's `element` may not have its own `raw_kanjivg` entry (e.g. a rare sub-component). This is fine — it becomes a radical without its own kanji decomposition. It's an atomic building block with no further breakdown. Log for review if the element has children in the parent's tree (a compound without its own entry suggests missing data).
+A child's `element` may not have its own `raw_kanjivg` entry (e.g. a rare sub-component), or its entry may exist but the character is not in the JLPT/grade scope set. In both cases the element becomes a **leaf radical** — an atomic building block with no further decomposition. Log for review if the element has children in the parent's tree (a compound without its own entry suggests missing data).
 
 ### Empty `element` on a child node
 
@@ -240,11 +279,11 @@ If the same radical appears at the same position in the same kanji (after part m
 
 ### Radical with no graded kanji
 
-If all kanji containing a radical have `null` for `min_grade` or `min_jlpt_level` (e.g. the radical only appears in rare, ungraded kanji), the Pass 4 queries return `null`. These fields stay `null` on the radical — it won't appear in JLPT-based or grade-based study paths. The Release Builder accepts null metadata fields; the client app filters these radicals out of structured study paths but they remain accessible via search/browse.
+With the JLPT/grade scope filter, this situation is rare — most radicals inherit metadata from the in-scope kanji that contain them. However, it can still happen if a radical only appears in kanji that have JLPT/grade status from one system but not the other. The Pass 4 queries return `null` for the missing system. The radical is still usable; it won't appear in the corresponding study path (JLPT or grade) but remains accessible via search/browse.
 
 ### Component not in KANJIDIC
 
-A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanjidic` (e.g. rare components, non-standard decompositions). The radical row is still created — it just won't have readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
+A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanjidic` (e.g. rare components, non-standard decompositions). The radical row is still created — it just won't have its own kanji row with readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
 
 ## Warnings
 
@@ -254,16 +293,22 @@ The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Wa
 |---|---|---|
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
 | Compound child without own `raw_kanjivg` entry (element has children in parent tree but no standalone entry) | low | Informational — indicates missing KanjiVG coverage for a sub-component |
+| `raw_kanjivg` entry skipped (character not in JLPT/grade scope) | — | Not a warning — this is expected behaviour. Logged at debug level only |
 
-Both conditions are non-blocking — the extraction continues with degraded data rather than failing.
+The first two conditions are non-blocking — the extraction continues with degraded data rather than failing.
 
 ## Output Summary
 
 | Table | What gets created | Source |
 |---|---|---|
-| `radicals` | One row per unique component element (by master symbol) | Pass 2 |
+| `radicals` | One row per unique component element (by master symbol) found in JLPT/grade kanji | Pass 2 |
 | `radical_variants` | One row per visual shape per radical | Pass 2 |
-| `kanji_components` | One row per direct-child component per kanji | Pass 3 |
+| `kanji_components` | One row per direct-child component per in-scope kanji | Pass 3 |
+
+**Expected counts** (approximate, for KanjiVG ~20250816 + KANJIDIC ~20260208):
+- ~2,136 kanji in scope (JLPT/grade)
+- ~350–550 unique radicals (down from ~1,400 unfiltered)
+- ~350–600 radical variants
 
 Tables populated by **later phases** (not this algorithm):
 - `radical_i18n` — names and mnemonics (Phase 2.3, KANJIDIC meanings + AI)
@@ -272,7 +317,7 @@ Tables populated by **later phases** (not this algorithm):
 
 ## Ordering Constraint
 
-Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
+Pass 0 (scope set) requires `raw_kanjidic` and `source_jlpt_level_entries` to be loaded (Phase 1 complete). Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
 
 1. **Radical extraction Passes 1–2** from `raw_kanjivg` → populates `radicals`, `radical_variants` (pipeline §2.2)
 2. **Kanji creation** from `raw_kanjidic` → populates `kanji`, `kanji_i18n`, `kanji_readings` (pipeline §2.3)

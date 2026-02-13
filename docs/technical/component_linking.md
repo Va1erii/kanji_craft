@@ -24,10 +24,11 @@ This phase corresponds to:
 
 ## Prerequisites
 
-Both conditions must hold before this phase runs:
+All three conditions must hold before this phase runs:
 
-1. **Radical extraction Passes 1–2 complete** — `radicals` and `radical_variants` tables are populated. Every element that will appear as a direct child in any KanjiVG tree has a corresponding `radicals` row with a known `master_symbol`.
-2. **Kanji composition Steps 1–3 complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Every `raw_kanjivg.character` has a corresponding `kanji` row so that `kanji_components.kanji_id` can resolve.
+1. **JLPT/grade scope set computed** — The same scope set used by radical extraction Pass 0 (see [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only)). Only `raw_kanjivg` entries whose character is in this set are processed.
+2. **Radical extraction Passes 1–2 complete** — `radicals` and `radical_variants` tables are populated. Every element that will appear as a direct child in any **in-scope** KanjiVG tree has a corresponding `radicals` row with a known `master_symbol`.
+3. **Kanji composition Steps 1–3 complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Every in-scope `raw_kanjivg.character` has a corresponding `kanji` row so that `kanji_components.kanji_id` can resolve.
 
 ## Algorithm
 
@@ -35,7 +36,7 @@ The phase runs in three steps over the active `raw_kanjivg` import. Each step is
 
 ### Step 1: Parse Direct Children
 
-For each `raw_kanjivg` row in the active import:
+For each `raw_kanjivg` row in the active import **whose character is in the JLPT/grade scope set**:
 
 1. Get the root node's `children` array.
 2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element`.
@@ -330,11 +331,11 @@ After linking, radical 口 appears in kanji: 語 (grade 2, N4), 吾 (no grade, n
 
 ### Kanji in `raw_kanjivg` but not in `kanji` table
 
-Should not happen if prerequisites are enforced. If it does, log a warning and skip — no `kanji_components` rows can be created without a `kanji_id`.
+Should not happen for in-scope kanji if prerequisites are enforced (kanji composition creates rows for all `raw_kanjidic` entries, which is a superset of the scope set). If it does, log a warning and skip — no `kanji_components` rows can be created without a `kanji_id`. Out-of-scope kanji are simply not processed (no warning needed).
 
 ### Component element missing from `radicals`
 
-A child's `element` may not resolve to any radical (e.g. filtered out during Pass 1 or rare sub-component). Log a warning and skip this component. This indicates a gap in the radical registration pass.
+A child's `element` may not resolve to any radical (e.g. filtered out during Pass 1 or rare sub-component). Log a warning and skip this component. This indicates a gap in the radical registration pass — since Passes 1–2 and Passes 3–4 use the same scope set, every direct child of an in-scope kanji should have been registered.
 
 ### Empty `element` on a child node
 
@@ -366,7 +367,7 @@ Some kanji in KanjiVG have no component marked with `kvg:radical="general"`. All
 
 ### Radical with no graded kanji
 
-If all kanji containing a radical have `null` for `min_grade` or `min_jlpt_level` (e.g. the radical only appears in rare, ungraded kanji), the Step 3 queries return `null`. These fields stay `null` on the radical — it won't appear in JLPT-based or grade-based study paths. The Release Builder accepts null metadata fields; the client filters these radicals out of structured study paths but they remain accessible via search/browse.
+With the JLPT/grade scope filter, this situation is rare — most radicals inherit metadata from the in-scope kanji that contain them. However, it can still happen if a radical only appears in kanji that have JLPT/grade status from one system but not the other. The Step 3 queries return `null` for the missing system. The radical is still usable; it won't appear in the corresponding study path but remains accessible via search/browse.
 
 ### Component not in KANJIDIC
 

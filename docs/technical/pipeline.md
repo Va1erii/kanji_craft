@@ -234,11 +234,14 @@ A Dart/SQL logic layer (triggered via Admin Tool) processes the active `import_i
 
 ### 2.2 Radical Extraction
 
-1. Query unique `element` attributes from `raw_kanjivg.components`.
-2. Upsert into `radicals` table.
-3. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
+**Scope:** Only `raw_kanjivg` entries whose character has a JLPT level (via `source_jlpt_level_entries`) or a school grade (via `raw_kanjidic.grade`) are processed. This reduces the radical set from ~1,400 (full KanjiVG) to ~350–550 pedagogically relevant building blocks. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
 
-See [radical.md](../entities/radical.md).
+1. Build scope set from `raw_kanjidic` (grade) + `source_jlpt_level_entries` (JLPT).
+2. Query unique `element` attributes from in-scope `raw_kanjivg.components`.
+3. Upsert into `radicals` table.
+4. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
+
+See [radical.md](../entities/radical.md), [radical_extraction.md](radical_extraction.md).
 
 ### 2.3 Kanji & Component Composition
 

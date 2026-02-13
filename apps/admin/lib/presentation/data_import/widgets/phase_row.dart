@@ -55,7 +55,7 @@ class PhaseRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            _actionArea(context, colorScheme),
+            Flexible(child: _actionArea(context, colorScheme)),
           ],
         ),
       ),
@@ -119,8 +119,10 @@ class PhaseRow extends StatelessWidget {
             ],
           ],
         ),
-      PhaseCompleted(:final summary, :final warnings) => Row(
-          mainAxisSize: MainAxisSize.min,
+      PhaseCompleted(:final summary, :final warnings) => Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Chip(
               label: Text(summary, style: textStyle?.copyWith(
@@ -131,8 +133,7 @@ class PhaseRow extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
-            if (warnings.isNotEmpty) ...[
-              const SizedBox(width: 8),
+            if (warnings.isNotEmpty)
               ActionChip(
                 avatar: Icon(
                   Icons.warning_amber_rounded,
@@ -151,8 +152,6 @@ class PhaseRow extends StatelessWidget {
                 visualDensity: VisualDensity.compact,
                 onPressed: () => _showWarningsDialog(context, warnings),
               ),
-            ],
-            const SizedBox(width: 8),
             OutlinedButton(
               onPressed: () => context
                   .read<ExtractionBloc>()
@@ -161,8 +160,10 @@ class PhaseRow extends StatelessWidget {
             ),
           ],
         ),
-      PhaseFailed(:final error) => Row(
-          mainAxisSize: MainAxisSize.min,
+      PhaseFailed(:final error) => Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Chip(
               label: Text(error, style: textStyle?.copyWith(
@@ -173,7 +174,6 @@ class PhaseRow extends StatelessWidget {
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
-            const SizedBox(width: 8),
             TextButton(
               onPressed: () => context
                   .read<ExtractionBloc>()

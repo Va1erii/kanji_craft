@@ -32,7 +32,7 @@ The core identity of a learner. Holds authentication linkage, display info, and 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `UUID` | Unique identifier (references `auth.users`) |
-| `auth_provider` | `AuthProvider` | How the user signed up (`email`, `google`, `apple`, `facebook`) |
+| `auth_provider` | `AuthProvider` | How the user signed up (`email`, `google`, `apple`) |
 | `auth_provider_id` | `String` | The unique ID from the auth provider (e.g. Firebase UID, Google sub). Unique across all users |
 | `email` | `String?` | User's email address. Nullable for providers that don't guarantee an email (e.g. Apple with hidden email) |
 | `display_name` | `String?` | User-chosen display name. Nullable — not all providers supply one |

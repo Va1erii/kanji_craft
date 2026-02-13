@@ -59,7 +59,7 @@ supabase db reset                               # Apply all migrations (destruct
 ```
 packages/core/lib/domain/entities/     # Shared enums + Freezed entities
 apps/admin/lib/
-  domain/entities/                     # Admin-only entities (DataImport, raw DTOs)
+  domain/entities/                     # Admin-only entities
   domain/repositories/                 # Repository interfaces
   data/database/                       # Drift DB, tables, mappers, converters
   data/database/dto/                   # Raw DTOs (used by Drift converters)
@@ -119,7 +119,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `jmdict_format.md` | JMdict XML structure, sense inheritance |
 | `jlpt_mapping_format.md` | JLPT kanji mapping CSV format |
 | `jlpt_vocab_mapping_format.md` | JLPT vocabulary mapping CSV format (Tanos word lists) |
-| `jmdict_furigana_format.md` | JmdictFurigana JSON format (per-character furigana for segments) |
+| `jmdict_furigana_format.md` | JmdictFurigana JSON format (per-character furigana mappings) |
 
 ## Database Schema Digest
 
@@ -129,7 +129,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
-**10 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
+**11 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
 
 **Key constraints:**
 - `kanji_components` unique on `(kanji_id, radical_id, position)`
@@ -144,9 +144,9 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files.
 3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
 4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
-5. **Content vs staging tables:** Content tables (Supabase + Drift) have all fields NOT NULL — they hold complete, ready-to-sync rows. Pipeline intermediate state uses separate local staging tables with nullable deferred fields. Release Builder pushes only from content tables.
-6. **Comparison-based sync:** No `last_synced_at` column. Release Builder queries Remote at push time and diffs against local state.
-7. **Admin uses service_role key:** Bypasses RLS for admin-only tables (staging, reviews, imports).
+5. **Content tables are complete:** All fields NOT NULL — they hold ready-to-sync rows only.
+6. **Comparison-based sync:** No `last_synced_at` column. Sync queries Remote at push time and diffs against local state.
+7. **Admin uses service_role key:** Bypasses RLS for admin-only operations.
 
 ## Conventions
 

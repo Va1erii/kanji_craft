@@ -149,7 +149,7 @@ Generate system mnemonics and search tags for radicals across all target languag
 
 **Sort order:** `min_jlpt_level` DESC NULLS LAST (N5=5 first → N4 → N3 → N2 → N1 → null), then `min_grade` ASC NULLS LAST (1 → 8 → null), then `impact_score` DESC. High-impact JLPT radicals first.
 
-**Batch size:** ~350 radicals total — likely 2–3 CSV batches of ~150.
+**Batch size:** ~600–700 radicals total — likely 4–5 CSV batches of ~150.
 
 **Target table:** `radical_i18n.system_mnemonic` (NOT NULL — required per entity spec), `radical_i18n.search_tags`.
 

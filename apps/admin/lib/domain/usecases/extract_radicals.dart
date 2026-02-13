@@ -192,8 +192,9 @@ class ExtractRadicals {
 
   /// Builds the JLPT/grade scope set (Pass 0).
   ///
-  /// Returns characters that have a non-null grade in raw_kanjidic OR appear
-  /// in source_jlpt_level_entries.
+  /// Returns characters that have a Jōyō grade (1–8) in raw_kanjidic OR
+  /// appear in source_jlpt_level_entries. Excludes Jinmeiyō (9) and
+  /// variant (10) grades.
   Future<Set<String>> _buildScopeSet(int kanjidicImportId) async {
     final scope = <String>{};
 

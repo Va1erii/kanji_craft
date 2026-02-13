@@ -27,7 +27,7 @@ Only `raw_kanjivg` entries whose `character` is in the scope set are scanned in 
 
 ## Keep Set: What Becomes a Radical
 
-Not every element encountered during scanning becomes a radical. To keep the radical count learnable (~350–450), the pipeline builds a **keep set** — the set of elements that are meaningful enough to register as radicals. An element is in the keep set if ANY of the following is true:
+Not every element encountered during scanning becomes a radical. To keep the radical count learnable (~600–700), the pipeline builds a **keep set** — the set of elements that are meaningful enough to register as radicals. An element is in the keep set if ANY of the following is true:
 
 1. **Learnable kanji:** The element is in the JLPT/grade scope set. These are standalone characters the learner will encounter — they should be recognizable building blocks.
 
@@ -54,7 +54,7 @@ Before flattening (raw KanjiVG):        After flattening:
     └── 舛 — bottom (official → KEEP)
 ```
 
-粦 is not a learnable kanji, not a Kangxi radical, and appears in fewer than 3 in-scope kanji. Its children 米 (kanji, grade 2) and 舛 (Kangxi #136) are in the keep set, so they become direct children of 燐.
+粦 is not a learnable kanji, not a Kangxi radical, and appears in fewer than 5 in-scope kanji. Its children 米 (kanji, grade 2) and 舛 (Kangxi #136) are in the keep set, so they become direct children of 燐.
 
 **Algorithm:**
 
@@ -250,7 +250,7 @@ X (root)                                X (root)
     └── 舛 — bottom (official → KEEP)
 ```
 
-G is not in the scope set, not an official Kangxi radical, and appears as a direct child in fewer than 3 in-scope kanji. Ghost flattening promotes G's children (米 and 舛) to become effective children of X.
+G is not in the scope set, not an official Kangxi radical, and appears as a direct child in fewer than 5 in-scope kanji. Ghost flattening promotes G's children (米 and 舛) to become effective children of X.
 
 **Pass 1** collects: `{火, 米, 舛}` — G is never registered as a radical candidate.
 

@@ -18,9 +18,9 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1). Null if all containing kanji are outside JLPT |
 | `min_grade` | `int?` | The earliest Japanese school grade this appears in. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null if all containing kanji are ungraded |
-| `svg_file_name` | `String` | Local asset filename for the master symbol SVG, e.g. "06c34.svg" |
-| `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
-| `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
+| `svg_file_name` | `String?` | Local asset filename for the master symbol SVG, e.g. "06c34.svg". Null if no SVG exists — client should render `master_symbol` as text fallback |
+| `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
+| `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
 | `is_official` | `bool` | `true` for official Kangxi radicals (214 traditional set), `false` for custom radicals invented as learning aids. Defaults to `false` |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |

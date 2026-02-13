@@ -8,13 +8,13 @@ A vocabulary word is a Japanese word or compound that uses one or more kanji cha
 
 ### Vocabulary (Entity)
 
-The core identity of a single vocabulary word. Holds language-independent data: the written form, reading metadata, level classifications, and a structured segment breakdown for rendering.
+The core identity of a single vocabulary word. Holds language-independent data: the written form, furigana, reading metadata, level classifications, and grammar tags.
 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `word` | `String` | The vocabulary word as written, e.g. "日本", "食べる", "大きい". Unique across all vocabulary |
-| `segments` | `JSONB` | Structured word breakdown for Ghost Kanji rendering. See Segments Format below |
+| `furigana` | `String` | Word with inline furigana notation, e.g. `{食|た}べる`. See Furigana Notation below |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this word appears in (5 = N5, 1 = N1). Null for words outside the JLPT set |
 | `pos_tags` | `List<PosTag>` | Curated grammar/usage tags for UI badges and display logic. See [shared_types.md §PosTag](shared_types.md#postag-enum) |
 | `frequency_rank` | `int` | Frequency rank (1 = most common). Used for ordering within a level |
@@ -29,44 +29,49 @@ School grades classify individual kanji, not vocabulary words. The JLPT test set
 
 Vocabulary words are rendered as styled text, not as stroke-order diagrams. The individual kanji within the word already have SVGs (see kanji.md).
 
-#### Segments Format
+#### Furigana Notation
 
-Each vocabulary word is split into rendering segments for Ghost Kanji display. Each segment is one of:
+Pipe-delimited notation encodes kanji readings inline within text. Used on both `Vocabulary.furigana` and `VocabularySentence.original_text`.
 
-- **Kanji segment:** `{"text": "冷", "reading": "れい", "kanji_id": 501}` — a single kanji character with its reading and FK to the kanji table
-- **Jukujikun segment:** `{"text": "大人", "reading": "おとな", "kanji_ids": [102, 45]}` — an irregular compound where the reading spans multiple kanji
-- **Kana segment:** `{"text": "の"}` — plain kana, no reading or kanji reference
+**Format:** `{kanji|reading}` — curly braces wrap kanji and reading(s), separated by pipes. Plain text outside braces is kana rendered as-is.
 
-Rules:
-- `kanji_id` (single int) for regular kanji; `kanji_ids` (list of ints) for jukujikun — mutually exclusive. Exactly one present for kanji segments, neither for kana segments.
-- Concatenating all `text` values reproduces the `word` field exactly.
-- Pipeline generates segments during vocabulary extraction; Release Builder rejects rows with null segments.
+**Single kanji:**
 
-**Examples:**
-
-`冷蔵庫` (refrigerator):
-```json
-[
-  {"text": "冷", "reading": "れい", "kanji_id": 501},
-  {"text": "蔵", "reading": "ぞう", "kanji_id": 502},
-  {"text": "庫", "reading": "こ", "kanji_id": 503}
-]
+```
+{食|た}べる              → 食(た)べる
+{冷|れい}{蔵|ぞう}{庫|こ} → 冷(れい) 蔵(ぞう) 庫(こ)
 ```
 
-`食べる` (to eat):
-```json
-[
-  {"text": "食", "reading": "た", "kanji_id": 201},
-  {"text": "べる"}
-]
+**Compound — one reading per kanji:**
+
+```
+{学生|がく|せい}   → 学(がく) 生(せい)
+{勉強|べん|きょう} → 勉(べん) 強(きょう)
 ```
 
-`大人` (adult — jukujikun):
-```json
-[
-  {"text": "大人", "reading": "おとな", "kanji_ids": [102, 45]}
-]
+**Jukujikun — one reading for multiple kanji:**
+
 ```
+{大人|おとな}  → 大人(おとな) — single ruby span over the group
+{今日|きょう}  → 今日(きょう)
+{昨日|きのう}  → 昨日(きのう)
+```
+
+**Parser logic:**
+- Split by `|` — first element is kanji text, rest are readings
+- Reading count == kanji character count → per-character ruby
+- Reading count == 1, kanji character count > 1 → jukujikun (one ruby span)
+
+**Full sentence example:**
+
+```
+{日|に}{本|ほん}に{行|い}きたい。
+
+Renders as:  に ほん     い
+             日 本   に 行 きたい。
+```
+
+**Tap-to-navigate:** The client parses `{X|...}` blocks, extracts the kanji characters, and looks up `kanji.character` in the local DB. Matching kanji become tappable, linking to the kanji detail page.
 
 ### VocabularyReading (Entity)
 
@@ -118,44 +123,9 @@ An example sentence that uses the vocabulary word in context. Helps the user see
 |---|---|---|
 | `id` | `int` | Unique identifier |
 | `vocabulary_id` | `int` | FK to the parent Vocabulary. Unique — one sentence per word |
-| `original_text` | `String` | Japanese sentence with inline furigana using `[kanji](reading)` notation (see Furigana Notation below), e.g. `[日](に)[本](ほん)に[行](い)きたい。` |
+| `original_text` | `String` | Japanese sentence with inline furigana notation, e.g. `{日|に}{本|ほん}に{行|い}きたい。` See Furigana Notation above |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
-
-### Furigana Notation
-
-Square-bracket notation encodes kanji readings inline within text:
-
-```
-[kanji](reading)
-```
-
-**Per-character mode:** Each kanji character gets its own `[kanji](reading)` pair:
-
-```
-[冷](れい)[蔵](ぞう)[庫](こ)   → 冷(れい) 蔵(ぞう) 庫(こ)
-[食](た)べる                    → 食(た)べる
-[東](とう)[京](きょう)[都](と)  → 東(とう) 京(きょう) 都(と)
-```
-
-**Group mode (jukujikun):** Multiple kanji characters share a single reading annotation:
-
-```
-[大人](おとな)    → 大人(おとな)     — jukujikun, single ruby over group
-[今日](きょう)    → 今日(きょう)     — irregular reading
-[昨日](きのう)    → 昨日(きのう)     — jukujikun
-```
-
-**Full sentence example:**
-
-```
-[日](に)[本](ほん)に[行](い)きたい。
-
-Renders as:  に ほん     い
-             日 本   に 行 きたい。
-```
-
-Plain text outside `[]()` markers is rendered as-is without furigana.
 
 ### VocabularySentenceI18n (Value Object)
 
@@ -198,23 +168,22 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 13. `vocabulary_id` must be unique in `VocabularySentence` — one sentence per word.
 14. `vocabulary_sentence_id` + `lang_code` must be unique in `VocabularySentenceI18n` — one translation per language per sentence.
 15. Deleting a `VocabularySentence` must cascade-delete all `VocabularySentenceI18n` rows.
-17. `original_text` must use valid `[kanji](reading)` notation: each `[]()` group must contain non-empty kanji and reading.
-18. `segments` must be a JSON array. Concatenating all segment `text` values must reproduce the `word` field exactly.
-19. `segments` kanji references (`kanji_id` or `kanji_ids`) must use exactly one form per segment — never both, never neither for kanji-containing segments.
+17. `furigana` and `original_text` must use valid `{kanji|reading}` notation. Stripping notation from `furigana` must reproduce `word` exactly.
+18. Each `{...}` group must have at least one reading. Reading count must equal kanji character count (per-character) or be exactly 1 (jukujikun).
 20. `pos_tags` must be a JSON array of valid `PosTag` enum values. May be empty for words that don't match any curated tag.
 21. `pos_tags` values must not contain duplicates.
 
 ## Edge Cases
 
 - **Vocabulary with no JLPT level:** Some common words aren't in the JLPT set. They unlock based on kanji progress alone and surface via search, not the JLPT lesson path.
-- **Kana-only vocabulary:** Words like すごい or ありがとう contain no kanji. They have zero `VocabularyKanji` rows and no unlock gate — they can enter the lesson queue immediately. Rule #6 is trivially satisfied (all zero kanji are stable). Their `segments` array contains only kana segments.
+- **Kana-only vocabulary:** Words like すごい or ありがとう contain no kanji. They have zero `VocabularyKanji` rows and no unlock gate — they can enter the lesson queue immediately. Rule #6 is trivially satisfied (all zero kanji are stable). Their `furigana` field contains plain text with no `{...}` groups.
 - **Repeated kanji in a word:** Words like 人々 or 日々 use the same kanji twice. `VocabularyKanji` stores one row per occurrence, each with a distinct `position`. The unlock gate deduplicates by `kanji_id` — it only checks whether each distinct kanji is known, not how many times it appears.
 - **Multiple primary readings:** Some words genuinely have two primary readings (e.g. 明日: あした and あす are both common). SRS should test all primary readings.
-- **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana. `segments` separates kanji and kana into distinct segments.
+- **Mixed kana/kanji words:** Words like 食べる contain both kanji (食) and kana (べる). `VocabularyKanji` only links the kanji portion. The reading covers the full word including kana. In furigana notation: `{食|た}べる`.
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
 - **Missing sentences:** Not every vocabulary word will have an example sentence. The UI should gracefully hide the sentence section when none exist.
 - **Missing sentence translations:** A sentence may exist but lack a `VocabularySentenceI18n` row in the user's language. Fall back to "en". If no translations exist at all, hide the translation.
-- **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `[大人](おとな)`. The client renders this as one ruby annotation over the entire group rather than per-character.
+- **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use single-reading notation: `{大人|おとな}`. The client detects jukujikun (1 reading, multiple kanji) and renders one ruby span over the entire group.
 - **Words with multiple POS tags:** A word like 勉強 is both a noun and a suru-verb (`[noun, suru_verb]`). A verb like 消す is godan and transitive (`[godan_verb, transitive]`). The UI determines the dominant badge/color from the tag list — this is a presentation concern, not an entity concern.
 - **Words with `usually_kana` tag:** Words like 有難う (ありがとう) have `usually_kana` in their `pos_tags`. The client should default to showing the kana form even if the kanji form exists.
 - **Words with no matching POS tags:** Rare words that don't match any curated JMdict code get an empty `pos_tags` array. The UI shows no badge.

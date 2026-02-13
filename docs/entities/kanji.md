@@ -18,9 +18,9 @@ The core identity of a single kanji character. Holds language-independent data: 
 | `min_jlpt_level` | `int?` | The easiest JLPT level this kanji appears in (5 = N5, 1 = N1). Null for kanji outside the JLPT set |
 | `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null for jinmeiyou and unofficial kanji |
 | `frequency_rank` | `int` | Frequency rank based on newspaper corpus (1 = most common). Used for ordering within a level |
-| `svg_file_name` | `String` | Local asset filename for the kanji SVG, e.g. "065e5.svg" |
-| `svg_file_url` | `String` | Remote URL to download the SVG if not bundled locally |
-| `svg_hash` | `String` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated |
+| `svg_file_name` | `String?` | Local asset filename for the kanji SVG, e.g. "065e5.svg". Null if no SVG exists — client should render `character` as text fallback |
+| `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
+| `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
@@ -41,7 +41,7 @@ A single pronunciation of a kanji. Each kanji has one or more readings, categori
 | `id` | `int` | Unique identifier |
 | `kanji_id` | `int` | FK to the parent Kanji |
 | `reading` | `String` | The pronunciation in kana, e.g. "ニチ", "ひ" |
-| `reading_type` | `ReadingType` | `onyomi` (katakana) or `kunyomi` (hiragana) — see shared_types.md |
+| `reading_type` | `ReadingType` | `onyomi`, `kunyomi`, or `nanori` — see shared_types.md |
 | `priority` | `ReadingPriority` | `primary` or `secondary` (see shared_types.md) |
 
 **Why a separate entity instead of a list on Kanji?**
@@ -90,7 +90,7 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 7. Kanji are reviewed on both meaning and reading — unlike radicals, which are meaning-only.
 8. `frequency_rank` must be a positive integer (1 = most common).
 9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8.
-10. Every `Kanji` must have both `svg_file_name` and `svg_file_url` populated.
+10. SVG fields (`svg_file_name`, `svg_file_url`, `svg_hash`) are all-or-nothing: all three populated or all three null.
 11. `kanji_id` + `reading` + `reading_type` must be unique in `KanjiReading` — no duplicate readings.
 
 ## Edge Cases

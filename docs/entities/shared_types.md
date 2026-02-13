@@ -20,12 +20,13 @@ Used by: `SrsCard.item_type` (see srs.md), `UserMnemonic.item_type` (see mnemoni
 
 ### ReadingType (Enum)
 
-The two Japanese reading systems for kanji characters.
+The Japanese reading systems for kanji characters.
 
 | Value | Script | Description |
 |---|---|---|
 | `onyomi` | Katakana | Sino-Japanese reading derived from Chinese pronunciation (e.g. ニチ, ジツ for 日) |
 | `kunyomi` | Hiragana | Native Japanese reading (e.g. ひ, か for 日) |
+| `nanori` | Hiragana | Name reading used in personal and place names (e.g. あきら for 明). Not all kanji have nanori |
 
 Used by: `KanjiReading.reading_type` (see kanji.md).
 

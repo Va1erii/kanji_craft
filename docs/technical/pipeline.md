@@ -234,19 +234,21 @@ A Dart/SQL logic layer (triggered via Admin Tool) processes the active `import_i
 
 ### 2.2 Radical Extraction
 
-**Scope:** Only `raw_kanjivg` entries whose character has a JLPT level (via `source_jlpt_level_entries`) or a school grade (via `raw_kanjidic.grade`) are processed. This reduces the radical set from ~1,400 (full KanjiVG) to ~350–550 pedagogically relevant building blocks. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
+**Scope:** Only `raw_kanjivg` entries whose character has a JLPT level (via `source_jlpt_level_entries`) or a school grade (via `raw_kanjidic.grade`) are processed. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
+
+**Ghost flattening:** Not every KanjiVG component becomes a radical. The pipeline builds a **keep set** (learnable kanji + official Kangxi radicals + components appearing in 3+ in-scope kanji) and flattens non-keep-set intermediates ("ghost radicals") by replacing them with their own children. This reduces the radical set from ~985 (scope-only) to ~350–450 meaningful building blocks. See [radical_extraction.md §Keep Set](radical_extraction.md#keep-set-what-becomes-a-radical) and [§Ghost Flattening](radical_extraction.md#ghost-radical-flattening).
 
 1. Build scope set from `raw_kanjidic` (grade) + `source_jlpt_level_entries` (JLPT).
-2. Query unique `element` attributes from in-scope `raw_kanjivg.components`.
-3. Upsert into `radicals` table.
-4. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
+2. Build keep set: scope set ∪ official Kangxi radicals ∪ high-frequency components (≥3 in-scope kanji).
+3. Scan in-scope entries with ghost flattening — resolve effective children, collect radical candidates.
+4. Upsert into `radicals` table. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
 
 See [radical.md](../entities/radical.md), [radical_extraction.md](radical_extraction.md).
 
 ### 2.3 Kanji & Component Composition
 
 1. **Kanji creation:** Create `draft_kanji` rows using metadata from `raw_kanjidic` (stroke count, grade, frequency, JLPT mapping). Create `draft_kanji_i18n` rows from `raw_kanjidic.meanings` for all languages present in the raw data — target language filtering is applied during AI enrichment and promotion.
-2. **Component linking:** Parse `raw_kanjivg.components` tree one level deep per kanji, resolve each child to its master radical, and create `kanji_components` rows. Then derive radical metadata (`impact_score`, `min_grade`, `min_jlpt_level`) from the links.
+2. **Component linking:** Resolve effective children per kanji (after ghost flattening), resolve each child to its master radical, and create `kanji_components` rows. Then derive radical metadata (`impact_score`, `min_grade`, `min_jlpt_level`) from the links.
 
 See [kanji_composition.md](kanji_composition.md), [component_linking.md](component_linking.md).
 

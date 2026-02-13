@@ -127,17 +127,16 @@ void main() {
       // Verify draft variants.
       final variants = await radicalRepo.getAllDraftRadicalVariants();
 
-      // 人 should have: 亻 (explicit) + 人 (self-variant)
+      // 人 should have: 亻 (explicit variant only, no self-variant)
       final jinVariants =
           variants.where((v) => v.draftRadicalId == jin.id).toList();
-      expect(jinVariants, hasLength(2));
-      final ninben = jinVariants.firstWhere((v) => v.shape == '亻');
+      expect(jinVariants, hasLength(1));
+      final ninben = jinVariants.first;
+      expect(ninben.shape, '亻');
       expect(ninben.position, Position.hen);
       expect(ninben.isLocked, isTrue);
-      final jinSelf = jinVariants.firstWhere((v) => v.shape == '人');
-      expect(jinSelf.position, Position.unknown); // not seen directly
 
-      // 木 should have: 木 (self-variant, seen directly)
+      // 木 should have: 木 (seen directly as component shape)
       final kiVariants =
           variants.where((v) => v.draftRadicalId == ki.id).toList();
       expect(kiVariants, hasLength(1));

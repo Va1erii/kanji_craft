@@ -139,17 +139,7 @@ class ExtractRadicals {
         ),
       );
 
-      // Ensure self-variant exists.
-      final variants = Map<String, VariantInfo>.from(master.variants);
-      if (!variants.containsKey(master.masterSymbol)) {
-        variants[master.masterSymbol] = VariantInfo(
-          shape: master.masterSymbol,
-          isExplicitVariant: false,
-          positionCounts: {Position.unknown: 1},
-        );
-      }
-
-      for (final variant in variants.values) {
+      for (final variant in master.variants.values) {
         final bestPosition = _bestPosition(variant.positionCounts);
         final isLocked = variant.positionCounts.length == 1;
 

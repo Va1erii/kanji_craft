@@ -112,7 +112,7 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 ## Business Rules
 
 1. Every radical must have a non-empty `master_symbol`.
-2. Every radical must have at least one `RadicalVariant`.
+2. `RadicalVariant` rows are optional — only radicals that change shape at different positions (e.g. 水→氵) need them.
 3. `RadicalI18n` must exist for the default language ("en") at minimum.
 4. `position` + `radical_id` should be unique in `RadicalVariant` — a radical doesn't have two different shapes for the same position.
 5. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.

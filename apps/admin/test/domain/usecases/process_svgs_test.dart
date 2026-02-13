@@ -116,7 +116,7 @@ void main() {
         masterSymbol: '木',
       ));
 
-      // Insert draft variants: 氵 (variant of 水), 木 (self-variant)
+      // Insert draft variants: 氵 (variant of 水), 木 (same shape as master)
       await radicalRepo.upsertDraftRadicalVariant(fakeDraftRadicalVariant(
         draftRadicalId: radical1.id,
         shape: '氵',

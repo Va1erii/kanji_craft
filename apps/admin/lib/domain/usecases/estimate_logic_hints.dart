@@ -6,6 +6,7 @@ import '../entities/raw_kanjidic.dart';
 import '../entities/warning.dart';
 import '../repositories/kanji_component_repository.dart';
 import '../repositories/kanji_component_review_repository.dart';
+import '../repositories/radical_repository.dart';
 import '../repositories/raw_kanjidic_repository.dart';
 
 const _tag = 'EstimateLogicHints';
@@ -38,13 +39,16 @@ class EstimateLogicHints {
     required KanjiComponentRepository kanjiComponentRepository,
     required RawKanjidicRepository rawKanjidicRepository,
     required KanjiComponentReviewRepository reviewRepository,
+    required RadicalRepository radicalRepository,
   })  : _kanjiComponentRepository = kanjiComponentRepository,
         _rawKanjidicRepository = rawKanjidicRepository,
-        _reviewRepository = reviewRepository;
+        _reviewRepository = reviewRepository,
+        _radicalRepository = radicalRepository;
 
   final KanjiComponentRepository _kanjiComponentRepository;
   final RawKanjidicRepository _rawKanjidicRepository;
   final KanjiComponentReviewRepository _reviewRepository;
+  final RadicalRepository _radicalRepository;
 
   Future<LogicHintResult> call(int kanjidicImportId) async {
     final warnings = <Warning>[];
@@ -65,7 +69,16 @@ class EstimateLogicHints {
     final kanjiCharMap = await _kanjiComponentRepository.getKanjiCharMap();
     log('Loaded ${kanjiCharMap.length} kanji', name: _tag);
 
-    // 4. Pre-fetch all raw_kanjidic entries into a map by literal.
+    // 4. Build set of radical IDs without SVG (true ghost radicals).
+    log('Loading draft radicals for SVG status...', name: _tag);
+    final draftRadicals = await _radicalRepository.getAllDraftRadicals();
+    final ghostRadicalIds = {
+      for (final r in draftRadicals)
+        if (r.svgFileName == null) r.id,
+    };
+    log('Found ${ghostRadicalIds.length} ghost radicals (no SVG)', name: _tag);
+
+    // 5. Pre-fetch all raw_kanjidic entries into a map by literal.
     log('Loading raw_kanjidic entries for import $kanjidicImportId...',
         name: _tag);
     final rawEntries =
@@ -79,7 +92,7 @@ class EstimateLogicHints {
         if (e.jlpt != null) e.literal: e.jlpt!,
     };
 
-    // 5. Process each component.
+    // 6. Process each component.
     log('Processing components...', name: _tag);
     var phoneticCount = 0;
     var semanticCount = 0;
@@ -122,6 +135,7 @@ class EstimateLogicHints {
         radicalSymbol: radicalSymbol,
         kanjidicMap: kanjidicMap,
         warnings: warnings,
+        hasSvg: !ghostRadicalIds.contains(component.radicalId),
       );
 
       // Update logic_hint on the component row.
@@ -198,6 +212,7 @@ class EstimateLogicHints {
     required String radicalSymbol,
     required Map<String, KanjidicReadings> kanjidicMap,
     required List<Warning> warnings,
+    required bool hasSvg,
   }) {
     final kanjiReadings = kanjidicMap[kanjiChar];
     final radicalReadings = kanjidicMap[radicalSymbol];
@@ -212,10 +227,13 @@ class EstimateLogicHints {
       return (logicHint: LogicHint.semantic, confidence: 0.5);
     }
 
-    // Ghost radical — no raw_kanjidic entry → semantic, 0.2.
+    // Radical not in raw_kanjidic → semantic, 0.2.
+    // True ghost radical (no SVG either) → high severity.
+    // Has SVG but not in kanjidic → low severity.
     if (radicalReadings == null) {
       warnings.add(Warning(
         '$radicalSymbol: radical not found in raw_kanjidic',
+        severity: hasSvg ? WarningSeverity.low : WarningSeverity.high,
       ));
       return (logicHint: LogicHint.semantic, confidence: 0.2);
     }

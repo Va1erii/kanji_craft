@@ -1,7 +1,9 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kanji_craft_admin/data/database/admin_database.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji_component/drift_kanji_component_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/kanji_component_review/drift_kanji_component_review_repository.dart';
+import 'package:kanji_craft_admin/data/repositories/radical/drift_radical_repository.dart';
 import 'package:kanji_craft_admin/data/repositories/raw_kanjidic/drift_raw_kanjidic_repository.dart';
 import 'package:kanji_craft_admin/domain/entities/import_source.dart';
 import 'package:kanji_craft_admin/domain/entities/warning.dart';
@@ -16,6 +18,7 @@ void main() {
   late DriftKanjiComponentRepository componentRepo;
   late DriftRawKanjidicRepository kanjidicRepo;
   late DriftKanjiComponentReviewRepository reviewRepo;
+  late DriftRadicalRepository radicalRepo;
   late EstimateLogicHints estimateLogicHints;
   late int kanjidicImportId;
 
@@ -33,9 +36,14 @@ void main() {
 
   /// Insert a draft radical row and return its auto-generated ID.
   /// EstimateLogicHints resolves radical symbols via draft tables.
-  Future<int> insertDraftRadical(String masterSymbol) async {
+  /// Pass [svgFileName] to simulate a radical that has an SVG file.
+  Future<int> insertDraftRadical(
+    String masterSymbol, {
+    String? svgFileName,
+  }) async {
     return db.into(db.draftRadicalEntries).insert(
-          DraftRadicalEntriesCompanion.insert(masterSymbol: masterSymbol),
+          DraftRadicalEntriesCompanion.insert(masterSymbol: masterSymbol)
+              .copyWith(svgFileName: Value(svgFileName)),
         );
   }
 
@@ -63,11 +71,13 @@ void main() {
     componentRepo = repos.kanjiComponents;
     kanjidicRepo = repos.kanjidic;
     reviewRepo = repos.reviews;
+    radicalRepo = repos.radicals;
 
     estimateLogicHints = EstimateLogicHints(
       kanjiComponentRepository: componentRepo,
       rawKanjidicRepository: kanjidicRepo,
       reviewRepository: reviewRepo,
+      radicalRepository: radicalRepo,
     );
 
     // Create parent import for raw_kanjidic.
@@ -150,10 +160,11 @@ void main() {
       expect(review!.aiConfidence, 0.6);
     });
 
-    test('ghost radical — not in raw_kanjidic → semantic, 0.2', () async {
-      // Setup: kanji exists in kanjidic, but radical does not.
+    test('ghost radical (no SVG) — not in raw_kanjidic → semantic, 0.2, high severity',
+        () async {
+      // Setup: kanji exists in kanjidic, but radical does not and has no SVG.
       final kanjiId = await insertDraftKanji('忙');
-      final radicalId = await insertDraftRadical('⺖'); // custom radical
+      final radicalId = await insertDraftRadical('⺖'); // no SVG
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
 
       await kanjidicRepo.insertBatch([
@@ -175,13 +186,47 @@ void main() {
       );
       expect(review!.aiConfidence, 0.2);
 
-      // Should have a warning about radical not found.
-      expect(
-        result.warnings.any(
-          (w) => w.message.contains('⺖') && w.message.contains('not found'),
-        ),
-        isTrue,
+      // Should have a high-severity warning (true ghost: no kanjidic + no SVG).
+      final ghostWarning = result.warnings.firstWhere(
+        (w) => w.message.contains('⺖') && w.message.contains('not found'),
       );
+      expect(ghostWarning.severity, WarningSeverity.high);
+    });
+
+    test('not in kanjidic but has SVG → semantic, 0.2, low severity',
+        () async {
+      // Setup: radical has an SVG file but no raw_kanjidic entry.
+      final kanjiId = await insertDraftKanji('忙');
+      final radicalId = await insertDraftRadical(
+        '⺖',
+        svgFileName: '02e96.svg',
+      );
+      await insertComponent(kanjiId: kanjiId, radicalId: radicalId);
+
+      await kanjidicRepo.insertBatch([
+        fakeRawKanjidic(
+          importId: kanjidicImportId,
+          literal: '忙',
+          readings: fakeReadings(jaOn: ['ボウ'], jaKun: []),
+        ),
+        // ⺖ is NOT in raw_kanjidic, but has SVG
+      ]);
+
+      final result = await estimateLogicHints.call(kanjidicImportId);
+
+      expect(result.semanticCount, 1);
+      expect(result.phoneticCount, 0);
+
+      final review = await reviewRepo.getByComponentId(
+        (await componentRepo.getAll()).first.id,
+      );
+      expect(review!.aiConfidence, 0.2);
+
+      // Should have a low-severity warning (has SVG, just not in kanjidic).
+      final warning = result.warnings.firstWhere(
+        (w) => w.message.contains('⺖') && w.message.contains('not found'),
+      );
+      expect(warning.severity, WarningSeverity.low);
     });
 
     test('kanji has no onyomi → semantic, 0.5', () async {

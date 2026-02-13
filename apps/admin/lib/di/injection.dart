@@ -210,6 +210,7 @@ Future<void> configureDependencies() async {
       kanjiComponentRepository: getIt<KanjiComponentRepository>(),
       rawKanjidicRepository: getIt<RawKanjidicRepository>(),
       reviewRepository: getIt<KanjiComponentReviewRepository>(),
+      radicalRepository: getIt<RadicalRepository>(),
     ),
   );
   getIt.registerLazySingleton<HydrateLocalDb>(

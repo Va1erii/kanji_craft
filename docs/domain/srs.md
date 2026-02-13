@@ -93,7 +93,7 @@ SrsCard    ──N:1──→ Vocabulary     (when item_type = vocabulary; see v
 5. Rating `again` on a `review` card triggers a lapse: the card moves to `relearning`, `lapses` increments by 1.
 6. A card graduates from `relearning` to `review` after completing all relearning steps (default: 10 min).
 7. **Unlock gate:** a radical's SrsCard must reach `stability >= 7.0` days before any kanji containing that radical (via KanjiComponent; see kanji_component.md) can enter the lesson queue. This is the unlock threshold — roughly equivalent to a one-week review interval.
-8. Radicals are reviewed on meaning only. Kanji are reviewed on both meaning and reading (see radical.md rule #5, kanji.md rule #7).
+8. Radicals are reviewed on meaning only. Kanji and vocabulary are reviewed on both meaning and reading.
 9. After the first review, `difficulty` is clamped to the range [1, 10]. New cards use `0` as a sentinel (see rule #2).
 10. `stability` must be non-negative. After a lapse, `stability` is recalculated but never increases from a forget event.
 11. ReviewLog rows are append-only — never updated or deleted (except by explicit user data wipe).

@@ -92,8 +92,6 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
 | `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
-| `jmdict_furigana.md` | JmdictFurigana staging table | Composite PK: (import_id, text, reading); tracked in data_imports |
-| `source_vocab_levels.md` | SourceVocabLevel reference table | Composite PK: (expression, reading); local-only, not tracked in data_imports |
 
 ### Technical Docs (`docs/technical/`) — read when implementing pipeline or infrastructure
 

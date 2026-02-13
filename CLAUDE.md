@@ -122,15 +122,13 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 ## Database Schema Digest
 
-**18 tables:** 12 content + 5 user + 1 admin review. See `supabase/migrations/` for full DDL.
+**17 tables:** 12 content + 5 user. See `supabase/migrations/` for full DDL.
 
 **Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
-**Admin review (Remote admin schema):** `kanji_component_reviews`
-
-**11 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`, `verification_status`
+**10 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
 
 **Key constraints:**
 - `kanji_components` unique on `(kanji_id, radical_id, position)`
@@ -142,7 +140,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 ## Key Architectural Decisions
 
 1. **Docs-first design:** Entity specs in `docs/entities/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
-2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files + Remote admin state. `data_imports` and `kanji_component_reviews` live in Remote admin schema.
+2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files.
 3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
 4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
 5. **Content vs staging tables:** Content tables (Supabase + Drift) have all fields NOT NULL — they hold complete, ready-to-sync rows. Pipeline intermediate state uses separate local staging tables with nullable deferred fields. Release Builder pushes only from content tables.

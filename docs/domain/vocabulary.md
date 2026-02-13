@@ -119,7 +119,6 @@ An example sentence that uses the vocabulary word in context. Helps the user see
 | `id` | `int` | Unique identifier |
 | `vocabulary_id` | `int` | FK to the parent Vocabulary. Unique — one sentence per word |
 | `original_text` | `String` | Japanese sentence with inline furigana using `[kanji](reading)` notation (see Furigana Notation below), e.g. `[日](に)[本](ほん)に[行](い)きたい。` |
-| `verification_status` | `VerificationStatus` | Review state for this sentence. Defaults to `draft`. Only `verified` rows are eligible for remote sync |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
 
@@ -198,8 +197,7 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 12. `min_jlpt_level`, when present, must be in the range 1–5.
 13. `vocabulary_id` must be unique in `VocabularySentence` — one sentence per word.
 14. `vocabulary_sentence_id` + `lang_code` must be unique in `VocabularySentenceI18n` — one translation per language per sentence.
-15. Only sentences with `verification_status = verified` are eligible for remote sync (see [pipeline.md](../technical/pipeline.md)).
-16. Deleting a `VocabularySentence` must cascade-delete all `VocabularySentenceI18n` rows.
+15. Deleting a `VocabularySentence` must cascade-delete all `VocabularySentenceI18n` rows.
 17. `original_text` must use valid `[kanji](reading)` notation: each `[]()` group must contain non-empty kanji and reading.
 18. `segments` must be a JSON array. Concatenating all segment `text` values must reproduce the `word` field exactly.
 19. `segments` kanji references (`kanji_id` or `kanji_ids`) must use exactly one form per segment — never both, never neither for kanji-containing segments.
@@ -216,7 +214,6 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 - **Missing translations:** If a user's language has no `VocabularyI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
 - **Missing sentences:** Not every vocabulary word will have an example sentence. The UI should gracefully hide the sentence section when none exist.
 - **Missing sentence translations:** A sentence may exist but lack a `VocabularySentenceI18n` row in the user's language. Fall back to "en". If no translations exist at all, hide the translation.
-- **Unverified sentences:** A sentence with `verification_status` of `draft` or `flagged` will not sync to remote. Clients never see it.
 - **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use group mode: `[大人](おとな)`. The client renders this as one ruby annotation over the entire group rather than per-character.
 - **Words with multiple POS tags:** A word like 勉強 is both a noun and a suru-verb (`[noun, suru_verb]`). A verb like 消す is godan and transitive (`[godan_verb, transitive]`). The UI determines the dominant badge/color from the tag list — this is a presentation concern, not an entity concern.
 - **Words with `usually_kana` tag:** Words like 有難う (ありがとう) have `usually_kana` in their `pos_tags`. The client should default to showing the kana form even if the kanji form exists.

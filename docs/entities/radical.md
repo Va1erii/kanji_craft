@@ -89,15 +89,12 @@ A specific visual form a radical takes when placed in a particular position insi
 | `id` | `int` | Unique identifier |
 | `radical_id` | `int` | FK to the parent Radical |
 | `shape` | `String` | The specific form, e.g. "氵" |
-| `position` | `Position` | Where this shape appears |
-| `is_locked` | `bool` | If `true`, this shape never moves to another position (e.g. 氵 is always left) |
+| `positions` | `List<Position>` | All positions where this shape appears, e.g. `[hen]` for 氵 |
 | `svg_file_name` | `String?` | Local asset filename for the variant SVG, e.g. "06c35.svg". Null if no SVG exists — client should render `shape` as text fallback |
 | `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
 | `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
 
-**Why `is_locked`?**
-
-Some variants are structurally fixed — 氵 only ever appears on the left. Knowing this simplifies teaching ("this shape = this position, always") and lets the UI skip position-selection for locked variants.
+`isLocked` is a derived getter: `true` when `positions.length == 1` — the shape never moves to another position (e.g. 氵 is always left). The UI can skip position context for locked variants.
 
 ## Relationships
 
@@ -107,14 +104,14 @@ Radical ──1:N──→ RadicalVariant    (one radical, many visual forms)
 Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_component.md)
 ```
 
-`Position` is a property of `RadicalVariant`, not of the radical itself — the same radical (e.g. 水/氵) can appear in different positions in different kanji.
+`Position` is a property of `RadicalVariant`, not of the radical itself — the same radical (e.g. 水/氵) can appear in different positions in different kanji. Each variant stores all the positions where that shape is used.
 
 ## Business Rules
 
 1. Every radical must have a non-empty `master_symbol`.
 2. `RadicalVariant` rows are optional — only radicals that change shape at different positions (e.g. 水→氵) need them.
 3. `RadicalI18n` must exist for the default language ("en") at minimum.
-4. `position` + `radical_id` should be unique in `RadicalVariant` — a radical doesn't have two different shapes for the same position.
+4. `shape` + `radical_id` should be unique in `RadicalVariant` — a radical doesn't have two rows for the same shape.
 5. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
 6. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
 7. `impact_score` must be in the range 1–10.
@@ -124,10 +121,9 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 
 ## Edge Cases
 
-- **Radical with a single variant:** Some radicals look the same in every position (e.g. 口). They still get one `RadicalVariant` row — the model is consistent regardless of variant count.
-- **Locked vs unlocked variants:** A locked variant (e.g. 氵, always left) means the UI can skip position context. An unlocked variant means the app should show "this shape can appear here or here."
+- **Radical with no variants:** Some radicals look the same in every position (e.g. 口). They have no `RadicalVariant` rows — the master symbol and its SVG are sufficient.
+- **Locked vs unlocked variants:** A locked variant (`positions.length == 1`, e.g. 氵 always left) means the UI can skip position context. An unlocked variant means the app should show "this shape can appear here or here."
 - **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or system mnemonic.
-- **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. This is modeled through separate `RadicalVariant` rows, not special-cased.
-- **Radicals with no kanji:** During early content seeding, a radical may exist before any kanji reference it (see kanji_component.md). The radical is still reviewable; the composition section in the UI should show an empty state.
+- **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. If the shape is the same, these positions are combined in a single `RadicalVariant` row's `positions` list.
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.
 - **Kanji-like radicals:** Some radicals are visually identical to learnable kanji (e.g., 青 is both Kangxi radical #174 and a kanji meaning "Blue"). Both rows must exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. This dual existence is natural for many Kangxi radicals (木, 金, 山, etc.) and is also used for custom non-Kangxi building blocks (`is_official: false`). For example, 清 (Pure) = 氵 (Water) + 青 (Blue) — `kanji_components` always references `radicals.id`, never `kanji.id`.

@@ -24,7 +24,6 @@ The external authentication method used to create the account.
 | `email` | Email and password authentication |
 | `google` | Google OAuth |
 | `apple` | Apple Sign In |
-| `facebook` | Facebook OAuth |
 
 ### User (Entity)
 

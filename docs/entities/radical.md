@@ -13,7 +13,7 @@ The source of truth for a radical's core identity. Uses the master symbol (the s
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `master_symbol` | `String` | The base kanji form, e.g. "水". Unique across all radicals |
+| `master_symbol` | `String` | The radical's canonical character, e.g. "水". Unique across all radicals |
 | `stroke_count` | `int` | Stroke count of the master symbol |
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1). Null if all containing kanji are outside JLPT |

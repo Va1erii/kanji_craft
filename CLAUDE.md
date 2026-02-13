@@ -93,9 +93,6 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
 | `data_import.md` | DataImport, ImportSource, ImportStatus | Lives in Remote admin schema; one active import per source |
 | `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
-| `raw_kanjivg.md` | RawKanjiVg staging table | Components is recursive JSONB tree |
-| `raw_kanjidic.md` | RawKanjidic staging table | Meanings grouped by lang_code in JSONB |
-| `raw_jmdict.md` | RawJmdict staging table | Composite PK: import_id + ent_seq |
 | `jmdict_furigana.md` | JmdictFurigana staging table | Composite PK: (import_id, text, reading); tracked in data_imports |
 | `source_vocab_levels.md` | SourceVocabLevel reference table | Composite PK: (expression, reading); local-only, not tracked in data_imports |
 
@@ -125,6 +122,9 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `jlpt_mapping_format.md` | JLPT kanji mapping CSV format |
 | `jlpt_vocab_mapping_format.md` | JLPT vocabulary mapping CSV format (Tanos word lists) |
 | `jmdict_furigana_format.md` | JmdictFurigana JSON format (per-character furigana for segments) |
+| `raw_kanjivg.md` | RawKanjiVg staging table — components is recursive JSONB tree |
+| `raw_kanjidic.md` | RawKanjidic staging table — meanings grouped by lang_code in JSONB |
+| `raw_jmdict.md` | RawJmdict staging table — composite PK: import_id + ent_seq |
 
 ## Database Schema Digest
 

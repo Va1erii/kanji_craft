@@ -259,7 +259,7 @@ After radicals and kanji are created, the pipeline processes SVG files from the 
 1. **Extract SVGs:** Unzip individual SVG files from the archive into a local working directory.
 2. **Compute `svg_hash`:** For each SVG file, compute `SHA-256` of the raw file bytes and store the hex digest. This hash is content-based — identical SVG bytes always produce the same hash regardless of source version.
 3. **Populate fields:** For each `radicals` and `radical_variants` row, set:
-   - `svg_file_name` — Unicode hex filename, e.g. `06c34.svg` (see [supabase.md](supabase.md#file-naming))
+   - `svg_file_name` — Unicode hex filename, e.g. `06c34.svg` (see [supabase.md](../adr/supabase.md#file-naming))
    - `svg_hash` — the SHA-256 hex digest from step 2
    - `svg_file_url` — constructed from the bucket URL pattern: `{supabase_url}/storage/v1/object/public/svg/{svg_file_name}`
 4. **Populate kanji SVGs:** Same process for `kanji` rows — each kanji has its own SVG from the same archive.
@@ -431,7 +431,7 @@ The sync script validates parent existence on Remote before upserting children.
 
 ### 4.7 Post-Sync
 
-Remote app clients receive updates via their standard sync mechanism (see [offline.md](offline.md)).
+Remote app clients receive updates via their standard sync mechanism (see [offline.md](../adr/offline.md)).
 
 ## Pipeline Status Lifecycle
 
@@ -504,5 +504,5 @@ Each phase's dedicated doc contains a **Warnings** section with a table listing 
 - [jlpt_mapping_format.md](../sources/jlpt_mapping_format.md) — JLPT kanji mapping CSV format
 - [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md) — JLPT vocabulary mapping CSV format
 - [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) — JmdictFurigana JSON format
-- [offline.md](offline.md) — client-side sync after promotion
-- [supabase.md](supabase.md) — database infrastructure
+- [offline.md](../adr/offline.md) — client-side sync after promotion
+- [supabase.md](../adr/supabase.md) — database infrastructure

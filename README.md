@@ -57,7 +57,7 @@ supabase db reset                  # Test locally
 supabase db push                   # Push to remote
 ```
 
-See [docs/technical/supabase.md](docs/technical/supabase.md#workflow) for the full workflow.
+See [docs/adr/supabase.md](docs/adr/supabase.md#workflow) for the full workflow.
 
 ## Code Generation
 

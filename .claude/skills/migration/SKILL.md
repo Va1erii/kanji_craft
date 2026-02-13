@@ -23,7 +23,7 @@ Generate Supabase PostgreSQL migration files by translating entity specs from `d
    - Business rules mention constraints (unique, range, etc.) but the fields they apply to are not defined
    - An enum is referenced but its values are not listed in any entity doc or `shared_types.md`
 4. **Read existing migrations.** Scan `supabase/migrations/` for existing tables to avoid conflicts and stay consistent with naming/style. If the directory is empty, this is the initial migration.
-5. **Read technical docs.** Check `docs/technical/supabase.md` for conventions and `docs/technical/offline.md` for local-only fields to exclude.
+5. **Read technical docs.** Check `docs/adr/supabase.md` for conventions and `docs/adr/offline.md` for local-only fields to exclude.
 6. **Generate SQL.** Produce migration SQL following the rules below.
 7. **Write files.** Use `supabase migration new <name>` to create the file with the correct timestamp prefix, then write the SQL content into the generated file. Separate concerns into multiple files when warranted (see "Separation of Concerns" below).
 8. **Validate.** Walk through every field in every entity doc in scope and confirm it is either present in the migration or explicitly excluded as local-only. Print a checklist summary.
@@ -105,7 +105,7 @@ These fields exist only in Drift (SQLite) and must **never** appear in Supabase 
 - `remote_updated_at`
 - `local_updated_at`
 
-See `docs/technical/offline.md` → "Local-Only Fields" for reference.
+See `docs/adr/offline.md` → "Local-Only Fields" for reference.
 
 ### User Tables
 
@@ -154,7 +154,7 @@ If the scope warrants multiple files, split by concern. Use `supabase migration 
 
 ### RLS Policy Patterns
 
-Follow the access patterns from `docs/technical/supabase.md`:
+Follow the access patterns from `docs/adr/supabase.md`:
 
 **Content tables** (read-only for users):
 ```sql

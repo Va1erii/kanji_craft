@@ -126,7 +126,7 @@ During vocabulary extraction (Phase 2.5), the pipeline matches `raw_jmdict` entr
 3. If found → use that level (authoritative).
 4. If not found → fall back to `MAX(kanji.min_jlpt_level)` across constituent kanji.
 
-This resolves the "Eki Problem" — see [vocabulary_extraction.md §JLPT Level Strategy](../technical/vocabulary_extraction.md#jlpt-level-strategy).
+This resolves the "Eki Problem" — see [vocabulary_extraction.md §JLPT Level Strategy](../pipeline/vocabulary_extraction.md#jlpt-level-strategy).
 
 ## Edge Cases
 
@@ -154,7 +154,7 @@ Unlike KANJIDIC and KanjiVG sources (which use `{source}-{version}/` folders and
 
 ## Related Docs
 
-- [vocabulary_extraction.md](../technical/vocabulary_extraction.md) — How `source_vocab_levels` feeds into `vocabulary.min_jlpt_level`
+- [vocabulary_extraction.md](../pipeline/vocabulary_extraction.md) — How `source_vocab_levels` feeds into `vocabulary.min_jlpt_level`
 - [jlpt_mapping_format.md](jlpt_mapping_format.md) — Kanji JLPT mapping (analogous file for `source_jlpt_levels`)
-- [pipeline.md](../technical/pipeline.md) — Pipeline orchestration (source loading)
+- [pipeline.md](../pipeline/pipeline.md) — Pipeline orchestration (source loading)
 - [attributions.md](../legal/attributions.md) — License and credit requirements

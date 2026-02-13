@@ -94,7 +94,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
 | `teaching.md` | Teaching strategy, phono-semantic patterns, SRS card types | Color coding, sound match indicators, question formats |
 
-### Technical Docs (`docs/technical/`) — read when implementing pipeline or infrastructure
+### Pipeline Docs (`docs/pipeline/`) — read when implementing pipeline
 
 | Doc | Covers | When to read |
 |---|---|---|
@@ -106,9 +106,13 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
 | `vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
 | `ai_enrichment.md` | Phase 2.6: logic hints, mnemonics, translations, furigana CSV workflow | Implementing AI enrichment or CSV batch export/import |
+
+### ADR Docs (`docs/adr/`) — read when implementing infrastructure
+
+| Doc | Covers | When to read |
+|---|---|---|
 | `supabase.md` | Auth, database, storage, RLS, migrations | Any Supabase/migration work |
 | `offline.md` | Client sync, conflict resolution | Client-side data sync |
-| `admin_workflow.md` | Admin tool UI/UX flow | Admin presentation layer |
 
 ### Source Format Docs (`docs/sources/`) — read when modifying parsers
 

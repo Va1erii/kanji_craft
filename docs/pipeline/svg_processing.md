@@ -189,4 +189,4 @@ This approach avoids re-uploading the entire SVG set (~13,000 files) on each rel
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phase 2.4 summary)
 - [radical_extraction.md](radical_extraction.md) — Phase 2.2: radical/variant creation (prerequisite)
 - [kanji_composition.md](kanji_composition.md) — Phase 2.3: kanji row creation (prerequisite)
-- [supabase.md](supabase.md) — Storage bucket configuration and URL patterns
+- [supabase.md](../adr/supabase.md) — Storage bucket configuration and URL patterns

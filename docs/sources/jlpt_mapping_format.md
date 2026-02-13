@@ -79,6 +79,6 @@ See [raw_kanjidic.md](../domain/raw_kanjidic.md) and [kanjidic_format.md](kanjid
 
 - [raw_kanjidic.md](../domain/raw_kanjidic.md) — Staging table (stores old JLPT 1–4 for reference)
 - [kanjidic_format.md](kanjidic_format.md) — KANJIDIC2 format reference (JLPT field explanation)
-- [kanji_composition.md](../technical/kanji_composition.md) — How `source_jlpt_levels` feeds into `kanji.min_jlpt_level`
-- [pipeline.md](../technical/pipeline.md) — Pipeline orchestration (source loading)
+- [kanji_composition.md](../pipeline/kanji_composition.md) — How `source_jlpt_levels` feeds into `kanji.min_jlpt_level`
+- [pipeline.md](../pipeline/pipeline.md) — Pipeline orchestration (source loading)
 - [attributions.md](../legal/attributions.md) — License and credit requirements

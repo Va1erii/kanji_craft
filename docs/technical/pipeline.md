@@ -234,12 +234,12 @@ A Dart/SQL logic layer (triggered via Admin Tool) processes the active `import_i
 
 ### 2.2 Radical Extraction
 
-**Scope:** Only `raw_kanjivg` entries whose character has a JLPT level (via `source_jlpt_level_entries`) or a school grade (via `raw_kanjidic.grade`) are processed. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
+**Scope:** Only `raw_kanjivg` entries whose character has a JLPT level (via `source_jlpt_level_entries`) or a Jōyō school grade 1–8 (via `raw_kanjidic.grade`, excluding Jinmeiyō grade 9 and variant grade 10) are processed. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
 
-**Ghost flattening:** Not every KanjiVG component becomes a radical. The pipeline builds a **keep set** (learnable kanji + official Kangxi radicals + components appearing in 3+ in-scope kanji) and flattens non-keep-set intermediates ("ghost radicals") by replacing them with their own children. This reduces the radical set from ~985 (scope-only) to ~350–450 meaningful building blocks. See [radical_extraction.md §Keep Set](radical_extraction.md#keep-set-what-becomes-a-radical) and [§Ghost Flattening](radical_extraction.md#ghost-radical-flattening).
+**Ghost flattening:** Not every KanjiVG component becomes a radical. The pipeline builds a **keep set** (learnable kanji + official Kangxi radicals + components appearing in 5+ in-scope kanji) and flattens non-keep-set intermediates ("ghost radicals") by replacing them with their own children. This reduces the radical set from ~900 (scope-only) to ~600–700 meaningful building blocks. See [radical_extraction.md §Keep Set](radical_extraction.md#keep-set-what-becomes-a-radical) and [§Ghost Flattening](radical_extraction.md#ghost-radical-flattening).
 
-1. Build scope set from `raw_kanjidic` (grade) + `source_jlpt_level_entries` (JLPT).
-2. Build keep set: scope set ∪ official Kangxi radicals ∪ high-frequency components (≥3 in-scope kanji).
+1. Build scope set from `raw_kanjidic` (Jōyō grades 1–8) + `source_jlpt_level_entries` (JLPT).
+2. Build keep set: scope set ∪ official Kangxi radicals ∪ high-frequency components (≥5 in-scope kanji).
 3. Scan in-scope entries with ghost flattening — resolve effective children, collect radical candidates.
 4. Upsert into `radicals` table. Parse `position` and `variant`/`original` attributes to populate `radical_variants`.
 

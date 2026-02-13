@@ -10,11 +10,11 @@ Radical extraction turns the nested KanjiVG component trees (stored in `raw_kanj
 
 KanjiVG covers ~6,700 characters. Processing all of them produces thousands of radical candidates — far too many for a pedagogical app. Most of these come from rare, non-educational kanji that learners will never encounter.
 
-**The filter:** Radical extraction only processes `raw_kanjivg` entries whose character is **educationally relevant** — defined as appearing in `raw_kanjidic` with a non-null `grade`, OR appearing in `source_jlpt_level_entries`. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or school grades 1–8.
+**The filter:** Radical extraction only processes `raw_kanjivg` entries whose character is **educationally relevant** — defined as appearing in `raw_kanjidic` with a Jōyō grade (1–6 elementary, 8 secondary), OR appearing in `source_jlpt_level_entries`. Grades 9 (Jinmeiyō / name kanji) and 10 (Jōyō variants) are **excluded** — they cover personal names and official documents, not the standard school curriculum or JLPT. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or Jōyō grades 1–8.
 
 **How the scope set is built (before Pass 1):**
 
-1. Query `raw_kanjidic` for characters where `grade IS NOT NULL` → set A.
+1. Query `raw_kanjidic` for characters where `grade IS NOT NULL AND grade <= 8` → set A.
 2. Query `source_jlpt_level_entries` for all `kanji_character` values → set B.
 3. Scope set = A ∪ B.
 
@@ -33,7 +33,7 @@ Not every element encountered during scanning becomes a radical. To keep the rad
 
 2. **Official Kangxi radical:** The element has been marked `radical='general'` in ANY `raw_kanjivg` entry (not just in-scope entries). The 214 Kangxi radicals are the traditional building blocks of CJK characters and are widely taught in reference materials. The official set is built by scanning ALL raw_kanjivg entries to avoid missing designations that only appear in out-of-scope kanji.
 
-3. **High-frequency component:** The element appears as a direct child in **3 or more** in-scope kanji (counted before ghost flattening). Even if a component isn't a standalone kanji or official radical, appearing frequently makes it a reusable learning unit worth memorizing.
+3. **High-frequency component:** The element appears as a direct child in **5 or more** in-scope kanji (counted before ghost flattening). Even if a component isn't a standalone kanji or official radical, appearing frequently makes it a reusable learning unit worth memorizing. The threshold of 5 balances reusability against mnemonic maintenance cost — components appearing in only 3–4 kanji are rare enough that learners can absorb the sub-components directly.
 
 Elements NOT in the keep set are **ghost radicals** — intermediate structural groupings from KanjiVG that aren't independently useful to learners. Ghost radicals are flattened (see below).
 
@@ -141,7 +141,7 @@ Input:  raw_kanjidic rows for the active import_id + source_jlpt_level_entries
 Output: Set<String> scopeCharacters
 ```
 
-1. Query `raw_kanjidic` for the active import: collect `character` where `grade IS NOT NULL`.
+1. Query `raw_kanjidic` for the active import: collect `character` where `grade IS NOT NULL AND grade <= 8` (Jōyō only; excludes Jinmeiyō grade 9 and variant grade 10).
 2. Query `source_jlpt_level_entries`: collect all `kanji_character` values.
 3. Merge into `scopeCharacters = graded ∪ jlpt`.
 
@@ -162,7 +162,7 @@ Output: Set<RadicalCandidate>, Set<String> keepSet
 
 **1b. Count raw frequencies:** For each in-scope `raw_kanjivg` entry, extract direct children (after empty-element flattening and part merging, but BEFORE ghost flattening). For each child, resolve the master symbol and increment its count. Output: `Map<String, int>` — element frequency across in-scope kanji.
 
-**1c. Build keep set:** `keepSet = scopeCharacters ∪ officialSet ∪ { elem | frequency[elem] >= 3 }`
+**1c. Build keep set:** `keepSet = scopeCharacters ∪ officialSet ∪ { elem | frequency[elem] >= 5 }`
 
 **1d. Scan with ghost flattening:** Build a tree lookup map from ALL `raw_kanjivg` entries: `Map<String, KanjiVgComponent>` (character → root component). Then for each in-scope entry:
 
@@ -408,9 +408,9 @@ A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanj
 
 ### High-frequency threshold edge cases
 
-The threshold of 3 is a starting point. After running extraction on real data, the admin should review:
-- Elements just below the threshold (frequency 2) that might be pedagogically useful — consider lowering to 2
-- Elements just above the threshold (frequency 3) that are opaque to learners — consider raising to 4
+The threshold of 5 balances radical count against mnemonic cost. After running extraction on real data, the admin should review:
+- Elements just below the threshold (frequency 4) that might be pedagogically useful — consider lowering to 4
+- Elements just above the threshold (frequency 5) that are opaque to learners — consider raising to 8
 
 The threshold can be adjusted without schema changes — it only affects which elements get flattened.
 
@@ -435,9 +435,9 @@ The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Wa
 | `kanji_components` | One row per effective-child component per in-scope kanji (after ghost flattening) | Pass 3 |
 
 **Expected counts** (approximate, for KanjiVG ~20250816 + KANJIDIC ~20260208):
-- ~2,136 kanji in scope (JLPT/grade)
-- ~350–450 unique radicals (down from ~985 with scope-only filtering, ~1,400 unfiltered)
-- ~350–500 radical variants
+- ~2,136 kanji in scope (Jōyō grades 1–8 + JLPT)
+- ~600–700 unique radicals (down from ~900 with scope-only filtering, ~1,400 unfiltered)
+- ~600–750 radical variants
 
 Tables populated by **later phases** (not this algorithm):
 - `radical_i18n` — names and mnemonics (Phase 2.6B, KANJIDIC meanings + AI)

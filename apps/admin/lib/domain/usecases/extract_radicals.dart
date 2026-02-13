@@ -197,16 +197,17 @@ class ExtractRadicals {
   Future<Set<String>> _buildScopeSet(int kanjidicImportId) async {
     final scope = <String>{};
 
-    // Set A: characters with a school grade.
+    // Set A: characters with a Jōyō school grade (1–6 elementary, 8 secondary).
+    // Excludes grade 9 (Jinmeiyō / name kanji) and 10 (variants).
     try {
       final kanjidicEntries =
           await _rawKanjidicRepository.getByImportId(kanjidicImportId);
       for (final entry in kanjidicEntries) {
-        if (entry.grade != null) {
+        if (entry.grade != null && entry.grade! <= 8) {
           scope.add(entry.literal);
         }
       }
-      log('Graded characters: ${scope.length}', name: _tag);
+      log('Graded characters (grades 1-8): ${scope.length}', name: _tag);
     } on Exception catch (e, st) {
       log('Failed to load raw_kanjidic for scope', error: e, stackTrace: st, name: _tag);
       rethrow;

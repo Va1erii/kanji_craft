@@ -389,38 +389,21 @@ void main() {
       expect(result.radicalCount, 1);
     });
 
-    test('keeps high-frequency component (>= 3 kanji)', () async {
-      // H appears in 3 in-scope kanji → high frequency → kept.
-      await putInScope(['X', 'Y', 'Z']);
+    test('keeps high-frequency component (>= 5 kanji)', () async {
+      // H appears in 5 in-scope kanji → high frequency → kept.
+      await putInScope(['V', 'W', 'X', 'Y', 'Z']);
 
       await kanjiVgRepo.insertBatch([
-        fakeRawKanjiVg(
-          importId: importId,
-          character: 'X',
-          strokeCount: 8,
-          components: fakeComponent(
-            element: 'X',
-            children: [fakeComponent(element: 'H', position: 'left')],
+        for (final ch in ['V', 'W', 'X', 'Y', 'Z'])
+          fakeRawKanjiVg(
+            importId: importId,
+            character: ch,
+            strokeCount: 8,
+            components: fakeComponent(
+              element: ch,
+              children: [fakeComponent(element: 'H', position: 'left')],
+            ),
           ),
-        ),
-        fakeRawKanjiVg(
-          importId: importId,
-          character: 'Y',
-          strokeCount: 9,
-          components: fakeComponent(
-            element: 'Y',
-            children: [fakeComponent(element: 'H', position: 'right')],
-          ),
-        ),
-        fakeRawKanjiVg(
-          importId: importId,
-          character: 'Z',
-          strokeCount: 10,
-          components: fakeComponent(
-            element: 'Z',
-            children: [fakeComponent(element: 'H', position: 'top')],
-          ),
-        ),
         fakeRawKanjiVg(
           importId: importId,
           character: 'H',
@@ -441,7 +424,7 @@ void main() {
     });
 
     test('flattens low-frequency non-scope non-official element', () async {
-      // L appears in only 2 kanji (below threshold of 3), not in scope, not
+      // L appears in only 4 kanji (below threshold of 5), not in scope, not
       // official → ghost. L's children C and D are in scope → kept.
       await putInScope(['X', 'Y', 'C', 'D']);
 

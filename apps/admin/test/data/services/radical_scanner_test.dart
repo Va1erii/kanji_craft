@@ -518,11 +518,11 @@ void main() {
         final keepSet = RadicalScanner.buildKeepSet(
           scopeSet: {'A', 'B'},
           officialSet: {'C'},
-          frequencies: {'D': 3, 'E': 2, 'F': 5},
-          threshold: 3,
+          frequencies: {'D': 5, 'E': 4, 'F': 8},
+          threshold: 5,
         );
         expect(keepSet, containsAll(['A', 'B', 'C', 'D', 'F']));
-        expect(keepSet, isNot(contains('E'))); // freq 2 < threshold 3
+        expect(keepSet, isNot(contains('E'))); // freq 4 < threshold 5
       });
     });
 

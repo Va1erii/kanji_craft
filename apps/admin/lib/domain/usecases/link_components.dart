@@ -315,15 +315,16 @@ class LinkComponents {
 
   /// Builds the JLPT/grade scope set.
   ///
-  /// Same logic as ExtractRadicals Pass 0 — characters with a non-null grade
+  /// Same logic as ExtractRadicals Pass 0 — characters with Jōyō grade (1–8)
   /// in raw_kanjidic OR appearing in source_jlpt_level_entries.
+  /// Excludes grade 9 (Jinmeiyō) and 10 (variants).
   Future<Set<String>> _buildScopeSet(int kanjidicImportId) async {
     final scope = <String>{};
 
     final kanjidicEntries =
         await _rawKanjidicRepository.getByImportId(kanjidicImportId);
     for (final entry in kanjidicEntries) {
-      if (entry.grade != null) {
+      if (entry.grade != null && entry.grade! <= 8) {
         scope.add(entry.literal);
       }
     }

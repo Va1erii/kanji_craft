@@ -156,7 +156,7 @@ class RadicalScanner {
     required Set<String> scopeSet,
     required Set<String> officialSet,
     required Map<String, int> frequencies,
-    int threshold = 3,
+    int threshold = 5,
   }) {
     final keepSet = <String>{};
     keepSet.addAll(scopeSet);

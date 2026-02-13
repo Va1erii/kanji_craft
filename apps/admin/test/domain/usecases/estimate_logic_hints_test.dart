@@ -150,7 +150,7 @@ void main() {
       expect(review!.aiConfidence, 0.6);
     });
 
-    test('radical not in raw_kanjidic → semantic, 0.3', () async {
+    test('ghost radical — not in raw_kanjidic → semantic, 0.2', () async {
       // Setup: kanji exists in kanjidic, but radical does not.
       final kanjiId = await insertDraftKanji('忙');
       final radicalId = await insertDraftRadical('⺖'); // custom radical
@@ -173,7 +173,7 @@ void main() {
       final review = await reviewRepo.getByComponentId(
         (await componentRepo.getAll()).first.id,
       );
-      expect(review!.aiConfidence, 0.3);
+      expect(review!.aiConfidence, 0.2);
 
       // Should have a warning about radical not found.
       expect(
@@ -268,7 +268,7 @@ void main() {
 
     test('JLPT-mapped component with low confidence → high severity warning',
         () async {
-      // Setup: JLPT kanji with a radical not in kanjidic → confidence 0.3.
+      // Setup: JLPT kanji with a ghost radical → confidence 0.2.
       final kanjiId = await insertDraftKanji('海');
       final radicalId = await insertDraftRadical('⺡'); // custom radical
       await insertComponent(kanjiId: kanjiId, radicalId: radicalId);

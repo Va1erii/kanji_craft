@@ -13,6 +13,17 @@ The phase has two sub-phases:
 | A | Logic Hint Estimation | Automated (onyomi matching algorithm) | `kanji_components`, `raw_kanjidic` |
 | B | CSV Batch Enrichment | Manual (export → chat tool → import) | Content tables from phases 2.2–2.5 |
 
+### Ghost Radicals
+
+A **ghost radical** is a component registered during radical extraction (Phase 2.2) that lacks its own standalone KanjiVG entry and/or KANJIDIC entry. Example: 粦 appears inside 隣 (`kvg:element="粦"`) but has no `07ca6.svg` file and no `raw_kanjidic` row.
+
+Ghost radicals break the "Lego-style" learning chain — a learner must master all child radicals before unlocking a kanji, but a ghost radical has no SVG to display and no readings to teach. The enrichment phase acts as the safety net for these cases:
+
+- **Sub-phase A** assigns lowest confidence to ghost radical components.
+- **Sub-phase B, Batch 0** recovers SVG paths from the parent kanji's KanjiVG data.
+- **Sub-phase B, Batch 1** ensures ghost radicals receive mnemonics so they can appear in SRS.
+- **Promotion gate (Phase 4)** rejects kanji whose components have missing SVGs.
+
 ## Sub-phase A: Logic Hint Estimation (Automated)
 
 Estimates `logic_hint` (semantic vs phonetic) for every `kanji_component` row using onyomi comparison. This is purely algorithmic — no CSV workflow needed.
@@ -33,8 +44,8 @@ For each `kanji_component` row:
 |---|---|---|---|
 | Onyomi match (exact) | `phonetic` | 0.9 | Strong phonetic signal — radical contributes its reading |
 | No match (radical has onyomi but none overlap) | `semantic` | 0.6 | Radical has readings but doesn't share them — likely semantic |
-| No match (radical has no `raw_kanjidic` entry) | `semantic` | 0.3 | No reading data available — default to semantic with low confidence |
 | Kanji has no onyomi | `semantic` | 0.5 | Kun-only kanji — phonetic matching not applicable |
+| Ghost radical (no `raw_kanjidic` entry) | `semantic` | 0.2 | No reading data available — ghost radical requires manual hint verification |
 
 For every `kanji_component`, the use case creates a `kanji_component_reviews` row with:
 - `verification_status = draft`
@@ -90,6 +101,26 @@ Generates CSV exports for the admin to enrich using chat-based AI tools, then im
 
 ### Batch Types
 
+#### Batch 0: Ghost Radical SVG Recovery
+
+Recovers missing SVG paths for ghost radicals by extracting the `<g>` subtree from a parent kanji's KanjiVG data. This must run before promotion (Phase 4) because a kanji cannot be promoted if any child component lacks an SVG.
+
+**Process:**
+
+1. Identify ghost radicals: draft radicals with `svg_file_name IS NULL` AND `impact_score > 0` (used by at least one kanji).
+2. For each ghost radical, find a parent kanji in `raw_kanjivg` that contains it as a `kvg:element`.
+3. Extract the `<g>` subtree (including all child strokes) from the parent's component tree.
+4. Construct a standalone SVG document from the extracted paths, adjusting the `viewBox` to fit.
+5. Save as `[unicode_hex].svg`, compute SHA-256 hash, update `draft_radical_entries` SVG fields.
+
+**Sort order:** `impact_score` DESC (highest-impact ghost radicals first — they block the most kanji promotions).
+
+**Scope:** Only radicals missing SVGs that are actually referenced by `kanji_components`. Radicals with `impact_score = 0` or `NULL` are unused and can be skipped.
+
+**Note:** This step requires programmatic SVG manipulation. If the extracted paths don't render well standalone (e.g., coordinates assume parent context), the admin may need to manually adjust the viewBox or paths.
+
+---
+
 #### Batch 1: Radical Mnemonics & Search Tags
 
 Generate system mnemonics and search tags for radicals across all target languages.
@@ -140,6 +171,7 @@ Generate system mnemonics and search tags for kanji across all target languages.
 | `en_meanings` | `kanji_i18n.meanings` (en) | English meanings (comma-joined) |
 | `es_meanings` | `kanji_i18n.meanings` (es) | Spanish meanings (comma-joined) |
 | `component_names` | Derived | Comma-separated radical names composing this kanji (for mnemonic context) |
+| `has_ghost_components` | Derived | `true` if any child radical lacks a standalone SVG — ghost radical that is itself a compound |
 
 **Fill columns (to be enriched):**
 
@@ -253,6 +285,7 @@ The CSV import use case validates every row before upserting:
 | Furigana notation well-formed | `annotated_text` in Batch 4 | Every `[` must have matching `](reading)`, non-empty kanji and reading |
 | ID exists in database | All `*_id` columns | Reject row if FK target not found |
 | No duplicate search tags | `*_search_tags` | Deduplicate silently |
+| Ghost radical flag | All batches | If `has_ghost_components` is true, flag row for high-priority review in Phase 3 |
 
 ### Import Warnings
 
@@ -278,6 +311,7 @@ Each batch type can run independently after its source content tables exist:
 
 | Batch | Depends on | Reason |
 |---|---|---|
+| 0 (Ghost SVG recovery) | svgProcessing (2.4) | Needs SVG matching to identify which radicals are missing |
 | 1 (Radical mnemonics) | radicalExtraction (2.2) | Needs `radicals` + `radical_i18n` |
 | 2 (Kanji mnemonics) | kanjiComposition (2.3) | Needs `kanji` + `kanji_i18n` + `kanji_components` (for component_names context) |
 | 3 (Sentence translation) | vocabularyExtraction (2.5) | Needs `vocabulary_sentences` + `vocabulary_sentence_i18n` (en) |
@@ -292,7 +326,8 @@ The `ExtractionPhase.aiEnrichment` enum value declares the union of all dependen
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Radical master_symbol not found in `raw_kanjidic` | `low` | Expected for custom (non-Kangxi) radicals — no reading data to compare |
+| Ghost radical — no `raw_kanjidic` AND no `raw_kanjivg` entry | `high` | Lego chain broken — radical exists in `kanji_components` but has no readings or standalone SVG |
+| Radical master_symbol not found in `raw_kanjidic` (but has SVG) | `low` | Expected for custom (non-Kangxi) radicals — no reading data but renderable |
 | Kanji has no onyomi readings | `low` | Kun-only kanji; phonetic matching not applicable |
 | JLPT-mapped component gets low confidence (< 0.5) | `high` | Learner-visible content needs manual review priority |
 | Component already has a `kanji_component_reviews` row | `low` | Skipped — idempotent re-run does not overwrite existing reviews |

@@ -212,12 +212,12 @@ class EstimateLogicHints {
       return (logicHint: LogicHint.semantic, confidence: 0.5);
     }
 
-    // Radical has no raw_kanjidic entry → semantic, 0.3.
+    // Ghost radical — no raw_kanjidic entry → semantic, 0.2.
     if (radicalReadings == null) {
       warnings.add(Warning(
         '$radicalSymbol: radical not found in raw_kanjidic',
       ));
-      return (logicHint: LogicHint.semantic, confidence: 0.3);
+      return (logicHint: LogicHint.semantic, confidence: 0.2);
     }
 
     // Radical has no onyomi → semantic, 0.3.

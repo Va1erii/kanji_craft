@@ -205,8 +205,7 @@ class EstimateLogicHints {
 
   /// Core onyomi matching algorithm.
   ///
-  /// Returns the estimated [LogicHint] and confidence score per the
-  /// confidence table in `ai_enrichment.md`.
+  /// Returns the estimated [LogicHint] and confidence score.
   ({LogicHint logicHint, double confidence}) _estimateHint({
     required String kanjiChar,
     required String radicalSymbol,

@@ -35,8 +35,8 @@ Indicates whether a reading is a primary or secondary pronunciation. Used for bo
 
 | Value | Description |
 |---|---|
-| `primary` | A core reading taught during initial lessons. An item can have multiple primary readings (e.g. ニチ and ジツ are both primary onyomi for 日) |
-| `secondary` | A less common reading shown for reference but not tested during early SRS stages |
+| `primary` | A core reading actively taught and tested. An item can have multiple primary readings (e.g. ニチ and ジツ are both primary onyomi for 日) |
+| `secondary` | A less common reading shown for reference only — not tested separately; learned naturally through vocabulary that uses it |
 
 Used by: `KanjiReading.priority` (see kanji.md), `VocabularyReading.priority` (see vocabulary.md).
 
@@ -79,5 +79,6 @@ The app supports two content languages for the client UI and production tables. 
 |---|---|---|
 | `en` | English | Default/primary. KANJIDIC: `m_lang` absent = English. JMDict: `xml:lang` absent = English |
 | `es` | Spanish | KANJIDIC: `m_lang="es"`. JMDict: `xml:lang="spa"` |
+| `ru` | Russian | KANJIDIC: `m_lang="ru"`. JMDict: `xml:lang="rus"` |
 
 Used by: `RadicalI18n.lang_code`, `KanjiI18n.lang_code`, `VocabularyI18n.lang_code`, `VocabularySentence.lang_code`, transformation layer (language filtering).

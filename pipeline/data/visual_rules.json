@@ -270,5 +270,21 @@
       "es": "Variante de Cubierta. Es idéntica a Oeste.",
       "ru": "Вариант Крышки. Выглядит в точности как Запад."
     }
+  },
+  "示": {
+    "visual_group": "礻",
+    "disambiguation_note": {
+      "en": "When on the left, it has ONE dot (礻). Relates to Spirits/Gods.",
+      "es": "A la izquierda tiene UN punto (礻). Se refiere a espíritus o dioses.",
+      "ru": "Слева имеет ОДНУ точку (礻). Относится к духам или богам."
+    }
+  },
+  "衣": {
+    "visual_group": "礻",
+    "disambiguation_note": {
+      "en": "When on the left, it has TWO dots (衤). Relates to Clothing.",
+      "es": "A la izquierda tiene DOS puntos (衤). Se refiere a la ropa.",
+      "ru": "Слева имеет ДВЕ точки (衤). Относится к одежде."
+    }
   }
 }

@@ -2,21 +2,21 @@
 
 ## Overview
 
-SVG Processing (pipeline Phase 2.4) populates SVG-related fields on draft radicals, radical variants, and kanji. Each entity that represents a visible character needs an SVG illustration from the KanjiVG archive for stroke-order display in the client app.
+SVG Processing (pipeline Phase 2.4) populates SVG-related fields on `radicals.csv`, `radical_variants.csv`, and `kanji.csv`. Each entity that represents a visible character needs an SVG illustration from the KanjiVG archive for stroke-order display in the client app.
 
-**Core principle:** Content-based hashing for delta sync. Each SVG file is hashed (SHA-256) so that the Release Builder (Phase 4) can compare hashes against Remote storage and upload only changed files. Identical bytes across KanjiVG versions produce the same hash — unchanged characters are never re-uploaded.
+**Core principle:** Content-based hashing for delta sync. Each SVG file is hashed (SHA-256) so that the upload phase (Phase 4) can compare hashes against Remote storage and upload only changed files. Identical bytes across KanjiVG versions produce the same hash — unchanged characters are never re-uploaded.
 
-**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on draft tables. It does **not** upload SVGs to Supabase Storage — that is the responsibility of the Release Builder (Phase 4).
+**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on output CSVs. It does **not** upload SVGs to Supabase Storage — that is the responsibility of Phase 4 (upload).
 
 ## Prerequisites
 
 | Dependency | Reason |
 |---|---|
-| Radical extraction (Phase 2.2, Passes 1–2) | `draft_radicals` and `draft_radical_variants` must exist |
-| Kanji composition (Phase 2.3, Steps 1–3) | `draft_kanji` rows must exist |
-| KanjiVG ZIP from ingestion (Phase 1) | Source archive: `kanjivg-{version}-main.zip` |
+| Radical extraction (Phase 2.1, Passes 1–2) | `radicals.csv` and `radical_variants.csv` must exist |
+| Kanji composition (Phase 2.2, Steps 1–3) | `kanji.csv` rows must exist |
+| KanjiVG ZIP from sources | Source archive: `kanjivg-{version}-main.zip` |
 
-The phase reads from draft tables and the ZIP archive. It writes only to SVG columns on those same draft tables.
+The phase reads from output CSVs and the ZIP archive. It updates only SVG columns on those same CSVs.
 
 ## Algorithm
 
@@ -36,21 +36,21 @@ SHA-256(raw bytes of 06c34.svg) → "a1b2c3d4..."  (64-char hex string)
 
 Build a hash map: `Map<String, String>` keyed by filename → hex digest.
 
-### Step 3: Populate Draft Tables
+### Step 3: Update Output CSVs
 
-For each entity type, resolve the character to its SVG filename, look up the hash, construct the URL, and update the draft row.
+For each entity type, resolve the character to its SVG filename, look up the hash, construct the URL, and update the CSV row.
 
-**3a. Radicals:** For each `draft_radicals` row:
+**3a. Radicals:** For each `radicals.csv` row:
 1. Convert `master_symbol` to its Unicode code point → filename (see [File Naming](#file-naming)).
 2. Look up the filename in the SVG map from Step 1.
 3. If found, set `svg_file_name`, `svg_hash`, `svg_file_url`.
-4. If not found, leave SVG fields null and emit a warning.
+4. If not found, leave SVG fields empty and emit a warning.
 
-**3b. Radical variants:** For each `draft_radical_variants` row:
+**3b. Radical variants:** For each `radical_variants.csv` row:
 1. Convert `shape` to its Unicode code point → filename.
 2. Look up and populate as above.
 
-**3c. Kanji:** For each `draft_kanji` row:
+**3c. Kanji:** For each `kanji.csv` row:
 1. Convert `character` to its Unicode code point → filename.
 2. Look up and populate as above.
 
@@ -104,7 +104,7 @@ Each variant has its own SVG showing the shape as it appears at a specific posit
 - Filename: `06c34.svg`
 - Hash: SHA-256 of `06c34.svg` raw bytes → `"a1b2..."`
 - URL: `{supabase_url}/storage/v1/object/public/svg/06c34.svg`
-- Updated fields on `draft_radicals`: `svg_file_name = '06c34.svg'`, `svg_hash = 'a1b2...'`, `svg_file_url = '{url}'`
+- Updated fields on `radicals.csv`: `svg_file_name = '06c34.svg'`, `svg_hash = 'a1b2...'`, `svg_file_url = '{url}'`
 
 ### 氵 (Variant of 水)
 
@@ -112,7 +112,7 @@ Each variant has its own SVG showing the shape as it appears at a specific posit
 - Filename: `06c35.svg`
 - Hash: SHA-256 of `06c35.svg` raw bytes → `"e5f6..."`
 - URL: `{supabase_url}/storage/v1/object/public/svg/06c35.svg`
-- Updated fields on `draft_radical_variants`: `svg_file_name = '06c35.svg'`, `svg_hash = 'e5f6...'`, `svg_file_url = '{url}'`
+- Updated fields on `radical_variants.csv`: `svg_file_name = '06c35.svg'`, `svg_hash = 'e5f6...'`, `svg_file_url = '{url}'`
 
 ### 休 (Kanji — Rest)
 
@@ -120,11 +120,11 @@ Each variant has its own SVG showing the shape as it appears at a specific posit
 - Filename: `04f11.svg`
 - Hash: SHA-256 of `04f11.svg` raw bytes → `"c3d4..."`
 - URL: `{supabase_url}/storage/v1/object/public/svg/04f11.svg`
-- Updated fields on `draft_kanji`: `svg_file_name = '04f11.svg'`, `svg_hash = 'c3d4...'`, `svg_file_url = '{url}'`
+- Updated fields on `kanji.csv`: `svg_file_name = '04f11.svg'`, `svg_hash = 'c3d4...'`, `svg_file_url = '{url}'`
 
 ## Warnings
 
-The phase uses the `Warning` class with `WarningSeverity` (same pattern as radical extraction and kanji composition phases).
+Warnings are written to `data/csv/warnings/ph2_4_warnings.csv` with columns: `severity, phase, entity, message`.
 
 | Condition | Severity | Rationale |
 |---|---|---|
@@ -135,15 +135,15 @@ The phase uses the `Warning` class with `WarningSeverity` (same pattern as radic
 | SVG file in archive with no matching entity | low | Expected for unused characters — KanjiVG has broader coverage than our entity set |
 
 **JLPT presence detection:**
-- **Kanji:** Checked via `draft_kanji.min_jlpt_level IS NOT NULL`.
-- **Radicals:** A radical is JLPT-mapped if any kanji it composes is JLPT-mapped. Derived from existing `draft_radicals.min_jlpt_level` (populated by radical metadata derivation in Phase 2.2 Pass 4).
+- **Kanji:** Checked via `kanji.csv` `min_jlpt_level` being non-empty.
+- **Radicals:** A radical is JLPT-mapped if any kanji it composes is JLPT-mapped. Derived from `radicals.csv` `min_jlpt_level` (populated by radical metadata derivation in Phase 2.3 Step 3).
 - **Radical variants:** Inherit JLPT status from their parent radical's `min_jlpt_level`.
 
 ## Edge Cases
 
 ### Missing SVG for a character
 
-If a draft entity's character has no matching SVG file in the archive, the SVG fields (`svg_file_name`, `svg_hash`, `svg_file_url`) remain `null` on the draft row. A warning is emitted (severity depends on JLPT mapping — see table above). The entity can still be promoted to content tables, but the client app must handle missing SVGs gracefully (e.g. render the character as plain text without stroke-order illustration).
+If an entity's character has no matching SVG file in the archive, the SVG fields (`svg_file_name`, `svg_hash`, `svg_file_url`) remain empty in the CSV. A warning is emitted (severity depends on JLPT mapping — see table above). The entity row is still valid and uploads normally (SVG fields are nullable in Supabase). The client app handles missing SVGs gracefully (e.g. render the character as plain text without stroke-order illustration).
 
 ### SVG file with no matching entity
 
@@ -151,10 +151,9 @@ The KanjiVG archive contains SVGs for thousands of characters, many of which are
 
 ### Re-run idempotency
 
-The phase is idempotent. Re-running with the same KanjiVG archive and the same draft entities produces identical results:
+The phase is idempotent. Re-running with the same KanjiVG archive and the same CSVs produces identical results:
 - SVG fields are overwritten with the same values (same bytes → same hash).
 - Warnings are regenerated identically.
-- No duplicate rows are created (the phase updates existing draft rows, not inserts).
 
 If the KanjiVG archive changes between runs (new version), only characters with modified SVG bytes get a new `svg_hash`. Unchanged characters retain their previous hash value.
 
@@ -164,21 +163,21 @@ KanjiVG files are keyed by a single Unicode code point. All kanji, radicals, and
 
 ## Output Summary
 
-| Draft Table | Fields Populated | Source |
+| CSV | Fields Updated | Source |
 |---|---|---|
-| `draft_radicals` | `svg_file_name`, `svg_file_url`, `svg_hash` | `master_symbol` → code point → SVG file |
-| `draft_radical_variants` | `svg_file_name`, `svg_file_url`, `svg_hash` | `shape` → code point → SVG file |
-| `draft_kanji` | `svg_file_name`, `svg_file_url`, `svg_hash` | `character` → code point → SVG file |
+| `radicals.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `master_symbol` → code point → SVG file |
+| `radical_variants.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `shape` → code point → SVG file |
+| `kanji.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `character` → code point → SVG file |
 
-All three SVG fields are nullable on draft tables (populated as a deferred step). They become NOT NULL on content tables after promotion — entities missing SVGs cannot be promoted.
+SVG fields are **nullable** in both CSVs and the Supabase schema. A kanji or radical may exist in KANJIDIC without a corresponding KanjiVG entry — the row is still valid, it just lacks stroke-order illustration. The client app handles missing SVGs gracefully (plain text fallback). High-severity warnings flag JLPT-mapped entities with missing SVGs for admin review.
 
 ## Hash Stability
 
-The `svg_hash` field enables efficient delta sync in the Release Builder (Phase 4):
+The `svg_hash` field enables efficient delta sync in Phase 4 (upload):
 
 1. **Same KanjiVG version:** Re-running produces identical hashes. No uploads needed.
-2. **New KanjiVG version, unchanged character:** If the SVG file bytes are identical, the hash is unchanged. The Release Builder skips the upload.
-3. **New KanjiVG version, modified character:** Different bytes → different hash. The Release Builder detects the mismatch and uploads the new file.
+2. **New KanjiVG version, unchanged character:** If the SVG file bytes are identical, the hash is unchanged. Phase 4 skips the upload.
+3. **New KanjiVG version, modified character:** Different bytes → different hash. Phase 4 detects the mismatch and uploads the new file.
 
 This approach avoids re-uploading the entire SVG set (~13,000 files) on each release. Only delta changes are transmitted.
 
@@ -187,6 +186,6 @@ This approach avoids re-uploading the entire SVG set (~13,000 files) on each rel
 - [radical.md](../domain/radical.md) — Radical entity spec (SVG fields: `svg_file_name`, `svg_file_url`, `svg_hash`)
 - [kanji.md](../domain/kanji.md) — Kanji entity spec (SVG fields)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phase 2.4 summary)
-- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Phase 2.2: radical/variant creation (prerequisite)
-- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Phase 2.3: kanji row creation (prerequisite)
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Phase 2.1: radical/variant creation (prerequisite)
+- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Phase 2.2: kanji row creation (prerequisite)
 - [supabase.md](../adr/supabase.md) — Storage bucket configuration and URL patterns

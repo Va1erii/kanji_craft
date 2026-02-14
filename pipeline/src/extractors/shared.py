@@ -67,6 +67,20 @@ def load_manual_strokes(path: Path) -> dict[str, int]:
     return result
 
 
+def load_visual_rules(path: Path) -> dict[str, dict]:
+    """Load visual disambiguation rules from JSON.
+
+    Format: ``{"master_symbol": {"visual_group": "...", "disambiguation_note": {...}}}``
+    Returns parsed dict, or empty dict if file doesn't exist or is empty.
+    """
+    if not path.exists():
+        return {}
+    content = path.read_text(encoding="utf-8").strip()
+    if not content:
+        return {}
+    return json.loads(content)
+
+
 def map_position(kvg_position: str | None) -> str:
     """Map KanjiVG position string to Position enum value.
 

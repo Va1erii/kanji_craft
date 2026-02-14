@@ -372,6 +372,7 @@ class TestScanAndRegister:
         assert rad_df["svg_file_name"].isna().all()
         assert rad_df["svg_file_url"].isna().all()
         assert rad_df["svg_hash"].isna().all()
+        assert rad_df["visual_group"].isna().all()
         assert rad_df["impact_score"].isna().all()
         assert rad_df["min_grade"].isna().all()
         assert rad_df["min_jlpt_level"].isna().all()
@@ -687,3 +688,179 @@ class TestExtractRadicalsIntegration:
         # IDs should be sequential from 1
         assert list(rad_df["id"]) == list(range(1, len(rad_df) + 1))
         assert list(var_df["id"]) == list(range(1, len(var_df) + 1))
+
+
+# ---------------------------------------------------------------------------
+# Visual rules loading
+# ---------------------------------------------------------------------------
+
+
+class TestLoadVisualRules:
+    def test_nonexistent_file(self):
+        from src.extractors.shared import load_visual_rules
+        assert load_visual_rules(Path("/nonexistent/file.json")) == {}
+
+    def test_basic_format(self, tmp_path):
+        from src.extractors.shared import load_visual_rules
+        f = tmp_path / "visual_rules.json"
+        f.write_text(json.dumps({
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }))
+        result = load_visual_rules(f)
+        assert result["肉"]["visual_group"] == "月"
+        assert result["月"]["visual_group"] == "月"
+
+    def test_empty_object(self, tmp_path):
+        from src.extractors.shared import load_visual_rules
+        f = tmp_path / "visual_rules.json"
+        f.write_text("{}")
+        assert load_visual_rules(f) == {}
+
+
+# ---------------------------------------------------------------------------
+# Visual group + ambiguity warnings
+# ---------------------------------------------------------------------------
+
+
+class TestVisualGroup:
+    """Tests for visual_group field population and ambiguity warnings.
+
+    Fixtures: kanji A uses 月-shape as variant of 肉, kanji B uses 月 directly.
+    This creates a shape collision on "月" between masters 肉 and 月.
+    """
+
+    @staticmethod
+    def _build_collision_fixtures():
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("月", position="left", variant=True, original="肉",
+                      stroke_count=4),
+                _tree("Z", position="right", stroke_count=3),
+            ])),
+            _kvg_row("B", _tree("B", stroke_count=8, children=[
+                _tree("月", position="right", stroke_count=4),
+                _tree("W", position="left", stroke_count=4),
+            ])),
+            _kvg_row("肉", _tree("肉", stroke_count=6)),
+            _kvg_row("月", _tree("月", stroke_count=4)),
+            _kvg_row("Z", _tree("Z", stroke_count=3)),
+            _kvg_row("W", _tree("W", stroke_count=4)),
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A", "B"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"肉", "月", "Z", "W"}
+        freq = {"肉": 1, "月": 1, "Z": 1, "W": 1}
+        return kanjivg_df, scope_set, keep, tree_map, freq
+
+    def test_visual_group_populated(self):
+        """visual_group set from visual_rules for matching master_symbol."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        flesh = rad_df[rad_df["master_symbol"] == "肉"].iloc[0]
+        assert flesh["visual_group"] == "月"
+
+        moon = rad_df[rad_df["master_symbol"] == "月"].iloc[0]
+        assert moon["visual_group"] == "月"
+
+    def test_visual_group_null_when_not_in_rules(self):
+        """visual_group is null for radicals not in visual_rules."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        z_row = rad_df[rad_df["master_symbol"] == "Z"].iloc[0]
+        assert pd.isna(z_row["visual_group"])
+
+    def test_ambiguity_warning_when_uncovered(self):
+        """High warning when shape collision exists but visual_rules is empty."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, {}
+        )
+
+        ambiguity_warnings = [
+            w for w in warnings
+            if "Visually ambiguous" in w["message"] and w["entity"] == "月"
+        ]
+        assert len(ambiguity_warnings) == 1
+        assert ambiguity_warnings[0]["severity"] == "high"
+
+    def test_no_ambiguity_warning_when_covered(self):
+        """No warning when all colliding radicals have visual_group entries."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        ambiguity_warnings = [
+            w for w in warnings if "Visually ambiguous" in w["message"]
+        ]
+        assert len(ambiguity_warnings) == 0
+
+    def test_partial_coverage_still_warns(self):
+        """Warning fires when only some colliding radicals are covered."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            # 月 is missing — partial coverage
+        }
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        ambiguity_warnings = [
+            w for w in warnings if "Visually ambiguous" in w["message"]
+        ]
+        assert len(ambiguity_warnings) == 1
+
+    def test_no_collision_no_warning(self):
+        """No warning when no shapes are shared between radicals."""
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=5, children=[
+                _tree("X", position="left", stroke_count=2),
+                _tree("Y", position="right", stroke_count=3),
+            ])),
+            _kvg_row("X", _tree("X", stroke_count=2)),
+            _kvg_row("Y", _tree("Y", stroke_count=3)),
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"X", "Y"}
+        freq = {"X": 1, "Y": 1}
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, {}
+        )
+
+        ambiguity_warnings = [
+            w for w in warnings if "Visually ambiguous" in w["message"]
+        ]
+        assert len(ambiguity_warnings) == 0

@@ -21,6 +21,7 @@ from src.extractors.shared import (
     flatten_empty_elements,
     load_manual_list,
     load_manual_strokes,
+    load_visual_rules,
     map_position,
     merge_split_parts,
     parse_component_tree,
@@ -35,6 +36,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 MANUAL_KEEP = DATA_DIR / "manual_keep.txt"
 MANUAL_FLATTEN = DATA_DIR / "manual_flatten.txt"
 MANUAL_STROKES = DATA_DIR / "manual_strokes.txt"
+VISUAL_RULES = DATA_DIR / "visual_rules.json"
 
 
 def build_scope_set(kanjidic_df: pd.DataFrame, jlpt_kanji_df: pd.DataFrame) -> set[str]:
@@ -173,6 +175,7 @@ def scan_and_register(
     tree_map: dict[str, dict],
     freq: dict[str, int],
     manual_strokes: dict[str, int],
+    visual_rules: dict[str, dict] | None = None,
     freq_threshold: int = 5,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
@@ -296,6 +299,7 @@ def scan_and_register(
     # --- Pass 2: Register ---
 
     # Build radicals DataFrame
+    vr = visual_rules or {}
     radical_rows: list[dict] = []
     master_to_id: dict[str, int] = {}
     for i, (master, info) in enumerate(sorted(radicals_info.items()), start=1):
@@ -305,6 +309,7 @@ def scan_and_register(
             "master_symbol": info["master_symbol"],
             "is_official": info["is_official"],
             "stroke_count": info["stroke_count"],
+            "visual_group": vr[master]["visual_group"] if master in vr else None,
             "svg_file_name": None,
             "svg_file_url": None,
             "svg_hash": None,
@@ -350,6 +355,30 @@ def scan_and_register(
     if not variants_df.empty:
         variants_df["id"] = variants_df["id"].astype("int64")
         variants_df["radical_id"] = variants_df["radical_id"].astype("int64")
+
+    # --- Visual ambiguity check ---
+    shape_to_masters: dict[str, set[str]] = {}
+    for (master, shape), _positions in variants_info.items():
+        if master not in master_to_id:
+            continue
+        if shape not in shape_to_masters:
+            shape_to_masters[shape] = set()
+        shape_to_masters[shape].add(master)
+
+    for shape, masters in sorted(shape_to_masters.items()):
+        if len(masters) < 2:
+            continue
+        uncovered = sorted(m for m in masters if m not in vr)
+        if uncovered:
+            warnings.append({
+                "severity": "high",
+                "phase": "2.1",
+                "entity": shape,
+                "message": (
+                    f"Visually ambiguous radicals not in visual_rules.json: "
+                    f"shape '{shape}' shared by {sorted(masters)}"
+                ),
+            })
 
     log.info(
         "Pass 2: registered %d radicals, %d variants",
@@ -398,12 +427,13 @@ def extract_radicals(
     # Pass 1c: Build keep set
     keep_set, keep_warnings = build_keep_set(scope_set, official_set, freq)
 
-    # Load manual stroke overrides
+    # Load manual stroke overrides and visual rules
     manual_strokes = load_manual_strokes(MANUAL_STROKES)
+    visual_rules = load_visual_rules(VISUAL_RULES)
 
     # Pass 1d + Pass 2: Scan and register
     radicals_df, variants_df, scan_warnings = scan_and_register(
-        kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes
+        kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes, visual_rules
     )
 
     # Deduplicate warnings by (severity, entity, message)

@@ -98,7 +98,7 @@ def count_frequencies(
     Counts BEFORE ghost flattening, after empty-element flattening and part merging.
     """
     freq: dict[str, int] = {}
-    for char in scope_set:
+    for char in sorted(scope_set):
         tree = tree_map.get(char)
         if not tree:
             continue
@@ -184,7 +184,7 @@ def scan_and_register(
     # Collect variant info: (master_symbol, shape) → set of positions
     variants_info: dict[tuple[str, str], set[str]] = {}
 
-    for char in scope_set:
+    for char in sorted(scope_set):
         tree = tree_map.get(char)
         if not tree:
             continue
@@ -249,7 +249,7 @@ def scan_and_register(
 
     # Log ghost flattening warnings for near-threshold elements
     ghosts_flattened = set()
-    for char in scope_set:
+    for char in sorted(scope_set):
         tree = tree_map.get(char)
         if not tree:
             continue
@@ -407,9 +407,10 @@ def extract_radicals(
     write_csv_atomic(radicals_df, csv_dir / "radicals.csv")
     write_csv_atomic(variants_df, csv_dir / "radical_variants.csv")
 
-    # Write warnings
+    # Write warnings (sorted for deterministic output)
     if all_warnings:
         warnings_dir.mkdir(parents=True, exist_ok=True)
+        all_warnings.sort(key=lambda w: (w["severity"], w["entity"], w["message"]))
         warnings_df = pd.DataFrame(all_warnings)
         write_csv_atomic(warnings_df, warnings_dir / "ph2_1_warnings.csv")
         log.info("Phase 2.1: %d warnings written", len(all_warnings))

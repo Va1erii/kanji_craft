@@ -2,47 +2,47 @@
 
 ## Overview
 
-Component linking creates the bridge between kanji and their constituent radicals. For each kanji, the pipeline resolves its **effective children** — the meaningful building blocks remaining after ghost radical flattening — then upserts `kanji_components` rows recording each radical's position, dictionary classification, and initial mnemonic role. A subsequent pass computes aggregate metadata on each radical from its kanji associations.
+Component linking creates the bridge between kanji and their constituent radicals. For each kanji, the pipeline resolves its **effective children** — the meaningful building blocks remaining after ghost radical flattening — then writes `kanji_components` rows recording each radical's position, dictionary classification, and initial mnemonic role. A subsequent pass computes aggregate metadata on each radical from its kanji associations.
 
 This phase corresponds to:
 - **Radical extraction Passes 3–4** in [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md)
 - **Kanji composition Steps 4–5** in [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md)
-- **Pipeline Phase 2.3 (latter half)** in [pipeline.md](pipeline.md)
+- **Pipeline Phase 2.3** in [pipeline.md](pipeline.md)
 
-**What this phase does NOT do:** Radical/variant registration (Passes 1–2), kanji row creation (Steps 1–3), SVG processing (Phase 2.4), or logic_hint refinement via AI (Phase 2.6). Those are documented separately and merely referenced here for sequencing.
+**What this phase does NOT do:** Radical/variant registration (Passes 1–2), kanji row creation (Steps 1–3), SVG processing (Phase 2.4), or logic_hint refinement via AI (Phase 3). Those are documented separately and merely referenced here for sequencing.
 
 ## Source Data
 
 | Source | Used in | Purpose |
 |---|---|---|
-| `raw_kanjivg.components` | Step 1–2 | Component tree for each kanji |
-| `radicals` table | Step 2 | Resolve `master_symbol` → `radical_id` |
-| `kanji` table | Step 2 | Resolve `character` → `kanji_id` |
-| `kanji.min_grade` | Step 3 | Aggregate to compute `radicals.min_grade` |
-| `kanji.min_jlpt_level` | Step 3 | Aggregate to compute `radicals.min_jlpt_level` |
-| `kanji_components` | Step 3 | Count kanji per radical for `impact_score` |
+| `kanjivg.parquet` component trees | Step 1–2 | Component tree for each kanji |
+| `radicals.csv` | Step 2 | Resolve `master_symbol` → `radical_id` |
+| `kanji.csv` | Step 2 | Resolve `character` → `kanji_id` |
+| `kanji.csv` `min_grade` | Step 3 | Aggregate to compute `radicals.min_grade` |
+| `kanji.csv` `min_jlpt_level` | Step 3 | Aggregate to compute `radicals.min_jlpt_level` |
+| `kanji_components.csv` | Step 3 | Count kanji per radical for `impact_score` |
 
 ## Prerequisites
 
 All four conditions must hold before this phase runs:
 
-1. **JLPT/grade scope set computed** — The same scope set used by radical extraction Pass 0 (see [ph2_1_radical_extraction.md §Scope](ph2_1_radical_extraction.md#scope-jlptgrade-kanji-only)). Only `raw_kanjivg` entries whose character is in this set are processed.
+1. **JLPT/grade scope set computed** — The same scope set used by radical extraction Pass 0 (see [ph2_1_radical_extraction.md §Scope](ph2_1_radical_extraction.md#scope-jlptgrade-kanji-only)). Only KanjiVG entries whose character is in this set are processed.
 2. **Keep set available** — The same keep set built during radical extraction Pass 1 (see [ph2_1_radical_extraction.md §Keep Set](ph2_1_radical_extraction.md#keep-set-what-becomes-a-radical)). Ghost flattening in Step 1 uses this set to determine which intermediates to flatten.
-3. **Radical extraction Passes 1–2 complete** — `radicals` and `radical_variants` tables are populated. Every element that will appear as an **effective child** (after ghost flattening) of any in-scope kanji has a corresponding `radicals` row with a known `master_symbol`.
-4. **Kanji composition Steps 1–3 complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Every in-scope `raw_kanjivg.character` has a corresponding `kanji` row so that `kanji_components.kanji_id` can resolve.
+3. **Radical extraction Passes 1–2 complete** — `radicals.csv` and `radical_variants.csv` are written. Every element that will appear as an **effective child** (after ghost flattening) of any in-scope kanji has a corresponding radical row with a known `master_symbol`.
+4. **Kanji composition Steps 1–3 complete** — `kanji.csv`, `kanji_readings.csv`, and `kanji_i18n.csv` are written. Every in-scope KanjiVG character has a corresponding kanji row so that `kanji_components.kanji_id` can resolve.
 
 ## Algorithm
 
-The phase runs in three steps over the active `raw_kanjivg` import. Each step is idempotent — re-running with the same data produces the same result.
+The phase runs in three steps over the KanjiVG Parquet data. Each step is idempotent — re-running with the same data produces the same output.
 
 ### Step 1: Resolve Effective Children
 
-For each `raw_kanjivg` row in the active import **whose character is in the JLPT/grade scope set**:
+For each KanjiVG entry **whose character is in the JLPT/grade scope set**:
 
 1. Get the root node's `children` array.
 2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element`.
 3. **Merge split parts:** If multiple children share the same `element` with different `part` values (e.g. 辶 part=1 and 辶 part=2 in 道), treat them as a **single component**. Merge their `stroke_indices` and use the `position` from the first part (or the part that carries the `position` attribute).
-4. **Ghost flattening:** For each child after steps 2–3, resolve the master symbol (`original` if variant, else `element`). If the master symbol is NOT in the keep set, the child is a **ghost radical** — replace it with its own effective children from its KanjiVG entry (recursive, depth-limited to 10). See [ph2_1_radical_extraction.md §Ghost Radical Flattening](ph2_1_radical_extraction.md#ghost-radical-flattening) for the full algorithm and pseudocode.
+4. **Ghost flattening:** For each child after steps 2–3, resolve the master symbol (`original` if variant, else `element`). If the master symbol is NOT in the keep set, the child is a **ghost radical** — replace it with its own effective children from its KanjiVG entry (recursive, depth-limited to 10, warning at depth > 5). See [ph2_1_radical_extraction.md §Ghost Radical Flattening](ph2_1_radical_extraction.md#ghost-radical-flattening) for the full algorithm and pseudocode.
 
 **Important:** The same keep set and ghost flattening algorithm used in radical extraction Pass 1 must be applied here to ensure consistency — every effective child produced in this step has a corresponding radical row from Pass 2. Sub-components of a keep-set child (e.g. 五 and 口 inside 吾) are handled when that child's own entry is processed. This is the **progressive decomposition** principle — multi-level learning chains emerge from the dataset, but only through meaningful components.
 
@@ -50,7 +50,7 @@ For each `raw_kanjivg` row in the active import **whose character is in the JLPT
 
 For each effective child identified in Step 1:
 
-1. **Look up kanji_id:** Find the `kanji` row matching `raw_kanjivg.character`. If not found, log a warning and skip this entry (should not happen if prerequisites are met).
+1. **Look up kanji_id:** Find the kanji row matching the KanjiVG character. If not found, log a warning and skip this entry (should not happen if prerequisites are met).
 
 2. **Resolve the radical:** If the child has `variant == true` and `original` is present, look up the radical by `master_symbol == original`. Otherwise, look up by `master_symbol == element`. Component linking always points to the **master radical**, not the variant shape.
 
@@ -58,18 +58,18 @@ For each effective child identified in Step 1:
 
 4. **Determine radical_type:** Convert the child's `radical` attribute to a `RadicalType` enum value (see §Radical Type Classification below).
 
-5. **Upsert `kanji_components`:**
+5. **Write `kanji_components` row:**
 
    | Field | Value | Notes |
    |---|---|---|
    | `kanji_id` | From step 1 | FK to `kanji` |
    | `radical_id` | From step 2 | FK to `radicals` (always the master, not the variant) |
    | `position` | From step 3 | Where this radical sits inside this kanji |
-   | `logic_hint` | `semantic` | Default; refined by AI Heuristics in Phase 2.6 |
+   | `logic_hint` | `semantic` | Default; refined by AI enrichment in Phase 3 |
    | `radical_type` | From step 4 | Dictionary classification role in this kanji |
    | `is_primary` | Computed | `true` only when `radical_type == general` (generated column in Postgres, getter in Dart) |
 
-   **Upsert key:** `(kanji_id, radical_id, position)` — a radical appears at a given position in a given kanji exactly once.
+   **Unique key:** `(kanji_id, radical_id, position)` — a radical appears at a given position in a given kanji exactly once.
 
 **Skip condition:** If an effective child's `element` cannot be resolved to a radical (e.g. it was filtered out during Pass 1 or the element is empty), log a warning and skip. This should not happen if Passes 1–2 ran correctly with the same keep set.
 
@@ -79,9 +79,11 @@ After all kanji–radical links are created, compute derived fields on each radi
 
 **3a. `impact_score`**
 
-Count distinct `kanji_id` values in `kanji_components` for each `radical_id`. Map the count to a 1–10 scale:
+The impact score reflects how valuable it is for a learner to master a radical. It combines **frequency** (how many kanji reuse it) with a **complexity bonus** (high-stroke radicals save more memorization effort per kanji). The score ranges from 1–10.
 
-| Kanji count | Score |
+**Base score from frequency:** Count distinct `kanji_id` values in `kanji_components` for each `radical_id`, then map:
+
+| Kanji count | Base score |
 |---|---|
 | 1–5 | 1 |
 | 6–15 | 2 |
@@ -94,7 +96,23 @@ Count distinct `kanji_id` values in `kanji_components` for each `radical_id`. Ma
 | 261–400 | 9 |
 | 401+ | 10 |
 
-The buckets are approximate and may need tuning after processing real data. Score 10 radicals (like 口, 木) appear in hundreds of kanji; score 1 radicals appear in a handful.
+**Complexity bonus:** A simple 2-stroke radical appearing in 5 kanji is easy to absorb inline — low impact. A 12-stroke radical appearing in 5 kanji saves the learner from memorizing 12 random strokes each time — high impact. To account for this:
+
+| `stroke_count` | Bonus |
+|---|---|
+| < 8 | +0 |
+| 8–11 | +1 |
+| 12+ | +2 |
+
+**Final score:** `min(base + bonus, 10)`.
+
+**Examples:**
+- 口 (3 strokes, ~180 kanji): base 7 + 0 = **7**
+- 木 (4 strokes, ~150 kanji): base 7 + 0 = **7**
+- 龜 (16 strokes, ~3 kanji): base 1 + 2 = **3** (without bonus it would be 1 — nearly invisible in priority ordering)
+- 鬼 (10 strokes, ~12 kanji): base 2 + 1 = **3**
+
+The buckets and bonuses are approximate and may need tuning after processing real data.
 
 **3b. `min_grade`**
 
@@ -116,7 +134,7 @@ JOIN kanji_components kc ON k.id = kc.kanji_id
 WHERE kc.radical_id = ?
 ```
 
-Note: `MAX` because JLPT 5 is easiest, 1 is hardest — `MAX` returns the **easiest** level at which any kanji containing this radical appears. Returns `null` if all containing kanji have `null` JLPT level.
+**Why MAX, not MIN:** JLPT levels are inverted — N5 = 5 (easiest), N1 = 1 (hardest). `MAX(5, 1) = 5`, which is the **easiest** level at which any kanji containing this radical appears. This tells us the earliest point in the JLPT progression where the learner encounters this radical. Implementation note: this inverted scale is a common source of confusion — always comment the intent (`// N5=5 easiest, N1=1 hardest; MAX returns earliest encounter`) when writing the aggregation query. Returns `null` if all containing kanji have `null` JLPT level.
 
 ## Position Mapping
 
@@ -184,7 +202,7 @@ The pipeline merges these into a single component:
 
 1. Identify groups with the same `element` and different `part` values. If `number` is present, also group by `number` (disambiguates when the same element is split into parts multiple times).
 2. Combine `stroke_indices` from all parts.
-3. Use `position` from the part that carries the `position` attribute (or the first part if multiple carry it).
+3. Use `position` from whichever part carries a non-null `position` attribute. Iterate all parts — KanjiVG is inconsistent about which part holds the position (sometimes part 1, sometimes part 2). If multiple parts carry different positions, log a warning and use the first non-null value.
 4. Create **one** `kanji_components` row for the merged component.
 
 ## Variant Resolution
@@ -360,11 +378,11 @@ After linking, radical 口 appears in kanji: 語 (grade 2, N4), 吾 (no grade, n
 
 ## Edge Cases
 
-### Kanji in `raw_kanjivg` but not in `kanji` table
+### Kanji in KanjiVG but not in `kanji.csv`
 
-Should not happen for in-scope kanji if prerequisites are enforced (kanji composition creates rows for all `raw_kanjidic` entries, which is a superset of the scope set). If it does, log a warning and skip — no `kanji_components` rows can be created without a `kanji_id`. Out-of-scope kanji are simply not processed (no warning needed).
+Should not happen for in-scope kanji if prerequisites are enforced (kanji composition creates rows for all `kanjidic.parquet` entries, which is a superset of the scope set). If it does, log a warning and skip — no `kanji_components` rows can be created without a `kanji_id`. Out-of-scope kanji are simply not processed (no warning needed).
 
-### Component element missing from `radicals`
+### Component element missing from `radicals.csv`
 
 An effective child's `element` may not resolve to any radical (e.g. filtered out during Pass 1 or rare sub-component). Log a warning and skip this component. This indicates a gap in the radical registration pass — since Passes 1–2 and Passes 3–4 use the same keep set and ghost flattening algorithm, every effective child of an in-scope kanji should have been registered.
 
@@ -374,7 +392,7 @@ Structural-only `<g>` group — handled by flattening (see §Structural Group Fl
 
 ### Variant without `original`
 
-If a node has `variant == true` but `original` is null, log a warning. Treat the element as its own master symbol (non-variant). See [raw_kanjivg.md](../domain/raw_kanjivg.md) edge case.
+If a node has `variant == true` but `original` is null, log a warning. Treat the element as its own master symbol (non-variant). See [kanjivg_format.md](../sources/kanjivg_format.md) for KanjiVG attribute details.
 
 ### Kanji with no children (leaf kanji)
 
@@ -386,7 +404,7 @@ A kanji's `master_symbol` in `radicals` may equal its `character` in `kanji` (e.
 
 ### Duplicate component positions
 
-If the same radical appears at the same position in the same kanji after part merging, the unique constraint `(kanji_id, radical_id, position)` prevents duplicates. The upsert is a no-op.
+If the same radical appears at the same position in the same kanji after part merging, the unique constraint `(kanji_id, radical_id, position)` prevents duplicates. The write is a no-op.
 
 ### Multiple radical classifications in one kanji
 
@@ -402,15 +420,15 @@ With the JLPT/grade scope filter, this situation is rare — most radicals inher
 
 ### Component not in KANJIDIC
 
-A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanjidic` (e.g. rare components, non-standard decompositions). The radical row exists (from Pass 2) but won't have its own kanji row with readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
+A radical extracted from KanjiVG may not have a corresponding entry in `kanjidic.parquet` (e.g. rare components, non-standard decompositions). The radical row exists (from Pass 2) but won't have its own kanji row with readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
 
 ## Warnings
 
-The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+Warnings are written to `data/csv/warnings/ph2_3_warnings.csv` with columns: `severity, phase, entity, message`.
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Kanji in `raw_kanjivg` not found in `kanji` table | high | Prerequisite violation — kanji composition should have created this row; indicates a pipeline ordering bug |
+| Kanji in KanjiVG not found in `kanji.csv` | high | Prerequisite violation — kanji composition should have created this row; indicates a pipeline ordering bug |
 | Child element not resolved to a radical | high | Prerequisite violation — radical extraction Passes 1–2 should have registered this element |
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol (same handling as radical extraction) |
 
@@ -419,38 +437,36 @@ The first two conditions are non-blocking per row (the affected kanji/component 
 ## Business Rules
 
 1. `kanji_id` + `radical_id` + `position` must be unique — a radical appears at a given position in a given kanji exactly once.
-2. Every `kanji_components` row must have a `logic_hint` value. Default to `semantic` during this phase; refined by AI Heuristics (Phase 2.6).
+2. Every `kanji_components` row must have a `logic_hint` value. Default to `semantic` during this phase; refined by AI enrichment (Phase 3).
 3. Every `kanji_components` row must have a `radical_type` value. Default to `component` when the KanjiVG node has no `kvg:radical` attribute.
 4. `is_primary` is computed, not stored explicitly: `true` only when `radical_type == general`.
 5. A kanji should have at most one component with `radical_type = general`.
 6. Component linking always references `radicals.id`, never `kanji.id` — even when the radical's `master_symbol` matches a kanji `character`.
-7. Effective children are processed (after structural flattening and ghost flattening). Sub-components of keep-set children are handled by their own `raw_kanjivg` entry.
-8. Re-processing the same `raw_kanjivg` data produces the same result (idempotent upserts).
+7. Effective children are processed (after structural flattening and ghost flattening). Sub-components of keep-set children are handled by their own KanjiVG entry.
+8. Re-processing the same data produces the same output (idempotent file writes).
 9. `impact_score` must be in range 1–10 after derivation.
-10. `min_grade`, when present after derivation, must be in range 1–8.
+10. `min_grade`, when present after derivation, must be in range 1–10.
 11. `min_jlpt_level`, when present after derivation, must be in range 1–5.
 
 ## Output Summary
 
-| Table | What gets created/updated | Step |
+| File | What gets created/updated | Step |
 |---|---|---|
-| `kanji_components` | One row per effective-child component per kanji (after ghost flattening) | Step 2 |
-| `radicals.impact_score` | Updated from kanji count | Step 3a |
-| `radicals.min_grade` | Updated from MIN across containing kanji | Step 3b |
-| `radicals.min_jlpt_level` | Updated from MAX across containing kanji | Step 3c |
+| `kanji_components.csv` | One row per effective-child component per kanji (after ghost flattening) | Step 2 |
+| `radicals.csv` `impact_score` | Updated from kanji count | Step 3a |
+| `radicals.csv` `min_grade` | Updated from MIN across containing kanji | Step 3b |
+| `radicals.csv` `min_jlpt_level` | Updated from MAX across containing kanji | Step 3c |
 
-Tables populated by **later phases** (not this algorithm):
-- `kanji_components.logic_hint` refinement — AI Heuristics (Phase 2.6)
-- `kanji_component_reviews` — AI Heuristics (Phase 2.6)
+Files updated by **later phases** (not this algorithm):
+- `kanji_components.csv` `logic_hint` refinement — AI Enrichment (Phase 3)
 
-## Subsequent Phase: AI Heuristics (Phase 2.6)
+## Subsequent Phase: AI Enrichment (Phase 3)
 
-After component linking and SVG processing are complete, Phase 2.6 refines the `logic_hint` on each `kanji_components` row and creates the corresponding review entries. This is documented in [pipeline.md §2.6](pipeline.md#26-ai-heuristics-logic-hint-estimation) and summarized here for context:
+After component linking and SVG processing are complete, Phase 3 refines the `logic_hint` on each `kanji_components` row. This is documented in [pipeline.md §Phase 3](pipeline.md#phase-3-ai-enrichment) and summarized here for context:
 
-1. For each `kanji_components` row, fetch onyomi for the kanji and for the radical's `master_symbol` (looked up in `raw_kanjidic`).
+1. For each `kanji_components` row, fetch onyomi for the kanji and for the radical's `master_symbol` (looked up in `kanjidic.parquet`).
 2. If onyomi match → set `logic_hint = phonetic`. If no match → keep `logic_hint = semantic`.
-3. Create a `kanji_component_reviews` row with `verification_status = draft` and an `ai_confidence` score (0.0–1.0) reflecting match quality.
-4. The review queue (Phase 3) surfaces draft reviews ordered by `ai_confidence ASC` (lowest confidence first).
+3. The admin reviews AI-generated `logic_hint` values before upload (Phase 4).
 
 ## Schema Status
 
@@ -472,27 +488,26 @@ The Supabase schema for `kanji_components` is complete. All columns from the ent
 The full Phase 2 execution order, showing where component linking fits:
 
 ```
-Phase 2.2 Passes 1-2: Radical extraction (populates radicals, radical_variants)
+Phase 2.1 Passes 1-2: Radical extraction (outputs radicals.csv, radical_variants.csv)
     |
-Phase 2.3 Steps 1-3: Kanji composition (populates kanji, kanji_readings, kanji_i18n)
+Phase 2.2 Steps 1-3: Kanji composition (outputs kanji.csv, kanji_readings.csv, kanji_i18n.csv)
     |
-Phase 2.3 Steps 4-5: Component linking + metadata derivation  <-- THIS DOC
+Phase 2.3: Component linking + metadata derivation (outputs kanji_components.csv, updates radicals.csv)  <-- THIS DOC
     |
-Phase 2.4: SVG Processing (populates svg fields on radicals, radical_variants, kanji)
+Phase 2.4: SVG Processing (updates svg fields on radicals.csv, radical_variants.csv, kanji.csv)
     |
-Phase 2.5: Vocabulary extraction (needs kanji table for vocabulary_kanji)
+Phase 2.5: Vocabulary extraction (outputs vocabulary CSVs, needs kanji.csv for vocabulary_kanji)
     |
-Phase 2.6: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
+Phase 3: AI Enrichment (refines logic_hint, populates system_mnemonic, search_tags)
 ```
 
-Steps 1–2 (linking) depend on both the `kanji` rows from kanji composition and the `radicals` rows from radical extraction. Step 3 (metadata derivation) depends on Step 2 (all links must exist before aggregation).
+Steps 1–2 (linking) depend on both the kanji rows from kanji composition and the radical rows from radical extraction. Step 3 (metadata derivation) depends on Step 2 (all links must exist before aggregation).
 
 ## Related Docs
 
 - [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity spec (target schema, business rules, edge cases)
 - [radical.md](../domain/radical.md) — Radical entity spec (master_symbol, variants, metadata fields)
 - [kanji.md](../domain/kanji.md) — Kanji entity spec (min_grade, min_jlpt_level used in metadata derivation)
-- [raw_kanjivg.md](../domain/raw_kanjivg.md) — Source staging table (component tree shape, KanjiVG attributes)
 - [kanjivg_format.md](../sources/kanjivg_format.md) — KanjiVG SVG format (position values, radical markers, split parts)
 - [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Passes 1–2 (radical registration) and full worked examples
 - [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Steps 1–3 (kanji creation) and JLPT level mapping

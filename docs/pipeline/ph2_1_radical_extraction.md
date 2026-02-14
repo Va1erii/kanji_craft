@@ -219,7 +219,7 @@ For each unique element from Pass 1:
    - `master_symbol` — as determined above.
    - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
    - `stroke_count` — looked up from KanjiVG data where `character == master_symbol` (the master's own entry, from ALL entries not just in-scope).
-   - `visual_group` — looked up from `pipeline/data/visual_rules.json`. If the master symbol (or any of its variant shapes) has an entry, set to the `visual_group` value from that entry. Null otherwise.
+   - `visual_group` — looked up from `pipeline/data/visual_rules.json` by master symbol. Null if the master symbol has no entry.
    - `svg_file_name`, `svg_file_url`, `svg_hash` — from SVG Processing (pipeline Phase 2.4).
    - `min_grade`, `min_jlpt_level`, `impact_score` — from Pass 4 (metadata derivation).
 
@@ -490,7 +490,7 @@ Warnings are written to `data/csv/warnings/ph2_1_warnings.csv` with columns: `se
 - ~600–750 radical variants
 
 Tables populated by **later phases** (not this algorithm):
-- `radical_i18n` — names, mnemonics, and `disambiguation_note` (Phase 3, KANJIDIC meanings + AI + `visual_rules.json`)
+- `radical_i18n` — names and mnemonics (Phase 3, KANJIDIC meanings + AI); `disambiguation_note` is populated from `visual_rules.json` (curated per-language text, not AI-generated)
 - SVG fields on `radicals` and `radical_variants` — (Phase 2.4, SVG Processing)
 
 **Future consideration — SVG stroke group linkage:** The current schema does not store KanjiVG `<g>` group IDs on `kanji_components`. For the UI to highlight specific strokes belonging to a merged/split part or a promoted ghost child, it will need a way to map each component back to its SVG stroke groups. This may require adding a `svg_group_ids` field or a separate mapping table. Deferred until the client rendering layer is designed — flagged here so the need is not forgotten.

@@ -864,3 +864,98 @@ class TestVisualGroup:
             w for w in warnings if "Visually ambiguous" in w["message"]
         ]
         assert len(ambiguity_warnings) == 0
+
+
+# ---------------------------------------------------------------------------
+# Force-drop via manual_flatten
+# ---------------------------------------------------------------------------
+
+
+class TestManualFlattenForceDrop:
+    """manual_flatten entries should be silently dropped during ghost flattening,
+    even when they are unflattenable (no KanjiVG entry)."""
+
+    @staticmethod
+    def _build_fixtures_with_unflattenable_ghost():
+        """Kanji A has child G (ghost, no KanjiVG entry) + child X (keep).
+
+        Without force_drop, G becomes an unflattenable leaf radical.
+        With force_drop={'G'}, G is silently discarded.
+        """
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=8, children=[
+                _tree("G", position="left", stroke_count=3),
+                _tree("X", position="right", stroke_count=5),
+            ])),
+            _kvg_row("X", _tree("X", stroke_count=5)),
+            # No standalone entry for G — unflattenable ghost
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"X"}
+        freq = {"G": 1, "X": 1}
+        return kanjivg_df, scope_set, keep, tree_map, freq
+
+    def test_unflattenable_ghost_registered_without_flatten(self):
+        """Without manual_flatten, unflattenable ghost G becomes a leaf radical."""
+        kanjivg_df, scope_set, keep, tree_map, freq = (
+            self._build_fixtures_with_unflattenable_ghost()
+        )
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+
+        masters = set(rad_df["master_symbol"])
+        assert "G" in masters
+
+    def test_force_drop_removes_unflattenable_ghost(self):
+        """With manual_flatten={'G'}, G is dropped — not registered as a radical."""
+        kanjivg_df, scope_set, keep, tree_map, freq = (
+            self._build_fixtures_with_unflattenable_ghost()
+        )
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {},
+            visual_rules=None, manual_flatten={"G"},
+        )
+
+        masters = set(rad_df["master_symbol"])
+        assert "G" not in masters
+        assert "X" in masters
+
+    def test_force_drop_no_unflattenable_warning(self):
+        """Dropped ghosts should not emit 'unflattenable' warnings."""
+        kanjivg_df, scope_set, keep, tree_map, freq = (
+            self._build_fixtures_with_unflattenable_ghost()
+        )
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {},
+            visual_rules=None, manual_flatten={"G"},
+        )
+
+        unflattenable = [
+            w for w in warnings
+            if w["entity"] == "G" and "unflattenable" in w["message"]
+        ]
+        assert len(unflattenable) == 0
+
+    def test_force_drop_does_not_affect_keep_set_members(self):
+        """manual_flatten should not drop elements that are in the keep set."""
+        kanjivg_df, scope_set, keep, tree_map, freq = (
+            self._build_fixtures_with_unflattenable_ghost()
+        )
+
+        # X is in keep set — force_drop is checked before keep_set,
+        # but keep_set members pass through the keep_set branch first
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {},
+            visual_rules=None, manual_flatten={"X"},
+        )
+
+        masters = set(rad_df["master_symbol"])
+        assert "X" in masters

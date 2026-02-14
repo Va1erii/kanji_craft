@@ -160,10 +160,12 @@ def resolve_effective_children(
     depth: int = 0,
     inherit_position: str | None = None,
     warnings: list[dict] | None = None,
+    force_drop: set[str] | None = None,
 ) -> list[dict]:
     """Ghost flattening algorithm. Recursive, depth-limited.
 
     For each direct child of `component`:
+    - If master_symbol is in force_drop → silently discard
     - If master_symbol is in keep_set → keep (apply inherited position if needed)
     - Else (ghost) → look up ghost's tree entry and recursively flatten
     - If ghost has no entry or no children → keep as unflattenable leaf
@@ -204,6 +206,9 @@ def resolve_effective_children(
             element, child.get("variant", False), child.get("original")
         )
 
+        if force_drop and master in force_drop and master not in keep_set:
+            continue
+
         if master in keep_set:
             # Meaningful component — keep. Apply inherited position if child has none.
             if child.get("position") is None and inherit_position is not None:
@@ -223,6 +228,7 @@ def resolve_effective_children(
                         depth + 1,
                         ghost_position,
                         warnings,
+                        force_drop,
                     )
                 )
                 # Log ghost flattening (severity depends on frequency, set by caller)

@@ -176,6 +176,7 @@ def scan_and_register(
     freq: dict[str, int],
     manual_strokes: dict[str, int],
     visual_rules: dict[str, dict] | None = None,
+    manual_flatten: set[str] | None = None,
     freq_threshold: int = 5,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
@@ -196,7 +197,8 @@ def scan_and_register(
             continue
 
         effective = resolve_effective_children(
-            tree, keep_set, tree_map, depth=0, warnings=warnings
+            tree, keep_set, tree_map, depth=0, warnings=warnings,
+            force_drop=manual_flatten,
         )
 
         for child in effective:
@@ -427,13 +429,15 @@ def extract_radicals(
     # Pass 1c: Build keep set
     keep_set, keep_warnings = build_keep_set(scope_set, official_set, freq)
 
-    # Load manual stroke overrides and visual rules
+    # Load manual overrides and visual rules
     manual_strokes = load_manual_strokes(MANUAL_STROKES)
+    manual_flatten = load_manual_list(MANUAL_FLATTEN)
     visual_rules = load_visual_rules(VISUAL_RULES)
 
     # Pass 1d + Pass 2: Scan and register
     radicals_df, variants_df, scan_warnings = scan_and_register(
-        kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes, visual_rules
+        kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes,
+        visual_rules, manual_flatten,
     )
 
     # Deduplicate warnings by (severity, entity, message)

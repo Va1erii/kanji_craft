@@ -358,6 +358,38 @@ def scan_and_register(
         variants_df["id"] = variants_df["id"].astype("int64")
         variants_df["radical_id"] = variants_df["radical_id"].astype("int64")
 
+    # --- Visual group validation ---
+    # Check that every visual_group value has 2+ members (catches typos)
+    group_members: dict[str, list[str]] = {}
+    for row in radical_rows:
+        vg = row["visual_group"]
+        if vg is not None:
+            if vg not in group_members:
+                group_members[vg] = []
+            group_members[vg].append(row["master_symbol"])
+
+    for vg, members in sorted(group_members.items()):
+        if len(members) < 2:
+            warnings.append({
+                "severity": "high",
+                "phase": "2.1",
+                "entity": members[0],
+                "message": (
+                    f"visual_group '{vg}' has only 1 member — "
+                    f"typo in visual_rules.json?"
+                ),
+            })
+
+    # Warn about visual_rules entries that don't match any registered radical
+    for symbol in sorted(vr):
+        if symbol not in master_to_id:
+            warnings.append({
+                "severity": "medium",
+                "phase": "2.1",
+                "entity": symbol,
+                "message": "Entry in visual_rules.json but not a registered radical",
+            })
+
     # --- Visual ambiguity check ---
     shape_to_masters: dict[str, set[str]] = {}
     for (master, shape), _positions in variants_info.items():

@@ -838,6 +838,63 @@ class TestVisualGroup:
         ]
         assert len(ambiguity_warnings) == 1
 
+    def test_singleton_visual_group_warns(self):
+        """High warning when a visual_group has only 1 member (likely typo)."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            # 月 is NOT in visual_rules → only 肉 has visual_group "月"
+        }
+
+        rad_df, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        singleton_warnings = [
+            w for w in warnings
+            if "only 1 member" in w["message"]
+        ]
+        assert len(singleton_warnings) == 1
+        assert singleton_warnings[0]["severity"] == "high"
+        assert singleton_warnings[0]["entity"] == "肉"
+
+    def test_no_singleton_warning_when_group_complete(self):
+        """No warning when visual_group has 2+ members."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        singleton_warnings = [
+            w for w in warnings if "only 1 member" in w["message"]
+        ]
+        assert len(singleton_warnings) == 0
+
+    def test_unregistered_visual_rules_entry_warns(self):
+        """Medium warning when visual_rules.json has an entry for a non-radical."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+            "FAKE": {"visual_group": "X", "disambiguation_note": {"en": "nope"}},
+        }
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+
+        unregistered = [
+            w for w in warnings
+            if w["entity"] == "FAKE" and "not a registered radical" in w["message"]
+        ]
+        assert len(unregistered) == 1
+        assert unregistered[0]["severity"] == "medium"
+
     def test_no_collision_no_warning(self):
         """No warning when no shapes are shared between radicals."""
         rows = [

@@ -23,14 +23,6 @@
       "ru": "ВСЕГДА СЛЕВА (Hen). Означает 'Холм/Земля'."
     }
   },
-  "⻏": {
-    "visual_group": "阝",
-    "disambiguation_note": {
-      "en": "ALWAYS on the RIGHT (Tsuki). Means 'Town/City'.",
-      "es": "SIEMPRE a la DERECHA (Tsuki). Significa 'Pueblo/Ciudad'.",
-      "ru": "ВСЕГДА СПРАВА (Tsuki). Означает 'Город/Селение'."
-    }
-  },
   "阜": {
     "visual_group": "阝",
     "disambiguation_note": {
@@ -45,30 +37,6 @@
       "en": "Original full form of the Right-side Town (⻏).",
       "es": "Forma completa original del radical Pueblo (⻏) a la derecha.",
       "ru": "Исходная полная форма правого радикала Город (⻏)."
-    }
-  },
-  "夂": {
-    "visual_group": "夂",
-    "disambiguation_note": {
-      "en": "Usually at the TOP or RIGHT side. Means 'Winter/Late'.",
-      "es": "Normalmente ARRIBA o a la DERECHA. Significa 'Invierno/Tarde'.",
-      "ru": "Обычно располагается СВЕРХУ или СПРАВА. Означает 'Зима/Поздно'."
-    }
-  },
-  "夊": {
-    "visual_group": "夂",
-    "disambiguation_note": {
-      "en": "Usually at the BOTTOM. Means 'Go slowly/Walk'.",
-      "es": "Normalmente ABAJO. Significa 'Ir despacio/Caminar'.",
-      "ru": "Обычно располагается СНИЗУ. Означает 'Медленно идти/Шагать'."
-    }
-  },
-  "⺍": {
-    "visual_group": "ツ",
-    "disambiguation_note": {
-      "en": "Visual simplification of 'Small' or 'Light'.",
-      "es": "Simplificación visual de 'Pequeño' o 'Luz'.",
-      "ru": "Визуальное упрощение для радикалов 'Маленький' или 'Свет'."
     }
   },
   "⺤": {
@@ -106,17 +74,17 @@
   "儿": {
     "visual_group": "儿",
     "disambiguation_note": {
-      "en": "Legs/Human variant.",
-      "es": "Variante de Piernas/Humano.",
-      "ru": "Вариант Ноги/Человек."
+      "en": "Legs/Human. Strokes touch at bottom.",
+      "es": "Piernas/Humano. Los trazos se unen abajo.",
+      "ru": "Ноги/Человек. Черты соединяются внизу."
     }
   },
   "八": {
-    "visual_group": "八",
+    "visual_group": "儿",
     "disambiguation_note": {
-      "en": "Eight. Often looks like Legs (儿) but strokes don't touch.",
-      "es": "Ocho. A menudo parece Piernas (儿) pero los trazos no se tocan.",
-      "ru": "Восемь. Часто похоже на Ноги (儿), но черты не соприкасаются."
+      "en": "Eight. Looks like Legs (儿) but strokes don't touch.",
+      "es": "Ocho. Parece Piernas (儿) pero los trazos no se tocan.",
+      "ru": "Восемь. Похоже на Ноги (儿), но черты не соприкасаются."
     }
   },
   "匸": {

@@ -20,6 +20,7 @@ import pandas as pd
 from src.extractors.shared import (
     flatten_empty_elements,
     load_manual_list,
+    load_manual_strokes,
     map_position,
     merge_split_parts,
     parse_component_tree,
@@ -33,6 +34,7 @@ log = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 MANUAL_KEEP = DATA_DIR / "manual_keep.txt"
 MANUAL_FLATTEN = DATA_DIR / "manual_flatten.txt"
+MANUAL_STROKES = DATA_DIR / "manual_strokes.txt"
 
 
 def build_scope_set(kanjidic_df: pd.DataFrame, jlpt_kanji_df: pd.DataFrame) -> set[str]:
@@ -170,6 +172,7 @@ def scan_and_register(
     keep_set: set[str],
     tree_map: dict[str, dict],
     freq: dict[str, int],
+    manual_strokes: dict[str, int],
     freq_threshold: int = 5,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
@@ -218,13 +221,10 @@ def scan_and_register(
 
             # Register or update radical info
             if master not in radicals_info:
-                # Look up stroke count from master's own KanjiVG entry first,
-                # fall back to the component node's stroke_count (for radicals
-                # without their own KanjiVG entry, e.g. CDP codes)
+                # Stroke count from master's own KanjiVG entry only —
+                # component node values are unreliable (vary across parents)
                 master_tree = tree_map.get(master)
                 stroke_count = master_tree.get("stroke_count", 0) if master_tree else 0
-                if stroke_count == 0:
-                    stroke_count = child.get("stroke_count", 0)
                 radicals_info[master] = {
                     "master_symbol": master,
                     "is_official": is_official,
@@ -280,6 +280,18 @@ def scan_and_register(
                         "entity": master,
                         "message": f"Rare ghost flattened (freq={f})",
                     })
+
+    # --- Apply manual stroke overrides + warn on missing ---
+    for master, info in sorted(radicals_info.items()):
+        if master in manual_strokes:
+            info["stroke_count"] = manual_strokes[master]
+        elif info["stroke_count"] == 0:
+            warnings.append({
+                "severity": "high",
+                "phase": "2.1",
+                "entity": master,
+                "message": "Missing stroke count (add to manual_strokes.txt)",
+            })
 
     # --- Pass 2: Register ---
 
@@ -386,9 +398,12 @@ def extract_radicals(
     # Pass 1c: Build keep set
     keep_set, keep_warnings = build_keep_set(scope_set, official_set, freq)
 
+    # Load manual stroke overrides
+    manual_strokes = load_manual_strokes(MANUAL_STROKES)
+
     # Pass 1d + Pass 2: Scan and register
     radicals_df, variants_df, scan_warnings = scan_and_register(
-        kanjivg_df, scope_set, keep_set, tree_map, freq
+        kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes
     )
 
     # Deduplicate warnings by (severity, entity, message)

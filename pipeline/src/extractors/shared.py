@@ -49,6 +49,24 @@ def load_manual_list(path: Path) -> set[str]:
     return result
 
 
+def load_manual_strokes(path: Path) -> dict[str, int]:
+    """Load char→stroke_count mapping file, skip blanks and # comments.
+
+    Format: ``电  5  # comment`` → ``{"电": 5}``.
+    """
+    if not path.exists():
+        return {}
+    result: dict[str, int] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) >= 2:
+            result[parts[0]] = int(parts[1])
+    return result
+
+
 def map_position(kvg_position: str | None) -> str:
     """Map KanjiVG position string to Position enum value.
 

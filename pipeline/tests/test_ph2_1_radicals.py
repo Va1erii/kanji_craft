@@ -1,6 +1,7 @@
 """Tests for Phase 2.1 radical extraction (Passes 0-2)."""
 
 import json
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -282,7 +283,7 @@ class TestScanAndRegister:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         rad_df, var_df, warnings = scan_and_register(
-            kanjivg_df, scope_set, keep, tree_map, freq
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
         # Should have radicals rows
         assert len(rad_df) > 0
@@ -295,14 +296,14 @@ class TestScanAndRegister:
     def test_deduplicates_by_master_symbol(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
         # master_symbol should be unique
         assert rad_df["master_symbol"].is_unique
 
     def test_variant_registration(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # Find radical_id for 人
         person_row = rad_df[rad_df["master_symbol"] == "人"]
@@ -319,7 +320,7 @@ class TestScanAndRegister:
     def test_variant_positions_are_json_arrays(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        _, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        _, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         for _, row in var_df.iterrows():
             positions = json.loads(row["positions"])
@@ -329,7 +330,7 @@ class TestScanAndRegister:
     def test_is_official_flag(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         person = rad_df[rad_df["master_symbol"] == "人"].iloc[0]
         assert person["is_official"] == True  # noqa: E712
@@ -343,7 +344,7 @@ class TestScanAndRegister:
     def test_stroke_count_from_master_entry(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # 人 master entry has stroke_count=2
         person = rad_df[rad_df["master_symbol"] == "人"].iloc[0]
@@ -354,7 +355,7 @@ class TestScanAndRegister:
         # Build keep set where 粦 is NOT included
         keep = scope_set | {"冂", "舛"}  # 舛 needed since it might not be in scope
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         masters = set(rad_df["master_symbol"])
         # 米 and 舛 should be registered (promoted from 粦 ghost)
@@ -365,7 +366,7 @@ class TestScanAndRegister:
         """SVG fields and Pass 4 metadata should be null."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # Radical nullable fields
         assert rad_df["svg_file_name"].isna().all()
@@ -384,7 +385,7 @@ class TestScanAndRegister:
         """Every radical should have at least one variant row (including self-variants)."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         radical_ids_with_variants = set(var_df["radical_id"])
         for _, row in rad_df.iterrows():
@@ -396,10 +397,239 @@ class TestScanAndRegister:
         """No duplicate (radical_id, shape) pairs."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        _, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq)
+        _, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         pairs = var_df[["radical_id", "shape"]].apply(tuple, axis=1)
         assert pairs.is_unique
+
+
+# ---------------------------------------------------------------------------
+# Determinism + stroke count fixes
+# ---------------------------------------------------------------------------
+
+
+class TestDeterministicOutput:
+    """Verify that scan_and_register produces identical output across runs."""
+
+    def test_identical_across_runs(self, kanjivg_df, scope_set, tree_map):
+        keep = scope_set | {"冂"}
+        freq = count_frequencies(kanjivg_df, scope_set, tree_map)
+
+        rad1, var1, warn1 = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+        rad2, var2, warn2 = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+
+        pd.testing.assert_frame_equal(rad1, rad2)
+        pd.testing.assert_frame_equal(var1, var2)
+        assert warn1 == warn2
+
+
+class TestStrokeCountNoComponentFallback:
+    """Radicals without a standalone KanjiVG entry should get stroke_count=0,
+    not an unreliable value from a component node."""
+
+    def test_no_kvg_entry_gets_zero(self):
+        """A radical that only appears as a component (no own KanjiVG entry)
+        should have stroke_count=0 without manual override."""
+        # 'Z' appears as a component in 'A' but has no standalone KanjiVG entry
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=7),
+                _tree("B", position="right", stroke_count=3),
+            ])),
+            _kvg_row("B", _tree("B", stroke_count=3)),
+            # No standalone entry for Z
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z", "B"}
+        freq = {"Z": 1, "B": 1}
+
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+
+        z_row = rad_df[rad_df["master_symbol"] == "Z"]
+        assert len(z_row) == 1
+        assert z_row.iloc[0]["stroke_count"] == 0
+
+    def test_with_kvg_entry_gets_correct_count(self):
+        """A radical with its own KanjiVG entry should get that stroke_count."""
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=99),  # wrong component value
+            ])),
+            _kvg_row("Z", _tree("Z", stroke_count=5)),  # standalone = correct
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z"}
+        freq = {"Z": 1}
+
+        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+
+        z_row = rad_df[rad_df["master_symbol"] == "Z"]
+        assert z_row.iloc[0]["stroke_count"] == 5
+
+
+class TestManualStrokeOverrides:
+    """manual_strokes.txt overrides any other stroke count source."""
+
+    def test_overrides_kvg_value(self):
+        """Manual stroke count wins over KanjiVG standalone entry."""
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=4),
+            ])),
+            _kvg_row("Z", _tree("Z", stroke_count=9)),  # KanjiVG says 9
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z"}
+        freq = {"Z": 1}
+        manual_strokes = {"Z": 5}  # override to 5
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
+        )
+
+        z_row = rad_df[rad_df["master_symbol"] == "Z"]
+        assert z_row.iloc[0]["stroke_count"] == 5
+
+    def test_fills_missing_stroke_count(self):
+        """Manual stroke count fills in for radicals with no KanjiVG entry."""
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=7),
+            ])),
+            # No standalone entry for Z
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z"}
+        freq = {"Z": 1}
+        manual_strokes = {"Z": 7}
+
+        rad_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
+        )
+
+        z_row = rad_df[rad_df["master_symbol"] == "Z"]
+        assert z_row.iloc[0]["stroke_count"] == 7
+
+
+class TestMissingStrokeCountWarning:
+    """Radicals with stroke_count=0 and no manual override emit a high warning."""
+
+    def test_warns_on_missing(self):
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=7),
+            ])),
+            # No standalone entry for Z → stroke_count stays 0
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z"}
+        freq = {"Z": 1}
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+
+        stroke_warnings = [
+            w for w in warnings
+            if w["entity"] == "Z" and "Missing stroke count" in w["message"]
+        ]
+        assert len(stroke_warnings) == 1
+        assert stroke_warnings[0]["severity"] == "high"
+
+    def test_no_warning_when_manual_provided(self):
+        rows = [
+            _kvg_row("A", _tree("A", stroke_count=10, children=[
+                _tree("Z", position="left", stroke_count=7),
+            ])),
+        ]
+        kanjivg_df = pd.DataFrame(rows)
+        scope_set = {"A"}
+        tree_map = {}
+        for _, row in kanjivg_df.iterrows():
+            tree_map[row["character"]] = parse_component_tree(row["component_tree"])
+        keep = scope_set | {"Z"}
+        freq = {"Z": 1}
+        manual_strokes = {"Z": 7}
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
+        )
+
+        stroke_warnings = [
+            w for w in warnings if "Missing stroke count" in w["message"]
+        ]
+        assert len(stroke_warnings) == 0
+
+    def test_no_warning_when_kvg_entry_exists(self, kanjivg_df, scope_set, tree_map):
+        """Radicals with their own KanjiVG entry should never warn."""
+        keep = scope_set | {"冂"}
+        freq = count_frequencies(kanjivg_df, scope_set, tree_map)
+
+        _, _, warnings = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+
+        # 人 has its own KanjiVG entry → stroke_count=2, no warning
+        person_warnings = [
+            w for w in warnings
+            if w.get("entity") == "人" and "Missing stroke count" in w.get("message", "")
+        ]
+        assert len(person_warnings) == 0
+
+
+# ---------------------------------------------------------------------------
+# load_manual_strokes
+# ---------------------------------------------------------------------------
+
+
+class TestLoadManualStrokes:
+    def test_nonexistent_file(self):
+        from src.extractors.shared import load_manual_strokes
+        assert load_manual_strokes(Path("/nonexistent/file.txt")) == {}
+
+    def test_basic_format(self, tmp_path):
+        from src.extractors.shared import load_manual_strokes
+        f = tmp_path / "strokes.txt"
+        f.write_text("电  5  # Lightning\n㕣 5\n")
+        result = load_manual_strokes(f)
+        assert result == {"电": 5, "㕣": 5}
+
+    def test_comments_and_blanks(self, tmp_path):
+        from src.extractors.shared import load_manual_strokes
+        f = tmp_path / "strokes.txt"
+        f.write_text("# header\n\n电 5\n# comment\n木 4\n\n")
+        result = load_manual_strokes(f)
+        assert result == {"电": 5, "木": 4}
+
+    def test_empty_file(self, tmp_path):
+        from src.extractors.shared import load_manual_strokes
+        f = tmp_path / "strokes.txt"
+        f.write_text("")
+        assert load_manual_strokes(f) == {}
 
 
 # ---------------------------------------------------------------------------

@@ -177,6 +177,7 @@ def scan_and_register(
     Returns (radicals_df, radical_variants_df, warnings).
     """
     warnings: list[dict] = []
+    warned: set[tuple[str, str]] = set()  # (entity, message_key) → dedup warnings
 
     # Collect radical candidates: master_symbol → info
     radicals_info: dict[str, dict] = {}
@@ -203,14 +204,17 @@ def scan_and_register(
             is_official = child.get("radical") == "general"
             position = map_position(child.get("position"))
 
-            # Variant without original — warn
+            # Variant without original — warn once per element
             if variant and not original:
-                warnings.append({
-                    "severity": "low",
-                    "phase": "2.1",
-                    "entity": element,
-                    "message": "Variant without original — treated as own master symbol",
-                })
+                wkey = (element, "variant_no_original")
+                if wkey not in warned:
+                    warned.add(wkey)
+                    warnings.append({
+                        "severity": "low",
+                        "phase": "2.1",
+                        "entity": element,
+                        "message": "Variant without original — treated as own master symbol",
+                    })
 
             # Register or update radical info
             if master not in radicals_info:
@@ -387,7 +391,16 @@ def extract_radicals(
         kanjivg_df, scope_set, keep_set, tree_map, freq
     )
 
+    # Deduplicate warnings by (severity, entity, message)
     all_warnings = keep_warnings + scan_warnings
+    seen_warnings: set[tuple[str, str, str]] = set()
+    unique_warnings: list[dict] = []
+    for w in all_warnings:
+        key = (w["severity"], w["entity"], w["message"])
+        if key not in seen_warnings:
+            seen_warnings.add(key)
+            unique_warnings.append(w)
+    all_warnings = unique_warnings
 
     # Write outputs
     csv_dir.mkdir(parents=True, exist_ok=True)

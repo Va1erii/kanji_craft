@@ -214,9 +214,13 @@ def scan_and_register(
 
             # Register or update radical info
             if master not in radicals_info:
-                # Look up stroke count from master's own KanjiVG entry
+                # Look up stroke count from master's own KanjiVG entry first,
+                # fall back to the component node's stroke_count (for radicals
+                # without their own KanjiVG entry, e.g. CDP codes)
                 master_tree = tree_map.get(master)
                 stroke_count = master_tree.get("stroke_count", 0) if master_tree else 0
+                if stroke_count == 0:
+                    stroke_count = child.get("stroke_count", 0)
                 radicals_info[master] = {
                     "master_symbol": master,
                     "is_official": is_official,

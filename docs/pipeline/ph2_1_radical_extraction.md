@@ -10,7 +10,7 @@ Radical extraction turns the nested KanjiVG component trees (from `kanjivg.parqu
 
 KanjiVG covers ~6,700 characters. Processing all of them produces thousands of radical candidates — far too many for a pedagogical app. Most of these come from rare, non-educational kanji that learners will never encounter.
 
-**The filter:** Radical extraction only processes KanjiVG entries whose character is **educationally relevant** — defined as appearing in `kanjidic.parquet` with a Jōyō grade (1–6 elementary, 8 secondary), OR appearing in `jlpt_kanji.parquet`. Grades 9 (Jinmeiyō / name kanji) and 10 (Jōyō variants) are **excluded** — they cover personal names and official documents, not the standard school curriculum or JLPT. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or Jōyō grades 1–8.
+**The filter:** Radical extraction only processes KanjiVG entries whose character is **educationally relevant** — defined as appearing in `kanjidic.parquet` with a Jōyō grade (1–6 elementary, 8 secondary), OR appearing in `jlpt_kanji.parquet`. Grades 9 (Jinmeiyō / name kanji) and 10 (Jōyō variants) are **excluded from scope** — although stored in `kanji.csv` with their original grade values, including them would inflate the radical count with components from uncommon name kanji that most learners won't encounter. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or Jōyō grades 1–8.
 
 **How the scope set is built (before Pass 1):**
 

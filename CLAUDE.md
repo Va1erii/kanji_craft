@@ -30,6 +30,14 @@ cd packages/core && dart run build_runner build --delete-conflicting-outputs   #
 
 # Workspace-wide
 dart pub get                                    # Resolve all packages from root
+
+# Pipeline (run from pipeline/)
+cd pipeline && uv run python -m src.ingest      # Phase 1: sources → Parquet
+cd pipeline && uv run python -m src.extract     # Phase 2: Parquet → CSV
+cd pipeline && uv run python -m src.enrich      # Phase 3: AI enrichment
+cd pipeline && uv run python -m src.verify      # Phase 4: verify + upload
+cd pipeline && uv run ruff check src/           # Lint pipeline
+cd pipeline && uv run pytest                    # Test pipeline
 ```
 
 ## Architecture

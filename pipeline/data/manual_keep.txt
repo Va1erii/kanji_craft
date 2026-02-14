@@ -1,0 +1,3 @@
+# Characters to force into the radical keep set.
+# One character per line. Blank lines and # comments ignored.
+# These are registered as radicals regardless of frequency/scope/official status.

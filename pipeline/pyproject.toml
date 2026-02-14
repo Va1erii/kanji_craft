@@ -1,0 +1,36 @@
+[project]
+name = "kanji-craft-pipeline"
+version = "0.1.0"
+description = "Content pipeline: sources → Parquet → CSV → AI enrichment → Supabase"
+requires-python = ">=3.13"
+dependencies = [
+    # Data processing
+    "pandas>=2.2",
+    "pyarrow>=18.0",
+
+    # XML parsing (KANJIDIC2, KanjiVG, JMdict)
+    "lxml>=5.0",
+
+    # Japanese tokenization (Phase 3 sentence furigana)
+    "sudachipy>=0.6",
+    "sudachidict-small>=20240716",
+
+    # Supabase upload (Phase 4)
+    "supabase>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

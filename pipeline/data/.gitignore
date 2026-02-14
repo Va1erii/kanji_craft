@@ -1,0 +1,7 @@
+# All generated data is gitignored — fully regenerable from sources/
+parquet/
+csv/
+
+# Keep manual override files
+!manual_keep.txt
+!manual_flatten.txt

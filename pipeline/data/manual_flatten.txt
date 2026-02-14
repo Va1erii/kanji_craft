@@ -1,0 +1,3 @@
+# Characters to force OUT of the radical keep set (flattened as ghosts).
+# One character per line. Blank lines and # comments ignored.
+# Overrides all other keep-set criteria. Wins over manual_keep.txt if both list the same character.

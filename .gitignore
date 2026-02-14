@@ -41,8 +41,8 @@ app.*.map.json
 /android/app/release
 
 # Content pipeline
-tools/parser/.venv/
-tools/parser/output/*.json
+pipeline/.venv/
+pipeline/src/*.egg-info/
 sources/*/.unpacked/
 
 # Environment files

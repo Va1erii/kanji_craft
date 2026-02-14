@@ -375,14 +375,15 @@ Replace the local base URL in `svg_file_url` with the Remote Production Storage 
 
 ## Related Docs
 
-### Pipeline sub-docs (stale — describe old Dart pipeline, domain logic still accurate)
+### Pipeline sub-docs
 
-- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants and recovery procedures
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants and recovery procedures (stale — old Dart pipeline, domain logic accurate)
 - [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Radical/variant registration algorithm
 - [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Kanji creation from KANJIDIC2
 - [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking and radical metadata derivation
 - [ph2_4_svg_processing.md](ph2_4_svg_processing.md) — SVG file matching, SHA-256 hashing, URL construction
 - [ph2_5_vocabulary_extraction.md](ph2_5_vocabulary_extraction.md) — Vocabulary extraction from JMdict
+- [ph3_ai_enrichment.md](ph3_ai_enrichment.md) — AI enrichment: logic hints, mnemonics, translations, furigana annotation
 
 ### Domain specs
 

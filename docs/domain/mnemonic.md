@@ -89,7 +89,7 @@ Each language maintains its own set of anchor words — native words that sound 
 | Onyomi | Best Anchor | Why it works | Alternative |
 |---|---|---|---|
 | CHUU | Chupete (pacifier) | Visual — distinct shape, used by babies (funny contrast) | Chuleta (chop/steak) |
-| SHUU | Churros | Delicious, distinct shape, easy to eat in a story | Chutar (kick) |
+| SHUU | Sumo (wrestler) | Soft S distinguishes from CHUU (Chu-); visual — big, heavy, memorable character | Sudor (sweat) |
 | KOU | Cola (glue/tail) | Sticky (glue) or wagging (tail) — very interactive | Coco (coconut) |
 | KAN | Candado (lock) | Action — you lock things up, heavy object | Canguro (kangaroo) |
 | SEI | Seis (6) | Shape — the number 6 is distinct | Sello (stamp) |

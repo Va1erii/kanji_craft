@@ -5,3 +5,5 @@ csv/
 # Keep manual override files
 !manual_keep.txt
 !manual_flatten.txt
+!manual_strokes.txt
+!visual_rules.json

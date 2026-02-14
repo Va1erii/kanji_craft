@@ -205,7 +205,7 @@ Load `pipeline/data/manual_keep.txt` and `pipeline/data/manual_flatten.txt` (one
 
 ### Pass 2: Register — Create Radical Rows
 
-Write `radicals` and `radical_variants` from the candidate set.
+Write `radicals` and `radical_variants` from the candidate set. Also load curated visual disambiguation data from `pipeline/data/visual_rules.json`.
 
 **Radical registration:**
 
@@ -219,6 +219,7 @@ For each unique element from Pass 1:
    - `master_symbol` — as determined above.
    - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
    - `stroke_count` — looked up from KanjiVG data where `character == master_symbol` (the master's own entry, from ALL entries not just in-scope).
+   - `visual_group` — looked up from `pipeline/data/visual_rules.json`. If the master symbol (or any of its variant shapes) has an entry, set to the `visual_group` value from that entry. Null otherwise.
    - `svg_file_name`, `svg_file_url`, `svg_hash` — from SVG Processing (pipeline Phase 2.4).
    - `min_grade`, `min_jlpt_level`, `impact_score` — from Pass 4 (metadata derivation).
 
@@ -231,6 +232,8 @@ For each unique element from Pass 1:
      - SVG fields — from SVG Processing (Phase 2.4).
    - For every radical whose `master_symbol` was NOT seen as a variant of anything (it is its own canonical form):
      - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../domain/radical.md): every radical has at least one variant.)
+
+**Visual ambiguity check:** After all variant rows are created, build a reverse index: `Map<String, List<radical_id>>` — shape → list of radicals that use that shape (including self-variants where `shape == master_symbol`). For each shape mapped to 2+ distinct radicals, check whether ALL of those radicals have a `visual_group` entry (from `visual_rules.json`). If any radical in the collision set is missing a `visual_group`, emit a **high** warning listing the colliding radicals and the shared shape. This lets the admin discover new visual twins as the dataset evolves and update `visual_rules.json` accordingly.
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
@@ -470,6 +473,7 @@ Warnings are written to `data/csv/warnings/ph2_1_warnings.csv` with columns: `se
 | Character in both `manual_keep.txt` and `manual_flatten.txt` | medium | Conflict — `manual_flatten` wins; admin should resolve the inconsistency |
 | Rare ghost flattened (freq < 2) | low | Expected behaviour for infrequent intermediates — informational only |
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
+| Visually ambiguous radicals not in `visual_rules.json` | high | Two or more distinct radicals share the same variant shape (e.g. 肉 and 月 both have shape 月) but none of them has a `visual_group` entry in `visual_rules.json`. Admin should add disambiguation rules so learners can tell them apart |
 | KanjiVG entry skipped (character not in JLPT/grade scope) | — | Not a warning — expected behaviour. Logged at debug level only |
 
 ## Output Summary
@@ -486,7 +490,7 @@ Warnings are written to `data/csv/warnings/ph2_1_warnings.csv` with columns: `se
 - ~600–750 radical variants
 
 Tables populated by **later phases** (not this algorithm):
-- `radical_i18n` — names and mnemonics (Phase 3, KANJIDIC meanings + AI)
+- `radical_i18n` — names, mnemonics, and `disambiguation_note` (Phase 3, KANJIDIC meanings + AI + `visual_rules.json`)
 - SVG fields on `radicals` and `radical_variants` — (Phase 2.4, SVG Processing)
 
 **Future consideration — SVG stroke group linkage:** The current schema does not store KanjiVG `<g>` group IDs on `kanji_components`. For the UI to highlight specific strokes belonging to a merged/split part or a promoted ghost child, it will need a way to map each component back to its SVG stroke groups. This may require adding a `svg_group_ids` field or a separate mapping table. Deferred until the client rendering layer is designed — flagged here so the need is not forgotten.

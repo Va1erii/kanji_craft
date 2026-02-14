@@ -10,20 +10,14 @@ Kanji Craft is a Japanese kanji learning Flutter app using FSRS spaced repetitio
 
 ## Workspace Structure
 
-Dart native workspace with 3 packages:
+Dart native workspace with 2 packages:
 
 - `packages/core` — `kanji_craft_core`: pure Dart package with shared domain entities
-- `apps/admin` — `kanji_craft_admin`: Flutter desktop app for data ingestion and review
 - `apps/client` — `kanji_craft_client`: Flutter mobile/web/desktop app for learners
 
 ## Commands
 
 ```bash
-# Admin app
-cd apps/admin && flutter run -d macos          # Run admin app
-cd apps/admin && flutter test                   # Run admin tests
-cd apps/admin && flutter analyze                # Lint admin
-
 # Client app
 cd apps/client && flutter run                   # Run client app
 cd apps/client && flutter analyze               # Lint client
@@ -33,14 +27,9 @@ cd packages/core && dart analyze                # Lint core
 
 # Code generation
 cd packages/core && dart run build_runner build --delete-conflicting-outputs   # Freezed (core)
-cd apps/admin && flutter pub run build_runner build --delete-conflicting-outputs  # Freezed + Drift (admin)
 
 # Workspace-wide
 dart pub get                                    # Resolve all packages from root
-
-# Supabase
-supabase migration new <name>                   # Create timestamped migration file
-supabase db reset                               # Apply all migrations (destructive)
 ```
 
 ## Architecture
@@ -53,27 +42,16 @@ supabase db reset                               # Apply all migrations (destruct
 - **Remote:** Supabase (PostgreSQL + Auth + Storage)
 - **Code Gen:** Freezed for immutable data classes, Drift for SQLite, json_serializable for DTOs
 - **SRS Engine:** `fsrs` package for spaced repetition scheduling (runs locally)
+- **Content Pipeline:** Python scripts (`pipeline/`) — Parquet ingestion → CSV extraction → AI enrichment → Supabase upload
 
 ## Key Directories
 
 ```
 packages/core/lib/domain/entities/     # Shared enums + Freezed entities
-apps/admin/lib/
-  domain/entities/                     # Admin-only entities
-  domain/repositories/                 # Repository interfaces
-  data/database/                       # Drift DB, tables, mappers, converters
-  data/database/dto/                   # Raw DTOs (used by Drift converters)
-  data/repositories/{feature}/         # Drift repo + Supabase datasource + DTO
-  data/services/                       # Parsers, admin state reader/writer
-  presentation/{feature}/bloc/         # BLoC + event + state per feature
-  presentation/{feature}/pages/        # Pages per feature
-  presentation/{feature}/widgets/      # Widgets per feature
-  presentation/common/                 # Shared shell, dashboard, placeholder
-  di/injection.dart                    # get_it registration
-  core/                                # Theme, router
 apps/client/lib/                       # Client app (scaffold)
 docs/                                  # See Documentation Map below
-supabase/migrations/                   # Timestamped SQL migrations
+pipeline/                              # Python pipeline (src/, data/)
+supabase/                              # Supabase config (config.toml)
 ```
 
 ## Documentation Map
@@ -127,9 +105,9 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 ## Database Schema Digest
 
-**17 tables:** 12 content + 5 user. See `supabase/migrations/` for full DDL.
+**17 tables:** 12 content + 5 user. Schema defined in `docs/domain/` entity specs.
 
-**Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`
+**Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`, `vocabulary_sentence_i18n`
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
@@ -145,12 +123,11 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 ## Key Architectural Decisions
 
 1. **Docs-first design:** Domain specs in `docs/domain/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
-2. **Stateless admin:** Local DB is ephemeral — rebuilt from source files.
-3. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
-4. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
-5. **Content tables are complete:** All fields NOT NULL — they hold ready-to-sync rows only.
-6. **Comparison-based sync:** No `last_synced_at` column. Sync queries Remote at push time and diffs against local state.
-7. **Admin uses service_role key:** Bypasses RLS for admin-only operations.
+2. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
+3. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
+4. **Content tables are complete:** All fields NOT NULL — they hold ready-to-sync rows only.
+5. **Comparison-based sync:** No `last_synced_at` column. Sync queries Remote at push time and diffs against local state.
+6. **Pipeline uploads via service_role key:** Bypasses RLS for content table operations.
 
 ## Conventions
 
@@ -159,4 +136,3 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 - **Linting:** `package:flutter_lints/flutter.yaml` (no custom overrides).
 - **Constraint naming:** `chk_`, `uq_`, `fk_` prefixes. Triggers: `trg_{table}_updated_at`. Indexes: `idx_{table}_{column(s)}`.
 - **DI pattern:** singleton for DB/repos, factory for BLoCs. Registration in `lib/di/injection.dart`.
-- **Repository pattern:** interface in `domain/repositories/`, Drift impl + Supabase datasource + DTO in `data/repositories/{feature}/`.

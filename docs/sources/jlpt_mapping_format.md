@@ -8,8 +8,6 @@ The JLPT mapping file provides a curated kanji-to-JLPT-level mapping for the cur
 
 **Source file:** `sources/jlpt_mapping/jlpt_mapping.csv`
 
-**Admin asset:** `apps/admin/assets/jlpt_mapping.csv` — bundled as a mandatory Flutter asset. Auto-loaded into the local Drift database on first app launch; the app crashes if the asset is missing or malformed.
-
 See [attributions.md](../legal/attributions.md) for license details and required credits.
 
 ## File Format

@@ -18,7 +18,7 @@ Character coverage by JIS standard:
 | JIS X 0212 | 5,801 | Supplementary set — rare kanji, variant forms |
 | JIS X 0213 | 952 (additional) | Extended set — adds characters not in 0208 or 0212 |
 
-This document is a reference for the KANJIDIC format as consumed by our ingestion parser ([kanjidic_parser.dart](../../apps/admin/lib/data/services/kanjidic_parser.dart)) and stored in the [raw_kanjidic](../domain/raw_kanjidic.md) staging table.
+This document is a reference for the KANJIDIC format as consumed by the pipeline ingestion scripts and stored in `kanjidic.parquet`.
 
 **Source file:** `kanjidic2.xml.gz` (gzip-compressed XML, ~3.5 MB compressed, ~12 MB uncompressed).
 

@@ -73,9 +73,7 @@ RLS is enabled on all user tables from day one. Content tables are readable by a
 | User tables | Own rows only (`user_id = auth.uid()`) | Own rows only | Own rows only | Own rows only |
 | Staging/admin tables | service_role only | service_role only | service_role only | service_role only |
 
-**Staging/admin tables** (`data_imports`, `raw_kanjivg`, `raw_kanjidic`, `kanji_component_reviews`) have RLS enabled with zero policies. This means only the `service_role` key (which bypasses RLS) can access them. The admin app uses the service_role key for this reason.
-
-Policies are defined in `supabase/migrations/`.
+Content table uploads use the `service_role` key (which bypasses RLS) in the pipeline.
 
 ## Storage
 

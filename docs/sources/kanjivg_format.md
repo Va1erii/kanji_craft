@@ -4,7 +4,7 @@
 
 [KanjiVG](https://kanjivg.tagaini.net/) encodes kanji stroke order and component decomposition as SVG files with custom XML namespace extensions. Each file represents one kanji character. All extensions use the `kvg:` namespace prefix (`xmlns:kvg="http://kanjivg.tagaini.net"`).
 
-This document is a reference for the KanjiVG format as consumed by our ingestion parser ([kanjivg_parser.dart](../../apps/admin/lib/data/services/kanjivg_parser.dart)) and radical extraction algorithm ([ph2_1_radical_extraction.md](ph2_1_radical_extraction.md)).
+This document is a reference for the KanjiVG format as consumed by the pipeline ingestion scripts and radical extraction algorithm ([ph2_1_radical_extraction.md](ph2_1_radical_extraction.md)).
 
 ## File Structure
 

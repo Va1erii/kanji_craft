@@ -41,6 +41,7 @@
 蒦  # KAKU: 護 獲
 賁  # FUN: 噴 墳 憤
 丂  # KOU: 巧 号 朽
+𠦝  # KAN: 朝 乾 幹 韓
 
 # --- Visual / structural ---
 

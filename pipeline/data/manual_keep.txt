@@ -23,6 +23,18 @@
 壬  # NIN: 任 賃
 㕣  # EN: 沿 鉛 船
 夹  # KYOU: 狭 挟
+畐  # FUKU: 幅 福 副
+冋  # KEI/KYOU: 同 洞
+乍  # SA: 作 昨 酢
+夭  # YOU: 沃 妖
+茲  # JI: variant of 兹
+并  # HEI: 併 塀 餅
+攸  # YUU: 修 条
+敝  # HEI: 弊 蔽
+夗  # EN: 宛 怨
+开  # KAI: 形 研
+戠  # SHIKI: 織 識 職
+戌  # Dog zodiac: 成 威 歳
 
 # --- Visual / structural ---
 
@@ -31,3 +43,5 @@
 マ  # Katakana Ma: primitive shape
 从  # Follow (two people): 坐 座
 㐬  # River/child: 流 育 充
+夾  # Pinch (variant of 夹): 挟 狭
+关  # Connection: 関 送

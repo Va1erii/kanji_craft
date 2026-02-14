@@ -99,12 +99,12 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | Doc | Covers | When to read |
 |---|---|---|
 | `pipeline.md` | Full pipeline: Python + Parquet ingestion → CSV extraction → AI enrichment → Supabase upload | Understanding overall data flow |
-| `ingestion.md` | Phase 1 correctness invariants | Implementing/fixing parsers or import logic |
-| `radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
-| `kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |
-| `component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
-| `svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
-| `vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
+| `ph1_ingestion.md` | Phase 1 correctness invariants | Implementing/fixing parsers or import logic |
+| `ph2_1_radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
+| `ph2_2_kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |
+| `ph2_3_component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
+| `ph2_4_svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
+| `ph2_5_vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
 
 ### ADR Docs (`docs/adr/`) — read when implementing infrastructure
 

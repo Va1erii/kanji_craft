@@ -4,7 +4,7 @@
 
 [KanjiVG](https://kanjivg.tagaini.net/) encodes kanji stroke order and component decomposition as SVG files with custom XML namespace extensions. Each file represents one kanji character. All extensions use the `kvg:` namespace prefix (`xmlns:kvg="http://kanjivg.tagaini.net"`).
 
-This document is a reference for the KanjiVG format as consumed by our ingestion parser ([kanjivg_parser.dart](../../apps/admin/lib/data/services/kanjivg_parser.dart)) and radical extraction algorithm ([radical_extraction.md](radical_extraction.md)).
+This document is a reference for the KanjiVG format as consumed by our ingestion parser ([kanjivg_parser.dart](../../apps/admin/lib/data/services/kanjivg_parser.dart)) and radical extraction algorithm ([ph2_1_radical_extraction.md](ph2_1_radical_extraction.md)).
 
 ## File Structure
 
@@ -178,7 +178,7 @@ When a component's strokes are non-contiguous in writing order (another element'
 
 The radical 二 (traditional Kangxi) is split into part 1 (top horizontal stroke) and part 2 (bottom horizontal stroke), with 五's own strokes in between. The Nelson radical is 一 (just the top stroke).
 
-**Pipeline handling:** Our parser merges parts with the same `element` (and `number`, if present) into a single component. Stroke indices from all parts are combined. See [radical_extraction.md — Pass 1](radical_extraction.md#pass-1-scan--collect-radical-candidates).
+**Pipeline handling:** Our parser merges parts with the same `element` (and `number`, if present) into a single component. Stroke indices from all parts are combined. See [ph2_1_radical_extraction.md — Pass 1](ph2_1_radical_extraction.md#pass-1-scan--collect-radical-candidates).
 
 ## Phonetic Markers (`phon`)
 
@@ -203,7 +203,7 @@ These are known inconsistencies in the KanjiVG dataset that our pipeline must ha
 
 ## Related Docs
 
-- [radical_extraction.md](radical_extraction.md) — Algorithm that consumes KanjiVG component trees
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Algorithm that consumes KanjiVG component trees
 - [raw_kanjivg.md](../domain/raw_kanjivg.md) — Staging table schema (how parsed KanjiVG data is stored)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration
 - [KanjiVG Wiki](https://github.com/KanjiVG/kanjivg/wiki) — Upstream documentation

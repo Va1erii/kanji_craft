@@ -70,7 +70,7 @@ The full JMdict DTD defines 200+ POS codes; this enum captures only the ~14 that
 - `uk`, `pol`, `hum`, `hon` come from the `misc` field in JMdict senses, not `pos`.
 - A word typically has 2–4 tags (e.g., `[godan_verb, transitive]` or `[noun, suru_verb]`).
 
-Used by: `Vocabulary.pos_tags` (see vocabulary.md). Extraction logic in [vocabulary_extraction.md](../pipeline/vocabulary_extraction.md).
+Used by: `Vocabulary.pos_tags` (see vocabulary.md). Extraction logic in [ph2_5_vocabulary_extraction.md](../pipeline/ph2_5_vocabulary_extraction.md).
 
 ### Supported Languages
 

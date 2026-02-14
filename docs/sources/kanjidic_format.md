@@ -466,7 +466,7 @@ These KANJIDIC2 fields exist in the source but are not extracted by our parser:
 
 - [raw_kanjidic.md](../domain/raw_kanjidic.md) — Staging table schema (how parsed KANJIDIC2 data is stored)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
-- [ingestion.md](ingestion.md) — Phase 1 correctness invariants
-- [radical_extraction.md](radical_extraction.md) — How KANJIDIC data feeds into radical metadata derivation (Pass 4)
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — How KANJIDIC data feeds into radical metadata derivation (Pass 4)
 - [KANJIDIC2 DTD](http://www.edrdg.org/kanjidic/kanjidic2_dtdh.html) — Upstream DTD with field annotations
 - [KANJIDIC Project](http://www.edrdg.org/wiki/index.php/KANJIDIC_Project) — Official project page

@@ -197,11 +197,11 @@ JmdictFurigana covers every JMdict entry (~230k), but the pipeline only imports 
 When `ruby` contains more than one kanji character, the reading applies to the group as a whole. The pipeline must detect this (multi-character `ruby` with `rt` present) and create a jukujikun segment with `kanji_ids` instead of `kanji_id`.
 
 ### Words missing from JmdictFurigana
-In rare cases, a vocabulary word may not have a matching entry. The pipeline falls back to heuristic segmentation (see [vocabulary_extraction.md §Segmentation](../pipeline/vocabulary_extraction.md#segmentation-ghost-kanji-support)).
+In rare cases, a vocabulary word may not have a matching entry. The pipeline falls back to heuristic segmentation (see [ph2_5_vocabulary_extraction.md §Segmentation](../pipeline/ph2_5_vocabulary_extraction.md#segmentation-ghost-kanji-support)).
 
 ## Related Docs
 
-- [vocabulary_extraction.md](../pipeline/vocabulary_extraction.md) — How furigana data feeds into vocabulary segments
+- [ph2_5_vocabulary_extraction.md](../pipeline/ph2_5_vocabulary_extraction.md) — How furigana data feeds into vocabulary segments
 - [vocabulary.md](../domain/vocabulary.md) — VocabularySegment format (target schema)
 - [jmdict_format.md](jmdict_format.md) — JMdict XML format (the dictionary this dataset is derived from)
 - [pipeline.md](../pipeline/pipeline.md) — Pipeline orchestration (source loading)

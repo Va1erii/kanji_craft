@@ -98,7 +98,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 | Doc | Covers | When to read |
 |---|---|---|
-| `pipeline.md` | Full pipeline orchestration (Phases 1-4) | Understanding overall data flow |
+| `pipeline.md` | Full pipeline: Python + Parquet ingestion → CSV extraction → AI enrichment → Supabase upload | Understanding overall data flow |
 | `ingestion.md` | Phase 1 correctness invariants | Implementing/fixing parsers or import logic |
 | `radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
 | `kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |

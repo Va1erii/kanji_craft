@@ -27,7 +27,7 @@ This phase sits after Kanji Composition (Phase 2.3) and Component Linking becaus
 Both conditions must hold before this phase runs:
 
 1. **Kanji Composition (Phase 2.3) complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Vocabulary extraction relies on `kanji.id` to create links and resolve segment references.
-2. **JLPT Vocab Mapping (Phase 1) loaded** — The `source_vocab_levels` table must be populated from the Tanos vocabulary CSV (see [ingestion.md](ingestion.md)).
+2. **JLPT Vocab Mapping (Phase 1) loaded** — The `source_vocab_levels` table must be populated from the Tanos vocabulary CSV (see [ph1_ingestion.md](ph1_ingestion.md)).
 
 ## Algorithm
 
@@ -462,7 +462,7 @@ Steps 1–3 depend on `raw_jmdict`, `source_vocab_levels`, `jmdict_furigana`, an
 - [vocabulary.md](../domain/vocabulary.md) — Vocabulary entity spec (target schema, segments format, business rules)
 - [raw_jmdict.md](../domain/raw_jmdict.md) — Source staging table schema (JSONB structure, edge cases)
 - [jmdict_format.md](../sources/jmdict_format.md) — JMdict XML format reference (priority codes, sense inheritance)
-- [kanji_composition.md](kanji_composition.md) — Prerequisite phase (kanji table creation)
-- [component_linking.md](component_linking.md) — Component linking (kanji-radical bridge)
+- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Prerequisite phase (kanji table creation)
+- [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking (kanji-radical bridge)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
-- [ingestion.md](ingestion.md) — Phase 1 ingestion (source_vocab_levels staging)
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 ingestion (source_vocab_levels staging)

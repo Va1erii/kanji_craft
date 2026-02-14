@@ -6,7 +6,7 @@ Kanji composition transforms `raw_kanjidic` staging data into draft kanji rows a
 
 This phase sits between radical extraction Passes 1–2 (which create `radicals` and `radical_variants`) and Passes 3–4 (which link kanji to their component radicals and derive radical metadata). The kanji rows must exist before component linking can reference them via `kanji_components.kanji_id`.
 
-**What this phase does NOT do:** Component decomposition and radical metadata derivation. Those are documented in [radical_extraction.md](radical_extraction.md) Passes 3–4 and merely referenced here for sequencing.
+**What this phase does NOT do:** Component decomposition and radical metadata derivation. Those are documented in [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) Passes 3–4 and merely referenced here for sequencing.
 
 ## Source Data
 
@@ -114,7 +114,7 @@ For each language key in `raw_kanjidic.meanings`:
 
 For each kanji, link to its direct child radicals from `raw_kanjivg.components`.
 
-The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, and radical_type determination — is documented in [component_linking.md](component_linking.md).
+The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, and radical_type determination — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
 
 **Prerequisite:** Steps 1–3 must complete first (kanji rows must exist for `kanji_components.kanji_id`). Radical extraction Passes 1–2 must also have completed (radicals must exist for `kanji_components.radical_id`).
 
@@ -122,7 +122,7 @@ The full algorithm — including structural group flattening, split part merging
 
 Compute derived fields on each radical: `impact_score`, `min_grade`, `min_jlpt_level`.
 
-The full algorithm — including impact score bucketing and the MIN/MAX queries for grade and JLPT — is documented in [component_linking.md Step 3](component_linking.md#step-3-derive-radical-metadata).
+The full algorithm — including impact score bucketing and the MIN/MAX queries for grade and JLPT — is documented in [ph2_3_component_linking.md Step 3](ph2_3_component_linking.md#step-3-derive-radical-metadata).
 
 **Prerequisite:** Step 4 must complete first (component links must exist for the aggregation queries).
 
@@ -150,7 +150,7 @@ Because of these splits, the raw `jlpt` value **cannot be mechanically converted
    - Not found → set `kanji.min_jlpt_level` to `null`.
 4. Kanji with `null` JLPT level are excluded from JLPT-based study paths but remain accessible via grade-based paths and search.
 
-**Note on `min_jlpt_level` semantics:** The value 5 means N5 (easiest), 1 means N1 (hardest). This means `MAX(min_jlpt_level)` returns the easiest level — relevant for radical metadata derivation in Pass 4 (see [radical_extraction.md](radical_extraction.md#pass-4-derive--compute-radical-metadata)).
+**Note on `min_jlpt_level` semantics:** The value 5 means N5 (easiest), 1 means N1 (hardest). This means `MAX(min_jlpt_level)` returns the easiest level — relevant for radical metadata derivation in Pass 4 (see [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md#pass-4-derive--compute-radical-metadata)).
 
 ## Fields Not Derived from KANJIDIC
 
@@ -340,7 +340,7 @@ The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Wa
 | `draft_kanji_i18n` | One row per language per kanji (for all languages with data) | Step 3 |
 
 Tables populated by **this phase but documented elsewhere:**
-- `kanji_components` — component linking (Step 4, see [radical_extraction.md Pass 3](radical_extraction.md#pass-3-link--create-kanjicomponent-rows))
+- `kanji_components` — component linking (Step 4, see [ph2_1_radical_extraction.md Pass 3](ph2_1_radical_extraction.md#pass-3-link--create-kanjicomponent-rows))
 
 Tables populated by **later phases** (not this algorithm):
 - `kanji.svg_*` fields — SVG Processing (Phase 2.4)
@@ -352,6 +352,6 @@ Tables populated by **later phases** (not this algorithm):
 - [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity and review state
 - [raw_kanjidic.md](../domain/raw_kanjidic.md) — Source staging table schema
 - [kanjidic_format.md](../sources/kanjidic_format.md) — KANJIDIC2 XML format reference (JLPT mapping, grade values)
-- [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Steps 4–5)
-- [radical_extraction.md](radical_extraction.md) — Passes 1–2 (radical/variant registration)
+- [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking and radical metadata derivation (Steps 4–5)
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Passes 1–2 (radical/variant registration)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)

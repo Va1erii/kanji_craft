@@ -175,9 +175,9 @@ Output CSVs go to `data/csv/` and are ordered by JLPT level then grade for Phase
 
 Reads `kanjivg.parquet` + `kanjidic.parquet` + `jlpt_kanji.parquet`.
 
-**Scope:** Only kanji with a JLPT level (N1–N5) or Jōyō school grade 1–8 are processed. See [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only).
+**Scope:** Only kanji with a JLPT level (N1–N5) or Jōyō school grade 1–8 are processed. See [ph2_1_radical_extraction.md §Scope](ph2_1_radical_extraction.md#scope-jlptgrade-kanji-only).
 
-**Ghost flattening:** Builds a **keep set** (learnable kanji + official Kangxi radicals + components appearing in 5+ in-scope kanji) and flattens non-keep-set intermediates by replacing them with their own children. Reduces ~900 scope-only radicals to ~600–700 meaningful building blocks. See [radical_extraction.md §Keep Set](radical_extraction.md#keep-set-what-becomes-a-radical) and [§Ghost Flattening](radical_extraction.md#ghost-radical-flattening).
+**Ghost flattening:** Builds a **keep set** (learnable kanji + official Kangxi radicals + components appearing in 5+ in-scope kanji) and flattens non-keep-set intermediates by replacing them with their own children. Reduces ~900 scope-only radicals to ~600–700 meaningful building blocks. See [ph2_1_radical_extraction.md §Keep Set](ph2_1_radical_extraction.md#keep-set-what-becomes-a-radical) and [§Ghost Flattening](ph2_1_radical_extraction.md#ghost-radical-flattening).
 
 **Output CSVs:**
 
@@ -187,7 +187,7 @@ Reads `kanjivg.parquet` + `kanjidic.parquet` + `jlpt_kanji.parquet`.
 | `radical_i18n.csv` | Radical names/keywords per language (deferred — populated in Phase 3) | `radical_i18n` |
 | `radical_variants.csv` | Shape variants with positions | `radical_variants` |
 
-See [radical.md](../domain/radical.md), [radical_extraction.md](radical_extraction.md).
+See [radical.md](../domain/radical.md), [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md).
 
 ### 2.2 Kanji Composition
 
@@ -205,7 +205,7 @@ Reads `kanjidic.parquet` + `jlpt_kanji.parquet`.
 | `kanji_readings.csv` | On/kun readings with priority | `kanji_readings` |
 | `kanji_i18n.csv` | Meanings per language (deferred i18n fields populated in Phase 3) | `kanji_i18n` |
 
-See [kanji.md](../domain/kanji.md), [kanji_composition.md](kanji_composition.md).
+See [kanji.md](../domain/kanji.md), [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md).
 
 ### 2.3 Component Linking
 
@@ -222,7 +222,7 @@ Reads `kanjivg.parquet` + radicals from 2.1 + kanji from 2.2.
 
 Also updates `radicals.csv` with derived metadata fields.
 
-See [kanji_component.md](../domain/kanji_component.md), [component_linking.md](component_linking.md).
+See [kanji_component.md](../domain/kanji_component.md), [ph2_3_component_linking.md](ph2_3_component_linking.md).
 
 ### 2.4 SVG Processing
 
@@ -239,7 +239,7 @@ Updates `radicals.csv`, `radical_variants.csv`, and `kanji.csv` with SVG fields.
 
 **Hash stability:** If a new KanjiVG version ships identical bytes for a character, the hash stays the same. Only characters with actual SVG changes get a new hash. This enables efficient delta uploads in Phase 4.
 
-See [svg_processing.md](svg_processing.md).
+See [ph2_4_svg_processing.md](ph2_4_svg_processing.md).
 
 ### 2.5 Vocabulary Extraction
 
@@ -273,7 +273,7 @@ Reads `jmdict.parquet` + `jmdict_examples.parquet` + `jlpt_vocab.parquet` + `jmd
 
 **Ordering constraint:** Vocabulary extraction must run after kanji creation (2.2), because kanji linking requires the kanji table.
 
-See [vocabulary.md](../domain/vocabulary.md), [vocabulary_extraction.md](vocabulary_extraction.md).
+See [vocabulary.md](../domain/vocabulary.md), [ph2_5_vocabulary_extraction.md](ph2_5_vocabulary_extraction.md).
 
 ## Phase 3: AI Enrichment
 
@@ -377,12 +377,12 @@ Replace the local base URL in `svg_file_url` with the Remote Production Storage 
 
 ### Pipeline sub-docs (stale — describe old Dart pipeline, domain logic still accurate)
 
-- [ingestion.md](ingestion.md) — Phase 1 correctness invariants and recovery procedures
-- [radical_extraction.md](radical_extraction.md) — Radical/variant registration algorithm
-- [kanji_composition.md](kanji_composition.md) — Kanji creation from KANJIDIC2
-- [component_linking.md](component_linking.md) — Component linking and radical metadata derivation
-- [svg_processing.md](svg_processing.md) — SVG file matching, SHA-256 hashing, URL construction
-- [vocabulary_extraction.md](vocabulary_extraction.md) — Vocabulary extraction from JMdict
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants and recovery procedures
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Radical/variant registration algorithm
+- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Kanji creation from KANJIDIC2
+- [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking and radical metadata derivation
+- [ph2_4_svg_processing.md](ph2_4_svg_processing.md) — SVG file matching, SHA-256 hashing, URL construction
+- [ph2_5_vocabulary_extraction.md](ph2_5_vocabulary_extraction.md) — Vocabulary extraction from JMdict
 
 ### Domain specs
 

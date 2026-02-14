@@ -207,13 +207,13 @@ For each unique element from Pass 1:
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
-For each **in-scope** `raw_kanjivg` entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [component_linking.md](component_linking.md).
+For each **in-scope** `raw_kanjivg` entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
 
 **Summary:** For each in-scope kanji, resolve effective children via ghost flattening, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.6). Upsert key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
-After all kanji and components are linked, compute derived fields on each radical: `impact_score`, `min_grade`, `min_jlpt_level`. The full algorithm — including impact score bucketing, the MIN/MAX queries, and edge cases for radicals with no graded kanji — is documented in [component_linking.md Step 3](component_linking.md#step-3-derive-radical-metadata).
+After all kanji and components are linked, compute derived fields on each radical: `impact_score`, `min_grade`, `min_jlpt_level`. The full algorithm — including impact score bucketing, the MIN/MAX queries, and edge cases for radicals with no graded kanji — is documented in [ph2_3_component_linking.md Step 3](ph2_3_component_linking.md#step-3-derive-radical-metadata).
 
 ## Worked Examples
 
@@ -462,6 +462,6 @@ Pass 0 (scope set) requires `raw_kanjidic` and `source_jlpt_level_entries` to be
 - [kanji.md](../domain/kanji.md) — Kanji entity spec
 - [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity and review state
 - [raw_kanjivg.md](../domain/raw_kanjivg.md) — KanjiVG staging table and component tree shape
-- [component_linking.md](component_linking.md) — Component linking and radical metadata derivation (Passes 3–4)
+- [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking and radical metadata derivation (Passes 3–4)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
-- [ingestion.md](ingestion.md) — Phase 1 correctness invariants
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants

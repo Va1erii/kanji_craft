@@ -5,8 +5,8 @@
 Component linking creates the bridge between kanji and their constituent radicals. For each kanji, the pipeline resolves its **effective children** — the meaningful building blocks remaining after ghost radical flattening — then upserts `kanji_components` rows recording each radical's position, dictionary classification, and initial mnemonic role. A subsequent pass computes aggregate metadata on each radical from its kanji associations.
 
 This phase corresponds to:
-- **Radical extraction Passes 3–4** in [radical_extraction.md](radical_extraction.md)
-- **Kanji composition Steps 4–5** in [kanji_composition.md](kanji_composition.md)
+- **Radical extraction Passes 3–4** in [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md)
+- **Kanji composition Steps 4–5** in [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md)
 - **Pipeline Phase 2.3 (latter half)** in [pipeline.md](pipeline.md)
 
 **What this phase does NOT do:** Radical/variant registration (Passes 1–2), kanji row creation (Steps 1–3), SVG processing (Phase 2.4), or logic_hint refinement via AI (Phase 2.6). Those are documented separately and merely referenced here for sequencing.
@@ -26,8 +26,8 @@ This phase corresponds to:
 
 All four conditions must hold before this phase runs:
 
-1. **JLPT/grade scope set computed** — The same scope set used by radical extraction Pass 0 (see [radical_extraction.md §Scope](radical_extraction.md#scope-jlptgrade-kanji-only)). Only `raw_kanjivg` entries whose character is in this set are processed.
-2. **Keep set available** — The same keep set built during radical extraction Pass 1 (see [radical_extraction.md §Keep Set](radical_extraction.md#keep-set-what-becomes-a-radical)). Ghost flattening in Step 1 uses this set to determine which intermediates to flatten.
+1. **JLPT/grade scope set computed** — The same scope set used by radical extraction Pass 0 (see [ph2_1_radical_extraction.md §Scope](ph2_1_radical_extraction.md#scope-jlptgrade-kanji-only)). Only `raw_kanjivg` entries whose character is in this set are processed.
+2. **Keep set available** — The same keep set built during radical extraction Pass 1 (see [ph2_1_radical_extraction.md §Keep Set](ph2_1_radical_extraction.md#keep-set-what-becomes-a-radical)). Ghost flattening in Step 1 uses this set to determine which intermediates to flatten.
 3. **Radical extraction Passes 1–2 complete** — `radicals` and `radical_variants` tables are populated. Every element that will appear as an **effective child** (after ghost flattening) of any in-scope kanji has a corresponding `radicals` row with a known `master_symbol`.
 4. **Kanji composition Steps 1–3 complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Every in-scope `raw_kanjivg.character` has a corresponding `kanji` row so that `kanji_components.kanji_id` can resolve.
 
@@ -42,7 +42,7 @@ For each `raw_kanjivg` row in the active import **whose character is in the JLPT
 1. Get the root node's `children` array.
 2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element`.
 3. **Merge split parts:** If multiple children share the same `element` with different `part` values (e.g. 辶 part=1 and 辶 part=2 in 道), treat them as a **single component**. Merge their `stroke_indices` and use the `position` from the first part (or the part that carries the `position` attribute).
-4. **Ghost flattening:** For each child after steps 2–3, resolve the master symbol (`original` if variant, else `element`). If the master symbol is NOT in the keep set, the child is a **ghost radical** — replace it with its own effective children from its KanjiVG entry (recursive, depth-limited to 10). See [radical_extraction.md §Ghost Radical Flattening](radical_extraction.md#ghost-radical-flattening) for the full algorithm and pseudocode.
+4. **Ghost flattening:** For each child after steps 2–3, resolve the master symbol (`original` if variant, else `element`). If the master symbol is NOT in the keep set, the child is a **ghost radical** — replace it with its own effective children from its KanjiVG entry (recursive, depth-limited to 10). See [ph2_1_radical_extraction.md §Ghost Radical Flattening](ph2_1_radical_extraction.md#ghost-radical-flattening) for the full algorithm and pseudocode.
 
 **Important:** The same keep set and ghost flattening algorithm used in radical extraction Pass 1 must be applied here to ensure consistency — every effective child produced in this step has a corresponding radical row from Pass 2. Sub-components of a keep-set child (e.g. 五 and 口 inside 吾) are handled when that child's own entry is processed. This is the **progressive decomposition** principle — multi-level learning chains emerge from the dataset, but only through meaningful components.
 
@@ -494,6 +494,6 @@ Steps 1–2 (linking) depend on both the `kanji` rows from kanji composition and
 - [kanji.md](../domain/kanji.md) — Kanji entity spec (min_grade, min_jlpt_level used in metadata derivation)
 - [raw_kanjivg.md](../domain/raw_kanjivg.md) — Source staging table (component tree shape, KanjiVG attributes)
 - [kanjivg_format.md](../sources/kanjivg_format.md) — KanjiVG SVG format (position values, radical markers, split parts)
-- [radical_extraction.md](radical_extraction.md) — Passes 1–2 (radical registration) and full worked examples
-- [kanji_composition.md](kanji_composition.md) — Steps 1–3 (kanji creation) and JLPT level mapping
+- [ph2_1_radical_extraction.md](ph2_1_radical_extraction.md) — Passes 1–2 (radical registration) and full worked examples
+- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Steps 1–3 (kanji creation) and JLPT level mapping
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)

@@ -35,13 +35,16 @@ def write_csv_atomic(df: pd.DataFrame, path: Path) -> None:
 
 
 def load_manual_list(path: Path) -> set[str]:
-    """Load one-char-per-line file, skip blanks and # comments."""
+    """Load one-char-per-line file, skip blanks and # comments.
+
+    Supports inline comments: ``袁  # EN: 遠 園 猿`` → ``袁``.
+    """
     if not path.exists():
         return set()
     result: set[str] = set()
     for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
+        line = line.split("#", 1)[0].strip()
+        if line:
             result.add(line)
     return result
 

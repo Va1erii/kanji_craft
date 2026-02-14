@@ -78,6 +78,11 @@ class TestLoadManualList:
         f.write_text("  木  \n  水  \n")
         assert load_manual_list(f) == {"木", "水"}
 
+    def test_inline_comments(self, tmp_path):
+        f = tmp_path / "test.txt"
+        f.write_text("袁  # EN: 遠 園 猿\n木  # tree\n")
+        assert load_manual_list(f) == {"袁", "木"}
+
 
 # --- write_csv_atomic ---
 

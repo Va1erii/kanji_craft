@@ -1,3 +1,33 @@
 # Characters to force into the radical keep set.
 # One character per line. Blank lines and # comments ignored.
 # These are registered as radicals regardless of frequency/scope/official status.
+
+# --- Phonetic anchors ---
+# Format: char  # READING: example kanji
+
+袁  # EN: 遠 園 猿
+侖  # RON: 論 輪 倫
+咼  # KA: 過 渦 禍
+吾  # GO: 語 悟
+禺  # GU: 偶 隅 愚
+扁  # HEN: 編 偏 遍
+兪  # YU: 輸 愉 癒
+亢  # KOU: 航 抗
+兹  # JI: 慈 磁
+辟  # HEKI: 壁 避 癖
+冓  # KOU: 講 構 購
+甬  # YOU: 通 勇 痛
+爰  # EN: 援 暖 緩
+氐  # TEI: 低 底 抵
+复  # FUKU: 復 腹 複
+壬  # NIN: 任 賃
+㕣  # EN: 沿 鉛 船
+夹  # KYOU: 狭 挟
+
+# --- Visual / structural ---
+
+帚  # Broom: 帰 婦 掃
+卆  # Soldier: 卒 酔 粋
+マ  # Katakana Ma: primitive shape
+从  # Follow (two people): 坐 座
+㐬  # River/child: 流 育 充

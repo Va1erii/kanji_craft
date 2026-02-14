@@ -2,7 +2,7 @@
 
 ## Overview
 
-Radical extraction turns the nested KanjiVG component trees (stored in `raw_kanjivg.components`) into flat, queryable rows in `radicals`, `radical_variants`, and `kanji_components`. The result is a **Lego-style learning graph** — every kanji is built from a small set of meaningful pieces, and the learner masters each piece before assembling the next character.
+Radical extraction turns the nested KanjiVG component trees (from `kanjivg.parquet`) into flat, queryable rows in `radicals`, `radical_variants`, and `kanji_components`. The result is a **Lego-style learning graph** — every kanji is built from a small set of meaningful pieces, and the learner masters each piece before assembling the next character.
 
 **Core principle:** Each kanji decomposes into **meaningful building blocks** — either standalone learnable kanji, official Kangxi radicals, or high-frequency components. Intermediate structural groupings ("ghost radicals") that aren't independently useful to learners are transparently flattened: their children are promoted to become direct children of the parent kanji. Progressive decomposition still applies — multi-level learning chains emerge from the dataset — but only between meaningful components, never through opaque intermediates.
 
@@ -10,15 +10,15 @@ Radical extraction turns the nested KanjiVG component trees (stored in `raw_kanj
 
 KanjiVG covers ~6,700 characters. Processing all of them produces thousands of radical candidates — far too many for a pedagogical app. Most of these come from rare, non-educational kanji that learners will never encounter.
 
-**The filter:** Radical extraction only processes `raw_kanjivg` entries whose character is **educationally relevant** — defined as appearing in `raw_kanjidic` with a Jōyō grade (1–6 elementary, 8 secondary), OR appearing in `source_jlpt_level_entries`. Grades 9 (Jinmeiyō / name kanji) and 10 (Jōyō variants) are **excluded** — they cover personal names and official documents, not the standard school curriculum or JLPT. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or Jōyō grades 1–8.
+**The filter:** Radical extraction only processes KanjiVG entries whose character is **educationally relevant** — defined as appearing in `kanjidic.parquet` with a Jōyō grade (1–6 elementary, 8 secondary), OR appearing in `jlpt_kanji.parquet`. Grades 9 (Jinmeiyō / name kanji) and 10 (Jōyō variants) are **excluded** — they cover personal names and official documents, not the standard school curriculum or JLPT. This limits extraction to the ~2,136 kanji in JLPT N5–N1 and/or Jōyō grades 1–8.
 
 **How the scope set is built (before Pass 1):**
 
-1. Query `raw_kanjidic` for characters where `grade IS NOT NULL AND grade <= 8` → set A.
-2. Query `source_jlpt_level_entries` for all `kanji_character` values → set B.
+1. From `kanjidic.parquet`: characters where `grade IS NOT NULL AND grade <= 8` → set A.
+2. From `jlpt_kanji.parquet`: all `kanji_character` values → set B.
 3. Scope set = A ∪ B.
 
-Only `raw_kanjivg` entries whose `character` is in the scope set are scanned in Passes 1–2 and linked in Passes 3–4.
+Only KanjiVG entries whose `character` is in the scope set are scanned in Passes 1–2 and linked in Passes 3–4.
 
 **Consequences:**
 
@@ -31,9 +31,11 @@ Not every element encountered during scanning becomes a radical. To keep the rad
 
 1. **Learnable kanji:** The element is in the JLPT/grade scope set. These are standalone characters the learner will encounter — they should be recognizable building blocks.
 
-2. **Official Kangxi radical:** The element has been marked `radical='general'` in ANY `raw_kanjivg` entry (not just in-scope entries). The 214 Kangxi radicals are the traditional building blocks of CJK characters and are widely taught in reference materials. The official set is built by scanning ALL raw_kanjivg entries to avoid missing designations that only appear in out-of-scope kanji.
+2. **Official Kangxi radical:** The element has been marked `radical='general'` in ANY KanjiVG entry (not just in-scope entries). The 214 Kangxi radicals are the traditional building blocks of CJK characters and are widely taught in reference materials. The official set is built by scanning ALL KanjiVG entries to avoid missing designations that only appear in out-of-scope kanji.
 
 3. **High-frequency component:** The element appears as a direct child in **5 or more** in-scope kanji (counted before ghost flattening). Even if a component isn't a standalone kanji or official radical, appearing frequently makes it a reusable learning unit worth memorizing. The threshold of 5 balances reusability against mnemonic maintenance cost — components appearing in only 3–4 kanji are rare enough that learners can absorb the sub-components directly.
+
+4. **Manual override:** The element is listed in `pipeline/data/manual_keep.txt` (one character per line). These are characters that the admin has explicitly marked as keep-set members regardless of the algorithmic criteria above. Conversely, elements listed in `pipeline/data/manual_flatten.txt` are forced **out** of the keep set — they are flattened even if they would otherwise qualify algorithmically. Manual overrides are applied last: `manual_flatten` wins if a character appears in both files.
 
 Elements NOT in the keep set are **ghost radicals** — intermediate structural groupings from KanjiVG that aren't independently useful to learners. Ghost radicals are flattened (see below).
 
@@ -59,8 +61,9 @@ Before flattening (raw KanjiVG):        After flattening:
 **Algorithm:**
 
 ```
-resolveEffectiveChildren(component, keepSet, treeMap, depth):
-  if depth > 10: return [component's children as-is]  // safety guard
+resolveEffectiveChildren(component, keepSet, treeMap, depth, inheritPosition=null):
+  if depth > 10: return [component's children as-is]  // hard stop
+  if depth > 5: log WARNING "deep recursion at depth {depth}"  // data quality flag
 
   directChildren = flattenEmptyElements(component.children) + mergeSplitParts(...)
 
@@ -69,23 +72,44 @@ resolveEffectiveChildren(component, keepSet, treeMap, depth):
     masterSymbol = child.variant ? child.original : child.element
 
     if masterSymbol in keepSet:
-      result.add(child)  // meaningful component — keep
+      // Meaningful component — keep. Apply inherited position if child has none.
+      if child.position is null AND inheritPosition is not null:
+        child.position = inheritPosition
+      result.add(child)
     else:
       // Ghost radical — try to flatten
       ghostTree = treeMap[masterSymbol]
       if ghostTree exists AND ghostTree has children:
-        result.addAll(resolveEffectiveChildren(ghostTree, keepSet, treeMap, depth + 1))
+        // Pass ghost's position (or inherited position) down to children with unknown position
+        ghostPosition = child.position ?? inheritPosition
+        result.addAll(resolveEffectiveChildren(ghostTree, keepSet, treeMap, depth + 1, ghostPosition))
       else:
-        result.add(child)  // no tree or leaf — keep as unflattenable radical
+        // No tree or leaf — keep as unflattenable radical
+        if child.position is null AND inheritPosition is not null:
+          child.position = inheritPosition
+        result.add(child)
 
   return result
 ```
 
-**Position inheritance:** Promoted children keep their positions from the ghost's component tree. If 粦 was at position "right" and its child 米 was at position "top", 米 keeps position "top" (its position within the ghost's sub-tree). This preserves the most specific spatial information available.
+**Position inheritance:** Promoted children keep their own positions from the ghost's component tree when they have one. If a promoted child has no position (`null` → `unknown`), it **inherits** the ghost's position at the parent level. This cascades through multiple ghost levels: at each flattening step, the ghost's position is passed down as a fallback for children that lack their own. This preserves the most specific spatial information available while avoiding loss of context for position-less children.
+
+**Example of position cascade:**
+
+```
+Before flattening:                       After flattening:
+X (root)                                X (root)
+├── 火 — left (KEEP)                    ├── 火 — left
+└── G — right (GHOST)                   ├── 米 — top       (own position from G's tree)
+    ├── 米 — top (KEEP)                 └── 丶 — right     (inherited from G — had no position)
+    └── 丶 — (no position) (KEEP)
+```
+
+米 keeps its own position "top". 丶 had no position inside G's sub-tree, so it inherits G's position "right".
 
 **Unflattenable ghosts:** If a ghost radical has no KanjiVG entry, or its entry has no children, it cannot be decomposed further. It stays as a **leaf radical** — an atomic building block the learner memorizes directly. This is expected for some rare components and does not block extraction.
 
-**Depth guard:** Recursion is limited to 10 levels. In practice, KanjiVG trees rarely exceed 3–4 levels. The guard prevents infinite loops from hypothetical circular references.
+**Depth guard:** Recursion warns at depth > 5 (likely a data quality issue) and hard-stops at 10 levels. In practice, KanjiVG trees rarely exceed 3–4 levels. The hard stop prevents infinite loops from hypothetical circular references.
 
 ## Progressive Decomposition
 
@@ -130,41 +154,44 @@ Examples: 言, 吾, 木, 金, 山, 口, 五 — all are both radicals and kanji.
 
 ## Algorithm
 
-The extraction runs in four passes over the active `raw_kanjivg` import. Each pass is idempotent — re-running with the same data produces the same result.
+The extraction runs in four passes over the KanjiVG Parquet data. Each pass is idempotent — re-running with the same data produces the same result.
 
 ### Pass 0: Build Scope Set
 
 Before scanning, compute the set of educationally relevant kanji characters (see §Scope above).
 
 ```
-Input:  raw_kanjidic rows for the active import_id + source_jlpt_level_entries
+Input:  kanjidic.parquet + jlpt_kanji.parquet
 Output: Set<String> scopeCharacters
 ```
 
-1. Query `raw_kanjidic` for the active import: collect `character` where `grade IS NOT NULL AND grade <= 8` (Jōyō only; excludes Jinmeiyō grade 9 and variant grade 10).
-2. Query `source_jlpt_level_entries`: collect all `kanji_character` values.
+1. From `kanjidic.parquet`: collect `character` where `grade IS NOT NULL AND grade <= 8` (Jōyō only; excludes Jinmeiyō grade 9 and variant grade 10).
+2. From `jlpt_kanji.parquet`: collect all `kanji_character` values.
 3. Merge into `scopeCharacters = graded ∪ jlpt`.
 
-This set is used by Passes 1–4 to filter which `raw_kanjivg` entries are processed.
+This set is used by Passes 1–4 to filter which KanjiVG entries are processed.
 
 ### Pass 1: Scan — Build Keep Set and Collect Radical Candidates
 
 Pass 1 has four sub-steps: build the official set, count frequencies, construct the keep set, and scan with ghost flattening.
 
 ```
-Input:  ALL raw_kanjivg rows (for official set + tree lookups),
-        in-scope raw_kanjivg rows (for scanning),
-        scopeCharacters from Pass 0
+Input:  ALL kanjivg.parquet rows (for official set + tree lookups),
+        in-scope kanjivg.parquet rows (for scanning),
+        scopeCharacters from Pass 0,
+        manual_keep.txt, manual_flatten.txt
 Output: Set<RadicalCandidate>, Set<String> keepSet
 ```
 
-**1a. Build official set:** Scan ALL `raw_kanjivg` entries (not just in-scope). For every component node in any tree that has `radical='general'`, resolve the master symbol (use `original` if variant, else `element`) and add it to the official set. This ensures no Kangxi radical is missed due to scope filtering.
+**1a. Build official set:** Scan ALL KanjiVG entries (not just in-scope). For every component node in any tree that has `radical='general'`, resolve the master symbol (use `original` if variant, else `element`) and add it to the official set. This ensures no Kangxi radical is missed due to scope filtering.
 
-**1b. Count raw frequencies:** For each in-scope `raw_kanjivg` entry, extract direct children (after empty-element flattening and part merging, but BEFORE ghost flattening). For each child, resolve the master symbol and increment its count. Output: `Map<String, int>` — element frequency across in-scope kanji.
+**1b. Count raw frequencies:** For each in-scope KanjiVG entry, extract direct children (after empty-element flattening and part merging, but BEFORE ghost flattening). For each child, resolve the master symbol and increment its count. Output: `Map<String, int>` — element frequency across in-scope kanji.
 
-**1c. Build keep set:** `keepSet = scopeCharacters ∪ officialSet ∪ { elem | frequency[elem] >= 5 }`
+**1c. Build keep set:** `keepSet = scopeCharacters ∪ officialSet ∪ { elem | frequency[elem] >= 5 } ∪ manualKeep − manualFlatten`
 
-**1d. Scan with ghost flattening:** Build a tree lookup map from ALL `raw_kanjivg` entries: `Map<String, KanjiVgComponent>` (character → root component). Then for each in-scope entry:
+Load `pipeline/data/manual_keep.txt` and `pipeline/data/manual_flatten.txt` (one character per line, blank lines and `#` comments ignored). Characters in `manual_keep` are added to the keep set. Characters in `manual_flatten` are removed from the keep set, even if they matched criteria 1–3. If a character appears in both files, `manual_flatten` wins (logged as a warning).
+
+**1d. Scan with ghost flattening:** Build a tree lookup map from ALL KanjiVG entries: `Map<String, KanjiVgComponent>` (character → root component). Then for each in-scope entry:
 
 1. Resolve **effective children** using the ghost flattening algorithm (see §Ghost Radical Flattening). This replaces ghost intermediates with their own children recursively.
 2. For each effective child:
@@ -178,7 +205,7 @@ Output: Set<RadicalCandidate>, Set<String> keepSet
 
 ### Pass 2: Register — Create Radical Rows
 
-Upsert `radicals` and `radical_variants` from the candidate set.
+Write `radicals` and `radical_variants` from the candidate set.
 
 **Radical registration:**
 
@@ -188,14 +215,14 @@ For each unique element from Pass 1:
    - If the element was seen with `variant == true` and an `original` value, the `master_symbol` is the `original` (e.g. for 亻 → master is 人).
    - Otherwise, the `master_symbol` is the element itself (e.g. 木 → master is 木).
 
-2. **Upsert `radicals`:**
+2. **Create `radicals` row:**
    - `master_symbol` — as determined above.
    - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
-   - `stroke_count` — looked up from `raw_kanjivg` where `character == master_symbol` (the master's own entry, from ALL entries not just in-scope).
+   - `stroke_count` — looked up from KanjiVG data where `character == master_symbol` (the master's own entry, from ALL entries not just in-scope).
    - `svg_file_name`, `svg_file_url`, `svg_hash` — from SVG Processing (pipeline Phase 2.4).
    - `min_grade`, `min_jlpt_level`, `impact_score` — from Pass 4 (metadata derivation).
 
-3. **Upsert `radical_variants`:**
+3. **Create `radical_variants` rows:**
    - For every element seen with `variant == true`:
      - `radical_id` — FK to the radical with `master_symbol == original`.
      - `shape` — the variant element (e.g. 氵).
@@ -207,9 +234,9 @@ For each unique element from Pass 1:
 
 ### Pass 3: Link — Create KanjiComponent Rows
 
-For each **in-scope** `raw_kanjivg` entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
+For each **in-scope** KanjiVG entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
 
-**Summary:** For each in-scope kanji, resolve effective children via ghost flattening, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and upsert a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI Heuristics in Phase 2.6). Upsert key: `(kanji_id, radical_id, position)`.
+**Summary:** For each in-scope kanji, resolve effective children via ghost flattening, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and write a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI enrichment in Phase 3). Unique key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
@@ -257,7 +284,22 @@ G is not in the scope set, not an official Kangxi radical, and appears as a dire
 **Pass 3** creates:
 - `kanji_components`: (kanji=X, radical=火, position=hen), (kanji=X, radical=米, position=kanmuri), (kanji=X, radical=舛, position=ashi)
 
-Note: 米 and 舛 keep their positions from G's sub-tree, not G's position.
+Note: 米 and 舛 keep their own positions from G's sub-tree (they had explicit positions). G's position "right" is not used because the children have more specific spatial information.
+
+### Ghost Flattening with Position Cascade
+
+When a ghost's children lack positions, they inherit the ghost's position:
+
+```
+Before flattening:                       After flattening:
+Z (root)                                Z (root)
+├── 口 — left (KEEP)                    ├── 口 — left
+└── G — right (GHOST)                   ├── 丨 — right     (inherited from G)
+    ├── 丨 — (no position) (KEEP)       └── 一 — top       (own position from G's tree)
+    └── 一 — top (KEEP)
+```
+
+丨 had no position inside G's sub-tree, so it inherits G's position "right". 一 had its own position "top", so it keeps that.
 
 ### Recursive Ghost Flattening
 
@@ -356,7 +398,7 @@ In the SRS progression, 一 is a pure radical — learnable directly with no pre
 
 ### Ghost radical with no KanjiVG entry
 
-A ghost component may not have its own `raw_kanjivg` entry. In this case, flattening cannot proceed — the ghost becomes a **leaf radical** (an atomic building block with no further decomposition). It is registered as a radical because it's used by an in-scope kanji. This is expected for some rare CJK components.
+A ghost component may not have its own KanjiVG entry. In this case, flattening cannot proceed — the ghost becomes a **leaf radical** (an atomic building block with no further decomposition). It is registered as a radical because it's used by an in-scope kanji. This is expected for some rare CJK components.
 
 ### Ghost radical with no children (leaf in KanjiVG)
 
@@ -370,9 +412,9 @@ Recursive flattening continues through chains of ghosts until reaching keep-set 
 
 After flattening, two different ghosts may contribute the same child element. The scanner deduplicates by master symbol — the element is registered once as a radical candidate. In `kanji_components`, the unique constraint `(kanji_id, radical_id, position)` prevents duplicate rows.
 
-### Component element missing from `raw_kanjivg` or out of scope
+### Component element missing from KanjiVG or out of scope
 
-A child's `element` may not have its own `raw_kanjivg` entry (e.g. a rare sub-component), or its entry may exist but the character is not in the JLPT/grade scope set. If the element is in the keep set, it becomes a normal radical. If it's a ghost without a KanjiVG entry, it becomes a leaf radical (see above).
+A child's `element` may not have its own KanjiVG entry (e.g. a rare sub-component), or its entry may exist but the character is not in the JLPT/grade scope set. If the element is in the keep set, it becomes a normal radical. If it's a ghost without a KanjiVG entry, it becomes a leaf radical (see above).
 
 ### Empty `element` on a child node
 
@@ -384,7 +426,7 @@ A single kanji may have two children with `radical` markers — one `'general'` 
 
 ### Variant without `original`
 
-If a node has `variant == true` but `original` is null ([raw_kanjivg.md edge case](../domain/raw_kanjivg.md)), log a warning. Treat the element as its own master symbol (non-variant). The admin can manually link it during review.
+If a node has `variant == true` but `original` is null (see [kanjivg_format.md](../sources/kanjivg_format.md)), log a warning. Treat the element as its own master symbol (non-variant). The admin can manually link it during review.
 
 ### Kanji with no children (leaf kanji)
 
@@ -396,7 +438,7 @@ A kanji's `master_symbol` in `radicals` may equal its `character` in `kanji`. Fo
 
 ### Duplicate component positions
 
-If the same radical appears at the same position in the same kanji (after part merging and ghost flattening), the unique constraint `(kanji_id, radical_id, position)` prevents duplicates. The upsert is a no-op.
+If the same radical appears at the same position in the same kanji (after part merging and ghost flattening), the unique constraint `(kanji_id, radical_id, position)` prevents duplicates. The write is a no-op.
 
 ### Radical with no graded kanji
 
@@ -404,29 +446,31 @@ With the JLPT/grade scope filter, this situation is rare — most radicals inher
 
 ### Component not in KANJIDIC
 
-A radical extracted from KanjiVG may not have a corresponding entry in `raw_kanjidic` (e.g. rare components, non-standard decompositions). The radical row is still created — it just won't have its own kanji row with readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
+A radical extracted from KanjiVG may not have a corresponding entry in `kanjidic.parquet` (e.g. rare components, non-standard decompositions). The radical row is still created — it just won't have its own kanji row with readings or KANJIDIC-sourced metadata. This is expected for custom radicals (`is_official: false`).
 
 ### High-frequency threshold edge cases
 
 The threshold of 5 balances radical count against mnemonic cost. After running extraction on real data, the admin should review:
-- Elements just below the threshold (frequency 4) that might be pedagogically useful — consider lowering to 4
-- Elements just above the threshold (frequency 5) that are opaque to learners — consider raising to 8
+- Elements just below the threshold (frequency 4) that might be pedagogically useful — consider adding to `manual_keep.txt`
+- Elements just above the threshold (frequency 5) that are opaque to learners — consider adding to `manual_flatten.txt`
 
 The threshold can be adjusted without schema changes — it only affects which elements get flattened.
 
 ## Warnings
 
-The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+Warnings are written to `data/csv/warnings/ph2_1_warnings.csv` with columns: `severity, phase, entity, message`.
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Frequent ghost flattened (freq ≥ 3, below threshold) | high | Near-threshold component — admin should review whether to lower threshold or add to keep set |
-| Recursion depth exceeded during ghost flattening | high | Should not happen with real KanjiVG data — indicates circular reference or unexpectedly deep nesting |
+| Frequent ghost flattened (freq ≥ 3, below threshold) | high | Near-threshold component — admin should review whether to lower threshold or add to `manual_keep.txt` |
+| Recursion depth exceeded (> 10) during ghost flattening | high | Should not happen with real KanjiVG data — indicates circular reference or unexpectedly deep nesting |
+| Deep recursion (depth > 5) during ghost flattening | medium | Likely data quality issue — review the component tree for unusual nesting |
 | Ghost radical unflattenable (no KanjiVG entry) | medium | Leaf radical created from a component with no tree — can't verify structure |
 | Ghost radical unflattenable (no children) | medium | Leaf radical from a childless KanjiVG entry — atomic shape the learner memorizes directly |
+| Character in both `manual_keep.txt` and `manual_flatten.txt` | medium | Conflict — `manual_flatten` wins; admin should resolve the inconsistency |
 | Rare ghost flattened (freq < 2) | low | Expected behaviour for infrequent intermediates — informational only |
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
-| `raw_kanjivg` entry skipped (character not in JLPT/grade scope) | — | Not a warning — expected behaviour. Logged at debug level only |
+| KanjiVG entry skipped (character not in JLPT/grade scope) | — | Not a warning — expected behaviour. Logged at debug level only |
 
 ## Output Summary
 
@@ -442,26 +486,27 @@ The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Wa
 - ~600–750 radical variants
 
 Tables populated by **later phases** (not this algorithm):
-- `radical_i18n` — names and mnemonics (Phase 2.6B, KANJIDIC meanings + AI)
-- `kanji_component_reviews` — verification state (Phase 2.6A, AI Heuristics)
+- `radical_i18n` — names and mnemonics (Phase 3, KANJIDIC meanings + AI)
 - SVG fields on `radicals` and `radical_variants` — (Phase 2.4, SVG Processing)
+
+**Future consideration — SVG stroke group linkage:** The current schema does not store KanjiVG `<g>` group IDs on `kanji_components`. For the UI to highlight specific strokes belonging to a merged/split part or a promoted ghost child, it will need a way to map each component back to its SVG stroke groups. This may require adding a `svg_group_ids` field or a separate mapping table. Deferred until the client rendering layer is designed — flagged here so the need is not forgotten.
 
 ## Ordering Constraint
 
-Pass 0 (scope set) requires `raw_kanjidic` and `source_jlpt_level_entries` to be loaded (Phase 1 complete). Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
+Pass 0 (scope set) requires `kanjidic.parquet` and `jlpt_kanji.parquet` to be produced (Phase 1 complete). Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
 
-1. **Radical extraction Passes 1–2** from `raw_kanjivg` → populates `radicals`, `radical_variants` (pipeline §2.2)
-2. **Kanji creation** from `raw_kanjidic` → populates `kanji`, `kanji_i18n`, `kanji_readings` (pipeline §2.3)
+1. **Radical extraction Passes 1–2** from KanjiVG data → populates `radicals`, `radical_variants` (pipeline §2.2)
+2. **Kanji creation** from KANJIDIC data → populates `kanji`, `kanji_i18n`, `kanji_readings` (pipeline §2.3)
 3. **Radical extraction Passes 3–4** → populates `kanji_components`, derives radical metadata (pipeline §2.3)
 4. **SVG processing** from KanjiVG ZIP → populates SVG fields on `radicals`, `radical_variants`, `kanji` (pipeline §2.4)
-5. **AI heuristics** → populates `kanji_components.logic_hint`, creates `kanji_component_reviews` (pipeline §2.5)
+5. **Vocabulary extraction** from JMdict data → populates vocabulary tables (pipeline §2.5)
 
 ## Related Docs
 
 - [radical.md](../domain/radical.md) — Radical entity spec
 - [kanji.md](../domain/kanji.md) — Kanji entity spec
-- [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity and review state
-- [raw_kanjivg.md](../domain/raw_kanjivg.md) — KanjiVG staging table and component tree shape
+- [kanji_component.md](../domain/kanji_component.md) — KanjiComponent entity spec
+- [kanjivg_format.md](../sources/kanjivg_format.md) — KanjiVG SVG format, position values, radical markers
 - [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking and radical metadata derivation (Passes 3–4)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
 - [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 correctness invariants

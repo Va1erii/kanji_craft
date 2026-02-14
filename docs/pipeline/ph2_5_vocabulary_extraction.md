@@ -2,57 +2,55 @@
 
 ## Overview
 
-Vocabulary extraction transforms `raw_jmdict` staging data into learnable vocabulary rows and their child tables: `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`, and `vocabulary_sentence_i18n`. The result is a structured educational dataset where every word carries its readings, localized meanings, kanji composition links, example sentences, and a segment breakdown for Ghost Kanji rendering — everything the SRS engine needs to schedule lessons and the client needs to render cards.
+Vocabulary extraction transforms JMdict data (from `jmdict.parquet`) into learnable vocabulary output CSVs: `vocabulary.csv`, `vocabulary_readings.csv`, `vocabulary_i18n.csv`, `vocabulary_kanji.csv`, `vocabulary_sentences.csv`, and `vocabulary_sentence_i18n.csv`. The result is a structured educational dataset where every word carries its readings, localized meanings, kanji composition links, example sentences, and furigana notation for Ghost Kanji rendering — everything the SRS engine needs to schedule lessons and the client needs to render cards.
 
-This phase sits after Kanji Composition (Phase 2.3) and Component Linking because vocabulary items are "gated" by the kanji they contain. The `kanji` table must be fully populated so that Step 4 can resolve `vocabulary_kanji.kanji_id` links and Step 1 can construct segments with valid `kanji_id` references.
+This phase sits after Kanji Composition (Phase 2.2) and Component Linking (Phase 2.3) because vocabulary items are "gated" by the kanji they contain. The `kanji.csv` must be fully populated so that Step 6 can resolve `vocabulary_kanji.kanji_id` links and Step 2 can construct furigana with valid kanji references.
 
 **Key goal:** Create a "Lego-style" progression where words are unlocked only after their constituent kanji are stabilized. To solve pedagogical gaps (like the "Eki Problem"), this phase also integrates external JLPT level data that may disagree with kanji-derived levels.
 
-**What this phase does NOT do:** AI translation of missing sentence pairs. That occurs in the subsequent AI Enrichment step (Phase 2.7). Bracket-notation furigana annotation of raw Japanese sentences also happens there.
+**What this phase does NOT do:** AI translation of missing sentence pairs or bracket-notation furigana annotation of raw Japanese sentences. Those occur in Phase 3 (AI Enrichment).
 
 ## Source Data
 
 | Source | Used in | Purpose |
 |---|---|---|
-| `raw_jmdict` | Steps 1, 2, 3 | Core dictionary entries (words, readings, meanings, POS codes) |
-| `raw_jmdict.examples` | Step 5 | Tanaka Corpus example sentences (verified English) |
-| `kanji` table | Steps 1, 4 | Resolving `vocabulary_kanji` links and segment `kanji_id` |
-| `source_vocab_levels` | Step 1 | Tanos JLPT vocabulary list (N5–N1) for `min_jlpt_level` |
-| `jmdict_furigana` | Step 1 | Per-character furigana mappings for segment construction |
-
-**Note on new sources:** `source_vocab_levels`, and `jmdict_furigana` are new ingestion sources not yet implemented in the codebase. `source_vocab_levels` follows the same pattern as `source_jlpt_levels` (curated CSV → local reference table, not tracked in `data_imports`). `jmdict_furigana` is tracked in `data_imports` because it is tightly coupled with JMdict and must be updated in lockstep. The schema changes and ingestion logic will be implemented separately; this doc describes the extraction algorithm that consumes them.
+| `jmdict.parquet` | Steps 1, 3, 4 | Core dictionary entries (words, readings, meanings, POS codes) |
+| `jmdict_examples.parquet` | Step 5 | Tanaka Corpus example sentences (verified English) |
+| `kanji.csv` | Steps 2, 6 | Resolving `vocabulary_kanji` links and furigana kanji references |
+| `jlpt_vocab.parquet` | Step 1 | Tanos JLPT vocabulary list (N5–N1) for `min_jlpt_level` |
+| `jmdict_furigana.parquet` | Step 2 | Per-character furigana mappings for notation construction |
 
 ## Prerequisites
 
 Both conditions must hold before this phase runs:
 
-1. **Kanji Composition (Phase 2.3) complete** — `kanji`, `kanji_readings`, and `kanji_i18n` tables are populated. Vocabulary extraction relies on `kanji.id` to create links and resolve segment references.
-2. **JLPT Vocab Mapping (Phase 1) loaded** — The `source_vocab_levels` table must be populated from the Tanos vocabulary CSV (see [ph1_ingestion.md](ph1_ingestion.md)).
+1. **Kanji Composition (Phase 2.2) complete** — `kanji.csv`, `kanji_readings.csv`, and `kanji_i18n.csv` are written. Vocabulary extraction relies on kanji rows to create links and resolve furigana references.
+2. **JLPT Vocab Mapping (Phase 1) loaded** — `jlpt_vocab.parquet` must be produced from the Tanos vocabulary CSVs (see [ph1_ingestion.md](ph1_ingestion.md)).
 
 ## Algorithm
 
-The extraction runs in five steps over the active `raw_jmdict` import. Each step is idempotent — re-running with the same data produces the same result.
+The extraction runs in six steps over the JMdict Parquet data. Each step is idempotent — re-running with the same data produces the same output files.
 
 ### Step 1: Create Vocabulary Rows
 
-For each `raw_jmdict` entry in the active import, determine if it qualifies for the app, then upsert a `vocabulary` row.
+For each `jmdict.parquet` entry, determine if it qualifies for the app, then write a `vocabulary.csv` row.
 
 **Selection logic:**
 
 Import the word if **either** condition is met:
 - It has a priority flag (`news1`, `ichi1`, `spec1`, `gai1`, etc.) on any kanji element or reading element, **OR**
-- It appears in `source_vocab_levels` (it is a required JLPT word).
+- It appears in `jlpt_vocab.parquet` (it is a required JLPT word).
 
 This ensures both common words (frequency-based) and pedagogically important words (JLPT-based) are included, even if they lack priority flags.
 
 **Field mapping:**
 
-| `raw_jmdict` | `vocabulary` | Transformation |
+| `jmdict.parquet` | `vocabulary.csv` | Transformation |
 |---|---|---|
 | `ent_seq` | `id` | Use JMdict sequence ID directly (stable identifier; see §ID Strategy) |
 | `kanji_elements[0].keb` | `word` | Use the first (most common) kanji headword. If null, use `reading_elements[0].reb` (kana-only word) |
-| (Derived) | `segments` | Construct JSONB using `jmdict_furigana` logic (see §Segmentation) |
-| (Derived) | `min_jlpt_level` | Primary: lookup in `source_vocab_levels`. Fallback: `MAX(kanji.min_jlpt_level)` across constituent kanji (see §JLPT Level Strategy) |
+| (Derived) | `furigana` | Construct `{kanji\|reading}` notation using `jmdict_furigana.parquet` (see §Furigana Construction) |
+| (Derived) | `min_jlpt_level` | Primary: lookup in `jlpt_vocab.parquet`. Fallback: `MAX(kanji.min_jlpt_level)` across constituent kanji (see §JLPT Level Strategy) |
 | (Derived) | `pos_tags` | Collect `pos` and `misc` from all senses, map to `PosTag` enum (see §POS Tag Extraction) |
 | Priority flags | `frequency_rank` | Map priority flags to an integer rank (see below) |
 
@@ -63,7 +61,7 @@ JMdict priority flags indicate frequency tier. Map them to a numeric rank:
 1. Words with `news1` or `ichi1` (high frequency) get the lowest ranks.
 2. Words with `news2`, `ichi2`, `spec1`, `spec2` get mid-range ranks.
 3. Words with only `gai1`/`gai2` (loanword frequency) or `nfxx` (Netflix frequency) get higher ranks.
-4. Words with no priority flags but included via `source_vocab_levels` get a synthetic rank (offset to distinguish from corpus-ranked words).
+4. Words with no priority flags but included via `jlpt_vocab.parquet` get a synthetic rank (offset to distinguish from corpus-ranked words).
 
 The exact rank assignment uses the same deterministic ordering principle as kanji `frequency_rank` — relative order is stable across re-runs.
 
@@ -75,11 +73,89 @@ For custom words not in JMdict (e.g., textbook-specific terms added manually), u
 
 **Note:** The current schema uses `BIGINT GENERATED ALWAYS AS IDENTITY`. Switching to explicit `ent_seq` IDs requires a schema migration (not yet implemented).
 
-**Upsert key:** `word` (unique constraint on `vocabulary`).
+**Unique key:** `word` (unique constraint on `vocabulary.csv`).
 
-### Step 2: Create Reading Rows
+### Step 2: Construct Furigana
 
-For each vocabulary word, extract readings from `raw_jmdict.reading_elements` and upsert into `vocabulary_readings`.
+For each vocabulary word, construct the `furigana` field using `{kanji|reading}` pipe-delimited notation (see [vocabulary.md §Furigana Notation](../domain/vocabulary.md#furigana-notation)).
+
+**Source:** `jmdict_furigana.parquet` — per-character reading breakdowns ingested from the [JmdictFurigana](https://github.com/Doublevil/JmdictFurigana) dataset.
+
+**Construction logic:**
+
+1. Look up the word in `jmdict_furigana.parquet` to get per-character reading mappings.
+2. For each character/group in the mapping:
+   - If the character is a kanji → wrap as `{kanji|reading}`.
+   - If the mapping indicates a jukujikun group (multiple kanji sharing one reading) → wrap as `{kanjigroup|reading}` (one reading for multiple characters → single ruby span).
+   - If the mapping indicates a compound with per-character readings → wrap as `{kanjigroup|reading1|reading2|...}` (reading count == kanji count).
+   - If the character is kana → leave as plain text (no braces).
+3. **Validation:** Stripping all `{` `|` `}` and reading portions must reproduce the original `word` text.
+
+**Fallback:** If a word is not found in `jmdict_furigana.parquet`, use **whole-word furigana** rather than attempting to guess the kanji/okurigana split:
+
+```
+{食べる|たべる}   ← safe whole-word fallback
+{食|た}べる       ← correct split (only from jmdict_furigana)
+{食べ|た}る       ← wrong split — NEVER guess
+```
+
+A wrong split (e.g. attaching okurigana to the kanji span) looks unprofessional and confuses learners. Whole-word furigana is always safe — the client renders a single ruby span over the entire word. Ghost Kanji rendering still works: the client scans all characters inside `{...}` for known kanji.
+
+**Fallback construction:** Wrap the entire word with its reading: `{word|reading}`. If the word is kana-only (no kanji characters), leave as plain text (no braces needed). Log a `medium` warning for each fallback so missing entries can be added to `jmdict_furigana.parquet` over time.
+
+### Worked Examples (Furigana)
+
+#### 冷蔵庫 (Refrigerator) — Per-Character Readings
+
+Word: `冷蔵庫`, reading: `れいぞうこ`
+
+Furigana source: `冷=れい, 蔵=ぞう, 庫=こ`
+
+```
+{冷|れい}{蔵|ぞう}{庫|こ}
+```
+
+Or equivalently as a compound: `{冷蔵庫|れい|ぞう|こ}`
+
+Each kanji gets its own ruby annotation. The client checks the user's SRS state for each kanji — learned kanji render solid, unlearned kanji render as gray "ghosts" with furigana above.
+
+#### 食べる (To Eat) — Mixed Kanji/Kana
+
+Word: `食べる`, reading: `たべる`
+
+Furigana source: `食=た`
+
+```
+{食|た}べる
+```
+
+The kana part `べる` is plain text — always rendered in solid black.
+
+#### 大人 (Adult) — Jukujikun
+
+Word: `大人`, reading: `おとな`
+
+This is a jukujikun compound — the reading `おとな` cannot be split across individual kanji.
+
+```
+{大人|おとな}
+```
+
+One reading for multiple kanji characters → single ruby span over the entire group. The client checks both kanji for ghost status.
+
+#### すごい (Amazing) — Kana Only
+
+Word: `すごい`, reading: `すごい`
+
+```
+すごい
+```
+
+Plain text, no braces. No kanji references. No ghost rendering logic needed.
+
+### Step 3: Create Reading Rows
+
+For each vocabulary word, extract readings from `jmdict.parquet` reading elements and write to `vocabulary_readings.csv`.
 
 **Priority assignment:**
 
@@ -92,25 +168,25 @@ If a reading element has `re_restr` values, it applies only to those specific he
 
 **Kana-only entries:**
 
-If the entry has `re_nokanji = true`, the reading is the word itself (no kanji headword). The reading is still stored as a `vocabulary_readings` row with `priority = primary`.
+If the entry has `re_nokanji = true`, the reading is the word itself (no kanji headword). The reading is still stored as a `vocabulary_readings.csv` row with `priority = primary`.
 
-**Upsert key:** `(vocabulary_id, reading)` — no duplicate readings for the same word.
+**Unique key:** `(vocabulary_id, reading)` — no duplicate readings for the same word.
 
 **Validation:** After processing, every vocabulary word must have at least one reading row and at least one `primary` reading.
 
-### Step 3: Create I18n Rows
+### Step 4: Create I18n Rows
 
-For each vocabulary word, create localized meaning rows in `vocabulary_i18n` for each target language in the pipeline configuration (default: `['en', 'es']`).
+For each vocabulary word, write localized meaning rows to `vocabulary_i18n.csv` for each target language in the pipeline configuration (default: `['en', 'es']`).
 
 For each target language:
 
-1. Collect all `sense` elements from `raw_jmdict.senses`.
+1. Collect all `sense` elements from the JMdict entry.
 2. For each sense, look up `glosses[lang_code]`.
 3. If the language key is present and the glosses array is non-empty:
    - Aggregate glosses across all senses into a single `meanings` array (preserving sense ordering).
-   - `system_mnemonic` ← `null`. Populated later during content enrichment or manually by admin.
+   - `system_mnemonic` ← empty string. Populated later during AI enrichment (Phase 3) or manually by admin.
    - `search_tags` ← empty array. Populated later during content enrichment.
-4. If no senses have glosses for the target language, **skip** — do not create an i18n row. Fallback to English happens at query time (see [vocabulary.md](../domain/vocabulary.md) edge cases).
+4. If no senses have glosses for the target language, **skip** — do not write an i18n row. Fallback to English happens at query time (see [vocabulary.md](../domain/vocabulary.md) edge cases).
 
 **Sense filtering:**
 
@@ -118,177 +194,88 @@ For each target language:
 - Respect `stagk`/`stagr` restrictions: if a sense is restricted to specific headwords or readings, only include it if the restrictions match the selected headword.
 - **Part-of-speech inheritance:** JMdict applies `pos` to subsequent senses until a new `pos` appears. The parser must carry forward the current `pos` when processing senses.
 
-**Upsert key:** `(vocabulary_id, lang_code)`.
+**Unique key:** `(vocabulary_id, lang_code)`.
 
 **Validation:** After processing, every vocabulary word must have at least an English (`en`) i18n row. JMdict always includes English glosses, so a missing `en` row indicates a parser bug.
 
-### Step 4: Link Kanji
-
-Parse the `word` string to find constituent kanji and create `vocabulary_kanji` rows.
-
-1. **Scan:** Iterate through every character in the `word` string.
-2. **Lookup:** For each character, check if it exists in the `kanji` table (by `character`).
-3. **Link:** If found, upsert a `vocabulary_kanji` row:
-   - `vocabulary_id`: The word's ID.
-   - `kanji_id`: The found kanji's ID.
-   - `position`: The character's 0-based index in the `word` string.
-
-**Orphan kanji handling (permissive approach):**
-
-If a word contains a kanji character that is **not** in the `kanji` table (e.g., a rare character excluded from the KANJIDIC import), the word is still imported. The unlinked kanji will always render as a "Ghost" in the UI (gray, with furigana) because it can never be "learned" — but the word remains available for study. This is the recommended approach for N1 coverage completeness.
-
-Log a warning for each unlinked kanji so admin can review coverage gaps.
-
-**Upsert key:** `(vocabulary_id, position)` — each position in a word holds exactly one kanji reference.
-
-**Kana-only words:** Words like すごい contain no kanji characters. Step 4 produces zero `vocabulary_kanji` rows. This is correct — these words have no unlock gate and can enter the lesson queue immediately.
-
 ### Step 5: Create Verified Sentences
 
-Extract example sentences from `raw_jmdict.examples` (Tanaka Corpus).
+Extract example sentences from `jmdict_examples.parquet` (Tanaka Corpus).
 
-**Source:** Each `raw_jmdict.examples` entry contains `sentence_ja` (Japanese) and `sentence_en` (English).
+**Source:** Each entry contains `sentence_ja` (Japanese) and `sentence_en` (English).
 
 **Action:**
 
-1. Create a `vocabulary_sentences` row:
+1. Write a `vocabulary_sentences.csv` row:
    - `vocabulary_id`: The word's ID.
-   - `original_text`: Set to `sentence_ja`. If bracket-notation furigana can be generated from available data, apply it; otherwise store as plain text (AI Enrichment in Phase 2.7 will add `[漢](かん)[字](じ)` annotation later).
-   - `verification_status`: Set to `verified` — Tanaka Corpus sentences are considered trusted source data.
+   - `original_text`: Set to `sentence_ja`. If furigana notation can be generated from available data, apply it; otherwise store as plain text (AI Enrichment in Phase 3 will add `{漢|かん}{字|じ}` annotation later).
 
-2. Create a `vocabulary_sentence_i18n` row:
+2. Write a `vocabulary_sentence_i18n.csv` row:
    - `vocabulary_sentence_id`: The sentence's ID.
    - `lang_code`: `en`.
    - `sentence_translated`: Set to `sentence_en`.
 
 **Note:** Only one sentence per vocabulary word (unique constraint on `vocabulary_id`). If multiple examples exist for the same word, select the shortest sentence that still provides meaningful context.
 
-**Upsert key:** `vocabulary_id` (unique on `vocabulary_sentences`).
+**Unique key:** `vocabulary_id` (unique on `vocabulary_sentences.csv`).
 
-## Segmentation (Ghost Kanji Support)
+### Step 6: Link Kanji
 
-To support Ghost Kanji rendering (showing unlearned kanji in gray with furigana), the `segments` JSONB field must be constructed during extraction. Segments follow the `VocabularySegment` format defined in [vocabulary.md §Segments Format](../domain/vocabulary.md#segments-format).
+Parse the `word` string to find constituent kanji and write `vocabulary_kanji.csv` rows.
 
-**Source:** `jmdict_furigana` — a reference table mapping vocabulary words to per-character reading breakdowns, ingested from the [JmdictFurigana](https://github.com/Doublevil/JmdictFurigana) dataset.
+1. **Scan:** Iterate through every character in the `word` string.
+2. **Lookup:** For each character, check if it exists in `kanji.csv` (by `character`).
+3. **Link:** If found, write a `vocabulary_kanji` row:
+   - `vocabulary_id`: The word's ID.
+   - `kanji_id`: The found kanji's ID.
+   - `position`: The character's 0-based index in the `word` string.
 
-**Segment types:**
+**Orphan kanji handling (permissive approach):**
 
-| Type | Fields present | Description |
-|---|---|---|
-| Kanji segment | `text`, `reading`, `kanji_id` | A single kanji character with its reading and FK to `kanji` |
-| Jukujikun segment | `text`, `reading`, `kanji_ids` | An irregular compound where the reading spans multiple kanji |
-| Kana segment | `text` | Plain kana — no `reading`, no kanji reference |
+If a word contains a kanji character that is **not** in `kanji.csv` (e.g., a rare character excluded from the KANJIDIC import), the word is still imported. The unlinked kanji will always render as a "Ghost" in the UI (gray, with furigana) because it can never be "learned" — but the word remains available for study. This is the recommended approach for N1 coverage completeness.
 
-**Key rules:**
-- `kanji_id` (single int) and `kanji_ids` (list of ints) are mutually exclusive. Exactly one is present for kanji-containing segments; neither for kana segments.
-- Kana segments have **no `reading` field** — the text is already kana.
-- There is no `is_kanji` field. Segment type is determined by the presence of `kanji_id` or `kanji_ids`.
+Log a warning for each unlinked kanji so admin can review coverage gaps.
 
-**Construction logic:**
+**Unique key:** `(vocabulary_id, position)` — each position in a word holds exactly one kanji reference.
 
-1. Look up the word in `jmdict_furigana` to get per-character reading mappings.
-2. For each character/group in the mapping:
-   - If the character is a kanji found in the `kanji` table → create a **kanji segment** with `text`, `reading`, and `kanji_id`.
-   - If the character is a kanji **not** in the `kanji` table → still create a kanji segment, but `kanji_id` references will need to be resolved against available data (log warning if missing).
-   - If the mapping indicates a jukujikun group (multiple kanji sharing one reading) → create a **jukujikun segment** with `text`, `reading`, and `kanji_ids` (list of all constituent kanji IDs).
-   - If the character is kana → create a **kana segment** with `text` only.
-3. **Validation:** Concatenating all segment `text` values must exactly reproduce the `word` field.
+**Client query pattern:** When rendering a vocabulary card, the client queries: "For vocabulary ID X, give me all kanji IDs" → then checks SRS status for each kanji to decide solid vs. ghost rendering. Ensure `vocabulary_kanji` has an index on `vocabulary_id` (standard FK index — verify in the migration).
 
-**Fallback:** If a word is not found in `jmdict_furigana`, construct segments heuristically by scanning characters in the word against the kanji table and using the word's reading to infer per-character readings where possible.
-
-### Worked Examples
-
-#### 冷蔵庫 (Refrigerator) — All Kanji
-
-Word: `冷蔵庫`, reading: `れいぞうこ`
-
-Furigana source: `冷=れい, 蔵=ぞう, 庫=こ`
-
-```json
-[
-  {"text": "冷", "reading": "れい", "kanji_id": 501},
-  {"text": "蔵", "reading": "ぞう", "kanji_id": 892},
-  {"text": "庫", "reading": "こ", "kanji_id": 505}
-]
-```
-
-Each kanji is a separate segment with its own `kanji_id`. The client checks the user's SRS state for each `kanji_id` — learned kanji render solid, unlearned kanji render as gray "ghosts" with furigana above.
-
-#### 食べる (To Eat) — Mixed Kanji/Kana
-
-Word: `食べる`, reading: `たべる`
-
-Furigana source: `食=た`
-
-```json
-[
-  {"text": "食", "reading": "た", "kanji_id": 201},
-  {"text": "べる"}
-]
-```
-
-The kana part `べる` has no `reading` and no `kanji_id` — it always renders in solid black text.
-
-#### 大人 (Adult) — Jukujikun
-
-Word: `大人`, reading: `おとな`
-
-This is a jukujikun compound — the reading `おとな` cannot be split across individual kanji.
-
-```json
-[
-  {"text": "大人", "reading": "おとな", "kanji_ids": [102, 45]}
-]
-```
-
-One segment spans both kanji. `kanji_ids` lists both constituent kanji IDs. The client renders a single ruby annotation over the entire group and checks both kanji for ghost status.
-
-#### すごい (Amazing) — Kana Only
-
-Word: `すごい`, reading: `すごい`
-
-```json
-[
-  {"text": "すごい"}
-]
-```
-
-A single kana segment. No kanji references. No ghost rendering logic needed.
+**Kana-only words:** Words like すごい contain no kanji characters. Step 6 produces zero `vocabulary_kanji` rows. This is correct — these words have no unlock gate and can enter the lesson queue immediately.
 
 ## JLPT Level Strategy
 
 Users can choose between JLPT Path and Grade Path. Vocabulary `min_jlpt_level` must be accurate for JLPT-path users, while Grade-path unlocking works differently.
 
-### Source 1: `source_vocab_levels` (Authoritative)
+### Source 1: `jlpt_vocab.parquet` (Authoritative)
 
-The Tanos JLPT vocabulary list maps words directly to N5–N1 levels. If the word appears in this table, use this level — it takes precedence over any derivation.
+The Tanos JLPT vocabulary list maps words directly to N5–N1 levels. If the word appears in this dataset, use this level — it takes precedence over any derivation.
 
 **Example:** 駅 (Station) is in the Tanos N5 list. `min_jlpt_level = 5`, even though the kanji 駅 itself is classified as N4 in the kanji table.
 
 ### Source 2: Kanji-Derived (Fallback)
 
-For words not in `source_vocab_levels`, derive the level from constituent kanji:
+For words not in `jlpt_vocab.parquet`, derive the level from constituent kanji:
 
 ```
 min_jlpt_level = MAX(kanji.min_jlpt_level) across all kanji in the word
 ```
 
-`MAX` returns the **easiest** level (5 = N5 easiest, 1 = N1 hardest) among the word's kanji, matching the level at which the hardest kanji first appears.
+**Why MAX, not MIN:** JLPT levels are inverted — N5 = 5 (easiest), N1 = 1 (hardest). `MAX` returns the **easiest** level among the word's kanji, matching the level at which the hardest kanji first appears. Always comment the intent in implementation code (`// N5=5 easiest, N1=1 hardest; MAX returns earliest encounter`).
 
 **Example:** 大変 (Tough). 大 is N5, 変 is N3. Fallback `min_jlpt_level = 3` (N3) — the word is gated by the N3 kanji.
 
 ### The "Eki Problem"
 
-This is the key pedagogical gap that `source_vocab_levels` solves:
+This is the key pedagogical gap that `jlpt_vocab.parquet` solves:
 
-- `source_vocab_levels` says 駅 (station) is an **N5 vocabulary word** — beginners need it immediately.
+- `jlpt_vocab.parquet` says 駅 (station) is an **N5 vocabulary word** — beginners need it immediately.
 - The `kanji` table says the character 駅 is **N4** — it's taught one level later.
 
-Without `source_vocab_levels`, the pipeline would derive `min_jlpt_level = 4` (from the kanji), and N5 students would never see this essential word. With the authoritative JLPT list, `min_jlpt_level = 5`, and the Ghost Kanji feature allows N5 users to study the word even though the kanji 駅 appears gray (unlearned).
+Without `jlpt_vocab.parquet`, the pipeline would derive `min_jlpt_level = 4` (from the kanji), and N5 students would never see this essential word. With the authoritative JLPT list, `min_jlpt_level = 5`, and the Ghost Kanji feature allows N5 users to study the word even though the kanji 駅 appears gray (unlearned).
 
 ### Words Without JLPT Level
 
-If a word is not in `source_vocab_levels` and all its kanji have `null` JLPT levels, `min_jlpt_level` is set to `null`. These words are excluded from JLPT-based study paths but remain accessible via search.
+If a word is not in `jlpt_vocab.parquet` and all its kanji have `null` JLPT levels, `min_jlpt_level` is set to `null`. These words are excluded from JLPT-based study paths but remain accessible via search.
 
 ## POS Tag Extraction
 
@@ -296,7 +283,7 @@ The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` cod
 
 **Collection logic:**
 
-1. Iterate over all `senses` in the `raw_jmdict` entry.
+1. Iterate over all `senses` in the JMdict entry.
 2. For each sense, collect `pos` codes (with inheritance — carry forward from previous sense if `pos` is null).
 3. For each sense, collect `misc` codes.
 4. Map each collected code to a `PosTag` value using these rules:
@@ -319,7 +306,7 @@ The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` cod
 | `hon` | `honorific` | `misc` |
 
 5. Deduplicate the result — a word gets each tag at most once, regardless of how many senses carry it.
-6. Store as a JSONB array on `vocabulary.pos_tags`.
+6. Store as a JSON array on `vocabulary.csv` `pos_tags`.
 
 **POS inheritance:** JMdict applies `pos` to subsequent senses until a new `pos` appears. The extractor must track the "current POS" state while iterating senses. When a sense has `pos: null`, it inherits the most recent non-null `pos`. All inherited codes are included in the collection.
 
@@ -353,116 +340,112 @@ This avoids a second source of truth (a stored `min_grade` column would duplicat
 ## Edge Cases
 
 ### Kana-only words
-Words like すごい or ありがとう contain no kanji. They have zero `vocabulary_kanji` rows, all-kana segments, and no unlock gate — they can enter the lesson queue immediately.
+Words like すごい or ありがとう contain no kanji. They have zero `vocabulary_kanji` rows, plain-text furigana (no braces), and no unlock gate — they can enter the lesson queue immediately.
 
 ### Jukujikun
-Compounds like 大人(おとな) and 今日(きょう) have irregular readings that don't decompose per-character. The segmentation step creates a single jukujikun segment with `kanji_ids` listing all constituent kanji. The `jmdict_furigana` source must flag these compounds.
+Compounds like 大人(おとな) and 今日(きょう) have irregular readings that don't decompose per-character. The furigana step creates a single `{kanjigroup|reading}` notation. The `jmdict_furigana.parquet` source must flag these compounds.
 
 ### Orphan kanji
-If a word contains a kanji not in the `kanji` table (e.g., rare N1+ character excluded from the KANJIDIC import), the word is still imported (permissive approach). The missing kanji gets no `vocabulary_kanji` row and always renders as a Ghost in the UI. Logged as a warning for admin review.
+If a word contains a kanji not in `kanji.csv` (e.g., rare N1+ character excluded from the KANJIDIC import), the word is still imported (permissive approach). The missing kanji gets no `vocabulary_kanji` row and always renders as a Ghost in the UI. Logged as a warning for admin review.
 
 ### Missing JLPT level
-Words not in `source_vocab_levels` whose kanji all have `null` JLPT levels get `min_jlpt_level = null`. They surface only via search, not JLPT study paths.
+Words not in `jlpt_vocab.parquet` whose kanji all have `null` JLPT levels get `min_jlpt_level = null`. They surface only via search, not JLPT study paths.
 
 ### Duplicate `ent_seq`
-JMdict `ent_seq` values are unique within a single JMdict release. If a re-import introduces updated entries, the upsert on `word` handles deduplication. The `ent_seq`-as-`id` strategy means the same word keeps its identity across imports.
+JMdict `ent_seq` values are unique within a single JMdict release. If a re-import introduces updated entries, the write on `word` handles deduplication. The `ent_seq`-as-`id` strategy means the same word keeps its identity across imports.
 
 ### Multiple kanji headwords
 JMdict entries may have multiple `kanji_elements` (e.g., 御飯 and ご飯). The pipeline uses the **first** `kanji_elements[0].keb` as the canonical `word`. Alternate writings are not stored as separate vocabulary rows.
 
 ### Entries with no glosses in target language
-If an entry has no glosses for a target language (e.g., Spanish), no `vocabulary_i18n` row is created for that language. The client falls back to English at query time.
+If an entry has no glosses for a target language (e.g., Spanish), no `vocabulary_i18n.csv` row is created for that language. The client falls back to English at query time.
 
 ### Entries with `re_nokanji`
-Reading elements marked `re_nokanji = true` indicate the entry has no kanji headword. The `word` field uses the reading (`reb`) directly. These entries produce kana-only segments and no `vocabulary_kanji` rows.
+Reading elements marked `re_nokanji = true` indicate the entry has no kanji headword. The `word` field uses the reading (`reb`) directly. These entries produce plain-text furigana and no `vocabulary_kanji` rows.
 
 ### Entries that are pure cross-references
 Some JMdict entries exist only to point to other entries via `xref` and have no useful glosses. These are excluded during selection (they lack both priority flags and JLPT listing).
 
 ### Missing example sentences
-Not every vocabulary word has Tanaka Corpus examples. Words without sentences simply have no `vocabulary_sentences` row. The UI gracefully hides the sentence section.
+Not every vocabulary word has Tanaka Corpus examples. Words without sentences simply have no `vocabulary_sentences.csv` row. The UI gracefully hides the sentence section.
 
 ## Warnings
 
-The phase uses the `Warning` class with `WarningSeverity` (see [pipeline.md §Warning Pattern](pipeline.md#warning-pattern)).
+Warnings are written to `data/csv/warnings/ph2_5_warnings.csv` with columns: `severity, phase, entity, message`.
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Orphan kanji in word (character not in `kanji` table), JLPT-mapped word | high | Learner-facing gap — word in a JLPT study path will have a permanent Ghost Kanji |
+| Orphan kanji in word (character not in `kanji.csv`), JLPT-mapped word | high | Learner-facing gap — word in a JLPT study path will have a permanent Ghost Kanji |
 | Orphan kanji in word, non-JLPT word | low | Informational — word still imported with Ghost rendering for the missing character |
-| Word with no readings after Step 2 | high | Data integrity — every word must have at least one reading; indicates a parser bug |
-| Word with no English (`en`) glosses after Step 3 | high | Data integrity — JMdict always has English glosses; indicates a parser or filter bug |
-| Word not found in `jmdict_furigana` | low | Informational — heuristic segmentation used as fallback; may produce less accurate segments |
-| Kanji segment with unresolved `kanji_id` during segmentation | low | Informational — kanji segment created without FK reference; renders as Ghost in the UI |
+| Word with no readings after Step 3 | high | Data integrity — every word must have at least one reading; indicates a parser bug |
+| Word with no English (`en`) glosses after Step 4 | high | Data integrity — JMdict always has English glosses; indicates a parser or filter bug |
+| Word not found in `jmdict_furigana.parquet` | low | Informational — heuristic furigana used as fallback; may produce less accurate notation |
+| Orphan kanji during furigana construction (kanji not in `kanji.csv`) | low | Informational — furigana still generated; kanji renders as Ghost in the UI |
 
-**JLPT-aware severity:** The "orphan kanji" condition uses a two-tier pattern — `high` if the word is JLPT-mapped (via `source_vocab_levels` or kanji-derived level), `low` otherwise.
+**JLPT-aware severity:** The "orphan kanji" condition uses a two-tier pattern — `high` if the word is JLPT-mapped (via `jlpt_vocab.parquet` or kanji-derived level), `low` otherwise.
 
 ## Business Rules
 
-1. Every `raw_jmdict` entry that meets selection criteria produces exactly one `vocabulary` row (upsert on `word`).
-2. `word` must be non-empty and unique in the `vocabulary` table.
-3. `segments` must be a valid JSON array. Concatenating all `text` values must exactly reproduce `word`.
-4. Segments use `kanji_id` (single int) for regular kanji segments and `kanji_ids` (list of ints) for jukujikun — mutually exclusive, never both.
-5. Every vocabulary word must have at least one reading row after Step 2.
-6. Every vocabulary word must have at least one `primary` reading.
-7. `vocabulary_i18n` required for `en` at minimum (JMdict always has English glosses).
-8. `vocabulary_i18n.meanings` must have at least one entry per row.
-9. `vocabulary_kanji` rows must reference existing `kanji.id` values.
-10. `vocabulary_kanji.position` is 0-based and unique per vocabulary word.
-11. `vocabulary_sentences.vocabulary_id` is unique — one sentence per word.
-12. Sentences from Tanaka Corpus get `verification_status = verified`.
-13. `frequency_rank` must be a positive integer.
-14. `min_jlpt_level`, when present, must be in range 1–5.
-15. Re-processing the same `raw_jmdict` data produces the same result (idempotent upserts).
-16. `pos_tags` must be a JSON array of valid `PosTag` enum values with no duplicates.
-17. POS inheritance must be tracked across senses — a sense with `pos: null` inherits from the most recent non-null `pos`.
+1. Every `jmdict.parquet` entry that meets selection criteria produces exactly one `vocabulary.csv` row (unique on `word`).
+2. `word` must be non-empty and unique.
+3. `furigana` must use valid `{kanji|reading}` notation. Stripping braces and readings must reproduce the `word` field.
+4. Every vocabulary word must have at least one reading row after Step 3.
+5. Every vocabulary word must have at least one `primary` reading.
+6. `vocabulary_i18n.csv` required for `en` at minimum (JMdict always has English glosses).
+7. `vocabulary_i18n.csv` `meanings` must have at least one entry per row.
+8. `vocabulary_kanji` rows must reference existing kanji IDs from `kanji.csv`.
+9. `vocabulary_kanji.position` is 0-based and unique per vocabulary word.
+10. `vocabulary_sentences.csv` `vocabulary_id` is unique — one sentence per word.
+11. `frequency_rank` must be a positive integer.
+12. `min_jlpt_level`, when present, must be in range 1–5.
+13. Re-processing the same data produces the same output files (idempotent file writes).
+14. `pos_tags` must be a JSON array of valid `PosTag` enum values with no duplicates.
+15. POS inheritance must be tracked across senses — a sense with `pos: null` inherits from the most recent non-null `pos`.
 
 ## Output Summary
 
-| Table | Source | Description |
+| File | Source | Description |
 |---|---|---|
-| `vocabulary` | `raw_jmdict` | Core entity with JLPT levels, segments, POS tags, and frequency rank |
-| `vocabulary_readings` | `raw_jmdict.reading_elements` | Pronunciations with priority |
-| `vocabulary_i18n` | `raw_jmdict.senses` | Localized meanings (en, es) |
-| `vocabulary_kanji` | Computed from `word` + `kanji` table | Kanji composition links with positions |
-| `vocabulary_sentences` | `raw_jmdict.examples` | Verified example sentences |
-| `vocabulary_sentence_i18n` | `raw_jmdict.examples` | English translations of sentences |
+| `vocabulary.csv` | `jmdict.parquet` | Core entity with JLPT levels, furigana, POS tags, and frequency rank |
+| `vocabulary_readings.csv` | `jmdict.parquet` reading elements | Pronunciations with priority |
+| `vocabulary_i18n.csv` | `jmdict.parquet` senses | Localized meanings (en, es) |
+| `vocabulary_kanji.csv` | Computed from `word` + `kanji.csv` | Kanji composition links with positions |
+| `vocabulary_sentences.csv` | `jmdict_examples.parquet` | Example sentences |
+| `vocabulary_sentence_i18n.csv` | `jmdict_examples.parquet` | English translations of sentences |
 
-Tables populated by **later phases** (not this algorithm):
-- `vocabulary_i18n.system_mnemonic` — Content enrichment
-- `vocabulary_i18n.search_tags` — Content enrichment
-- `vocabulary_sentences` (AI-translated, non-Tanaka) — AI Enrichment (Phase 2.7)
-- `vocabulary_sentence_i18n` (non-English) — AI Enrichment (Phase 2.7)
-- `vocabulary_sentences.original_text` bracket notation — AI Enrichment (Phase 2.7)
+Files updated by **later phases** (not this algorithm):
+- `vocabulary_i18n.csv` `system_mnemonic`, `search_tags` — AI Enrichment (Phase 3)
+- `vocabulary_sentences.csv` (AI-translated sentences) — AI Enrichment (Phase 3)
+- `vocabulary_sentence_i18n.csv` (non-English translations) — AI Enrichment (Phase 3)
+- `vocabulary_sentences.csv` `original_text` furigana annotation — AI Enrichment (Phase 3)
 
 ## Ordering Constraints
 
 The full Phase 2 execution order, showing where vocabulary extraction fits:
 
 ```
-Phase 2.2 Passes 1-2: Radical extraction (populates radicals, radical_variants)
+Phase 2.1 Passes 1-2: Radical extraction (outputs radicals.csv, radical_variants.csv)
     |
-Phase 2.3 Steps 1-3: Kanji composition (populates kanji, kanji_readings, kanji_i18n)
+Phase 2.2 Steps 1-3: Kanji composition (outputs kanji.csv, kanji_readings.csv, kanji_i18n.csv)
     |
-Phase 2.3 Steps 4-5: Component linking + metadata derivation (populates kanji_components, updates radicals)
+Phase 2.3: Component linking + metadata derivation (outputs kanji_components.csv, updates radicals.csv)
     |
-Phase 2.4: SVG Processing (populates svg fields on radicals, radical_variants, kanji)
+Phase 2.4: SVG Processing (updates svg fields on radicals.csv, radical_variants.csv, kanji.csv)
     |
-Phase 2.5: Vocabulary extraction  <-- THIS DOC
+Phase 2.5: Vocabulary extraction (outputs vocabulary CSVs)  <-- THIS DOC
     |
-Phase 2.6: AI Heuristics (refines logic_hint, creates kanji_component_reviews)
-    |
-Phase 2.7: AI Enrichment (sentence translation, furigana annotation)
+Phase 3: AI Enrichment (sentence translation, furigana annotation, system mnemonics)
 ```
 
-Steps 1–3 depend on `raw_jmdict`, `source_vocab_levels`, `jmdict_furigana`, and the `kanji` table. Step 4 additionally depends on the `kanji` table for character lookups. Step 5 depends on `raw_jmdict.examples`.
+Steps 1–4 depend on `jmdict.parquet`, `jlpt_vocab.parquet`, `jmdict_furigana.parquet`, and `kanji.csv`. Step 5 depends on `jmdict_examples.parquet`. Step 6 depends on `kanji.csv` for character lookups.
 
 ## Related Docs
 
-- [vocabulary.md](../domain/vocabulary.md) — Vocabulary entity spec (target schema, segments format, business rules)
-- [raw_jmdict.md](../domain/raw_jmdict.md) — Source staging table schema (JSONB structure, edge cases)
+- [vocabulary.md](../domain/vocabulary.md) — Vocabulary entity spec (target schema, furigana format, business rules)
 - [jmdict_format.md](../sources/jmdict_format.md) — JMdict XML format reference (priority codes, sense inheritance)
-- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Prerequisite phase (kanji table creation)
+- [jmdict_furigana_format.md](../sources/jmdict_furigana_format.md) — JmdictFurigana JSON format (per-character furigana mappings)
+- [jlpt_vocab_mapping_format.md](../sources/jlpt_vocab_mapping_format.md) — JLPT vocabulary mapping CSV format (Tanos word lists)
+- [ph2_2_kanji_composition.md](ph2_2_kanji_composition.md) — Prerequisite phase (kanji row creation)
 - [ph2_3_component_linking.md](ph2_3_component_linking.md) — Component linking (kanji-radical bridge)
 - [pipeline.md](pipeline.md) — Full pipeline orchestration (Phases 1–4)
-- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 ingestion (source_vocab_levels staging)
+- [ph1_ingestion.md](ph1_ingestion.md) — Phase 1 ingestion (Parquet production)

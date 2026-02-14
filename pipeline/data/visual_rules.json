@@ -1,1 +1,274 @@
-{}
+{
+  "肉": {
+    "visual_group": "月",
+    "disambiguation_note": {
+      "en": "When on the LEFT (Hen) or BOTTOM, it usually means 'Body/Flesh'.",
+      "es": "A la IZQUIERDA (Hen) o ABAJO, suele significar 'Cuerpo/Carne'.",
+      "ru": "Располагаясь СЛЕВА (Hen) или СНИЗУ, обычно означает 'Тело/Плоть'."
+    }
+  },
+  "月": {
+    "visual_group": "月",
+    "disambiguation_note": {
+      "en": "When on the RIGHT (Tsuki) or TOP, it usually means 'Time/Moon'.",
+      "es": "A la DERECHA (Tsuki) o ARRIBA, suele significar 'Tiempo/Luna'.",
+      "ru": "Располагаясь СПРАВА (Tsuki) или СВЕРХУ, обычно означает 'Время/Луна'."
+    }
+  },
+  "⻖": {
+    "visual_group": "阝",
+    "disambiguation_note": {
+      "en": "ALWAYS on the LEFT (Hen). Means 'Mound/Terrain'.",
+      "es": "SIEMPRE a la IZQUIERDA (Hen). Significa 'Montículo/Terreno'.",
+      "ru": "ВСЕГДА СЛЕВА (Hen). Означает 'Холм/Земля'."
+    }
+  },
+  "⻏": {
+    "visual_group": "阝",
+    "disambiguation_note": {
+      "en": "ALWAYS on the RIGHT (Tsuki). Means 'Town/City'.",
+      "es": "SIEMPRE a la DERECHA (Tsuki). Significa 'Pueblo/Ciudad'.",
+      "ru": "ВСЕГДА СПРАВА (Tsuki). Означает 'Город/Селение'."
+    }
+  },
+  "阜": {
+    "visual_group": "阝",
+    "disambiguation_note": {
+      "en": "Original full form of the Left-side Mound (⻖).",
+      "es": "Forma completa original del radical Montículo (⻖) a la izquierda.",
+      "ru": "Исходная полная форма левого радикала Холм (⻖)."
+    }
+  },
+  "邑": {
+    "visual_group": "阝",
+    "disambiguation_note": {
+      "en": "Original full form of the Right-side Town (⻏).",
+      "es": "Forma completa original del radical Pueblo (⻏) a la derecha.",
+      "ru": "Исходная полная форма правого радикала Город (⻏)."
+    }
+  },
+  "夂": {
+    "visual_group": "夂",
+    "disambiguation_note": {
+      "en": "Usually at the TOP or RIGHT side. Means 'Winter/Late'.",
+      "es": "Normalmente ARRIBA o a la DERECHA. Significa 'Invierno/Tarde'.",
+      "ru": "Обычно располагается СВЕРХУ или СПРАВА. Означает 'Зима/Поздно'."
+    }
+  },
+  "夊": {
+    "visual_group": "夂",
+    "disambiguation_note": {
+      "en": "Usually at the BOTTOM. Means 'Go slowly/Walk'.",
+      "es": "Normalmente ABAJO. Significa 'Ir despacio/Caminar'.",
+      "ru": "Обычно располагается СНИЗУ. Означает 'Медленно идти/Шагать'."
+    }
+  },
+  "⺍": {
+    "visual_group": "ツ",
+    "disambiguation_note": {
+      "en": "Visual simplification of 'Small' or 'Light'.",
+      "es": "Simplificación visual de 'Pequeño' o 'Luz'.",
+      "ru": "Визуальное упрощение для радикалов 'Маленький' или 'Свет'."
+    }
+  },
+  "⺤": {
+    "visual_group": "⺤",
+    "disambiguation_note": {
+      "en": "Top variation of Claw (爪).",
+      "es": "Variación superior de Garra (爪).",
+      "ru": "Верхний вариант радикала Коготь (爪)."
+    }
+  },
+  "爪": {
+    "visual_group": "⺤",
+    "disambiguation_note": {
+      "en": "Full form of Claw.",
+      "es": "Forma completa de Garra.",
+      "ru": "Полная форма радикала Коготь."
+    }
+  },
+  "亻": {
+    "visual_group": "人",
+    "disambiguation_note": {
+      "en": "Left-side (Hen) form of Person (人).",
+      "es": "Forma lateral izquierda (Hen) de Persona (人).",
+      "ru": "Левосторонний вариант (Hen) радикала Человек (人)."
+    }
+  },
+  "人": {
+    "visual_group": "人",
+    "disambiguation_note": {
+      "en": "Full form of Person.",
+      "es": "Forma completa de Persona.",
+      "ru": "Полная форма радикала Человек."
+    }
+  },
+  "儿": {
+    "visual_group": "儿",
+    "disambiguation_note": {
+      "en": "Legs/Human variant.",
+      "es": "Variante de Piernas/Humano.",
+      "ru": "Вариант Ноги/Человек."
+    }
+  },
+  "八": {
+    "visual_group": "八",
+    "disambiguation_note": {
+      "en": "Eight. Often looks like Legs (儿) but strokes don't touch.",
+      "es": "Ocho. A menudo parece Piernas (儿) pero los trazos no se tocan.",
+      "ru": "Восемь. Часто похоже на Ноги (儿), но черты не соприкасаются."
+    }
+  },
+  "匸": {
+    "visual_group": "匚",
+    "disambiguation_note": {
+      "en": "Hiding enclosure. Top bar overlaps.",
+      "es": "Caja para ocultar. La barra superior sobresale.",
+      "ru": "Укрытие (ограда). Верхняя черта выступает за край."
+    }
+  },
+  "匚": {
+    "visual_group": "匚",
+    "disambiguation_note": {
+      "en": "Box enclosure. Top bar doesn't overlap.",
+      "es": "Caja abierta. La barra superior no sobresale.",
+      "ru": "Открытая коробка (ограда). Верхняя черта не выступает за край."
+    }
+  },
+  "土": {
+    "visual_group": "土",
+    "disambiguation_note": {
+      "en": "Earth. Bottom stroke is longer.",
+      "es": "Tierra. El trazo inferior es más largo.",
+      "ru": "Земля. Нижняя черта длиннее."
+    }
+  },
+  "士": {
+    "visual_group": "土",
+    "disambiguation_note": {
+      "en": "Samurai. Top stroke is longer.",
+      "es": "Samurái. El trazo superior es más largo.",
+      "ru": "Самурай. Верхняя черта длиннее."
+    }
+  },
+  "毋": {
+    "visual_group": "母",
+    "disambiguation_note": {
+      "en": "Do Not / Mother variant. One stroke difference.",
+      "es": "Variante de 'No hacer' / Madre. Diferencia de un trazo.",
+      "ru": "Запрет / Вариант Матери. Разница в одну черту."
+    }
+  },
+  "母": {
+    "visual_group": "母",
+    "disambiguation_note": {
+      "en": "Mother.",
+      "es": "Madre.",
+      "ru": "Мать."
+    }
+  },
+  "氵": {
+    "visual_group": "水",
+    "disambiguation_note": {
+      "en": "Left-side (Hen) form of Water.",
+      "es": "Forma lateral izquierda (Hen) de Agua.",
+      "ru": "Левосторонний вариант (Hen) радикала Вода."
+    }
+  },
+  "水": {
+    "visual_group": "水",
+    "disambiguation_note": {
+      "en": "Full form of Water.",
+      "es": "Forma completa de Agua.",
+      "ru": "Полная форма радикала Вода."
+    }
+  },
+  "灬": {
+    "visual_group": "火",
+    "disambiguation_note": {
+      "en": "Bottom (Ashi) form of Fire.",
+      "es": "Forma inferior (Ashi) de Fuego.",
+      "ru": "Нижний вариант (Ashi) радикала Огонь."
+    }
+  },
+  "火": {
+    "visual_group": "火",
+    "disambiguation_note": {
+      "en": "Full form of Fire.",
+      "es": "Forma completa de Fuego.",
+      "ru": "Полная форма радикала Огонь."
+    }
+  },
+  "王": {
+    "visual_group": "王",
+    "disambiguation_note": {
+      "en": "King.",
+      "es": "Rey.",
+      "ru": "Король."
+    }
+  },
+  "玉": {
+    "visual_group": "王",
+    "disambiguation_note": {
+      "en": "Jewel (King + Dot). Often loses dot in compounds.",
+      "es": "Joya (Rey + Punto). A menudo pierde el punto en compuestos.",
+      "ru": "Драгоценность (Король + точка). В составе иероглифа точка часто исчезает."
+    }
+  },
+  "罒": {
+    "visual_group": "罒",
+    "disambiguation_note": {
+      "en": "Squashed form of Net (网).",
+      "es": "Forma aplastada de Red (网).",
+      "ru": "Сплющенная форма радикала Сеть (网)."
+    }
+  },
+  "网": {
+    "visual_group": "罒",
+    "disambiguation_note": {
+      "en": "Full form of Net.",
+      "es": "Forma completa de Red.",
+      "ru": "Полная форма радикала Сеть."
+    }
+  },
+  "艹": {
+    "visual_group": "艹",
+    "disambiguation_note": {
+      "en": "Top (Kanmuri) form of Grass (艸).",
+      "es": "Forma superior (Kanmuri) de Hierba (艸).",
+      "ru": "Верхний вариант (Kanmuri) радикала Трава (艸)."
+    }
+  },
+  "艸": {
+    "visual_group": "艹",
+    "disambiguation_note": {
+      "en": "Full form of Grass.",
+      "es": "Forma completa de Hierba.",
+      "ru": "Полная форма радикала Трава."
+    }
+  },
+  "西": {
+    "visual_group": "西",
+    "disambiguation_note": {
+      "en": "West.",
+      "es": "Oeste.",
+      "ru": "Запад."
+    }
+  },
+  "襾": {
+    "visual_group": "西",
+    "disambiguation_note": {
+      "en": "Cover. Often flattened to look like West.",
+      "es": "Cubierta. A menudo se aplana para parecerse a Oeste.",
+      "ru": "Крышка. Часто сплющивается и становится похожа на Запад."
+    }
+  },
+  "覀": {
+    "visual_group": "西",
+    "disambiguation_note": {
+      "en": "Cover variant. Looks exactly like West.",
+      "es": "Variante de Cubierta. Es idéntica a Oeste.",
+      "ru": "Вариант Крышки. Выглядит в точности как Запад."
+    }
+  }
+}

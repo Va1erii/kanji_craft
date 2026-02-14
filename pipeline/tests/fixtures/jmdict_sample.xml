@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal JMdict with entity declarations used in test entries -->
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (entry*)>
+<!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
+<!ELEMENT ent_seq (#PCDATA)>
+<!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
+<!ELEMENT keb (#PCDATA)>
+<!ELEMENT ke_inf (#PCDATA)>
+<!ELEMENT ke_pri (#PCDATA)>
+<!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*)>
+<!ELEMENT reb (#PCDATA)>
+<!ELEMENT re_nokanji EMPTY>
+<!ELEMENT re_restr (#PCDATA)>
+<!ELEMENT re_inf (#PCDATA)>
+<!ELEMENT re_pri (#PCDATA)>
+<!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf?, lsource*, dial*, gloss*)>
+<!ELEMENT stagk (#PCDATA)>
+<!ELEMENT stagr (#PCDATA)>
+<!ELEMENT pos (#PCDATA)>
+<!ELEMENT xref (#PCDATA)>
+<!ELEMENT ant (#PCDATA)>
+<!ELEMENT field (#PCDATA)>
+<!ELEMENT misc (#PCDATA)>
+<!ELEMENT s_inf (#PCDATA)>
+<!ELEMENT lsource (#PCDATA)>
+<!ATTLIST lsource xml:lang CDATA "eng">
+<!ATTLIST lsource ls_type CDATA #IMPLIED>
+<!ATTLIST lsource ls_wasei CDATA #IMPLIED>
+<!ELEMENT dial (#PCDATA)>
+<!ELEMENT gloss (#PCDATA)>
+<!ATTLIST gloss xml:lang CDATA "eng">
+<!ATTLIST gloss g_type CDATA #IMPLIED>
+<!ENTITY n "noun (common) (futsuumeishi)">
+<!ENTITY vs "noun or participle which takes the aux. verb suru">
+<!ENTITY adj-i "adjective (keiyoushi)">
+<!ENTITY uk "word usually written using kana alone">
+]>
+<JMdict>
+<!-- Entry 1: 食べる — normal entry with kanji + reading -->
+<entry>
+<ent_seq>1358280</ent_seq>
+<k_ele>
+<keb>食べる</keb>
+<ke_pri>ichi1</ke_pri>
+<ke_pri>news2</ke_pri>
+</k_ele>
+<r_ele>
+<reb>たべる</reb>
+<re_pri>ichi1</re_pri>
+<re_pri>news2</re_pri>
+</r_ele>
+<sense>
+<pos>&n;</pos>
+<gloss>to eat</gloss>
+<gloss xml:lang="fre">manger</gloss>
+</sense>
+</entry>
+<!-- Entry 2: する — kana-only entry (no k_ele) -->
+<entry>
+<ent_seq>1157170</ent_seq>
+<r_ele>
+<reb>する</reb>
+<re_pri>ichi1</re_pri>
+</r_ele>
+<sense>
+<pos>&vs;</pos>
+<misc>&uk;</misc>
+<gloss>to do</gloss>
+<gloss>to carry out</gloss>
+</sense>
+<sense>
+<xref>化す</xref>
+<gloss>to become</gloss>
+</sense>
+</entry>
+<!-- Entry 3: 大きい — entry with restricted reading and lsource -->
+<entry>
+<ent_seq>1221850</ent_seq>
+<k_ele>
+<keb>大きい</keb>
+<ke_pri>ichi1</ke_pri>
+</k_ele>
+<r_ele>
+<reb>おおきい</reb>
+<re_pri>ichi1</re_pri>
+</r_ele>
+<sense>
+<pos>&adj-i;</pos>
+<gloss>big</gloss>
+<gloss>large</gloss>
+<gloss xml:lang="ger">groß</gloss>
+</sense>
+</entry>
+</JMdict>

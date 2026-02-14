@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kanjidic2>
+<header>
+<file_version>4</file_version>
+<database_version>2024-001</database_version>
+<date_of_creation>2024-01-01</date_of_creation>
+</header>
+<!-- Entry 1: 日 — common kanji with most fields populated -->
+<character>
+<literal>日</literal>
+<codepoint>
+<cp_value cp_type="ucs">65e5</cp_value>
+<cp_value cp_type="jis208">38-92</cp_value>
+</codepoint>
+<radical>
+<rad_value rad_type="classical">72</rad_value>
+<rad_value rad_type="nelson_c">72</rad_value>
+</radical>
+<misc>
+<grade>1</grade>
+<stroke_count>4</stroke_count>
+<variant var_type="jis208">38-92</variant>
+<freq>1</freq>
+<jlpt>4</jlpt>
+<rad_name>にち</rad_name>
+<rad_name>ひ</rad_name>
+</misc>
+<dic_number>
+<dic_ref dr_type="nelson_c">2097</dic_ref>
+<dic_ref dr_type="halpern_njecd">3027</dic_ref>
+<dic_ref dr_type="moro" m_vol="5" m_page="0555">14311</dic_ref>
+</dic_number>
+<query_code>
+<q_code qc_type="skip">3-3-1</q_code>
+<q_code qc_type="four_corner">6010.0</q_code>
+<q_code qc_type="sh_desc">4c0.1</q_code>
+</query_code>
+<reading_meaning>
+<rmgroup>
+<reading r_type="ja_on">ニチ</reading>
+<reading r_type="ja_on">ジツ</reading>
+<reading r_type="ja_kun">ひ</reading>
+<reading r_type="ja_kun">-び</reading>
+<reading r_type="ja_kun">-か</reading>
+<reading r_type="pinyin">ri4</reading>
+<reading r_type="korean_r">il</reading>
+<reading r_type="korean_h">일</reading>
+<meaning>day</meaning>
+<meaning>sun</meaning>
+<meaning>Japan</meaning>
+<meaning m_lang="fr">jour</meaning>
+<meaning m_lang="es">día</meaning>
+</rmgroup>
+<nanori>あ</nanori>
+<nanori>あき</nanori>
+</reading_meaning>
+</character>
+<!-- Entry 2: 𠂇 — rare kanji with minimal fields -->
+<character>
+<literal>𠂇</literal>
+<codepoint>
+<cp_value cp_type="ucs">20087</cp_value>
+</codepoint>
+<radical>
+<rad_value rad_type="classical">4</rad_value>
+</radical>
+<misc>
+<stroke_count>2</stroke_count>
+</misc>
+<reading_meaning>
+<rmgroup>
+<reading r_type="ja_on">ユウ</reading>
+<meaning>right hand</meaning>
+</rmgroup>
+</reading_meaning>
+</character>
+<!-- Entry 3: 嗢 — kanji with misstrokes and no meanings -->
+<character>
+<literal>嗢</literal>
+<codepoint>
+<cp_value cp_type="ucs">55E2</cp_value>
+<cp_value cp_type="jis212">2264</cp_value>
+</codepoint>
+<radical>
+<rad_value rad_type="classical">30</rad_value>
+</radical>
+<misc>
+<stroke_count>13</stroke_count>
+<stroke_count>12</stroke_count>
+</misc>
+<reading_meaning>
+<rmgroup>
+<reading r_type="ja_on">オツ</reading>
+<reading r_type="ja_on">オチ</reading>
+</rmgroup>
+</reading_meaning>
+</character>
+</kanjidic2>

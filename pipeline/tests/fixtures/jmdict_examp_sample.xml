@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Minimal JMdict with examples -->
+<!DOCTYPE JMdict [
+<!ELEMENT JMdict (entry*)>
+<!ELEMENT entry (ent_seq, k_ele*, r_ele+, sense+)>
+<!ELEMENT ent_seq (#PCDATA)>
+<!ELEMENT k_ele (keb, ke_inf*, ke_pri*)>
+<!ELEMENT keb (#PCDATA)>
+<!ELEMENT ke_inf (#PCDATA)>
+<!ELEMENT ke_pri (#PCDATA)>
+<!ELEMENT r_ele (reb, re_nokanji?, re_restr*, re_inf*, re_pri*)>
+<!ELEMENT reb (#PCDATA)>
+<!ELEMENT re_nokanji EMPTY>
+<!ELEMENT re_restr (#PCDATA)>
+<!ELEMENT re_inf (#PCDATA)>
+<!ELEMENT re_pri (#PCDATA)>
+<!ELEMENT sense (stagk*, stagr*, pos*, xref*, ant*, field*, misc*, s_inf?, lsource*, dial*, gloss*, example*)>
+<!ELEMENT stagk (#PCDATA)>
+<!ELEMENT stagr (#PCDATA)>
+<!ELEMENT pos (#PCDATA)>
+<!ELEMENT xref (#PCDATA)>
+<!ELEMENT ant (#PCDATA)>
+<!ELEMENT field (#PCDATA)>
+<!ELEMENT misc (#PCDATA)>
+<!ELEMENT s_inf (#PCDATA)>
+<!ELEMENT lsource (#PCDATA)>
+<!ATTLIST lsource xml:lang CDATA "eng">
+<!ELEMENT dial (#PCDATA)>
+<!ELEMENT gloss (#PCDATA)>
+<!ATTLIST gloss xml:lang CDATA "eng">
+<!ELEMENT example (ex_srce, ex_text, ex_sent+)>
+<!ELEMENT ex_srce (#PCDATA)>
+<!ATTLIST ex_srce exsrc_type CDATA #IMPLIED>
+<!ELEMENT ex_text (#PCDATA)>
+<!ELEMENT ex_sent (#PCDATA)>
+<!ATTLIST ex_sent xml:lang CDATA #REQUIRED>
+<!ENTITY n "noun (common) (futsuumeishi)">
+<!ENTITY vs "noun or participle which takes the aux. verb suru">
+]>
+<JMdict>
+<!-- Entry with examples -->
+<entry>
+<ent_seq>1358280</ent_seq>
+<k_ele>
+<keb>食べる</keb>
+</k_ele>
+<r_ele>
+<reb>たべる</reb>
+</r_ele>
+<sense>
+<pos>&n;</pos>
+<gloss>to eat</gloss>
+<example>
+<ex_srce exsrc_type="tat">220148</ex_srce>
+<ex_text>食べ</ex_text>
+<ex_sent xml:lang="jpn">何か食べたい。</ex_sent>
+<ex_sent xml:lang="eng">I want to eat something.</ex_sent>
+</example>
+<example>
+<ex_srce exsrc_type="tat">77182</ex_srce>
+<ex_text>食べ</ex_text>
+<ex_sent xml:lang="jpn">朝ご飯を食べましたか。</ex_sent>
+<ex_sent xml:lang="eng">Did you have breakfast?</ex_sent>
+</example>
+</sense>
+</entry>
+<!-- Entry without examples -->
+<entry>
+<ent_seq>1157170</ent_seq>
+<r_ele>
+<reb>する</reb>
+</r_ele>
+<sense>
+<pos>&vs;</pos>
+<gloss>to do</gloss>
+</sense>
+</entry>
+</JMdict>

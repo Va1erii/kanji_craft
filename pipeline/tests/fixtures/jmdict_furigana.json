@@ -1,0 +1,17 @@
+[
+  {
+    "text": "食べる",
+    "reading": "たべる",
+    "furigana": [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]
+  },
+  {
+    "text": "大人",
+    "reading": "おとな",
+    "furigana": [{"ruby": "大人", "rt": "おとな"}]
+  },
+  {
+    "text": "する",
+    "reading": "する",
+    "furigana": [{"ruby": "する"}]
+  }
+]

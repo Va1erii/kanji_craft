@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kanjivg xmlns:kvg="http://kanjivg.tagaini.net">
+<!-- 仮 (U+4EEE) — left-right decomposition with radical, variant, original -->
+<kanji id="kvg:kanji_04eee">
+<g id="kvg:04eee" kvg:element="仮">
+<g id="kvg:04eee-g1" kvg:element="亻" kvg:position="left" kvg:radical="general" kvg:original="人" kvg:variant="true">
+<path id="kvg:04eee-s1" kvg:type="㇒" d="M34,14c0,10,0,60,0,80"/>
+<path id="kvg:04eee-s2" kvg:type="㇑" d="M22,34c5,5,20,20,25,23"/>
+</g>
+<g id="kvg:04eee-g2" kvg:element="反" kvg:position="right">
+<path id="kvg:04eee-s3" kvg:type="㇐" d="M50,22c10,0,40,0,48,-3"/>
+<path id="kvg:04eee-s4" kvg:type="㇒" d="M55,22c0,0,-15,50,-25,70"/>
+<g id="kvg:04eee-g3" kvg:element="又">
+<path id="kvg:04eee-s5" kvg:type="㇇" d="M55,50c10,5,20,18,30,20"/>
+<path id="kvg:04eee-s6" kvg:type="㇏" d="M60,55c5,10,20,30,35,35"/>
+</g>
+</g>
+</g>
+</kanji>
+<!-- 一 (U+4E00) — simplest kanji, single stroke, no children -->
+<kanji id="kvg:kanji_04e00">
+<g id="kvg:04e00" kvg:element="一">
+<path id="kvg:04e00-s1" kvg:type="㇐" d="M12,54c30,0,60,-2,80,-4"/>
+</g>
+</kanji>
+<!-- 語 (U+8A9E) — deeper nesting with phon attribute -->
+<kanji id="kvg:kanji_08a9e">
+<g id="kvg:08a9e" kvg:element="語">
+<g id="kvg:08a9e-g1" kvg:element="言" kvg:position="left" kvg:radical="general">
+<path id="kvg:08a9e-s1" kvg:type="㇐" d="M10,10c5,0,20,0,25,0"/>
+<path id="kvg:08a9e-s2" kvg:type="㇑" d="M20,15c0,5,0,20,0,25"/>
+<path id="kvg:08a9e-s3" kvg:type="㇐" d="M10,30c5,0,20,0,25,0"/>
+<path id="kvg:08a9e-s4" kvg:type="㇐" d="M10,40c5,0,20,0,25,0"/>
+<path id="kvg:08a9e-s5" kvg:type="㇐" d="M10,50c5,0,20,0,25,0"/>
+<path id="kvg:08a9e-s6" kvg:type="㇐" d="M10,60c5,0,20,0,25,0"/>
+<path id="kvg:08a9e-s7" kvg:type="㇐" d="M10,70c5,0,20,0,25,0"/>
+</g>
+<g id="kvg:08a9e-g2" kvg:element="吾" kvg:position="right" kvg:phon="ゴ">
+<g id="kvg:08a9e-g3" kvg:element="五">
+<path id="kvg:08a9e-s8" kvg:type="㇐" d="M55,15c5,0,20,0,30,0"/>
+<path id="kvg:08a9e-s9" kvg:type="㇑" d="M70,15c-5,5,-10,15,-10,20"/>
+<path id="kvg:08a9e-s10" kvg:type="㇐" d="M55,35c5,0,30,0,35,0"/>
+<path id="kvg:08a9e-s11" kvg:type="㇑" d="M75,35c0,5,5,15,5,20"/>
+</g>
+<g id="kvg:08a9e-g4" kvg:element="口">
+<path id="kvg:08a9e-s12" kvg:type="㇑" d="M60,55c0,5,0,20,0,25"/>
+<path id="kvg:08a9e-s13" kvg:type="㇐" d="M60,55c5,0,25,0,30,0"/>
+<path id="kvg:08a9e-s14" kvg:type="㇑" d="M90,55c0,5,0,20,0,25"/>
+</g>
+</g>
+</g>
+</kanji>
+</kanjivg>

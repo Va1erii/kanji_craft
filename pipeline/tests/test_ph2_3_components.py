@@ -53,11 +53,10 @@ def _make_kanjivg_df(rows):
 
 
 def _make_radicals_csv(csv_dir, radicals):
-    """Write radicals.csv. radicals: list of (id, master_symbol, stroke_count) tuples."""
+    """Write radicals.csv. radicals: list of (master_symbol, stroke_count) tuples."""
     rows = []
-    for rid, ms, sc in radicals:
+    for ms, sc in radicals:
         rows.append({
-            "id": rid,
             "master_symbol": ms,
             "is_official": False,
             "stroke_count": sc,
@@ -76,15 +75,14 @@ def _make_radicals_csv(csv_dir, radicals):
 
 
 def _make_kanji_csv(csv_dir, kanji_list):
-    """Write kanji.csv. kanji_list: list of (id, char, stroke_count, grade, jlpt) tuples."""
+    """Write kanji.csv. kanji_list: list of (char, stroke_count, grade, jlpt) tuples."""
     columns = [
-        "id", "character", "stroke_count", "min_grade", "min_jlpt_level",
+        "character", "stroke_count", "min_grade", "min_jlpt_level",
         "frequency_rank", "svg_file_name", "svg_file_url", "svg_hash",
     ]
     rows = []
-    for kid, char, sc, grade, jlpt in kanji_list:
+    for char, sc, grade, jlpt in kanji_list:
         rows.append({
-            "id": kid,
             "character": char,
             "stroke_count": sc,
             "min_grade": grade,
@@ -110,8 +108,8 @@ def basic_setup(tmp_path):
     """Standard setup: 休 = 亻(variant of 人) + 木, plus leaf entries.
 
     Scope: {休}  Keep: {人, 木, 休}
-    Radicals: 人(id=1, 2 strokes), 木(id=2, 4 strokes)
-    Kanji: 休(id=1, grade=2, jlpt=4)
+    Radicals: 人(2 strokes), 木(4 strokes)
+    Kanji: 休(grade=2, jlpt=4)
     """
     parquet_dir = tmp_path / "parquet"
     parquet_dir.mkdir()
@@ -129,8 +127,8 @@ def basic_setup(tmp_path):
     ])
     kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-    _make_radicals_csv(csv_dir, [(1, "人", 2), (2, "木", 4)])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, 4)])
+    _make_radicals_csv(csv_dir, [("人", 2), ("木", 4)])
+    _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
 
     scope_set = {"休"}
     keep_set = {"人", "木", "休"}
@@ -153,25 +151,24 @@ class TestBasicComponentLinking:
 
         assert len(comp_df) == 2
 
-        person = comp_df[comp_df["radical_id"] == 1].iloc[0]
-        assert person["kanji_id"] == 1
+        person = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
+        assert person["character"] == "休"
         assert person["position"] == "hen"
 
-        tree = comp_df[comp_df["radical_id"] == 2].iloc[0]
-        assert tree["kanji_id"] == 1
+        tree = comp_df[comp_df["master_symbol"] == "木"].iloc[0]
+        assert tree["character"] == "休"
         assert tree["position"] == "tsukuri"
 
 
 class TestVariantResolution:
     def test_variant_resolution(self, basic_setup):
-        """亻 (variant=True, original=人) resolves to radical_id for 人."""
+        """亻 (variant=True, original=人) resolves to master_symbol 人."""
         parquet_dir, csv_dir, warnings_dir, scope_set, keep_set = basic_setup
 
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp_df = result["kanji_components"]
 
-        # radical_id=1 is 人 (the master), not 亻
-        person_row = comp_df[comp_df["radical_id"] == 1].iloc[0]
+        person_row = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
         assert person_row["position"] == "hen"
 
 
@@ -201,9 +198,9 @@ class TestPositionMapping:
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
         _make_radicals_csv(csv_dir, [
-            (1, "A", 2), (2, "B", 2), (3, "C", 2), (4, "D", 2), (5, "E", 2),
+            ("A", 2), ("B", 2), ("C", 2), ("D", 2), ("E", 2),
         ])
-        _make_kanji_csv(csv_dir, [(1, "X", 10, 1, 5)])
+        _make_kanji_csv(csv_dir, [("X", 10, 1, 5)])
 
         scope = {"X"}
         keep = {"A", "B", "C", "D", "E", "X"}
@@ -211,12 +208,12 @@ class TestPositionMapping:
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope, keep)
         comp_df = result["kanji_components"]
 
-        pos_map = dict(zip(comp_df["radical_id"], comp_df["position"]))
-        assert pos_map[1] == "hen"      # left
-        assert pos_map[2] == "tsukuri"  # right
-        assert pos_map[3] == "kanmuri"  # top
-        assert pos_map[4] == "ashi"     # bottom
-        assert pos_map[5] == "kamae"    # kamae
+        pos_map = dict(zip(comp_df["master_symbol"], comp_df["position"]))
+        assert pos_map["A"] == "hen"
+        assert pos_map["B"] == "tsukuri"
+        assert pos_map["C"] == "kanmuri"
+        assert pos_map["D"] == "ashi"
+        assert pos_map["E"] == "kamae"
 
 
 class TestRadicalTypeMapping:
@@ -244,9 +241,9 @@ class TestRadicalTypeMapping:
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
         _make_radicals_csv(csv_dir, [
-            (1, "A", 2), (2, "B", 2), (3, "C", 2), (4, "D", 2), (5, "E", 2),
+            ("A", 2), ("B", 2), ("C", 2), ("D", 2), ("E", 2),
         ])
-        _make_kanji_csv(csv_dir, [(1, "X", 10, 1, 5)])
+        _make_kanji_csv(csv_dir, [("X", 10, 1, 5)])
 
         scope = {"X"}
         keep = {"A", "B", "C", "D", "E", "X"}
@@ -254,12 +251,12 @@ class TestRadicalTypeMapping:
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope, keep)
         comp_df = result["kanji_components"]
 
-        type_map = dict(zip(comp_df["radical_id"], comp_df["radical_type"]))
-        assert type_map[1] == "general"
-        assert type_map[2] == "tradit"
-        assert type_map[3] == "nelson"
-        assert type_map[4] == "jis"
-        assert type_map[5] == "component"
+        type_map = dict(zip(comp_df["master_symbol"], comp_df["radical_type"]))
+        assert type_map["A"] == "general"
+        assert type_map["B"] == "tradit"
+        assert type_map["C"] == "nelson"
+        assert type_map["D"] == "jis"
+        assert type_map["E"] == "component"
 
     def test_map_radical_type_function(self):
         """Unit test for map_radical_type."""
@@ -278,12 +275,10 @@ class TestIsPrimary:
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp_df = result["kanji_components"]
 
-        # 人 has radical="general" → is_primary=True
-        person = comp_df[comp_df["radical_id"] == 1].iloc[0]
+        person = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
         assert person["is_primary"] == True  # noqa: E712
 
-        # 木 has radical=None → component → is_primary=False
-        tree_row = comp_df[comp_df["radical_id"] == 2].iloc[0]
+        tree_row = comp_df[comp_df["master_symbol"] == "木"].iloc[0]
         assert tree_row["is_primary"] == False  # noqa: E712
 
 
@@ -325,8 +320,8 @@ class TestGhostFlattening:
         ])
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "火", 4), (2, "米", 6), (3, "舛", 6)])
-        _make_kanji_csv(csv_dir, [(1, "燐", 17, None, None)])
+        _make_radicals_csv(csv_dir, [("火", 4), ("米", 6), ("舛", 6)])
+        _make_kanji_csv(csv_dir, [("燐", 17, None, None)])
 
         # 粦 is NOT in keep_set → ghost
         scope = {"燐"}
@@ -336,8 +331,8 @@ class TestGhostFlattening:
         comp_df = result["kanji_components"]
 
         assert len(comp_df) == 3
-        rids = set(comp_df["radical_id"])
-        assert rids == {1, 2, 3}  # 火, 米, 舛 (not 粦)
+        masters = set(comp_df["master_symbol"])
+        assert masters == {"火", "米", "舛"}
 
 
 class TestLeafKanji:
@@ -353,8 +348,8 @@ class TestLeafKanji:
         ])
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "一", 1)])
-        _make_kanji_csv(csv_dir, [(1, "一", 1, 1, 5)])
+        _make_radicals_csv(csv_dir, [("一", 1)])
+        _make_kanji_csv(csv_dir, [("一", 1, 1, 5)])
 
         scope = {"一"}
         keep = {"一"}
@@ -367,7 +362,7 @@ class TestLeafKanji:
 
 class TestDeduplication:
     def test_unique_constraint_dedup(self, tmp_path):
-        """Duplicate (kanji_id, radical_id, position) deduplicated to first occurrence."""
+        """Duplicate (character, master_symbol, position) deduplicated to first occurrence."""
         parquet_dir = tmp_path / "parquet"
         parquet_dir.mkdir()
         csv_dir = tmp_path / "csv"
@@ -385,8 +380,8 @@ class TestDeduplication:
         ])
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2), (2, "B", 2)])
-        _make_kanji_csv(csv_dir, [(1, "X", 6, 1, 5)])
+        _make_radicals_csv(csv_dir, [("A", 2), ("B", 2)])
+        _make_kanji_csv(csv_dir, [("X", 6, 1, 5)])
 
         scope = {"X"}
         keep = {"A", "B", "X"}
@@ -420,13 +415,13 @@ class TestImpactScoreBuckets:
             kvg_rows.append(
                 _kvg_row(char, _tree(char, stroke_count=4, children=list(children)))
             )
-            kanji_list.append((i + 1, char, 4, 1, 5))
+            kanji_list.append((char, 4, 1, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=2)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(3)}
@@ -453,13 +448,13 @@ class TestImpactScoreBuckets:
             kvg_rows.append(
                 _kvg_row(char, _tree(char, stroke_count=4, children=list(children)))
             )
-            kanji_list.append((i + 1, char, 4, 1, 5))
+            kanji_list.append((char, 4, 1, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=2)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(6)}
@@ -489,13 +484,13 @@ class TestImpactScoreComplexityBonus:
             kvg_rows.append(
                 _kvg_row(char, _tree(char, stroke_count=14, children=list(children)))
             )
-            kanji_list.append((i + 1, char, 14, 1, 5))
+            kanji_list.append((char, 14, 1, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=10)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 10)])
+        _make_radicals_csv(csv_dir, [("A", 10)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(3)}
@@ -522,13 +517,13 @@ class TestImpactScoreComplexityBonus:
             kvg_rows.append(
                 _kvg_row(char, _tree(char, stroke_count=18, children=list(children)))
             )
-            kanji_list.append((i + 1, char, 18, 1, 5))
+            kanji_list.append((char, 18, 1, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=14)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 14)])
+        _make_radicals_csv(csv_dir, [("A", 14)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(3)}
@@ -558,13 +553,13 @@ class TestImpactScoreCap:
             kvg_rows.append(
                 _kvg_row(char, _tree(char, stroke_count=18, children=list(children)))
             )
-            kanji_list.append((i + 1, char, 18, 1, 5))
+            kanji_list.append((char, 18, 1, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=14)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 14)])
+        _make_radicals_csv(csv_dir, [("A", 14)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(410)}
@@ -596,13 +591,13 @@ class TestMinGradeDerivation:
                     _tree("A", position="left", stroke_count=2),
                 ]))
             )
-            kanji_list.append((i + 1, char, 4, g, 5))
+            kanji_list.append((char, 4, g, 5))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=2)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(3)}
@@ -634,13 +629,13 @@ class TestMinJlptLevelDerivation:
                     _tree("A", position="left", stroke_count=2),
                 ]))
             )
-            kanji_list.append((i + 1, char, 4, 1, j))
+            kanji_list.append((char, 4, 1, j))
 
         kvg_rows.append(_kvg_row("A", _tree("A", stroke_count=2)))
         kvg_df = _make_kanjivg_df(kvg_rows)
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
         _make_kanji_csv(csv_dir, kanji_list)
 
         scope = {chr(0x4E00 + i) for i in range(3)}
@@ -669,8 +664,8 @@ class TestMetadataNull:
         ])
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
-        _make_kanji_csv(csv_dir, [(1, "X", 4, None, None)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
+        _make_kanji_csv(csv_dir, [("X", 4, None, None)])
 
         scope = {"X"}
         keep = {"A", "X"}
@@ -724,7 +719,7 @@ class TestWarningMissingKanji:
         ])
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
         # kanji.csv does NOT contain X
         _make_kanji_csv(csv_dir, [])
 
@@ -761,8 +756,8 @@ class TestWarningMissingRadical:
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
         # Only A is a radical, not Z
-        _make_radicals_csv(csv_dir, [(1, "A", 2)])
-        _make_kanji_csv(csv_dir, [(1, "X", 4, 1, 5)])
+        _make_radicals_csv(csv_dir, [("A", 2)])
+        _make_kanji_csv(csv_dir, [("X", 4, 1, 5)])
 
         scope = {"X"}
         keep = {"A", "Z", "X"}
@@ -815,13 +810,13 @@ class TestIntegration:
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
         _make_radicals_csv(csv_dir, [
-            (1, "人", 2), (2, "木", 4), (3, "言", 7),
-            (4, "吾", 7), (5, "五", 4), (6, "口", 3),
+            ("人", 2), ("木", 4), ("言", 7),
+            ("吾", 7), ("五", 4), ("口", 3),
         ])
         _make_kanji_csv(csv_dir, [
-            (1, "休", 6, 2, 4),
-            (2, "語", 14, 2, 5),
-            (3, "吾", 7, None, None),
+            ("休", 6, 2, 4),
+            ("語", 14, 2, 5),
+            ("吾", 7, None, None),
         ])
 
         scope = {"休", "語", "吾"}
@@ -840,9 +835,6 @@ class TestIntegration:
         # Verify round-trip via CSV
         csv_comp = pd.read_csv(csv_dir / "kanji_components.csv")
         assert len(csv_comp) == 6
-
-        # Sequential IDs
-        assert list(csv_comp["id"]) == list(range(1, 7))
 
         # Radicals updated
         rad_df = pd.read_csv(csv_dir / "radicals.csv")
@@ -863,7 +855,7 @@ class TestDeterministicOutput:
 
         # Run 2 (same inputs — rewrite CSVs)
         # Recreate radicals.csv since it was overwritten by run 1
-        _make_radicals_csv(csv_dir, [(1, "人", 2), (2, "木", 4)])
+        _make_radicals_csv(csv_dir, [("人", 2), ("木", 4)])
         result2 = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp2 = result2["kanji_components"]
         rad2 = result2["radicals"]

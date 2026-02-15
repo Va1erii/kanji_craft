@@ -96,12 +96,8 @@ def extract_components(
     manual_flatten = load_manual_list(MANUAL_FLATTEN)
 
     # Build lookups
-    master_to_rid: dict[str, int] = dict(
-        zip(radicals_df["master_symbol"], radicals_df["id"], strict=True)
-    )
-    char_to_kid: dict[str, int] = dict(
-        zip(kanji_df["character"], kanji_df["id"], strict=True)
-    )
+    registered_masters: set[str] = set(radicals_df["master_symbol"])
+    kanji_chars: set[str] = set(kanji_df["character"])
     # kanji grade/jlpt lookups
     char_to_grade: dict[str, int | None] = {}
     char_to_jlpt: dict[str, int | None] = {}
@@ -113,8 +109,8 @@ def extract_components(
         )
 
     # radical stroke counts for complexity bonus
-    rid_to_strokes: dict[int, int] = dict(
-        zip(radicals_df["id"], radicals_df["stroke_count"], strict=True)
+    ms_to_strokes: dict[str, int] = dict(
+        zip(radicals_df["master_symbol"], radicals_df["stroke_count"], strict=True)
     )
 
     log.info(
@@ -126,15 +122,14 @@ def extract_components(
 
     # --- Steps 1+2: Resolve children & create component rows ---
     component_rows: list[dict] = []
-    seen_keys: set[tuple[int, int, str]] = set()  # (kanji_id, radical_id, position)
+    seen_keys: set[tuple[str, str, str]] = set()  # (character, master_symbol, position)
 
     for char in sorted(scope_set):
         tree = tree_map.get(char)
         if not tree:
             continue
 
-        kanji_id = char_to_kid.get(char)
-        if kanji_id is None:
+        if char not in kanji_chars:
             wkey = (char, "missing_kanji")
             if wkey not in warned:
                 warned.add(wkey)
@@ -176,8 +171,7 @@ def extract_components(
                     })
 
             master = resolve_master_symbol(element, variant, original)
-            radical_id = master_to_rid.get(master)
-            if radical_id is None:
+            if master not in registered_masters:
                 wkey = (master, "missing_radical")
                 if wkey not in warned:
                     warned.add(wkey)
@@ -193,34 +187,28 @@ def extract_components(
             radical_type = map_radical_type(child.get("radical"))
             is_primary = radical_type == "general"
 
-            # Deduplicate on (kanji_id, radical_id, position)
-            key = (kanji_id, radical_id, position)
+            # Deduplicate on (character, master_symbol, position)
+            key = (char, master, position)
             if key in seen_keys:
                 continue
             seen_keys.add(key)
 
             component_rows.append({
-                "kanji_id": kanji_id,
-                "radical_id": radical_id,
+                "character": char,
+                "master_symbol": master,
                 "position": position,
                 "logic_hint": "semantic",
                 "radical_type": radical_type,
                 "is_primary": is_primary,
             })
 
-    # Sort for determinism, assign sequential IDs
-    component_rows.sort(key=lambda r: (r["kanji_id"], r["radical_id"], r["position"]))
-    for i, row in enumerate(component_rows, start=1):
-        row["id"] = i
+    # Sort for determinism
+    component_rows.sort(key=lambda r: (r["character"], r["master_symbol"], r["position"]))
 
     components_df = pd.DataFrame(component_rows)
     if not components_df.empty:
-        components_df["id"] = components_df["id"].astype("int64")
-        components_df["kanji_id"] = components_df["kanji_id"].astype("int64")
-        components_df["radical_id"] = components_df["radical_id"].astype("int64")
-        # Reorder columns: id first
         components_df = components_df[
-            ["id", "kanji_id", "radical_id", "position", "logic_hint",
+            ["character", "master_symbol", "position", "logic_hint",
              "radical_type", "is_primary"]
         ]
 
@@ -229,62 +217,49 @@ def extract_components(
     # --- Step 3: Derive radical metadata ---
     if not components_df.empty:
         # 3a. impact_score — count distinct kanji per radical
-        kanji_counts = components_df.groupby("radical_id")["kanji_id"].nunique()
+        kanji_counts = components_df.groupby("master_symbol")["character"].nunique()
 
         # 3b/3c. min_grade and min_jlpt_level from kanji data
-        # Build kanji_id → grade/jlpt lookups
-        kid_to_grade: dict[int, int | None] = {}
-        kid_to_jlpt: dict[int, int | None] = {}
-        for _, row in kanji_df.iterrows():
-            kid = int(row["id"])
-            kid_to_grade[kid] = (
-                None if pd.isna(row["min_grade"]) else int(row["min_grade"])
-            )
-            kid_to_jlpt[kid] = (
-                None if pd.isna(row["min_jlpt_level"]) else int(row["min_jlpt_level"])
-            )
-
-        # Group component rows by radical_id
-        rad_kanji_map: dict[int, list[int]] = {}
+        # Group component rows by master_symbol → list of characters
+        rad_kanji_map: dict[str, list[str]] = {}
         for _, row in components_df.iterrows():
-            rid = int(row["radical_id"])
-            kid = int(row["kanji_id"])
-            if rid not in rad_kanji_map:
-                rad_kanji_map[rid] = []
-            rad_kanji_map[rid].append(kid)
+            ms = row["master_symbol"]
+            ch = row["character"]
+            if ms not in rad_kanji_map:
+                rad_kanji_map[ms] = []
+            rad_kanji_map[ms].append(ch)
 
         # Compute metadata per radical
-        impact_scores: dict[int, int] = {}
-        min_grades: dict[int, int | None] = {}
-        min_jlpt_levels: dict[int, int | None] = {}
+        impact_scores: dict[str, int] = {}
+        min_grades: dict[str, int | None] = {}
+        min_jlpt_levels: dict[str, int | None] = {}
 
-        for rid in radicals_df["id"]:
-            rid = int(rid)
-            count = int(kanji_counts.get(rid, 0))
+        for ms in radicals_df["master_symbol"]:
+            count = int(kanji_counts.get(ms, 0))
             if count == 0:
                 # Radical not used in any component — leave metadata null
-                impact_scores[rid] = None
-                min_grades[rid] = None
-                min_jlpt_levels[rid] = None
+                impact_scores[ms] = None
+                min_grades[ms] = None
+                min_jlpt_levels[ms] = None
                 continue
 
             base = _base_score_from_count(count)
-            bonus = _complexity_bonus(int(rid_to_strokes.get(rid, 0)))
-            impact_scores[rid] = min(base + bonus, _IMPACT_MAX_SCORE)
+            bonus = _complexity_bonus(int(ms_to_strokes.get(ms, 0)))
+            impact_scores[ms] = min(base + bonus, _IMPACT_MAX_SCORE)
 
             # min_grade: MIN of non-null grades
-            kanji_ids = rad_kanji_map.get(rid, [])
-            grades = [kid_to_grade[k] for k in kanji_ids if kid_to_grade.get(k) is not None]
-            min_grades[rid] = min(grades) if grades else None
+            chars = rad_kanji_map.get(ms, [])
+            grades = [char_to_grade[c] for c in chars if char_to_grade.get(c) is not None]
+            min_grades[ms] = min(grades) if grades else None
 
             # min_jlpt_level: MAX of non-null levels (N5=5 easiest, MAX = earliest encounter)
-            jlpt_levels = [kid_to_jlpt[k] for k in kanji_ids if kid_to_jlpt.get(k) is not None]
-            min_jlpt_levels[rid] = max(jlpt_levels) if jlpt_levels else None
+            jlpt_levels = [char_to_jlpt[c] for c in chars if char_to_jlpt.get(c) is not None]
+            min_jlpt_levels[ms] = max(jlpt_levels) if jlpt_levels else None
 
         # Update radicals_df
-        radicals_df["impact_score"] = radicals_df["id"].map(impact_scores)
-        radicals_df["min_grade"] = radicals_df["id"].map(min_grades)
-        radicals_df["min_jlpt_level"] = radicals_df["id"].map(min_jlpt_levels)
+        radicals_df["impact_score"] = radicals_df["master_symbol"].map(impact_scores)
+        radicals_df["min_grade"] = radicals_df["master_symbol"].map(min_grades)
+        radicals_df["min_jlpt_level"] = radicals_df["master_symbol"].map(min_jlpt_levels)
 
         updated_count = radicals_df["impact_score"].notna().sum()
         log.info("Step 3: updated metadata for %d radicals", updated_count)

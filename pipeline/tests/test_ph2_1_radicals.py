@@ -305,13 +305,8 @@ class TestScanAndRegister:
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
-        # Find radical_id for 人
-        person_row = rad_df[rad_df["master_symbol"] == "人"]
-        assert len(person_row) == 1
-        person_id = person_row.iloc[0]["id"]
-
         # Check variant: 亻 is a shape of 人
-        person_variants = var_df[var_df["radical_id"] == person_id]
+        person_variants = var_df[var_df["master_symbol"] == "人"]
         shapes = set(person_variants["shape"])
         assert "亻" in shapes
         # 人 is only seen via 亻 in fixtures, so no self-variant created
@@ -388,10 +383,10 @@ class TestScanAndRegister:
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         rad_df, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
-        radical_ids_with_variants = set(var_df["radical_id"])
+        masters_with_variants = set(var_df["master_symbol"])
         for _, row in rad_df.iterrows():
-            assert row["id"] in radical_ids_with_variants, (
-                f"Radical {row['master_symbol']} (id={row['id']}) has no variant rows"
+            assert row["master_symbol"] in masters_with_variants, (
+                f"Radical {row['master_symbol']} has no variant rows"
             )
 
     def test_variant_unique_constraint(self, kanjivg_df, scope_set, tree_map):
@@ -400,7 +395,7 @@ class TestScanAndRegister:
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         _, var_df, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
-        pairs = var_df[["radical_id", "shape"]].apply(tuple, axis=1)
+        pairs = var_df[["master_symbol", "shape"]].apply(tuple, axis=1)
         assert pairs.is_unique
 
 
@@ -669,25 +664,6 @@ class TestExtractRadicalsIntegration:
         scope = result["scope_set"]
         assert "休" in scope
         assert "罕" not in scope  # grade 9
-
-    def test_sequential_ids(self, kanjivg_df, kanjidic_df, jlpt_kanji_df, tmp_path):
-        parquet_dir = tmp_path / "parquet"
-        parquet_dir.mkdir()
-        csv_dir = tmp_path / "csv"
-        warnings_dir = csv_dir / "warnings"
-
-        kanjivg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
-        kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
-        jlpt_kanji_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
-
-        result = extract_radicals(parquet_dir, csv_dir, warnings_dir)
-
-        rad_df = result["radicals"]
-        var_df = result["radical_variants"]
-
-        # IDs should be sequential from 1
-        assert list(rad_df["id"]) == list(range(1, len(rad_df) + 1))
-        assert list(var_df["id"]) == list(range(1, len(var_df) + 1))
 
 
 # ---------------------------------------------------------------------------

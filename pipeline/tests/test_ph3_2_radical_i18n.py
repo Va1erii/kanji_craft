@@ -41,11 +41,10 @@ def _make_kanjidic_parquet(parquet_dir: Path, entries: list[dict]) -> None:
 
 
 def _make_radicals_csv(csv_dir: Path, rows: list[dict]) -> None:
-    """Write radicals.csv. rows: list of dicts with at least id, master_symbol."""
+    """Write radicals.csv. rows: list of dicts with at least master_symbol."""
     data = []
     for r in rows:
         data.append({
-            "id": r["id"],
             "master_symbol": r["master_symbol"],
             "is_official": r.get("is_official", False),
             "stroke_count": r.get("stroke_count", 3),
@@ -85,7 +84,6 @@ def _make_kanji_csv(csv_dir: Path, rows: list[dict]) -> None:
     data = []
     for r in rows:
         data.append({
-            "id": r["id"],
             "character": r["character"],
             "stroke_count": r.get("stroke_count", 5),
             "min_grade": r.get("min_grade"),
@@ -105,7 +103,7 @@ def _make_kanji_i18n_csv(csv_dir: Path, rows: list[dict]) -> None:
     data = []
     for r in rows:
         data.append({
-            "kanji_id": r["kanji_id"],
+            "character": r["character"],
             "lang_code": r["lang_code"],
             "meanings": json.dumps(r.get("meanings", []), ensure_ascii=False),
             "system_mnemonic": r.get("system_mnemonic", ""),
@@ -141,8 +139,8 @@ class TestScaffoldCreatesAllRows:
             {"literal": "火", "meanings": {"en": ["fire"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
-            {"id": 2, "master_symbol": "火"},
+            {"master_symbol": "水"},
+            {"master_symbol": "火"},
         ])
         _make_visual_rules_json(data_dir, {})
 
@@ -151,7 +149,7 @@ class TestScaffoldCreatesAllRows:
 
         assert len(df) == 6
         assert set(df["lang_code"]) == {"en", "es", "ru"}
-        assert set(df["radical_id"]) == {1, 2}
+        assert set(df["master_symbol"]) == {"水", "火"}
 
 
 class TestEnNameFromKanjidic:
@@ -163,20 +161,20 @@ class TestEnNameFromKanjidic:
             {"literal": "水", "meanings": {"en": ["water", "liquid"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
 
         result = create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
         df = result["radical_i18n"]
 
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "en")].iloc[0]
         assert en_row["name"] == "water"
 
         # ES/RU should be empty
-        es_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "es")].iloc[0]
+        es_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "es")].iloc[0]
         assert es_row["name"] == ""
-        ru_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "ru")].iloc[0]
+        ru_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "ru")].iloc[0]
         assert ru_row["name"] == ""
 
 
@@ -187,14 +185,14 @@ class TestNoKanjidicEntryEmptyName:
 
         _make_kanjidic_parquet(parquet_dir, [])  # No entries
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "⺍"},
+            {"master_symbol": "⺍"},
         ])
         _make_visual_rules_json(data_dir, {})
 
         result = create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
         df = result["radical_i18n"]
 
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "⺍") & (df["lang_code"] == "en")].iloc[0]
         assert en_row["name"] == ""
 
         # Check warning
@@ -213,7 +211,7 @@ class TestDisambiguationNoteFromVisualRules:
             {"literal": "肉", "meanings": {"en": ["meat"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "肉", "visual_group": "月"},
+            {"master_symbol": "肉", "visual_group": "月"},
         ])
         _make_visual_rules_json(data_dir, {
             "肉": {
@@ -229,13 +227,13 @@ class TestDisambiguationNoteFromVisualRules:
         result = create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
         df = result["radical_i18n"]
 
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "肉") & (df["lang_code"] == "en")].iloc[0]
         assert en_row["disambiguation_note"] == "Left or bottom means flesh"
 
-        es_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "es")].iloc[0]
+        es_row = df[(df["master_symbol"] == "肉") & (df["lang_code"] == "es")].iloc[0]
         assert es_row["disambiguation_note"] == "Izquierda o abajo significa carne"
 
-        ru_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "ru")].iloc[0]
+        ru_row = df[(df["master_symbol"] == "肉") & (df["lang_code"] == "ru")].iloc[0]
         assert ru_row["disambiguation_note"] == "Слева или снизу означает плоть"
 
 
@@ -248,7 +246,7 @@ class TestNoVisualGroupNullNote:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
 
@@ -256,7 +254,7 @@ class TestNoVisualGroupNullNote:
         df = result["radical_i18n"]
 
         for lang in ["en", "es", "ru"]:
-            row = df[(df["radical_id"] == 1) & (df["lang_code"] == lang)].iloc[0]
+            row = df[(df["master_symbol"] == "水") & (df["lang_code"] == lang)].iloc[0]
             assert row["disambiguation_note"] == ""
 
 
@@ -269,7 +267,7 @@ class TestAiMergeOverridesFields:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
         _make_ai_csv(ai_dir, [
@@ -292,12 +290,12 @@ class TestAiMergeOverridesFields:
         result = create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
         df = result["radical_i18n"]
 
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "en")].iloc[0]
         assert en_row["name"] == "Water"
         assert en_row["system_mnemonic"] == "Drops flowing down a stream"
         assert en_row["search_tags"] == '["liquid", "splash"]'
 
-        es_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "es")].iloc[0]
+        es_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "es")].iloc[0]
         assert es_row["name"] == "Agua"
         assert es_row["system_mnemonic"] == "Gotas que caen"
 
@@ -311,7 +309,7 @@ class TestAiMergeEmptyFieldsPreserved:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
         # AI row with empty name and mnemonic — should NOT overwrite scaffold
@@ -328,7 +326,7 @@ class TestAiMergeEmptyFieldsPreserved:
         result = create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
         df = result["radical_i18n"]
 
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "en")].iloc[0]
         # Scaffold EN name from KANJIDIC should be preserved
         assert en_row["name"] == "water"
         assert en_row["system_mnemonic"] == ""
@@ -344,7 +342,7 @@ class TestAiMergeMissingFile:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
         # Do NOT create AI file
@@ -353,7 +351,7 @@ class TestAiMergeMissingFile:
         df = result["radical_i18n"]
 
         assert len(df) == 3  # 1 radical × 3 langs
-        en_row = df[(df["radical_id"] == 1) & (df["lang_code"] == "en")].iloc[0]
+        en_row = df[(df["master_symbol"] == "水") & (df["lang_code"] == "en")].iloc[0]
         assert en_row["name"] == "water"
 
 
@@ -366,7 +364,7 @@ class TestRadicalKanjiConsistencyWarning:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
         # AI gives a different EN name than KANJIDIC
@@ -381,10 +379,10 @@ class TestRadicalKanjiConsistencyWarning:
         ])
         # Kanji 水 exists with meaning "water"
         _make_kanji_csv(csv_dir, [
-            {"id": 10, "character": "水"},
+            {"character": "水"},
         ])
         _make_kanji_i18n_csv(csv_dir, [
-            {"kanji_id": 10, "lang_code": "en", "meanings": ["water"]},
+            {"character": "水", "lang_code": "en", "meanings": ["water"]},
         ])
 
         create_radical_i18n(parquet_dir, csv_dir, warnings_dir, ai_dir)
@@ -405,7 +403,7 @@ class TestOutputColumnsAndCsv:
             {"literal": "水", "meanings": {"en": ["water"]}},
         ])
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "水"},
+            {"master_symbol": "水"},
         ])
         _make_visual_rules_json(data_dir, {})
 
@@ -414,7 +412,7 @@ class TestOutputColumnsAndCsv:
         # Read back the written CSV
         csv_df = pd.read_csv(csv_dir / "radical_i18n.csv")
         expected_cols = [
-            "radical_id", "lang_code", "name", "system_mnemonic",
+            "master_symbol", "lang_code", "name", "system_mnemonic",
             "search_tags", "disambiguation_note",
         ]
         assert list(csv_df.columns) == expected_cols
@@ -428,7 +426,7 @@ class TestWarningsAppendedToExisting:
 
         _make_kanjidic_parquet(parquet_dir, [])  # No entries → triggers warning
         _make_radicals_csv(csv_dir, [
-            {"id": 1, "master_symbol": "⺍"},
+            {"master_symbol": "⺍"},
         ])
         _make_visual_rules_json(data_dir, {})
 

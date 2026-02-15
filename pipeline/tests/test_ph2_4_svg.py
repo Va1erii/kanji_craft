@@ -45,16 +45,15 @@ def _make_zip(entries: dict[str, bytes], tmp_path: Path) -> Path:
 
 
 def _make_radicals_csv(csv_dir: Path, radicals: list[tuple]) -> pd.DataFrame:
-    """Write radicals.csv. radicals: list of (id, master_symbol, stroke_count, jlpt) tuples."""
+    """Write radicals.csv. radicals: list of (master_symbol, stroke_count, jlpt) tuples."""
     columns = [
-        "id", "master_symbol", "is_official", "stroke_count", "visual_group",
+        "master_symbol", "is_official", "stroke_count", "visual_group",
         "svg_file_name", "svg_file_url", "svg_hash", "impact_score",
         "min_grade", "min_jlpt_level",
     ]
     rows = []
-    for rid, ms, sc, jlpt in radicals:
+    for ms, sc, jlpt in radicals:
         rows.append({
-            "id": rid,
             "master_symbol": ms,
             "is_official": False,
             "stroke_count": sc,
@@ -73,13 +72,12 @@ def _make_radicals_csv(csv_dir: Path, radicals: list[tuple]) -> pd.DataFrame:
 
 
 def _make_variants_csv(csv_dir: Path, variants: list[tuple]) -> pd.DataFrame:
-    """Write radical_variants.csv. variants: list of (id, radical_id, shape) tuples."""
-    columns = ["id", "radical_id", "shape", "positions", "svg_file_name", "svg_file_url", "svg_hash"]
+    """Write radical_variants.csv. variants: list of (master_symbol, shape) tuples."""
+    columns = ["master_symbol", "shape", "positions", "svg_file_name", "svg_file_url", "svg_hash"]
     rows = []
-    for vid, rid, shape in variants:
+    for ms, shape in variants:
         rows.append({
-            "id": vid,
-            "radical_id": rid,
+            "master_symbol": ms,
             "shape": shape,
             "positions": "hen",
             "svg_file_name": None,
@@ -93,15 +91,14 @@ def _make_variants_csv(csv_dir: Path, variants: list[tuple]) -> pd.DataFrame:
 
 
 def _make_kanji_csv(csv_dir: Path, kanji_list: list[tuple]) -> pd.DataFrame:
-    """Write kanji.csv. kanji_list: list of (id, char, stroke_count, grade, jlpt) tuples."""
+    """Write kanji.csv. kanji_list: list of (char, stroke_count, grade, jlpt) tuples."""
     columns = [
-        "id", "character", "stroke_count", "min_grade", "min_jlpt_level",
+        "character", "stroke_count", "min_grade", "min_jlpt_level",
         "frequency_rank", "svg_file_name", "svg_file_url", "svg_hash",
     ]
     rows = []
-    for kid, char, sc, grade, jlpt in kanji_list:
+    for char, sc, grade, jlpt in kanji_list:
         rows.append({
-            "id": kid,
             "character": char,
             "stroke_count": sc,
             "min_grade": grade,
@@ -164,9 +161,9 @@ def basic_setup(tmp_path, monkeypatch):
         "04f11.svg": MINIMAL_SVG,
     }, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "一", 1, 4), (2, "水", 4, 3)])
-    _make_variants_csv(csv_dir, [(1, 2, "氵")])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, 4)])
+    _make_radicals_csv(csv_dir, [("一", 1, 4), ("水", 4, 3)])
+    _make_variants_csv(csv_dir, [("水", "氵")])
+    _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
 
     monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
 
@@ -307,9 +304,9 @@ def test_missing_svg_null_fields(tmp_path, monkeypatch):
     # Empty ZIP — no SVGs
     zip_path = _make_zip({}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "一", 1, None)])
+    _make_radicals_csv(csv_dir, [("一", 1, None)])
     _make_variants_csv(csv_dir, [])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, None)])
+    _make_kanji_csv(csv_dir, [("休", 6, 2, None)])
 
     monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
     client, _ = _mock_client()
@@ -335,7 +332,7 @@ def test_all_or_nothing(tmp_path, monkeypatch):
     # ZIP has 一 but not 木
     zip_path = _make_zip({"04e00.svg": MINIMAL_SVG}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "一", 1, None), (2, "木", 4, None)])
+    _make_radicals_csv(csv_dir, [("一", 1, None), ("木", 4, None)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -362,9 +359,9 @@ def test_warning_missing_jlpt(tmp_path, monkeypatch):
 
     zip_path = _make_zip({}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "一", 1, 4)])  # JLPT 4
+    _make_radicals_csv(csv_dir, [("一", 1, 4)])  # JLPT 4
     _make_variants_csv(csv_dir, [])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, 3)])  # JLPT 3
+    _make_kanji_csv(csv_dir, [("休", 6, 2, 3)])  # JLPT 3
 
     monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
     client, _ = _mock_client()
@@ -383,9 +380,9 @@ def test_warning_missing_non_jlpt(tmp_path, monkeypatch):
 
     zip_path = _make_zip({}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "一", 1, None)])  # No JLPT
+    _make_radicals_csv(csv_dir, [("一", 1, None)])  # No JLPT
     _make_variants_csv(csv_dir, [])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, None)])  # No JLPT
+    _make_kanji_csv(csv_dir, [("休", 6, 2, None)])  # No JLPT
 
     monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
     client, _ = _mock_client()
@@ -524,9 +521,9 @@ def test_integration(tmp_path, monkeypatch):
         "099ff.svg": MINIMAL_SVG,  # Unmatched file
     }, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, "人", 2, 4), (2, "木", 4, 3)])
-    _make_variants_csv(csv_dir, [(1, 1, "亻")])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, 4)])
+    _make_radicals_csv(csv_dir, [("人", 2, 4), ("木", 4, 3)])
+    _make_variants_csv(csv_dir, [("人", "亻")])
+    _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
 
     monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
     client, bucket_mock = _mock_client()
@@ -651,7 +648,7 @@ def test_pass2_basic_extraction(tmp_path, monkeypatch):
     # ZIP has parent 亶 but NOT target radical 㐭
     zip_path = _make_zip({_PARENT_HEX + ".svg": _PARENT_SVG}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, None)])
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, None)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -711,7 +708,7 @@ def test_pass2_original_fallback(tmp_path, monkeypatch):
     zip_path = _make_zip({parent_hex + ".svg": parent_svg}, tmp_path)
 
     # Radical uses canonical form 隺 as master_symbol
-    _make_radicals_csv(csv_dir, [(1, original_char, 10, 3)])
+    _make_radicals_csv(csv_dir, [(original_char, 10, 3)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -767,8 +764,8 @@ def test_pass2_variant_extraction(tmp_path, monkeypatch):
     zip_path = _make_zip({parent_hex + ".svg": parent_svg}, tmp_path)
 
     # Radical exists with an SVG (竹 in ZIP) but variant ⺮ has no standalone SVG
-    _make_radicals_csv(csv_dir, [(1, parent_char, 6, None)])
-    _make_variants_csv(csv_dir, [(1, 1, variant_char)])
+    _make_radicals_csv(csv_dir, [(parent_char, 6, None)])
+    _make_variants_csv(csv_dir, [(parent_char, variant_char)])
     _make_kanji_csv(csv_dir, [])
 
     _make_kanjivg_parquet(parquet_dir, [(parent_char, parent_tree)])
@@ -795,7 +792,7 @@ def test_pass2_warning_replacement(tmp_path, monkeypatch):
 
     zip_path = _make_zip({_PARENT_HEX + ".svg": _PARENT_SVG}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, 3)])  # JLPT → would be high
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, 3)])  # JLPT → would be high
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -825,7 +822,7 @@ def test_pass2_no_parent(tmp_path, monkeypatch):
 
     zip_path = _make_zip({}, tmp_path)  # Empty ZIP
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, None)])
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, None)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -857,7 +854,7 @@ def test_pass2_kanji_not_extracted(tmp_path, monkeypatch):
 
     _make_radicals_csv(csv_dir, [])
     _make_variants_csv(csv_dir, [])
-    _make_kanji_csv(csv_dir, [(1, "休", 6, 2, 4)])
+    _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
 
     # Even if parquet maps 休 as a child of something, kanji should not be extracted
     _make_kanjivg_parquet(parquet_dir, [(_PARENT_CHAR, {
@@ -885,7 +882,7 @@ def test_pass2_disk_output(tmp_path, monkeypatch):
 
     zip_path = _make_zip({_PARENT_HEX + ".svg": _PARENT_SVG}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, None)])
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, None)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -914,7 +911,7 @@ def test_pass2_idempotent(tmp_path, monkeypatch):
 
     zip_path = _make_zip({_PARENT_HEX + ".svg": _PARENT_SVG}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, None)])
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, None)])
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 
@@ -946,7 +943,7 @@ def test_pass2_no_parquet_graceful(tmp_path, monkeypatch):
 
     zip_path = _make_zip({}, tmp_path)
 
-    _make_radicals_csv(csv_dir, [(1, _TARGET_RADICAL, 8, 3)])  # JLPT → high severity
+    _make_radicals_csv(csv_dir, [(_TARGET_RADICAL, 8, 3)])  # JLPT → high severity
     _make_variants_csv(csv_dir, [])
     _make_kanji_csv(csv_dir, [])
 

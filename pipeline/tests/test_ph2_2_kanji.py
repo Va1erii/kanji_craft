@@ -188,30 +188,6 @@ class TestKanjiRowCreation:
         assert kanji_df["svg_file_url"].isna().all()
         assert kanji_df["svg_hash"].isna().all()
 
-    def test_sequential_ids_by_codepoint(self, tmp_path):
-        """IDs are sequential, sorted by character codepoint."""
-        kanjidic_df = _make_kanjidic_df([
-            _kanjidic_row("龍", stroke_count=16, ja_on=["リュウ"], meanings={"en": ["dragon"]}),
-            _kanjidic_row("日", stroke_count=4, ja_on=["ニチ"], meanings={"en": ["day"]}),
-            _kanjidic_row("人", stroke_count=2, ja_on=["ジン"], meanings={"en": ["person"]}),
-        ])
-        jlpt_df = _make_jlpt_df([])
-
-        parquet_dir = tmp_path / "parquet"
-        parquet_dir.mkdir()
-        csv_dir = tmp_path / "csv"
-        warnings_dir = csv_dir / "warnings"
-
-        kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
-        jlpt_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
-
-        result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
-        kanji_df = result["kanji"]
-
-        assert list(kanji_df["id"]) == [1, 2, 3]
-        # 人 (U+4EBA) < 日 (U+65E5) < 龍 (U+9F8D)
-        assert list(kanji_df["character"]) == ["人", "日", "龍"]
-
     def test_grade_values_preserved(self, tmp_path):
         """Grade values 1-6, 8, 9, 10 and null are preserved as-is."""
         kanjidic_df = _make_kanjidic_df([
@@ -264,10 +240,8 @@ class TestReadingRows:
 
         result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
         readings_df = result["kanji_readings"]
-        kanji_df = result["kanji"]
 
-        nichi_id = kanji_df[kanji_df["character"] == "日"].iloc[0]["id"]
-        nichi_readings = readings_df[readings_df["kanji_id"] == nichi_id]
+        nichi_readings = readings_df[readings_df["character"] == "日"]
 
         onyomi = nichi_readings[nichi_readings["reading_type"] == "onyomi"]
         kunyomi = nichi_readings[nichi_readings["reading_type"] == "kunyomi"]
@@ -330,21 +304,6 @@ class TestReadingRows:
         assert set(nanori["reading"]) == {"あき", "くさ"}
         assert (nanori["priority"] == "primary").all()
 
-    def test_sequential_reading_ids(self, basic_kanjidic_df, basic_jlpt_df, tmp_path):
-        """Reading IDs are sequential starting from 1."""
-        parquet_dir = tmp_path / "parquet"
-        parquet_dir.mkdir()
-        csv_dir = tmp_path / "csv"
-        warnings_dir = csv_dir / "warnings"
-
-        basic_kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
-        basic_jlpt_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
-
-        result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
-        readings_df = result["kanji_readings"]
-
-        assert list(readings_df["id"]) == list(range(1, len(readings_df) + 1))
-
 
 # ---------------------------------------------------------------------------
 # Step 3: I18n rows
@@ -364,10 +323,8 @@ class TestI18nRows:
 
         result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
         i18n_df = result["kanji_i18n"]
-        kanji_df = result["kanji"]
 
-        nichi_id = kanji_df[kanji_df["character"] == "日"].iloc[0]["id"]
-        nichi_i18n = i18n_df[i18n_df["kanji_id"] == nichi_id]
+        nichi_i18n = i18n_df[i18n_df["character"] == "日"]
 
         # 日 has en + es meanings
         assert set(nichi_i18n["lang_code"]) == {"en", "es"}
@@ -662,10 +619,6 @@ class TestIntegration:
 
         # Unique characters
         assert kanji_csv["character"].is_unique
-
-        # Sequential IDs
-        assert list(kanji_csv["id"]) == [1, 2, 3]
-        assert list(readings_csv["id"]) == list(range(1, len(readings_csv) + 1))
 
         # Result dict matches
         assert len(result["kanji"]) == 3

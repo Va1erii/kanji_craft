@@ -664,9 +664,11 @@ def extract_svg(
 
     # Variants inherit JLPT from parent radical
     variant_jlpt = None
-    if "radical_id" in variants_df.columns and "min_jlpt_level" in radicals_df.columns:
-        rad_jlpt_map = dict(zip(radicals_df["id"], radicals_df["min_jlpt_level"], strict=False))
-        variant_jlpt = variants_df["radical_id"].map(rad_jlpt_map)
+    if "master_symbol" in variants_df.columns and "min_jlpt_level" in radicals_df.columns:
+        rad_jlpt_map = dict(zip(
+            radicals_df["master_symbol"], radicals_df["min_jlpt_level"], strict=False,
+        ))
+        variant_jlpt = variants_df["master_symbol"].map(rad_jlpt_map)
 
     variants_df = _process_entity(
         variants_df,

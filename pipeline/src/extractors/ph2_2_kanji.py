@@ -31,7 +31,7 @@ def _step1_kanji_rows(
 ) -> pd.DataFrame:
     """Step 1: Create kanji rows from kanjidic.parquet.
 
-    Assigns sequential IDs sorted by character codepoint for determinism.
+    Sorted by character codepoint for determinism.
     Unranked kanji get synthetic frequency starting at 10001.
     """
     rows: list[dict] = []
@@ -60,17 +60,11 @@ def _step1_kanji_rows(
             r["frequency_rank"] = synthetic
             synthetic += 1
 
-    # Assign sequential IDs
-    for i, r in enumerate(rows, start=1):
-        r["id"] = i
-
     df = pd.DataFrame(rows)
     if not df.empty:
-        df["id"] = df["id"].astype("int64")
         df["stroke_count"] = df["stroke_count"].astype("int64")
         df["frequency_rank"] = df["frequency_rank"].astype("int64")
-        # Reorder columns: id first
-        cols = ["id", "character", "stroke_count", "min_grade", "min_jlpt_level",
+        cols = ["character", "stroke_count", "min_grade", "min_jlpt_level",
                 "frequency_rank", "svg_file_name", "svg_file_url", "svg_hash"]
         df = df[cols]
     return df
@@ -78,15 +72,14 @@ def _step1_kanji_rows(
 
 def _step2_reading_rows(
     kanjidic_df: pd.DataFrame,
-    char_to_id: dict[str, int],
+    kanji_chars: set[str],
 ) -> pd.DataFrame:
     """Step 2: Create reading rows from kanjidic readings + nanori."""
     rows: list[dict] = []
 
     for _, kd_row in kanjidic_df.iterrows():
         char = kd_row["literal"]
-        kanji_id = char_to_id.get(char)
-        if kanji_id is None:
+        if char not in kanji_chars:
             continue
 
         # Parse readings JSON
@@ -110,7 +103,7 @@ def _step2_reading_rows(
 
         for reading in ja_on:
             rows.append({
-                "kanji_id": kanji_id,
+                "character": char,
                 "reading": reading,
                 "reading_type": "onyomi",
                 "priority": "primary",
@@ -118,7 +111,7 @@ def _step2_reading_rows(
 
         for reading in ja_kun:
             rows.append({
-                "kanji_id": kanji_id,
+                "character": char,
                 "reading": reading,
                 "reading_type": "kunyomi",
                 "priority": "primary",
@@ -126,36 +119,28 @@ def _step2_reading_rows(
 
         for reading in nanori:
             rows.append({
-                "kanji_id": kanji_id,
+                "character": char,
                 "reading": reading,
                 "reading_type": "nanori",
                 "priority": "primary",
             })
 
-    # Assign sequential IDs
-    for i, r in enumerate(rows, start=1):
-        r["id"] = i
-
     df = pd.DataFrame(rows)
     if not df.empty:
-        df["id"] = df["id"].astype("int64")
-        df["kanji_id"] = df["kanji_id"].astype("int64")
-        # Reorder columns
-        df = df[["id", "kanji_id", "reading", "reading_type", "priority"]]
+        df = df[["character", "reading", "reading_type", "priority"]]
     return df
 
 
 def _step3_i18n_rows(
     kanjidic_df: pd.DataFrame,
-    char_to_id: dict[str, int],
+    kanji_chars: set[str],
 ) -> pd.DataFrame:
     """Step 3: Create i18n rows for all languages with non-empty meanings."""
     rows: list[dict] = []
 
     for _, kd_row in kanjidic_df.iterrows():
         char = kd_row["literal"]
-        kanji_id = char_to_id.get(char)
-        if kanji_id is None:
+        if char not in kanji_chars:
             continue
 
         # Parse meanings JSON
@@ -174,7 +159,7 @@ def _step3_i18n_rows(
             if not lang_meanings:
                 continue
             rows.append({
-                "kanji_id": kanji_id,
+                "character": char,
                 "lang_code": lang_code,
                 "meanings": json.dumps(lang_meanings, ensure_ascii=False),
                 "system_mnemonic": "",
@@ -182,8 +167,6 @@ def _step3_i18n_rows(
             })
 
     df = pd.DataFrame(rows)
-    if not df.empty:
-        df["kanji_id"] = df["kanji_id"].astype("int64")
     return df
 
 
@@ -200,7 +183,6 @@ def _collect_warnings(
     readings_df: pd.DataFrame,
     i18n_df: pd.DataFrame,
     jlpt_lookup: dict[str, int],
-    char_to_id: dict[str, int],
 ) -> list[dict]:
     """Collect warnings: JLPT-aware and grade-aware severity."""
     warnings: list[dict] = []
@@ -220,16 +202,15 @@ def _collect_warnings(
         return warnings
 
     # Per-kanji checks
-    kanji_ids_with_readings = (
-        set(readings_df["kanji_id"]) if not readings_df.empty else set()
+    chars_with_readings = (
+        set(readings_df["character"]) if not readings_df.empty else set()
     )
-    kanji_ids_with_en = set()
+    chars_with_en = set()
     if not i18n_df.empty:
         en_rows = i18n_df[i18n_df["lang_code"] == "en"]
-        kanji_ids_with_en = set(en_rows["kanji_id"])
+        chars_with_en = set(en_rows["character"])
 
     for _, row in kanji_df.iterrows():
-        kanji_id = row["id"]
         char = row["character"]
         is_jlpt = char in jlpt_lookup
         grade = row.get("min_grade")
@@ -237,7 +218,7 @@ def _collect_warnings(
         high = _is_high_severity(is_jlpt, grade)
 
         # No readings
-        if kanji_id not in kanji_ids_with_readings:
+        if char not in chars_with_readings:
             severity = "high" if high else "low"
             warnings.append({
                 "severity": severity,
@@ -247,7 +228,7 @@ def _collect_warnings(
             })
 
         # Missing English meanings
-        if kanji_id not in kanji_ids_with_en:
+        if char not in chars_with_en:
             severity = "high" if high else "low"
             warnings.append({
                 "severity": severity,
@@ -285,24 +266,20 @@ def extract_kanji(
 
     # Step 1: Kanji rows
     kanji_df = _step1_kanji_rows(kanjidic_df, jlpt_lookup)
-    char_to_id = (
-        dict(zip(kanji_df["character"], kanji_df["id"], strict=True))
-        if not kanji_df.empty
-        else {}
-    )
+    kanji_chars = set(kanji_df["character"]) if not kanji_df.empty else set()
     log.info("Step 1: %d kanji rows", len(kanji_df))
 
     # Step 2: Reading rows
-    readings_df = _step2_reading_rows(kanjidic_df, char_to_id)
+    readings_df = _step2_reading_rows(kanjidic_df, kanji_chars)
     log.info("Step 2: %d reading rows", len(readings_df))
 
     # Step 3: I18n rows
-    i18n_df = _step3_i18n_rows(kanjidic_df, char_to_id)
+    i18n_df = _step3_i18n_rows(kanjidic_df, kanji_chars)
     log.info("Step 3: %d i18n rows", len(i18n_df))
 
     # Collect warnings
     all_warnings = _collect_warnings(
-        kanji_df, readings_df, i18n_df, jlpt_lookup, char_to_id,
+        kanji_df, readings_df, i18n_df, jlpt_lookup,
     )
 
     # Write outputs

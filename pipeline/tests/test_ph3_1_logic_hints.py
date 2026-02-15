@@ -41,12 +41,11 @@ def _make_kanjidic_parquet(parquet_dir: Path, entries: list[dict]) -> None:
     df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
 
 
-def _make_radicals_csv(csv_dir: Path, rows: list[tuple]) -> None:
-    """Write radicals.csv. rows: list of (id, master_symbol) tuples."""
+def _make_radicals_csv(csv_dir: Path, rows: list[str]) -> None:
+    """Write radicals.csv. rows: list of master_symbol strings."""
     data = []
-    for rid, ms in rows:
+    for ms in rows:
         data.append({
-            "id": rid,
             "master_symbol": ms,
             "is_official": False,
             "stroke_count": 3,
@@ -64,12 +63,11 @@ def _make_radicals_csv(csv_dir: Path, rows: list[tuple]) -> None:
 
 
 def _make_kanji_readings_csv(csv_dir: Path, rows: list[tuple]) -> None:
-    """Write kanji_readings.csv. rows: list of (id, kanji_id, reading, reading_type, priority)."""
+    """Write kanji_readings.csv. rows: list of (character, reading, reading_type, priority)."""
     data = []
-    for rid, kid, reading, rtype, priority in rows:
+    for char, reading, rtype, priority in rows:
         data.append({
-            "id": rid,
-            "kanji_id": kid,
+            "character": char,
             "reading": reading,
             "reading_type": rtype,
             "priority": priority,
@@ -102,13 +100,13 @@ class TestPhoneticMatch:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "青", "readings": {"ja_on": ["セイ", "ショウ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "青")])
-        # Kanji id=10 has onyomi セイ
+        _make_radicals_csv(csv_dir, ["青"])
+        # Kanji 清 has onyomi セイ
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "セイ", "onyomi", "primary"),
+            ("清", "セイ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "清", "master_symbol": "青", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -128,12 +126,12 @@ class TestNoMatchStaysSemantic:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "人", "readings": {"ja_on": ["ジン", "ニン"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "人")])
+        _make_radicals_csv(csv_dir, ["人"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "キュウ", "onyomi", "primary"),
+            ("休", "キュウ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "hen",
+            {"character": "休", "master_symbol": "人", "position": "hen",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -153,13 +151,13 @@ class TestMultipleOnyomiAnyMatch:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "工", "readings": {"ja_on": ["コウ", "ク", "グ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "工")])
+        _make_radicals_csv(csv_dir, ["工"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "コウ", "onyomi", "primary"),
-            (2, 10, "ギョウ", "onyomi", "secondary"),
+            ("功", "コウ", "onyomi", "primary"),
+            ("功", "ギョウ", "onyomi", "secondary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "功", "master_symbol": "工", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "component", "is_primary": False},
         ])
 
@@ -178,12 +176,12 @@ class TestRadicalNotInKanjidic:
 
         # kanjidic has no entry for ⺍
         _make_kanjidic_parquet(parquet_dir, [])
-        _make_radicals_csv(csv_dir, [(1, "⺍")])
+        _make_radicals_csv(csv_dir, ["⺍"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "セイ", "onyomi", "primary"),
+            ("清", "セイ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "kanmuri",
+            {"character": "清", "master_symbol": "⺍", "position": "kanmuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -209,13 +207,13 @@ class TestKanjiNoOnyomi:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "木", "readings": {"ja_on": ["モク", "ボク"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "木")])
+        _make_radicals_csv(csv_dir, ["木"])
         # Only kunyomi readings for this kanji
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "やす.む", "kunyomi", "primary"),
+            ("休", "やす.む", "kunyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "休", "master_symbol": "木", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "component", "is_primary": False},
         ])
 
@@ -235,12 +233,12 @@ class TestPositionConflictWarning:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "青", "readings": {"ja_on": ["セイ", "ショウ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "青")])
+        _make_radicals_csv(csv_dir, ["青"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "セイ", "onyomi", "primary"),
+            ("清", "セイ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "hen",
+            {"character": "清", "master_symbol": "青", "position": "hen",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -266,12 +264,12 @@ class TestPositionAgreementNoWarning:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "青", "readings": {"ja_on": ["セイ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "青")])
+        _make_radicals_csv(csv_dir, ["青"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "セイ", "onyomi", "primary"),
+            ("清", "セイ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "清", "master_symbol": "青", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -297,12 +295,12 @@ class TestUnknownPositionNoWarning:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "工", "readings": {"ja_on": ["コウ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "工")])
+        _make_radicals_csv(csv_dir, ["工"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "コウ", "onyomi", "primary"),
+            ("功", "コウ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "unknown",
+            {"character": "功", "master_symbol": "工", "position": "unknown",
              "logic_hint": "semantic", "radical_type": "component", "is_primary": False},
         ])
 
@@ -328,28 +326,28 @@ class TestSameRadicalDifferentKanji:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "青", "readings": {"ja_on": ["セイ", "ショウ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "青")])
+        _make_radicals_csv(csv_dir, ["青"])
         _make_kanji_readings_csv(csv_dir, [
-            # Kanji 10 has onyomi セイ → matches
-            (1, 10, "セイ", "onyomi", "primary"),
-            # Kanji 20 has onyomi カン → no match
-            (2, 20, "カン", "onyomi", "primary"),
+            # Kanji 清 has onyomi セイ → matches
+            ("清", "セイ", "onyomi", "primary"),
+            # Kanji 漢 has onyomi カン → no match
+            ("漢", "カン", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "清", "master_symbol": "青", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
-            {"id": 2, "kanji_id": 20, "radical_id": 1, "position": "tsukuri",
+            {"character": "漢", "master_symbol": "青", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
         result = refine_logic_hints(parquet_dir, csv_dir, warnings_dir)
         df = result["kanji_components"]
 
-        row_10 = df[df["kanji_id"] == 10].iloc[0]
-        row_20 = df[df["kanji_id"] == 20].iloc[0]
+        row_sei = df[df["character"] == "清"].iloc[0]
+        row_kan = df[df["character"] == "漢"].iloc[0]
 
-        assert row_10["logic_hint"] == "phonetic"
-        assert row_20["logic_hint"] == "semantic"
+        assert row_sei["logic_hint"] == "phonetic"
+        assert row_kan["logic_hint"] == "semantic"
 
 
 class TestOutputWrittenToCsv:
@@ -362,12 +360,12 @@ class TestOutputWrittenToCsv:
         _make_kanjidic_parquet(parquet_dir, [
             {"literal": "青", "readings": {"ja_on": ["セイ"]}},
         ])
-        _make_radicals_csv(csv_dir, [(1, "青")])
+        _make_radicals_csv(csv_dir, ["青"])
         _make_kanji_readings_csv(csv_dir, [
-            (1, 10, "セイ", "onyomi", "primary"),
+            ("清", "セイ", "onyomi", "primary"),
         ])
         _make_kanji_components_csv(csv_dir, [
-            {"id": 1, "kanji_id": 10, "radical_id": 1, "position": "tsukuri",
+            {"character": "清", "master_symbol": "青", "position": "tsukuri",
              "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
         ])
 
@@ -378,9 +376,8 @@ class TestOutputWrittenToCsv:
         assert len(csv_df) == 1
         assert csv_df.iloc[0]["logic_hint"] == "phonetic"
         # All original columns preserved
-        assert "id" in csv_df.columns
-        assert "kanji_id" in csv_df.columns
-        assert "radical_id" in csv_df.columns
+        assert "character" in csv_df.columns
+        assert "master_symbol" in csv_df.columns
         assert "position" in csv_df.columns
         assert "radical_type" in csv_df.columns
         assert "is_primary" in csv_df.columns

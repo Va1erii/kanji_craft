@@ -112,13 +112,12 @@ def _make_examples_df(entries):
 
 
 def _make_kanji_csv(entries, csv_dir):
-    """entries: list of (id, character, min_jlpt_level) tuples. Writes kanji.csv."""
-    cols = ["id", "character", "stroke_count", "min_grade", "min_jlpt_level",
+    """entries: list of (character, min_jlpt_level) tuples. Writes kanji.csv."""
+    cols = ["character", "stroke_count", "min_grade", "min_jlpt_level",
             "frequency_rank", "svg_file_name", "svg_file_url", "svg_hash"]
     rows = []
-    for kid, char, jlpt_level in entries:
+    for char, jlpt_level in entries:
         rows.append({
-            "id": kid,
             "character": char,
             "stroke_count": 4,
             "min_grade": None,
@@ -129,8 +128,6 @@ def _make_kanji_csv(entries, csv_dir):
             "svg_hash": None,
         })
     df = pd.DataFrame(rows, columns=cols)
-    if not df.empty:
-        df["id"] = df["id"].astype("int64")
     csv_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(csv_dir / "kanji.csv", index=False)
 
@@ -219,8 +216,8 @@ def basic_jmdict_rows():
 
 @pytest.fixture
 def basic_kanji_entries():
-    """Kanji: 食(id=1, N5), 大(id=2, N5), 人(id=3, N5)."""
-    return [(1, "食", 5), (2, "大", 5), (3, "人", 5)]
+    """Kanji: 食(N5), 大(N5), 人(N5)."""
+    return [("食", 5), ("大", 5), ("人", 5)]
 
 
 @pytest.fixture
@@ -247,7 +244,7 @@ class TestVocabularySelection:
                 r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
                 senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
             )],
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
         )
         assert len(result["vocabulary"]) == 1
 
@@ -262,7 +259,7 @@ class TestVocabularySelection:
                 senses=[_sense(pos=["n"], glosses={"eng": ["station"]})],
             )],
             jlpt_vocab_entries=[("駅", "えき", 5)],
-            kanji_entries=[(1, "駅", 4)],
+            kanji_entries=[("駅", 4)],
         )
         assert len(result["vocabulary"]) == 1
 
@@ -336,7 +333,7 @@ class TestJlptLevel:
                 senses=[_sense(pos=["n"], glosses={"eng": ["station"]})],
             )],
             jlpt_vocab_entries=[("駅", "えき", 5)],
-            kanji_entries=[(1, "駅", 4)],
+            kanji_entries=[("駅", 4)],
         )
         # JLPT vocab says N5, kanji says N4 → N5 wins
         assert result["vocabulary"].iloc[0]["min_jlpt_level"] == 5
@@ -351,7 +348,7 @@ class TestJlptLevel:
                 r_ele=[_r_ele("たいへん", re_pri=["ichi1"])],
                 senses=[_sense(pos=["adj-na"], glosses={"eng": ["tough"]})],
             )],
-            kanji_entries=[(1, "大", 5), (2, "変", 3)],
+            kanji_entries=[("大", 5), ("変", 3)],
         )
         # N5=5 easiest, N1=1 hardest. Word is gated by hardest kanji.
         # 大=N5=5, 変=N3=3 → min_jlpt_level = 3 (gated by N3 kanji).
@@ -367,7 +364,7 @@ class TestJlptLevel:
                 r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
                 senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
             )],
-            kanji_entries=[(1, "食", None)],
+            kanji_entries=[("食", None)],
         )
         assert pd.isna(result["vocabulary"].iloc[0]["min_jlpt_level"])
 
@@ -949,7 +946,7 @@ class TestFurigana:
             )],
             # No jmdict furigana entries → would normally trigger fallback warning
             jlpt_vocab_entries=[("食べる", "たべる", 5)],
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
             manual_furigana_path=manual_path,
         )
         assert result["vocabulary"].iloc[0]["furigana"] == "{食|た}べる"
@@ -1170,12 +1167,12 @@ class TestKanjiLinks:
                 r_ele=[_r_ele("にほん", re_pri=["ichi1"])],
                 senses=[_sense(pos=["n"], glosses={"eng": ["Japan"]})],
             )],
-            kanji_entries=[(1, "日", 5), (2, "本", 5)],
+            kanji_entries=[("日", 5), ("本", 5)],
         )
         kdf = result["vocabulary_kanji"]
         assert len(kdf) == 2
-        nichi = kdf[kdf["kanji_id"] == 1].iloc[0]
-        hon = kdf[kdf["kanji_id"] == 2].iloc[0]
+        nichi = kdf[kdf["character"] == "日"].iloc[0]
+        hon = kdf[kdf["character"] == "本"].iloc[0]
         assert nichi["position"] == 0
         assert hon["position"] == 1
 
@@ -1189,13 +1186,13 @@ class TestKanjiLinks:
                 r_ele=[_r_ele("にほん", re_pri=["ichi1"])],
                 senses=[_sense(pos=["n"], glosses={"eng": ["Japan"]})],
             )],
-            kanji_entries=[(1, "日", 5)],  # 本 is missing
+            kanji_entries=[("日", 5)],  # 本 is missing
         )
         assert len(result["vocabulary"]) == 1
         kdf = result["vocabulary_kanji"]
         # Only 日 linked, 本 is orphan
         assert len(kdf) == 1
-        assert kdf.iloc[0]["kanji_id"] == 1
+        assert kdf.iloc[0]["character"] == "日"
 
     def test_kana_only_no_links(self, tmp_path):
         """Kana-only word → 0 kanji links."""
@@ -1207,7 +1204,7 @@ class TestKanjiLinks:
                 r_ele=[_r_ele("すごい", re_pri=["ichi1"])],
                 senses=[_sense(pos=["adj-i"], glosses={"eng": ["amazing"]})],
             )],
-            kanji_entries=[(1, "日", 5)],
+            kanji_entries=[("日", 5)],
         )
         kdf = result["vocabulary_kanji"]
         assert len(kdf) == 0
@@ -1241,7 +1238,7 @@ class TestWarnings:
         _make_examples_df([]).to_parquet(
             parquet_dir / "jmdict_examples.parquet", index=False,
         )
-        _make_kanji_csv([(1, "日", 5)], csv_dir)  # 本 missing
+        _make_kanji_csv([("日", 5)], csv_dir)  # 本 missing
 
         extract_vocabulary(parquet_dir, csv_dir, warnings_dir)
 
@@ -1294,7 +1291,7 @@ class TestWarnings:
             )],
             jlpt_vocab_entries=[("食べる", "たべる", 5)],
             # No furigana entries → fallback
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
         )
 
         csv_dir = tmp_path / "csv"
@@ -1314,7 +1311,7 @@ class TestWarnings:
                 senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
             )],
             # No JLPT, no furigana, kanji has no JLPT level
-            kanji_entries=[(1, "食", None)],
+            kanji_entries=[("食", None)],
         )
 
         csv_dir = tmp_path / "csv"
@@ -1338,7 +1335,7 @@ class TestWarnings:
             furigana_entries=[
                 ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
             ],
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
         )
 
         csv_dir = tmp_path / "csv"
@@ -1363,7 +1360,7 @@ class TestWarnings:
             furigana_entries=[
                 ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
             ],
-            kanji_entries=[(1, "食", None)],
+            kanji_entries=[("食", None)],
         )
 
         csv_dir = tmp_path / "csv"
@@ -1474,7 +1471,7 @@ class TestManualLocalization:
             furigana_entries=[
                 ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
             ],
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
             manual_localization_path=manual_path,
         )
         idf = result["vocabulary_i18n"]
@@ -1537,7 +1534,7 @@ class TestManualLocalization:
             furigana_entries=[
                 ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
             ],
-            kanji_entries=[(1, "食", 5)],
+            kanji_entries=[("食", 5)],
             manual_localization_path=manual_path,
         )
         idf = result["vocabulary_i18n"]

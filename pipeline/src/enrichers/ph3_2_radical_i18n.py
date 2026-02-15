@@ -25,7 +25,7 @@ _AI_FILENAME = "radical_i18n_ai.csv"
 
 # Output columns in canonical order
 _OUTPUT_COLUMNS = [
-    "radical_id",
+    "master_symbol",
     "lang_code",
     "name",
     "system_mnemonic",
@@ -85,7 +85,6 @@ def _build_scaffold(
     """Step A: Build scaffold rows — all radicals × all languages."""
     rows: list[dict] = []
     for _, rad in radicals_df.iterrows():
-        rid = int(rad["id"])
         ms = rad["master_symbol"]
         for lang in TARGET_LANGS:
             # EN name from KANJIDIC; ES/RU empty
@@ -99,7 +98,7 @@ def _build_scaffold(
                 note = notes_dict.get(lang, "")
 
             rows.append({
-                "radical_id": rid,
+                "master_symbol": ms,
                 "lang_code": lang,
                 "name": name,
                 "system_mnemonic": "",
@@ -114,7 +113,6 @@ def _build_scaffold(
 
 def _merge_ai_content(
     scaffold_df: pd.DataFrame,
-    radicals_df: pd.DataFrame,
     ai_dir: Path,
     en_names: dict[str, str],
     warnings: list[dict],
@@ -134,11 +132,6 @@ def _merge_ai_content(
         log.info("Step B: AI file is empty — scaffold only")
         return scaffold_df
 
-    # Build master_symbol lookup from radicals
-    rid_to_ms: dict[int, str] = dict(
-        zip(radicals_df["id"].astype(int), radicals_df["master_symbol"], strict=True)
-    )
-
     # Key AI rows by (master_symbol, lang_code)
     ai_lookup: dict[tuple[str, str], dict] = {}
     for _, row in ai_df.iterrows():
@@ -151,9 +144,8 @@ def _merge_ai_content(
     overrides = 0
 
     for idx, row in result.iterrows():
-        rid = int(row["radical_id"])
+        ms = row["master_symbol"]
         lang = row["lang_code"]
-        ms = rid_to_ms.get(rid, "")
         ai_row = ai_lookup.get((ms, lang))
         if ai_row is None:
             continue
@@ -193,15 +185,11 @@ def _merge_ai_content(
     return result
 
 
-def _emit_gap_warnings(df: pd.DataFrame, radicals_df: pd.DataFrame, warnings: list[dict]) -> None:
+def _emit_gap_warnings(df: pd.DataFrame, warnings: list[dict]) -> None:
     """Step C: Warn about rows with empty name or system_mnemonic after merge."""
-    rid_to_ms: dict[int, str] = dict(
-        zip(radicals_df["id"].astype(int), radicals_df["master_symbol"], strict=True)
-    )
     for _, row in df.iterrows():
-        rid = int(row["radical_id"])
+        ms = row["master_symbol"]
         lang = row["lang_code"]
-        ms = rid_to_ms.get(rid, f"rid={rid}")
 
         if not str(row["name"]).strip():
             warnings.append({
@@ -221,7 +209,6 @@ def _emit_gap_warnings(df: pd.DataFrame, radicals_df: pd.DataFrame, warnings: li
 
 def _check_radical_kanji_consistency(
     df: pd.DataFrame,
-    radicals_df: pd.DataFrame,
     csv_dir: Path,
     warnings: list[dict],
 ) -> None:
@@ -240,15 +227,13 @@ def _check_radical_kanji_consistency(
     kanji_df = pd.read_csv(kanji_path, dtype=str, keep_default_na=False)
     kanji_i18n_df = pd.read_csv(kanji_i18n_path, dtype=str, keep_default_na=False)
 
-    # Build character → kanji_id
-    char_to_kid: dict[str, str] = dict(
-        zip(kanji_df["character"], kanji_df["id"], strict=True)
-    )
+    # Build set of known kanji characters
+    kanji_chars: set[str] = set(kanji_df["character"])
 
-    # Build (kanji_id, lang_code) → first meaning
-    kid_lang_to_meaning: dict[tuple[str, str], str] = {}
+    # Build (character, lang_code) → first meaning
+    char_lang_to_meaning: dict[tuple[str, str], str] = {}
     for _, row in kanji_i18n_df.iterrows():
-        kid = str(row["kanji_id"])
+        char = str(row["character"])
         lang = str(row["lang_code"])
         meanings_raw = str(row.get("meanings", "[]")).strip()
         try:
@@ -256,27 +241,20 @@ def _check_radical_kanji_consistency(
         except (json.JSONDecodeError, TypeError):
             meanings_list = []
         if meanings_list:
-            kid_lang_to_meaning[(kid, lang)] = meanings_list[0]
-
-    # Build radical master_symbol → radical_id
-    rid_to_ms: dict[int, str] = dict(
-        zip(radicals_df["id"].astype(int), radicals_df["master_symbol"], strict=True)
-    )
+            char_lang_to_meaning[(char, lang)] = meanings_list[0]
 
     # Check EN rows only
     en_rows = df[df["lang_code"] == "en"]
     for _, row in en_rows.iterrows():
-        rid = int(row["radical_id"])
-        ms = rid_to_ms.get(rid, "")
+        ms = row["master_symbol"]
         radical_name = str(row["name"]).strip()
         if not radical_name or not ms:
             continue
 
-        kid = char_to_kid.get(ms)
-        if kid is None:
+        if ms not in kanji_chars:
             continue
 
-        kanji_meaning = kid_lang_to_meaning.get((kid, "en"), "")
+        kanji_meaning = char_lang_to_meaning.get((ms, "en"), "")
         if not kanji_meaning:
             continue
 
@@ -319,13 +297,13 @@ def create_radical_i18n(
     scaffold_df = _build_scaffold(radicals_df, en_names, visual_rules)
 
     # Step B: AI merge
-    result_df = _merge_ai_content(scaffold_df, radicals_df, ai_dir, en_names, warnings)
+    result_df = _merge_ai_content(scaffold_df, ai_dir, en_names, warnings)
 
     # Step C: gap warnings
-    _emit_gap_warnings(result_df, radicals_df, warnings)
+    _emit_gap_warnings(result_df, warnings)
 
     # Step D: radical-kanji consistency
-    _check_radical_kanji_consistency(result_df, radicals_df, csv_dir, warnings)
+    _check_radical_kanji_consistency(result_df, csv_dir, warnings)
 
     # Write output CSV
     write_csv_atomic(result_df, csv_dir / "radical_i18n.csv")

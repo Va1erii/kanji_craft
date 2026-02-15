@@ -505,7 +505,7 @@ def _step3_reading_rows(
     log.info("Step 3: Creating reading rows")
 
     if vocab_df.empty:
-        return pd.DataFrame(columns=["id", "vocabulary_id", "reading", "reading_type", "priority"])
+        return pd.DataFrame(columns=["vocabulary_id", "reading", "reading_type", "priority"])
 
     # Build ent_seq → jmdict row lookup
     jmdict_lookup: dict[int, pd.Series] = {}
@@ -576,15 +576,10 @@ def _step3_reading_rows(
             r["priority"] = "primary"
             vocab_with_primary.add(r["vocabulary_id"])
 
-    # Assign sequential IDs
-    for i, r in enumerate(rows, start=1):
-        r["id"] = i
-
     df = pd.DataFrame(rows)
     if not df.empty:
-        df["id"] = df["id"].astype("int64")
         df["vocabulary_id"] = df["vocabulary_id"].astype("int64")
-        df = df[["id", "vocabulary_id", "reading", "reading_type", "priority"]]
+        df = df[["vocabulary_id", "reading", "reading_type", "priority"]]
 
     log.info("Step 3: %d reading rows", len(df))
     return df
@@ -707,8 +702,8 @@ def _step5_sentences(
     """
     log.info("Step 5: Creating sentence rows")
 
-    sent_cols = ["id", "vocabulary_id", "original_text"]
-    sent_i18n_cols = ["vocabulary_sentence_id", "lang_code", "sentence_translated"]
+    sent_cols = ["vocabulary_id", "original_text"]
+    sent_i18n_cols = ["vocabulary_id", "lang_code", "sentence_translated"]
 
     if vocab_df.empty or examples_df.empty:
         return (
@@ -737,14 +732,12 @@ def _step5_sentences(
 
     for ent_seq in sorted(best.keys()):
         ja, en = best[ent_seq]
-        sent_id = len(sent_rows) + 1
         sent_rows.append({
-            "id": sent_id,
             "vocabulary_id": ent_seq,
             "original_text": ja,
         })
         sent_i18n_rows.append({
-            "vocabulary_sentence_id": sent_id,
+            "vocabulary_id": ent_seq,
             "lang_code": "en",
             "sentence_translated": en,
         })
@@ -753,13 +746,11 @@ def _step5_sentences(
     sent_i18n_df = pd.DataFrame(sent_i18n_rows)
 
     if not sent_df.empty:
-        sent_df["id"] = sent_df["id"].astype("int64")
         sent_df["vocabulary_id"] = sent_df["vocabulary_id"].astype("int64")
         sent_df = sent_df[sent_cols]
 
     if not sent_i18n_df.empty:
-        col = "vocabulary_sentence_id"
-        sent_i18n_df[col] = sent_i18n_df[col].astype("int64")
+        sent_i18n_df["vocabulary_id"] = sent_i18n_df["vocabulary_id"].astype("int64")
         sent_i18n_df = sent_i18n_df[sent_i18n_cols]
 
     log.info("Step 5: %d sentences", len(sent_df))
@@ -780,12 +771,10 @@ def _step6_kanji_links(
     log.info("Step 6: Creating kanji links")
 
     if vocab_df.empty:
-        return pd.DataFrame(columns=["vocabulary_id", "kanji_id", "position"])
+        return pd.DataFrame(columns=["vocabulary_id", "character", "position"])
 
-    # Build character → kanji_id lookup
-    char_to_id: dict[str, int] = {}
-    for _, krow in kanji_df.iterrows():
-        char_to_id[krow["character"]] = int(krow["id"])
+    # Build set of known kanji characters
+    known_kanji: set[str] = set(kanji_df["character"]) if not kanji_df.empty else set()
 
     rows: list[dict] = []
 
@@ -798,11 +787,10 @@ def _step6_kanji_links(
         for pos, ch in enumerate(word):
             if not _is_kanji_char(ch):
                 continue
-            kanji_id = char_to_id.get(ch)
-            if kanji_id is not None:
+            if ch in known_kanji:
                 rows.append({
                     "vocabulary_id": vid,
-                    "kanji_id": kanji_id,
+                    "character": ch,
                     "position": pos,
                 })
             else:
@@ -817,9 +805,8 @@ def _step6_kanji_links(
     df = pd.DataFrame(rows)
     if not df.empty:
         df["vocabulary_id"] = df["vocabulary_id"].astype("int64")
-        df["kanji_id"] = df["kanji_id"].astype("int64")
         df["position"] = df["position"].astype("int64")
-        df = df[["vocabulary_id", "kanji_id", "position"]]
+        df = df[["vocabulary_id", "character", "position"]]
 
     log.info("Step 6: %d kanji links", len(df))
     return df
@@ -865,7 +852,7 @@ def extract_vocabulary(
     if kanji_csv_path.exists() and kanji_csv_path.stat().st_size > 0:
         kanji_df = pd.read_csv(kanji_csv_path)
     else:
-        kanji_df = pd.DataFrame(columns=["id", "character", "min_jlpt_level"])
+        kanji_df = pd.DataFrame(columns=["character", "min_jlpt_level"])
         log.warning("kanji.csv not found, kanji links will be empty")
 
     log.info(

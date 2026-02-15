@@ -303,11 +303,10 @@ def scan_and_register(
     # Build radicals DataFrame
     vr = visual_rules or {}
     radical_rows: list[dict] = []
-    master_to_id: dict[str, int] = {}
-    for i, (master, info) in enumerate(sorted(radicals_info.items()), start=1):
-        master_to_id[master] = i
+    registered_masters: set[str] = set()
+    for master, info in sorted(radicals_info.items()):
+        registered_masters.add(master)
         radical_rows.append({
-            "id": i,
             "master_symbol": info["master_symbol"],
             "is_official": info["is_official"],
             "stroke_count": info["stroke_count"],
@@ -322,12 +321,10 @@ def scan_and_register(
 
     radicals_df = pd.DataFrame(radical_rows)
     if not radicals_df.empty:
-        radicals_df["id"] = radicals_df["id"].astype("int64")
         radicals_df["stroke_count"] = radicals_df["stroke_count"].astype("int64")
 
     # Build radical_variants DataFrame
     variant_rows: list[dict] = []
-    variant_id = 1
 
     # Track which masters have variant shapes (not self)
     masters_with_variants: set[str] = set()
@@ -336,27 +333,21 @@ def scan_and_register(
             masters_with_variants.add(master)
 
     for (master, shape), positions in sorted(variants_info.items()):
-        if master not in master_to_id:
+        if master not in registered_masters:
             continue
 
-        radical_id = master_to_id[master]
         sorted_positions = json.dumps(sorted(positions))
 
         variant_rows.append({
-            "id": variant_id,
-            "radical_id": radical_id,
+            "master_symbol": master,
             "shape": shape,
             "positions": sorted_positions,
             "svg_file_name": None,
             "svg_file_url": None,
             "svg_hash": None,
         })
-        variant_id += 1
 
     variants_df = pd.DataFrame(variant_rows)
-    if not variants_df.empty:
-        variants_df["id"] = variants_df["id"].astype("int64")
-        variants_df["radical_id"] = variants_df["radical_id"].astype("int64")
 
     # --- Visual group validation ---
     # Check that every visual_group value has 2+ members (catches typos)
@@ -382,7 +373,7 @@ def scan_and_register(
 
     # Warn about visual_rules entries that don't match any registered radical
     for symbol in sorted(vr):
-        if symbol not in master_to_id:
+        if symbol not in registered_masters:
             warnings.append({
                 "severity": "medium",
                 "phase": "2.1",
@@ -393,7 +384,7 @@ def scan_and_register(
     # --- Visual ambiguity check ---
     shape_to_masters: dict[str, set[str]] = {}
     for (master, shape), _positions in variants_info.items():
-        if master not in master_to_id:
+        if master not in registered_masters:
             continue
         if shape not in shape_to_masters:
             shape_to_masters[shape] = set()

@@ -98,6 +98,19 @@ def map_position(kvg_position: str | None) -> str:
     return "unknown"
 
 
+def map_radical_type(kvg_radical: str | None) -> str:
+    """Map KanjiVG radical attribute to RadicalType enum value.
+
+    general→general, tradit→tradit, nelson→nelson, jis→jis, None→component.
+    """
+    if kvg_radical is None:
+        return "component"
+    if kvg_radical in {"general", "tradit", "nelson", "jis"}:
+        return kvg_radical
+    log.warning("Unknown KanjiVG radical type '%s', mapping to 'component'", kvg_radical)
+    return "component"
+
+
 def resolve_master_symbol(element: str, variant: bool, original: str | None) -> str:
     """Resolve master symbol: variant=True + original → original; else → element."""
     if variant and original:

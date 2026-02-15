@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.enrichers.ph3_1_logic_hints import refine_logic_hints
+from src.enrichers.ph3_2_radical_i18n import create_radical_i18n
 from src.extractors.shared import validate_all_manual_files
 
 log = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ log = logging.getLogger(__name__)
 PARQUET_DIR = Path(__file__).resolve().parent.parent / "data" / "parquet"
 CSV_DIR = Path(__file__).resolve().parent.parent / "data" / "csv"
 WARNINGS_DIR = CSV_DIR / "warnings"
+AI_DIR = Path(__file__).resolve().parent.parent / "data" / "ai"
 
 
 def main() -> None:
@@ -57,7 +59,23 @@ def main() -> None:
         log.exception("Failed during Step 3.1 logic hint refinement")
         raise
 
-    # TODO: Step 2 — Radical i18n creation (Layer 1 mnemonics)
+    # Step 2: Radical i18n creation (scaffold + AI merge)
+    step_start = time.perf_counter()
+    try:
+        result = create_radical_i18n(PARQUET_DIR, CSV_DIR, WARNINGS_DIR, AI_DIR)
+        elapsed = time.perf_counter() - step_start
+        total = len(result["radical_i18n"])
+        named = (result["radical_i18n"]["name"].str.strip() != "").sum()
+        log.info(
+            "  3.2 Radical i18n: done in %.1fs (%d rows, %d with names)",
+            elapsed,
+            total,
+            named,
+        )
+    except Exception:
+        log.exception("Failed during Step 3.2 radical i18n creation")
+        raise
+
     # TODO: Step 3 — Kanji i18n enrichment (Layer 2 mnemonics)
     # TODO: Step 4 — Vocabulary i18n enrichment (Layer 3 mnemonics)
     # TODO: Step 5 — Sentence furigana annotation (SudachiPy + AI)

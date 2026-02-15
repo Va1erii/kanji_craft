@@ -4,9 +4,14 @@
 
 SVG Processing (pipeline Phase 2.4) populates SVG-related fields on `radicals.csv`, `radical_variants.csv`, and `kanji.csv`. Each entity that represents a visible character needs an SVG illustration from the KanjiVG archive for stroke-order display in the client app.
 
+The phase runs in two passes:
+
+1. **Pass 1 — ZIP matching:** Match entities to standalone SVG files from the KanjiVG ZIP archive.
+2. **Pass 2 — Component extraction:** For radicals/variants still missing an SVG after Pass 1, extract stroke paths from a parent kanji SVG that contains the radical as a component.
+
 **Core principle:** Content-based hashing for delta sync. Each SVG file is hashed (SHA-256) so that the upload phase (Phase 4) can compare hashes against Remote storage and upload only changed files. Identical bytes across KanjiVG versions produce the same hash — unchanged characters are never re-uploaded.
 
-**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on output CSVs. It also saves matched SVG files to `data/svg/` for Phase 4 batch upload to Remote Supabase, and uploads to Local Supabase Storage for dev verification.
+**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on output CSVs. It also saves SVG files to `data/svg/` (matched) and `data/svg/extracted/` (component-extracted) for Phase 4 batch upload to Remote Supabase, and uploads to Local Supabase Storage for dev verification.
 
 ## Prerequisites
 
@@ -15,44 +20,75 @@ SVG Processing (pipeline Phase 2.4) populates SVG-related fields on `radicals.cs
 | Radical extraction (Phase 2.1, Passes 1–2) | `radicals.csv` and `radical_variants.csv` must exist |
 | Kanji composition (Phase 2.2, Steps 1–3) | `kanji.csv` rows must exist |
 | KanjiVG ZIP from sources | Source archive: `kanjivg-{version}-main.zip` |
+| KanjiVG Parquet from Phase 1 | `kanjivg.parquet` — component trees for parent kanji lookup (Pass 2) |
 
-The phase reads from output CSVs and the ZIP archive. It updates only SVG columns on those same CSVs.
+The phase reads from output CSVs, the ZIP archive, and the KanjiVG Parquet. It updates only SVG columns on those same CSVs.
 
 ## Algorithm
 
-### Step 1: Extract SVG Files
+### Pass 1: ZIP Matching
 
-Unzip the `kanjivg-{version}-main.zip` archive into a local working directory. Each file in the archive is a standalone SVG for one character, named by Unicode code point (see [File Naming](#file-naming)).
+#### Step 1: Build SVG Map
 
-Build a lookup map: `Map<String, File>` keyed by filename (e.g. `06c34.svg` → file handle). This map is used in Step 3 to match entities to their SVG files.
+Read the `kanjivg-{version}-main.zip` archive in memory. Each file in the archive is a standalone SVG for one character, named by Unicode code point (see [File Naming](#file-naming)).
 
-### Step 2: Compute Hashes
-
-For each extracted SVG file, compute `SHA-256` of the raw file bytes and store the hex digest as a string.
+Build a lookup map: `Map<kvg_filename, (bytes, sha256)>` keyed by KanjiVG filename (e.g. `06c34.svg` → (raw bytes, hex digest)). Hash is computed inline as `SHA-256` of the raw file bytes.
 
 ```
 SHA-256(raw bytes of 06c34.svg) → "a1b2c3d4..."  (64-char hex string)
 ```
 
-Build a hash map: `Map<String, String>` keyed by filename → hex digest.
+#### Step 2: Match Entities
 
-### Step 3: Update Output CSVs
+For each entity type, resolve the character to its SVG filename, look up in the map, and update the CSV row.
 
-For each entity type, resolve the character to its SVG filename, look up the hash, construct the URL, and update the CSV row.
-
-**3a. Radicals:** For each `radicals.csv` row:
+**2a. Radicals:** For each `radicals.csv` row:
 1. Convert `master_symbol` to its Unicode code point → filename (see [File Naming](#file-naming)).
 2. Look up the filename in the SVG map from Step 1.
 3. If found, set `svg_file_name`, `svg_hash`, `svg_file_url`.
-4. If not found, leave SVG fields empty and emit a warning.
+4. If not found, leave SVG fields empty (candidate for Pass 2).
 
-**3b. Radical variants:** For each `radical_variants.csv` row:
+**2b. Radical variants:** For each `radical_variants.csv` row:
 1. Convert `shape` to its Unicode code point → filename.
 2. Look up and populate as above.
 
-**3c. Kanji:** For each `kanji.csv` row:
+**2c. Kanji:** For each `kanji.csv` row:
 1. Convert `character` to its Unicode code point → filename.
 2. Look up and populate as above.
+
+### Pass 2: Component Extraction
+
+After Pass 1, some radicals/variants have no standalone SVG in the KanjiVG archive. Many of these exist as component elements inside parent kanji SVGs — their stroke paths are embedded in `<g kvg:element="...">` groups. Pass 2 extracts these strokes to create standalone SVGs.
+
+**Only radicals and radical variants are candidates for extraction.** Kanji without a standalone SVG are never extracted from other kanji.
+
+#### Step 3: Find Parent Kanji
+
+For each radical/variant still missing SVG fields after Pass 1:
+
+1. Search `kanjivg.parquet` component trees for any kanji whose `component_tree` contains the target character as an `element` value.
+2. Select the best parent — prefer one where the target is a direct child (not deeply nested) and that has a standalone SVG in the ZIP.
+3. If no parent found, the radical truly has no SVG source — emit a high-severity warning.
+
+#### Step 4: Extract Strokes
+
+For each matched parent kanji:
+
+1. Parse the parent's SVG bytes from the ZIP.
+2. Locate the `<g>` group with `kvg:element` matching the target character.
+3. Extract all `<path>` elements within that group (these are the strokes for the radical).
+4. Re-wrap into a standalone SVG with a viewBox fitted to the extracted paths' bounding area.
+5. Compute SHA-256 of the generated SVG bytes.
+6. Set `svg_file_name`, `svg_hash`, `svg_file_url` on the CSV row (same naming/URL rules as Pass 1).
+7. Save to `data/svg/extracted/radicals/` (separate folder for admin visual verification).
+
+#### Step 5: Update Warnings
+
+After Pass 2, rebuild the warnings list:
+
+- Radicals/variants that were **extracted** in Pass 2: emit a **low**-severity `"extracted"` warning so the admin knows which SVGs are component-extracted (not from standalone files). These may need visual review.
+- Radicals/variants still **missing** after both passes: emit a **high**-severity warning (JLPT-mapped) or **low**-severity warning (non-JLPT), same as before.
+- Kanji missing SVGs: unchanged from Pass 1 (high/low based on JLPT mapping).
 
 ## File Naming
 
@@ -122,19 +158,36 @@ Each variant has its own SVG showing the shape as it appears at a specific posit
 - URL: `{supabase_url}/storage/v1/object/public/svg/04f11.svg`
 - Updated fields on `kanji.csv`: `svg_file_name = '04f11.svg'`, `svg_hash = 'c3d4...'`, `svg_file_url = '{url}'`
 
+### 㐭 (Radical — Component-Extracted, Pass 2)
+
+- `master_symbol` = 㐭, code point = U+342D
+- No standalone SVG in KanjiVG ZIP (Pass 1 misses)
+- Pass 2: found as `kvg:element="㐭"` in parent kanji 亶 (`04eb6.svg`) — 8 strokes (亠 + 回)
+- Extract `<g>` group strokes → re-wrap into standalone SVG → compute SHA-256
+- Filename: `342d.svg` (same naming rules)
+- Saved to: `data/svg/extracted/radicals/342d.svg`
+- URL: `{supabase_url}/storage/v1/object/public/svg/radicals/342d.svg` (same bucket)
+- Warning: low severity — "Extracted SVG for radical '㐭' from parent 亶"
+
 ## Disk Output
 
-Matched SVG files are saved to `data/svg/` alongside `data/csv/`. The folder structure mirrors the Supabase Storage bucket layout:
+SVG files are saved to `data/svg/` alongside `data/csv/`. The folder structure separates ZIP-matched files from component-extracted files:
 
 ```
 data/svg/
-  radicals/    # Radical + radical variant SVGs (e.g. 4e00.svg, 6c35.svg)
-  kanji/       # Kanji SVGs (e.g. 4f11.svg)
+  radicals/              # Pass 1: ZIP-matched radical + variant SVGs (e.g. 4e00.svg)
+  kanji/                 # Pass 1: ZIP-matched kanji SVGs (e.g. 4f11.svg)
+  extracted/
+    radicals/            # Pass 2: Component-extracted radical SVGs (e.g. 342d.svg)
 ```
+
+The `extracted/` subfolder exists specifically for admin visual verification — the admin can browse these files in an SVG viewer to confirm the extraction produced correct glyphs. Broken extractions can be identified and the extraction logic updated.
+
+**Upload destination:** Both `data/svg/radicals/` and `data/svg/extracted/radicals/` upload to the same `radicals/` folder in the Supabase Storage `svg` bucket. Same naming convention, same hash rules, same URL pattern. From the client app's perspective there is no distinction.
 
 **Idempotency:** Files are skipped if already on disk with the same size. Re-running the phase does not re-write unchanged files.
 
-**Purpose:** This folder is the staging area for Phase 4, which batch-uploads SVGs to Remote Supabase Storage. The folder is gitignored (`pipeline/data/.gitignore`).
+**Purpose:** These folders are the staging area for Phase 4, which batch-uploads SVGs to Remote Supabase Storage. The entire `data/svg/` tree is gitignored (`pipeline/data/.gitignore`).
 
 ## Local Supabase Upload
 
@@ -153,11 +206,14 @@ Warnings are written to `data/csv/warnings/ph2_4_warnings.csv` with columns: `se
 
 | Condition | Severity | Rationale |
 |---|---|---|
+| Extracted SVG for radical/variant (Pass 2) | low | SVG was component-extracted, not from standalone file — admin should visually verify |
 | Missing SVG for JLPT-mapped kanji | high | Learner-facing content gap — kanji in a JLPT level will lack stroke-order display |
-| Missing SVG for JLPT-mapped radical/variant | high | Learner-facing content gap — radical in a JLPT study path will lack illustration |
+| Missing SVG for JLPT-mapped radical/variant (after both passes) | high | No standalone SVG and no parent kanji to extract from |
 | Missing SVG for non-JLPT kanji | low | Informational — may be a rare or ungraded character |
-| Missing SVG for non-JLPT radical/variant | low | Informational — radical only appears in ungraded kanji |
+| Missing SVG for non-JLPT radical/variant (after both passes) | low | Informational — radical only appears in ungraded kanji |
 | SVG file in archive with no matching entity | low | Expected for unused characters — KanjiVG has broader coverage than our entity set |
+
+The "extracted" warnings are important for tracking which SVGs are not from the original KanjiVG archive. If an extracted SVG turns out to be visually broken, the admin can identify it from this list and update the extraction logic.
 
 **JLPT presence detection:**
 - **Kanji:** Checked via `kanji.csv` `min_jlpt_level` being non-empty.
@@ -168,7 +224,9 @@ Warnings are written to `data/csv/warnings/ph2_4_warnings.csv` with columns: `se
 
 ### Missing SVG for a character
 
-If an entity's character has no matching SVG file in the archive, the SVG fields (`svg_file_name`, `svg_hash`, `svg_file_url`) remain empty in the CSV. A warning is emitted (severity depends on JLPT mapping — see table above). The entity row is still valid and uploads normally (SVG fields are nullable in Supabase). The client app handles missing SVGs gracefully (e.g. render the character as plain text without stroke-order illustration).
+For radicals/variants, Pass 2 attempts component extraction before giving up. If neither pass produces an SVG, the fields (`svg_file_name`, `svg_hash`, `svg_file_url`) remain empty in the CSV. A warning is emitted (severity depends on JLPT mapping — see warnings table). The entity row is still valid and uploads normally (SVG fields are nullable in Supabase). The client app handles missing SVGs gracefully (e.g. render the character as plain text without stroke-order illustration).
+
+For kanji, only Pass 1 (ZIP matching) is attempted — kanji are never extracted from other kanji.
 
 ### SVG file with no matching entity
 
@@ -190,11 +248,11 @@ KanjiVG files are keyed by a single Unicode code point. All kanji, radicals, and
 
 | CSV | Fields Updated | Source |
 |---|---|---|
-| `radicals.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `master_symbol` → code point → SVG file |
-| `radical_variants.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `shape` → code point → SVG file |
-| `kanji.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | `character` → code point → SVG file |
+| `radicals.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | Pass 1: ZIP match on `master_symbol`; Pass 2: component extraction |
+| `radical_variants.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | Pass 1: ZIP match on `shape`; Pass 2: component extraction |
+| `kanji.csv` | `svg_file_name`, `svg_file_url`, `svg_hash` | Pass 1 only: ZIP match on `character` |
 
-SVG fields are **nullable** in both CSVs and the Supabase schema. A kanji or radical may exist in KANJIDIC without a corresponding KanjiVG entry — the row is still valid, it just lacks stroke-order illustration. The client app handles missing SVGs gracefully (plain text fallback). High-severity warnings flag JLPT-mapped entities with missing SVGs for admin review.
+SVG fields are **nullable** in both CSVs and the Supabase schema. A kanji or radical may exist in KANJIDIC without a corresponding KanjiVG entry — the row is still valid, it just lacks stroke-order illustration. The client app handles missing SVGs gracefully (plain text fallback). High-severity warnings flag entities still missing SVGs after both passes.
 
 ## Hash Stability
 

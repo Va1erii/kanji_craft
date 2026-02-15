@@ -119,9 +119,11 @@ kanji_craft/
     data/                           # Generated artifacts (gitignored)
       parquet/                      # Phase 1 output
       csv/                          # Phase 2 output (+ Phase 3 enrichment)
-      svg/                          # Phase 2.4 output: matched SVG files for Phase 4 upload
-        radicals/                   # Radical + variant SVGs
-        kanji/                      # Kanji SVGs
+      svg/                          # Phase 2.4 output: SVG files for Phase 4 upload
+        radicals/                   # Pass 1: ZIP-matched radical + variant SVGs
+        kanji/                      # Pass 1: ZIP-matched kanji SVGs
+        extracted/
+          radicals/                 # Pass 2: Component-extracted radical SVGs
 ```
 
 - **`sources/`** — immutable, versioned snapshots of external data. Read-only for the pipeline.
@@ -229,16 +231,19 @@ See [kanji_component.md](../domain/kanji_component.md), [ph2_3_component_linking
 
 ### 2.4 SVG Processing
 
-Reads the `kanjivg-{version}-main.zip` archive + radicals/kanji from prior steps.
+Reads the `kanjivg-{version}-main.zip` archive + `kanjivg.parquet` + radicals/kanji from prior steps. Runs in two passes:
 
-1. **Extract SVGs:** Unzip individual SVG files from the archive.
-2. **Compute `svg_hash`:** SHA-256 of raw file bytes (hex digest). Content-based — identical bytes always produce the same hash.
-3. **Populate fields:** For each radical, radical_variant, and kanji row, set:
-   - `svg_file_name` — Unicode hex filename, e.g. `06c34.svg`
-   - `svg_hash` — SHA-256 hex digest
-   - `svg_file_url` — constructed from bucket URL pattern: `{supabase_url}/storage/v1/object/public/svg/{svg_file_name}`
-4. **Save to disk:** Write matched SVGs to `data/svg/{radicals,kanji}/` for Phase 4 batch upload to Remote Supabase.
-5. **Local upload:** Upload to Local Supabase Storage (when env vars set) for dev verification.
+**Pass 1 — ZIP matching:**
+1. **Build SVG map:** Read ZIP archive, compute SHA-256 hash per file.
+2. **Match entities:** For each radical, radical_variant, and kanji row, look up the character's SVG by Unicode code point filename.
+3. **Populate fields:** Set `svg_file_name`, `svg_hash`, `svg_file_url`.
+4. **Save to disk:** Write matched SVGs to `data/svg/{radicals,kanji}/`.
+
+**Pass 2 — Component extraction** (radicals/variants only):
+5. **Extract missing:** For radicals still missing SVGs, find a parent kanji SVG containing the radical as a `kvg:element` component, extract the stroke paths, and generate a standalone SVG.
+6. **Save extracted:** Write to `data/svg/extracted/radicals/` (separate folder for admin visual verification). Same naming, hash, and URL rules — uploads to the same `radicals/` bucket.
+
+**Local upload:** Upload to Local Supabase Storage (when env vars set) for dev verification.
 
 Updates `radicals.csv`, `radical_variants.csv`, and `kanji.csv` with SVG fields.
 
@@ -342,7 +347,7 @@ Tables are uploaded in strict order to satisfy foreign key constraints:
 Before uploading database rows, upload changed SVG files from `data/svg/` to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
 
 1. **Diff by hash:** For each radical, radical_variant, and kanji row being uploaded, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
-2. **Upload changed:** Only upload SVGs where the hash differs or the remote row is new. Read the file from `data/svg/{radicals,kanji}/` and upload via `supabase.storage.from('svg').upload()` with upsert mode.
+2. **Upload changed:** Only upload SVGs where the hash differs or the remote row is new. Read the file from `data/svg/{radicals,kanji}/` or `data/svg/extracted/radicals/` and upload via `supabase.storage.from('svg').upload()` with upsert mode. Both sources upload to the same bucket folders.
 3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed.
 
 **Failure handling:** If an SVG upload fails, the row is skipped and logged. The database row is not uploaded without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.

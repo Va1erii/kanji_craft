@@ -260,10 +260,10 @@ The Tanos JLPT vocabulary list maps words directly to N5–N1 levels. If the wor
 For words not in `jlpt_vocab.parquet`, derive the level from constituent kanji:
 
 ```
-min_jlpt_level = MAX(kanji.min_jlpt_level) across all kanji in the word
+min_jlpt_level = MIN(kanji.min_jlpt_level) across all kanji in the word
 ```
 
-**Why MAX, not MIN:** JLPT levels are inverted — N5 = 5 (easiest), N1 = 1 (hardest). `MAX` returns the **easiest** level among the word's kanji, matching the level at which the hardest kanji first appears. Always comment the intent in implementation code (`// N5=5 easiest, N1=1 hardest; MAX returns earliest encounter`).
+**Why MIN:** JLPT levels are inverted — N5 = 5 (easiest), N1 = 1 (hardest). The word is gated by its **hardest** kanji (lowest number). `MIN` returns that gating level. For grades (1 = easiest, 6 = hardest), the analogous operation would be `MAX`.
 
 **Example:** 大変 (Tough). 大 is N5, 変 is N3. Fallback `min_jlpt_level = 3` (N3) — the word is gated by the N3 kanji.
 

@@ -17,6 +17,7 @@ from src.extractors.ph2_1_radicals import extract_radicals
 from src.extractors.ph2_2_kanji import extract_kanji
 from src.extractors.ph2_3_components import extract_components
 from src.extractors.ph2_4_svg import extract_svg
+from src.extractors.ph2_5_vocabulary import extract_vocabulary
 
 log = logging.getLogger(__name__)
 
@@ -108,8 +109,24 @@ def main() -> None:
         log.exception("Failed during Phase 2.4 SVG processing")
         raise
 
-    # TODO: Implement remaining extraction sub-phases
-    #   2.5 Vocabulary extraction (vocabulary*.csv)
+    # 2.5 Vocabulary extraction (vocabulary*.csv)
+    step_start = time.perf_counter()
+    try:
+        vocab_result = extract_vocabulary(PARQUET_DIR, CSV_DIR, WARNINGS_DIR)
+        elapsed = time.perf_counter() - step_start
+        log.info(
+            "  2.5 Vocabulary extraction: done in %.1fs"
+            " (%d vocab, %d readings, %d i18n, %d kanji, %d sent)",
+            elapsed,
+            len(vocab_result["vocabulary"]),
+            len(vocab_result["vocabulary_readings"]),
+            len(vocab_result["vocabulary_i18n"]),
+            len(vocab_result["vocabulary_kanji"]),
+            len(vocab_result["vocabulary_sentences"]),
+        )
+    except Exception:
+        log.exception("Failed during Phase 2.5 vocabulary extraction")
+        raise
 
     elapsed = time.perf_counter() - start
     log.info("Phase 2 complete in %.1fs", elapsed)

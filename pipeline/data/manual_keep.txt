@@ -53,3 +53,13 @@
 夾  # KYOU: 狭 挟
 关  # KAN: 関 送 咲
 劦  # Three powers: 協 脅
+
+# --- WaniKani cross-reference ---
+
+兀  # Pi/legs: 光 焼 輝 耀 微 暁
+勿  # Wing/not: 物 場 湯 陽 易 傷 腸
+苟  # Carelessly: 敬 警 驚
+弗  # Dollar/not: 仏 沸 費
+丬  # Icicle (爿 variant): 壮 将 状
+离  # Leave: 璃 離
+禹  # Yu the Great: 嘱 属

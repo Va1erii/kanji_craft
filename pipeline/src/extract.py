@@ -11,9 +11,12 @@ import logging
 import time
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from src.extractors.ph2_1_radicals import extract_radicals
 from src.extractors.ph2_2_kanji import extract_kanji
 from src.extractors.ph2_3_components import extract_components
+from src.extractors.ph2_4_svg import extract_svg
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +26,7 @@ WARNINGS_DIR = CSV_DIR / "warnings"
 
 
 def main() -> None:
+    load_dotenv()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -85,8 +89,26 @@ def main() -> None:
         log.exception("Failed during Phase 2.3 component linking")
         raise
 
+    # 2.4 SVG processing (updates svg fields on radicals/variants/kanji)
+    step_start = time.perf_counter()
+    try:
+        svg_result = extract_svg(CSV_DIR, WARNINGS_DIR)
+        elapsed = time.perf_counter() - step_start
+        rad_svg = svg_result["radicals"]["svg_file_name"].notna().sum()
+        var_svg = svg_result["radical_variants"]["svg_file_name"].notna().sum()
+        kan_svg = svg_result["kanji"]["svg_file_name"].notna().sum()
+        log.info(
+            "  2.4 SVG processing: done in %.1fs (%d radicals, %d variants, %d kanji with SVG)",
+            elapsed,
+            rad_svg,
+            var_svg,
+            kan_svg,
+        )
+    except Exception:
+        log.exception("Failed during Phase 2.4 SVG processing")
+        raise
+
     # TODO: Implement remaining extraction sub-phases
-    #   2.4 SVG processing (updates svg fields on radicals/variants/kanji)
     #   2.5 Vocabulary extraction (vocabulary*.csv)
 
     elapsed = time.perf_counter() - start

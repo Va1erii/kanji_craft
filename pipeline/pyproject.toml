@@ -17,6 +17,9 @@ dependencies = [
 
     # Supabase upload (Phase 4)
     "supabase>=2.0",
+
+    # Environment variables
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]

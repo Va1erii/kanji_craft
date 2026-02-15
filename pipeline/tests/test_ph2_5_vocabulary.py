@@ -754,6 +754,60 @@ class TestFrequencyRank:
         rank = result["vocabulary"].iloc[0]["frequency_rank"]
         assert rank >= 100000  # synthetic offset
 
+    def test_headword_nf_used_not_alternate(self, tmp_path):
+        """nfXX from primary headword used, alternate spellings ignored."""
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                # Primary headword 歌 nf02, alternate 唄 nf16
+                k_ele=[
+                    _k_ele("歌", ke_pri=["ichi1", "news1", "nf02"]),
+                    _k_ele("唄", ke_pri=["news1", "nf16"]),
+                ],
+                r_ele=[_r_ele("うた", re_pri=["ichi1", "news1", "nf02", "nf16"])],
+                senses=[_sense(pos=["n"], glosses={"eng": ["song"]})],
+            )],
+        )
+        rank = result["vocabulary"].iloc[0]["frequency_rank"]
+        # Headword 歌 has nf02, so rank should be nf02 * 500 = 1000
+        assert rank == 1000
+
+    def test_multiple_nf_on_headword_uses_best(self, tmp_path):
+        """When headword + reading contribute different nfXX, use lowest (best)."""
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("飲む", ke_pri=["ichi1", "news2", "nf35"])],
+                # Reading collects nf35 from 飲む and nf40 from alternate 呑む
+                # but headword collection only takes k_ele[0] + r_ele[0]
+                r_ele=[_r_ele("のむ", re_pri=["ichi1", "news2", "nf35"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to drink"]})],
+            )],
+        )
+        rank = result["vocabulary"].iloc[0]["frequency_rank"]
+        assert rank == 17500  # nf35 * 500
+
+    def test_frequency_rank_deterministic(self, tmp_path):
+        """Frequency rank is identical across multiple runs."""
+        jmdict_rows = [_jmdict_row(
+            100,
+            k_ele=[
+                _k_ele("会う", ke_pri=["ichi1", "news2", "nf26"]),
+                _k_ele("遭う", ke_pri=["ichi1", "news2", "nf34"]),
+            ],
+            r_ele=[_r_ele("あう", re_pri=["ichi1", "news2", "nf26"])],
+            senses=[_sense(pos=["v1"], glosses={"eng": ["to meet"]})],
+        )]
+        ranks = []
+        for i in range(5):
+            run_dir = tmp_path / f"run{i}"
+            result = _run_extract(run_dir, jmdict_rows)
+            ranks.append(int(result["vocabulary"].iloc[0]["frequency_rank"]))
+        # All 5 runs must produce identical rank
+        assert len(set(ranks)) == 1, f"Non-deterministic ranks: {ranks}"
+
 
 # ---------------------------------------------------------------------------
 # Furigana (Step 2)

@@ -128,8 +128,11 @@ def _has_kanji(text: str) -> bool:
     return any(_is_kanji_char(ch) for ch in text)
 
 
-def _collect_priority_flags(k_ele: list[dict] | None, r_ele: list[dict]) -> set[str]:
-    """Collect all priority flags from kanji and reading elements."""
+def _collect_all_priority_flags(k_ele: list[dict] | None, r_ele: list[dict]) -> set[str]:
+    """Collect all priority flags from ALL kanji and reading elements.
+
+    Used for selection (does the entry have any priority flag?).
+    """
     flags: set[str] = set()
     if k_ele:
         for k in k_ele:
@@ -139,23 +142,37 @@ def _collect_priority_flags(k_ele: list[dict] | None, r_ele: list[dict]) -> set[
     return flags
 
 
+def _collect_headword_priority_flags(k_ele: list[dict] | None, r_ele: list[dict]) -> set[str]:
+    """Collect priority flags from the primary headword only.
+
+    Primary headword is k_ele[0] (if kanji exists) or r_ele[0] (kana-only).
+    Used for frequency rank computation — avoids mixing nfXX bands from
+    alternate spellings that have different corpus frequencies.
+    """
+    flags: set[str] = set()
+    if k_ele and k_ele[0].get("keb"):
+        flags.update(k_ele[0].get("ke_pri") or [])
+    flags.update(r_ele[0].get("re_pri") or [])
+    return flags
+
+
 def _compute_frequency_rank(pri_flags: set[str], is_jlpt: bool, jlpt_level: int | None) -> int:
-    """Compute frequency rank from priority flags.
+    """Compute frequency rank from primary headword priority flags.
 
     High priority (news1/ichi1/spec1) → 1-based rank.
     Mid priority (news2/ichi2/spec2) → offset.
     Low priority (gai1/gai2) → higher offset.
-    nfXX → use the nf band number.
+    nfXX → use the nf band number (lowest/best if multiple).
     JLPT-only → synthetic rank at 100000+ offset.
     """
-    # Extract nf value if present
-    nf_val = None
-    for f in pri_flags:
-        if f.startswith("nf") and f[2:].isdigit():
-            nf_val = int(f[2:])
+    # Extract best (lowest) nf value from headword flags
+    nf_vals = [
+        int(f[2:]) for f in pri_flags
+        if f.startswith("nf") and f[2:].isdigit()
+    ]
+    nf_val = min(nf_vals) if nf_vals else None
 
     if pri_flags & _HIGH_PRI:
-        # Use nf band if available, otherwise base rank
         return nf_val * 500 if nf_val else 1000
     if pri_flags & _MID_PRI:
         return nf_val * 500 if nf_val else 10000
@@ -396,23 +413,12 @@ def _step1_vocabulary_rows(
             word = r_ele[0]["reb"]
             reading = word
 
-        # Selection: priority flags or JLPT membership
-        pri_flags = _collect_priority_flags(k_ele, r_ele)
+        # Selection: any priority flag across ALL elements, or JLPT membership
+        all_pri_flags = _collect_all_priority_flags(k_ele, r_ele)
         in_jlpt_exact = (word, reading) in jlpt_vocab_lookup
         in_jlpt_expr = word in jlpt_expr_lookup
 
-        has_priority = bool(pri_flags - {"nf01", "nf02", "nf03", "nf04", "nf05",
-                                          "nf06", "nf07", "nf08", "nf09", "nf10",
-                                          "nf11", "nf12", "nf13", "nf14", "nf15",
-                                          "nf16", "nf17", "nf18", "nf19", "nf20",
-                                          "nf21", "nf22", "nf23", "nf24", "nf25",
-                                          "nf26", "nf27", "nf28", "nf29", "nf30",
-                                          "nf31", "nf32", "nf33", "nf34", "nf35",
-                                          "nf36", "nf37", "nf38", "nf39", "nf40",
-                                          "nf41", "nf42", "nf43", "nf44", "nf45",
-                                          "nf46", "nf47", "nf48"})
-        # Actually, nfXX IS a priority flag per spec. Simplify:
-        has_priority = bool(pri_flags)
+        has_priority = bool(all_pri_flags)
         in_jlpt = in_jlpt_exact or in_jlpt_expr
 
         if not has_priority and not in_jlpt:
@@ -459,8 +465,9 @@ def _step1_vocabulary_rows(
         # Dialect tags
         dialect_tags = _extract_dialect_tags(senses)
 
-        # Frequency rank
-        freq_rank = _compute_frequency_rank(pri_flags, in_jlpt, jlpt_level)
+        # Frequency rank (from primary headword flags only)
+        headword_pri = _collect_headword_priority_flags(k_ele, r_ele)
+        freq_rank = _compute_frequency_rank(headword_pri, in_jlpt, jlpt_level)
 
         vocab_rows.append({
             "id": ent_seq,

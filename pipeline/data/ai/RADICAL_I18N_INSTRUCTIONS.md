@@ -9,7 +9,6 @@ You are generating localized learning content for a Japanese kanji learning app.
 | Column | Description |
 |---|---|
 | `master_symbol` | The radical character (e.g. 水, 木, 人). **Read-only key.** |
-| `stroke_count` | Number of strokes. **Read-only context.** |
 | `en_name_seed` | English meaning from KANJIDIC dictionary. **Read-only context.** May be empty (41 radicals have no KANJIDIC entry), verbose, or multi-word — treat as a hint, not final. |
 | `lang_code` | `en`, `es`, or `ru`. **Read-only key.** |
 | `name` | **Fill this.** Localized name (single concrete noun). |
@@ -54,22 +53,32 @@ A short story (1-2 sentences) that teaches the radical's visual shape and connec
 
 ### Rules
 
-1. **GOLDEN RULE — Stroke count accuracy (STOP AND CHECK):** The mnemonic MUST match the `stroke_count` column. If `stroke_count` is 4, do not describe "three streams" or "five lines". Count the strokes in the `master_symbol` character and verify your description matches. Always describe the `master_symbol` form first; if the radical has a common variant (e.g. 水→氵), mention it in parentheses after.
-   - Bad: 水 (stroke_count=4) — "Three streams flowing down." (3 ≠ 4)
-   - Good: 水 (stroke_count=4) — "Four strokes splash outward like water from a fountain. (Variant 氵 appears as three drops on the left side.)"
-2. **Describe the physical shape** of the character. What does it look like? How do the strokes form the image?
-3. **Describe strokes as a drawing of the keyword** — not as abstract geometry. The reader should "see" the keyword object in the strokes.
+1. **Describe the `master_symbol` form first.** The mnemonic describes the master symbol — the canonical full form. If the radical has a well-known variant (e.g. 水→氵), mention it in parentheses after.
+2. **Fixed-position radicals — use position in the mnemonic.** Some radicals only ever appear in one specific position inside kanji. If a radical is locked to a single position, mention that position in the mnemonic — it's a reliable fact that helps the learner. Examples of fixed-position radicals:
+   - 氵 (Water variant): always on the **left** (hen)
+   - 亻 (Person variant): always on the **left** (hen)
+   - ⻖ (Mound): always on the **left** (hen)
+   - 灬 (Fire dots): always on the **bottom** (ashi)
+   - ⺤ (Claw): always on **top** (kanmuri)
+   - 飠 (Food): always on the **left** (hen)
+   - Good: 氵 — "Three drops of water on the left side, like rain running down a window."
+   - Bad: 氵 — "Three drops of water on top of a character." (wrong position)
+3. **Do NOT reference stroke counts.** Stroke count data may contain errors. Never say "three strokes", "four lines", or any specific number of strokes in a mnemonic. Describe the shape visually instead.
+   - Bad: "Four strokes splash outward like water."
+   - Good: "Strokes splash outward from a central stream, like a fountain."
+4. **Describe the physical shape** of the character. What does it look like? How do the strokes form the image?
+5. **Describe strokes as a drawing of the keyword** — not as abstract geometry. The reader should "see" the keyword object in the strokes.
    - Bad: "A horizontal line and a vertical line." (abstract stroke inventory)
    - Bad: "See this as a cross." (forbidden "See X as Y" phrasing)
    - Good: "A cross shape, like a grave marker planted in the earth." (concrete image from the strokes)
-4. **Never use "See X as Y", "Think of X as Y", or "Imagine X as Y"** phrasing. Describe the shape directly as if it IS the object.
-5. **Connect shape to meaning.** The story must link the visual appearance to the keyword name.
-6. **A2/B1 level language.** Simple, common words. Prefer physical actions (hit, run, eat) over abstract language.
-7. **1-2 sentences max.** Keep it concise and vivid.
-8. **Each language is independent.** EN, ES, RU mnemonics may tell different stories if that works better for the language. They don't need to be literal translations.
-9. **Spanish:** Standard neutral (Latin American generic). No regional slang.
-10. **Russian:** Standard literary. No regional colloquialisms.
-11. **Positional clues (visual group radicals only):** For the 32 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
+6. **Never use "See X as Y", "Think of X as Y", or "Imagine X as Y"** phrasing. Describe the shape directly as if it IS the object.
+7. **Connect shape to meaning.** The story must link the visual appearance to the keyword name.
+8. **A2/B1 level language.** Simple, common words. Prefer physical actions (hit, run, eat) over abstract language.
+9. **1-2 sentences max.** Keep it concise and vivid.
+10. **Each language is independent.** EN, ES, RU mnemonics may tell different stories if that works better for the language. They don't need to be literal translations.
+11. **Spanish:** Standard neutral (Latin American generic). No regional slang.
+12. **Russian:** Standard literary. No regional colloquialisms.
+13. **Positional clues (visual group radicals only):** For the 32 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
 
 ### Examples
 
@@ -81,10 +90,11 @@ A short story (1-2 sentences) that teaches the radical's visual shape and connec
 | 木 | en | Tree | A trunk with branches spreading left and right. |
 | 木 | es | Arbol | Un tronco con ramas extendiéndose a los lados. |
 | 木 | ru | Дерево | Ствол с ветками, раскинувшимися в стороны. |
-| 水 | en | Water | Three streams flowing down a slope. |
+| 水 | en | Water | Streams splash outward from a central flow, like a fountain. |
+| 氵 | en | Water | Drops of water running down the left side, like rain on a window. (Variant of 水, always on the left.) |
 | 口 | en | Mouth | An open square, like a mouth seen from the front. |
-| 一 | en | One | A single horizontal line. The simplest stroke, the foundation. |
-| ⺍ | en | Horns | Two small strokes rising like horns on top of a head. |
+| 一 | en | One | A single horizontal line — the foundation of everything. |
+| ⺍ | en | Horns | Small strokes rising like horns on top of a head. |
 | ⻖ | en | Mound | A bumpy cliff on the left side, representing a mound of earth. |
 | ⻏ | en | City | A tall pillar on the right side, like the walls of a city. |
 | 肉 | en | Flesh | The same shape as Moon, but on the left side or bottom it means flesh and body. |

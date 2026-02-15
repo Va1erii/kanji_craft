@@ -11,12 +11,19 @@ Usage:
 import hashlib
 import logging
 import os
+import re
 import zipfile
 from pathlib import Path
 
 import pandas as pd
+from lxml import etree
 
-from src.extractors.shared import char_to_kvg_filename, char_to_svg_filename, write_csv_atomic
+from src.extractors.shared import (
+    char_to_kvg_filename,
+    char_to_svg_filename,
+    parse_component_tree,
+    write_csv_atomic,
+)
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +128,225 @@ def _create_supabase_client():
     url = os.environ["SUPABASE_URL"]
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
     return create_client(url, key)
+
+
+SVG_NS = "http://www.w3.org/2000/svg"
+KVG_NS = "http://kanjivg.tagaini.net"
+_NS_MAP = {"svg": SVG_NS, "kvg": KVG_NS}
+
+# Regex: split on SVG path command letters, then extract numbers
+_CMD_RE = re.compile(r"([MmCcSs])")
+_NUM_RE = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _tokenize_path(d: str) -> list[str]:
+    """Split SVG path `d` attribute into command + number tokens."""
+    tokens: list[str] = []
+    for part in _CMD_RE.split(d):
+        part = part.strip()
+        if not part:
+            continue
+        if _CMD_RE.fullmatch(part):
+            tokens.append(part)
+        else:
+            tokens.extend(_NUM_RE.findall(part))
+    return tokens
+
+
+def _compute_bbox_from_paths(d_values: list[str]) -> tuple[float, float, float, float]:
+    """Compute bounding box from SVG path d-strings.
+
+    Tracks current point through M/m/C/c/S/s commands,
+    collecting all coordinate points (including control points).
+    Returns (min_x, min_y, max_x, max_y).
+    Fallback to (0, 0, 109, 109) if no points found.
+    """
+    points: list[tuple[float, float]] = []
+    for d in d_values:
+        tokens = _tokenize_path(d)
+        cur_x, cur_y = 0.0, 0.0
+        i = 0
+        while i < len(tokens):
+            tok = tokens[i]
+            if tok in ("M", "m", "C", "c", "S", "s"):
+                cmd = tok
+                i += 1
+            else:
+                # Implicit repeat of previous command
+                if cmd is None:
+                    i += 1
+                    continue
+                # Don't increment — process this number token below
+
+            if cmd == "M":
+                if i + 1 < len(tokens):
+                    cur_x, cur_y = float(tokens[i]), float(tokens[i + 1])
+                    points.append((cur_x, cur_y))
+                    i += 2
+                else:
+                    break
+            elif cmd == "m":
+                if i + 1 < len(tokens):
+                    cur_x += float(tokens[i])
+                    cur_y += float(tokens[i + 1])
+                    points.append((cur_x, cur_y))
+                    i += 2
+                else:
+                    break
+            elif cmd == "C":
+                if i + 5 < len(tokens):
+                    for j in range(0, 6, 2):
+                        px, py = float(tokens[i + j]), float(tokens[i + j + 1])
+                        points.append((px, py))
+                    cur_x, cur_y = float(tokens[i + 4]), float(tokens[i + 5])
+                    i += 6
+                else:
+                    break
+            elif cmd == "c":
+                if i + 5 < len(tokens):
+                    for j in range(0, 6, 2):
+                        px = cur_x + float(tokens[i + j])
+                        py = cur_y + float(tokens[i + j + 1])
+                        points.append((px, py))
+                    cur_x += float(tokens[i + 4])
+                    cur_y += float(tokens[i + 5])
+                    i += 6
+                else:
+                    break
+            elif cmd == "S":
+                if i + 3 < len(tokens):
+                    for j in range(0, 4, 2):
+                        px, py = float(tokens[i + j]), float(tokens[i + j + 1])
+                        points.append((px, py))
+                    cur_x, cur_y = float(tokens[i + 2]), float(tokens[i + 3])
+                    i += 4
+                else:
+                    break
+            elif cmd == "s":
+                if i + 3 < len(tokens):
+                    for j in range(0, 4, 2):
+                        px = cur_x + float(tokens[i + j])
+                        py = cur_y + float(tokens[i + j + 1])
+                        points.append((px, py))
+                    cur_x += float(tokens[i + 2])
+                    cur_y += float(tokens[i + 3])
+                    i += 4
+                else:
+                    break
+            else:
+                i += 1
+                cmd = None  # type: ignore[assignment]
+
+    if not points:
+        return (0.0, 0.0, 109.0, 109.0)
+
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    return (min(xs), min(ys), max(xs), max(ys))
+
+
+_SVG_STYLE = "fill:none;stroke:#000000;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"
+_BBOX_PADDING = 2.0
+
+
+def _generate_extracted_svg(d_values: list[str], bbox: tuple[float, float, float, float]) -> bytes:
+    """Generate a standalone SVG from extracted path d-strings.
+
+    ViewBox = bbox + padding. Inherits KanjiVG stroke style.
+    """
+    min_x, min_y, max_x, max_y = bbox
+    vb_x = min_x - _BBOX_PADDING
+    vb_y = min_y - _BBOX_PADDING
+    vb_w = (max_x - min_x) + 2 * _BBOX_PADDING
+    vb_h = (max_y - min_y) + 2 * _BBOX_PADDING
+
+    paths = "\n".join(f'  <path d="{d}" style="{_SVG_STYLE}"/>' for d in d_values)
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg"'
+        f' viewBox="{vb_x:.1f} {vb_y:.1f} {vb_w:.1f} {vb_h:.1f}">\n'
+        f"{paths}\n"
+        f"</svg>\n"
+    )
+    return svg.encode("utf-8")
+
+
+def _build_parent_index(parquet_dir: Path) -> dict[str, list[tuple[str, int]]]:
+    """Build reverse index: element_char → [(parent_char, depth), ...].
+
+    Reads kanjivg.parquet component trees and walks each recursively.
+    """
+    pq_path = parquet_dir / "kanjivg.parquet"
+    if not pq_path.exists():
+        return {}
+
+    df = pd.read_parquet(pq_path)
+    index: dict[str, list[tuple[str, int]]] = {}
+
+    def _walk(node: dict, parent_char: str, depth: int) -> None:
+        for child in node.get("children", []):
+            elem = child.get("element")
+            if elem:
+                index.setdefault(elem, []).append((parent_char, depth))
+            _walk(child, parent_char, depth + 1)
+
+    for _, row in df.iterrows():
+        char = row.get("character")
+        tree_str = row.get("component_tree")
+        if not char or pd.isna(tree_str):
+            continue
+        tree = parse_component_tree(tree_str)
+        _walk(tree, char, 1)
+
+    log.info("Built parent index: %d elements from %d kanji", len(index), len(df))
+    return index
+
+
+def _select_best_parent(
+    candidates: list[tuple[str, int]],
+    svg_map: dict[str, tuple[bytes, str]],
+) -> str | None:
+    """Select best parent kanji that has an SVG in the archive.
+
+    Prefer direct children (lower depth), then sort by character for determinism.
+    """
+    with_svg = [
+        (char, depth)
+        for char, depth in candidates
+        if char_to_kvg_filename(char) in svg_map
+    ]
+    if not with_svg:
+        return None
+    with_svg.sort(key=lambda x: (x[1], x[0]))
+    return with_svg[0][0]
+
+
+def _parse_svg_extract_paths(
+    svg_bytes: bytes,
+    target_element: str,
+) -> list[str] | None:
+    """Extract path d-strings for a target element from a parent SVG.
+
+    Finds all <g kvg:element="target"> groups (handles split parts)
+    and collects descendant <path> d attributes.
+    """
+    try:
+        root = etree.fromstring(svg_bytes)  # noqa: S320
+    except etree.XMLSyntaxError:
+        return None
+
+    xpath = f'.//svg:g[@kvg:element="{target_element}"]'
+    groups = root.xpath(xpath, namespaces=_NS_MAP)
+    if not groups:
+        return None
+
+    d_values: list[str] = []
+    for group in groups:
+        for path_el in group.iter(f"{{{SVG_NS}}}path"):
+            d = path_el.get("d")
+            if d:
+                d_values.append(d)
+
+    return d_values if d_values else None
 
 
 def _process_entity(
@@ -242,12 +468,101 @@ def _process_entity(
     return df
 
 
+def _extract_component_svgs(
+    radicals_df: pd.DataFrame,
+    variants_df: pd.DataFrame,
+    svg_map: dict[str, tuple[bytes, str]],
+    parent_index: dict[str, list[tuple[str, int]]],
+    svg_base_url: str,
+    svg_dir: Path,
+    remote_files: set[str],
+    client,
+    warnings: list[dict],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Pass 2: Extract component SVGs from parent kanji for missing radicals/variants.
+
+    For each radical/variant still missing SVG fields, find a parent kanji that
+    contains it as a component, extract the stroke paths, generate a standalone SVG,
+    and populate the CSV fields.
+    """
+    extracted_dir = svg_dir / "extracted" / "radicals"
+    extracted_dir.mkdir(parents=True, exist_ok=True)
+
+    extracted_count = 0
+
+    def _try_extract(df: pd.DataFrame, char_col: str, entity_label: str) -> pd.DataFrame:
+        nonlocal extracted_count
+        for idx, row in df.iterrows():
+            # Skip rows that already have SVG from Pass 1
+            if pd.notna(row.get("svg_file_name")):
+                continue
+
+            char = row[char_col]
+            if pd.isna(char) or not char:
+                continue
+
+            candidates = parent_index.get(char, [])
+            if not candidates:
+                continue
+
+            parent_char = _select_best_parent(candidates, svg_map)
+            if parent_char is None:
+                continue
+
+            parent_kvg = char_to_kvg_filename(parent_char)
+            parent_bytes, _ = svg_map[parent_kvg]
+
+            d_values = _parse_svg_extract_paths(parent_bytes, char)
+            if not d_values:
+                continue
+
+            bbox = _compute_bbox_from_paths(d_values)
+            svg_bytes = _generate_extracted_svg(d_values, bbox)
+            sha256 = hashlib.sha256(svg_bytes).hexdigest()
+
+            storage_name = char_to_svg_filename(char)
+            df.at[idx, "svg_file_name"] = storage_name
+            df.at[idx, "svg_hash"] = sha256
+            df.at[idx, "svg_file_url"] = f"{svg_base_url}/radicals/{storage_name}"
+
+            # Save to extracted/ subfolder
+            dest = extracted_dir / storage_name
+            if not dest.exists() or dest.stat().st_size != len(svg_bytes):
+                dest.write_bytes(svg_bytes)
+
+            # Upload to radicals/ folder in bucket
+            if client is not None and storage_name not in remote_files:
+                if _upload_file(client, "radicals", storage_name, svg_bytes):
+                    pass
+                remote_files.add(storage_name)
+
+            extracted_count += 1
+            warnings.append({
+                "severity": "low",
+                "phase": "2.4",
+                "entity": char,
+                "message": (
+                    f"Extracted SVG for {entity_label} '{char}' "
+                    f"from parent {parent_char}"
+                ),
+            })
+
+        return df
+
+    radicals_df = _try_extract(radicals_df, "master_symbol", "radical")
+    variants_df = _try_extract(variants_df, "shape", "radical_variant")
+
+    log.info("Pass 2: extracted %d component SVGs", extracted_count)
+    return radicals_df, variants_df
+
+
 def extract_svg(
     csv_dir: Path,
     warnings_dir: Path,
     *,
     supabase_client=None,
     zip_path: Path | None = None,
+    parquet_dir: Path | None = None,
 ) -> dict:
     """Phase 2.4 entry point: populate SVG fields and upload to storage.
 
@@ -258,6 +573,8 @@ def extract_svg(
             If None, creates from env vars.
         zip_path: Optional explicit path to KanjiVG ZIP (for testing).
             If None, discovers via glob in sources/.
+        parquet_dir: Optional directory containing kanjivg.parquet for Pass 2.
+            Defaults to csv_dir.parent / "parquet".
 
     Returns:
         Dict with updated DataFrames: radicals, radical_variants, kanji.
@@ -376,6 +693,38 @@ def extract_svg(
         svg_dir=svg_dir,
     )
     write_csv_atomic(kanji_df, kanji_path)
+
+    # Pass 2: Component extraction for missing radicals/variants
+    if parquet_dir is None:
+        parquet_dir = csv_dir.parent / "parquet"
+    pq_path = parquet_dir / "kanjivg.parquet"
+    if pq_path.exists():
+        parent_index = _build_parent_index(parquet_dir)
+        radicals_df, variants_df = _extract_component_svgs(
+            radicals_df,
+            variants_df,
+            svg_map,
+            parent_index,
+            svg_base_url,
+            svg_dir,
+            remote_radicals,
+            client,
+            warnings,
+        )
+        write_csv_atomic(radicals_df, radicals_path)
+        write_csv_atomic(variants_df, variants_path)
+
+        # Replace "Missing SVG" warnings with "Extracted SVG" for entities that got extracted
+        extracted_entities = {
+            w["entity"] for w in warnings if "Extracted SVG" in w.get("message", "")
+        }
+        warnings = [
+            w
+            for w in warnings
+            if not (w["entity"] in extracted_entities and "Missing SVG" in w.get("message", ""))
+        ]
+    else:
+        log.info("Pass 2 skipped: %s not found", pq_path)
 
     # Unmatched SVGs in archive
     matched_kvg = set()

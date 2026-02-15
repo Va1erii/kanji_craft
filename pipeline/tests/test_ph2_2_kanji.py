@@ -1,13 +1,11 @@
 """Tests for Phase 2.2 kanji composition (Steps 1-3)."""
 
 import json
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from src.extractors.ph2_2_kanji import extract_kanji
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -580,6 +578,54 @@ class TestWarnings:
         ]
         assert len(missing) == 1
         assert missing.iloc[0]["severity"] == "high"
+
+    def test_no_readings_high_for_grade(self, tmp_path):
+        """Kanji with no readings: high severity if grade 1-7 (even without JLPT)."""
+        kanjidic_df = _make_kanjidic_df([
+            _kanjidic_row("A", stroke_count=1, grade=3, meanings={"en": ["a"]}),
+        ])
+        jlpt_df = _make_jlpt_df([])  # not JLPT-mapped
+
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
+        jlpt_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
+
+        extract_kanji(parquet_dir, csv_dir, warnings_dir)
+
+        w_df = pd.read_csv(warnings_dir / "ph2_2_warnings.csv")
+        no_reading = w_df[
+            (w_df["entity"] == "A") & (w_df["message"].str.contains("no readings"))
+        ]
+        assert len(no_reading) == 1
+        assert no_reading.iloc[0]["severity"] == "high"
+
+    def test_no_readings_low_for_high_grade(self, tmp_path):
+        """Kanji with no readings: low severity if grade > 7 and no JLPT."""
+        kanjidic_df = _make_kanjidic_df([
+            _kanjidic_row("A", stroke_count=1, grade=9, meanings={"en": ["a"]}),
+        ])
+        jlpt_df = _make_jlpt_df([])
+
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
+        jlpt_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
+
+        extract_kanji(parquet_dir, csv_dir, warnings_dir)
+
+        w_df = pd.read_csv(warnings_dir / "ph2_2_warnings.csv")
+        no_reading = w_df[
+            (w_df["entity"] == "A") & (w_df["message"].str.contains("no readings"))
+        ]
+        assert len(no_reading) == 1
+        assert no_reading.iloc[0]["severity"] == "low"
 
 
 # ---------------------------------------------------------------------------

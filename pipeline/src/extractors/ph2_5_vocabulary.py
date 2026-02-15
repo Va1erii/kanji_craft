@@ -184,6 +184,7 @@ def _construct_furigana(
     reading: str,
     furigana_lookup: dict[tuple[str, str], list[dict]],
     warnings: list[dict],
+    is_jlpt: bool = False,
 ) -> str:
     """Construct {kanji|reading} furigana notation.
 
@@ -195,8 +196,9 @@ def _construct_furigana(
         # Fallback: whole-word furigana or plain text for kana-only
         if not _has_kanji(word):
             return word
+        severity = "high" if is_jlpt else "low"
         warnings.append({
-            "severity": "low",
+            "severity": severity,
             "phase": "2.5",
             "entity": word,
             "message": "Word not found in jmdict_furigana, using whole-word fallback",
@@ -413,7 +415,10 @@ def _step1_vocabulary_rows(
                 jlpt_level = min(kanji_levels)
 
         # Furigana
-        furigana = _construct_furigana(word, reading, furigana_lookup, warnings)
+        has_jlpt = jlpt_level is not None
+        furigana = _construct_furigana(
+            word, reading, furigana_lookup, warnings, is_jlpt=has_jlpt,
+        )
 
         # POS tags
         pos_tags = _extract_pos_tags(senses)
@@ -615,14 +620,29 @@ def _step4_i18n_rows(
             })
 
         # Validate: must have English
-        has_en = any(r["vocabulary_id"] == vid and r["lang_code"] == "en" for r in rows)
-        if not has_en:
+        vid_rows = [r for r in rows if r["vocabulary_id"] == vid]
+        vid_langs = {r["lang_code"] for r in vid_rows}
+        jlpt_level = vrow.get("min_jlpt_level")
+        is_jlpt = pd.notna(jlpt_level)
+
+        if "en" not in vid_langs:
             warnings.append({
                 "severity": "high",
                 "phase": "2.5",
                 "entity": word,
                 "message": "Missing English (en) glosses",
             })
+
+        # Warn about missing non-English translations for JLPT words
+        if is_jlpt:
+            for lc in sorted(TARGET_LANGS):
+                if lc != "en" and lc not in vid_langs:
+                    warnings.append({
+                        "severity": "high",
+                        "phase": "2.5",
+                        "entity": word,
+                        "message": f"JLPT word missing {lc} translation",
+                    })
 
     df = pd.DataFrame(rows)
     if not df.empty:
@@ -817,6 +837,19 @@ def extract_vocabulary(
 
     # Step 3: Reading rows
     readings_df = _step3_reading_rows(vocab_df, jmdict_df)
+
+    # Validate: every word must have at least one reading
+    if not vocab_df.empty and not readings_df.empty:
+        vocab_with_readings = set(readings_df["vocabulary_id"])
+        for _, vrow in vocab_df.iterrows():
+            vid = int(vrow["id"])
+            if vid not in vocab_with_readings:
+                warnings.append({
+                    "severity": "high",
+                    "phase": "2.5",
+                    "entity": vrow["word"],
+                    "message": "Word with no readings after Step 3",
+                })
 
     # Step 4: I18n rows
     i18n_df = _step4_i18n_rows(vocab_df, jmdict_df, warnings)

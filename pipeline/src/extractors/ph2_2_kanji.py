@@ -187,6 +187,14 @@ def _step3_i18n_rows(
     return df
 
 
+def _is_high_severity(
+    is_jlpt: bool,
+    grade: int | None,
+) -> bool:
+    """High severity if JLPT-mapped or grades 1-7 (jouyou + jinmeiyou)."""
+    return is_jlpt or (grade is not None and 1 <= grade <= 7)
+
+
 def _collect_warnings(
     kanji_df: pd.DataFrame,
     readings_df: pd.DataFrame,
@@ -194,7 +202,7 @@ def _collect_warnings(
     jlpt_lookup: dict[str, int],
     char_to_id: dict[str, int],
 ) -> list[dict]:
-    """Collect warnings per spec: JLPT-aware severity."""
+    """Collect warnings: JLPT-aware and grade-aware severity."""
     warnings: list[dict] = []
 
     # JLPT-mapped kanji missing from kanjidic
@@ -224,10 +232,13 @@ def _collect_warnings(
         kanji_id = row["id"]
         char = row["character"]
         is_jlpt = char in jlpt_lookup
+        grade = row.get("min_grade")
+        grade = None if pd.isna(grade) else int(grade)
+        high = _is_high_severity(is_jlpt, grade)
 
         # No readings
         if kanji_id not in kanji_ids_with_readings:
-            severity = "high" if is_jlpt else "low"
+            severity = "high" if high else "low"
             warnings.append({
                 "severity": severity,
                 "phase": "2.2",
@@ -237,7 +248,7 @@ def _collect_warnings(
 
         # Missing English meanings
         if kanji_id not in kanji_ids_with_en:
-            severity = "high" if is_jlpt else "low"
+            severity = "high" if high else "low"
             warnings.append({
                 "severity": severity,
                 "phase": "2.2",

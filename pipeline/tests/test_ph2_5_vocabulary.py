@@ -1147,36 +1147,96 @@ class TestWarnings:
         assert len(orphan) >= 1
         assert (orphan["severity"] == "low").all()
 
-    def test_missing_furigana_low(self, tmp_path):
-        """Missing furigana entry → low warning."""
-        parquet_dir = tmp_path / "parquet"
-        parquet_dir.mkdir()
+    def test_missing_furigana_high_for_jlpt(self, tmp_path):
+        """Missing furigana for JLPT word → high warning."""
+        _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            jlpt_vocab_entries=[("食べる", "たべる", 5)],
+            # No furigana entries → fallback
+            kanji_entries=[(1, "食", 5)],
+        )
+
         csv_dir = tmp_path / "csv"
-        warnings_dir = csv_dir / "warnings"
+        w_df = pd.read_csv(csv_dir / "warnings" / "ph2_5_warnings.csv")
+        missing = w_df[w_df["message"].str.contains("jmdict_furigana")]
+        assert len(missing) >= 1
+        assert missing.iloc[0]["severity"] == "high"
 
-        _make_jmdict_df([_jmdict_row(
-            100,
-            k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
-            r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
-            senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
-        )]).to_parquet(parquet_dir / "jmdict.parquet", index=False)
-        _make_jlpt_vocab_df([]).to_parquet(
-            parquet_dir / "jlpt_vocab.parquet", index=False,
+    def test_missing_furigana_low_for_non_jlpt(self, tmp_path):
+        """Missing furigana for non-JLPT word → low warning."""
+        _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            # No JLPT, no furigana, kanji has no JLPT level
+            kanji_entries=[(1, "食", None)],
         )
-        _make_furigana_df([]).to_parquet(  # no furigana data
-            parquet_dir / "jmdict_furigana.parquet", index=False,
-        )
-        _make_examples_df([]).to_parquet(
-            parquet_dir / "jmdict_examples.parquet", index=False,
-        )
-        _make_kanji_csv([(1, "食", 5)], csv_dir)
 
-        extract_vocabulary(parquet_dir, csv_dir, warnings_dir)
-
-        w_df = pd.read_csv(warnings_dir / "ph2_5_warnings.csv")
+        csv_dir = tmp_path / "csv"
+        w_df = pd.read_csv(csv_dir / "warnings" / "ph2_5_warnings.csv")
         missing = w_df[w_df["message"].str.contains("jmdict_furigana")]
         assert len(missing) >= 1
         assert missing.iloc[0]["severity"] == "low"
+
+    def test_missing_translation_high_for_jlpt(self, tmp_path):
+        """JLPT word missing non-English translation → high warning."""
+        _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+                # No Spanish or Russian glosses
+            )],
+            jlpt_vocab_entries=[("食べる", "たべる", 5)],
+            furigana_entries=[
+                ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
+            ],
+            kanji_entries=[(1, "食", 5)],
+        )
+
+        csv_dir = tmp_path / "csv"
+        w_df = pd.read_csv(csv_dir / "warnings" / "ph2_5_warnings.csv")
+        missing_es = w_df[w_df["message"].str.contains("missing es")]
+        missing_ru = w_df[w_df["message"].str.contains("missing ru")]
+        assert len(missing_es) == 1
+        assert missing_es.iloc[0]["severity"] == "high"
+        assert len(missing_ru) == 1
+        assert missing_ru.iloc[0]["severity"] == "high"
+
+    def test_no_translation_warning_for_non_jlpt(self, tmp_path):
+        """Non-JLPT word missing translations → no warning."""
+        _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            furigana_entries=[
+                ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
+            ],
+            kanji_entries=[(1, "食", None)],
+        )
+
+        csv_dir = tmp_path / "csv"
+        warnings_path = csv_dir / "warnings" / "ph2_5_warnings.csv"
+        if warnings_path.exists():
+            w_df = pd.read_csv(warnings_path)
+            translation_warns = w_df[w_df["message"].str.contains("translation")]
+            assert len(translation_warns) == 0
 
 
 # ---------------------------------------------------------------------------

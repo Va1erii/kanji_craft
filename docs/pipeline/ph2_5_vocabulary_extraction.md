@@ -476,14 +476,15 @@ Warnings are written to `data/csv/warnings/ph2_5_warnings.csv` with columns: `se
 
 | Condition | Severity | Rationale |
 |---|---|---|
-| Orphan kanji in word (character not in `kanji.csv`), JLPT-mapped word | high | Learner-facing gap — word in a JLPT study path will have a permanent Ghost Kanji |
+| Orphan kanji in word (character not in `kanji.csv`), JLPT word | high | Learner-facing gap — word in a JLPT study path will have a permanent Ghost Kanji |
 | Orphan kanji in word, non-JLPT word | low | Informational — word still imported with Ghost rendering for the missing character |
 | Word with no readings after Step 3 | high | Data integrity — every word must have at least one reading; indicates a parser bug |
 | Word with no English (`en`) glosses after Step 4 | high | Data integrity — JMdict always has English glosses; indicates a parser or filter bug |
-| Word not found in `jmdict_furigana.parquet` | low | Informational — heuristic furigana used as fallback; may produce less accurate notation |
-| Orphan kanji during furigana construction (kanji not in `kanji.csv`) | low | Informational — furigana still generated; kanji renders as Ghost in the UI |
+| JLPT word missing non-English translation (es, ru) | high | Learner-facing gap — JLPT word will lack localized meaning for target language users |
+| Word not found in `jmdict_furigana.parquet`, JLPT word | high | Learner-facing gap — JLPT word will use whole-word fallback instead of per-character furigana |
+| Word not found in `jmdict_furigana.parquet`, non-JLPT word | low | Informational — whole-word furigana used as fallback; may produce less accurate notation |
 
-**JLPT-aware severity:** The "orphan kanji" condition uses a two-tier pattern — `high` if the word is JLPT-mapped (via `jlpt_vocab.parquet` or kanji-derived level), `low` otherwise.
+**JLPT-aware severity:** Warnings use a two-tier pattern — `high` if the word has a `min_jlpt_level` (via `jlpt_vocab.parquet` or kanji-derived), `low` otherwise. This applies to orphan kanji, missing furigana, and missing translations.
 
 ## Business Rules
 

@@ -61,7 +61,7 @@ Localized name, system mnemonic, and search data for a radical. One row per radi
 | `name` | `String` | Localized name, e.g. "Water" (en), "Agua" (es) |
 | `system_mnemonic` | `String` | The app-provided learning story to help remember the shape (see mnemonic.md) |
 | `search_tags` | `List<String>` | Synonyms for search, e.g. ["liquid", "splash", "ocean"] |
-| `disambiguation_note` | `String?` | Teaching text explaining how to distinguish this radical from its visual group siblings. Null when radical has no visual group |
+| `disambiguation_note` | `String?` | Teaching text explaining how to distinguish this radical from its visual group siblings. Curated in `pipeline/data/visual_rules.json`, not AI-generated. Null when radical has no visual group |
 
 **Why separate from Radical?**
 
@@ -134,5 +134,5 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 - **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or system mnemonic.
 - **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. If the shape is the same, these positions are combined in a single `RadicalVariant` row's `positions` list.
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.
-- **Visually identical radicals:** Some distinct radicals render as the same shape inside kanji (e.g. 肉 "flesh" and 月 "moon" both appear as 月). The `visual_group` field groups them, and `disambiguation_note` in RadicalI18n provides the per-language teaching logic (e.g. "left/bottom = flesh, right/top = moon"). The app should surface this note whenever a kanji contains a radical from a multi-member visual group.
+- **Visually identical radicals:** Some distinct radicals render as the same shape inside kanji (e.g. 肉 "flesh" and 月 "moon" both appear as 月). The `visual_group` field groups them, and `disambiguation_note` in RadicalI18n provides the per-language teaching logic (e.g. "left/bottom = flesh, right/top = moon"). Both fields are sourced from the curated `pipeline/data/visual_rules.json` — not AI-generated — because positional disambiguation requires human-verified accuracy. The app should surface this note whenever a kanji contains a radical from a multi-member visual group.
 - **Kanji-like radicals:** Some radicals are visually identical to learnable kanji (e.g., 青 is both Kangxi radical #174 and a kanji meaning "Blue"). Both rows must exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. This dual existence is natural for many Kangxi radicals (木, 金, 山, etc.) and is also used for custom non-Kangxi building blocks (`is_official: false`). For example, 清 (Pure) = 氵 (Water) + 青 (Blue) — `kanji_components` always references `radicals.id`, never `kanji.id`.

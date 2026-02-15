@@ -515,231 +515,231 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 升,measuring box,en,Box,A wooden box used for measuring portions of grain.,"""[""""box"""",""""measure"""",""""scoop""""]"""
 升,measuring box,es,Caja,Una caja de madera que se usa para medir porciones de grano.,"""[""""caja"""",""""medir"""",""""cazo""""]"""
 升,measuring box,ru,Короб,Деревянный короб используемый для измерения порций зерна.,"""[""""короб"""",""""мера"""",""""ковш""""]"""
-午,noon,en,,,
-午,noon,es,,,
-午,noon,ru,,,
-半,half,en,,,
-半,half,es,,,
-半,half,ru,,,
-卑,lowly,en,,,
-卑,lowly,es,,,
-卑,lowly,ru,,,
-卒,graduate,en,,,
-卒,graduate,es,,,
-卒,graduate,ru,,,
-卓,eminent,en,,,
-卓,eminent,es,,,
-卓,eminent,ru,,,
-南,south,en,,,
-南,south,es,,,
-南,south,ru,,,
-単,simple,en,,,
-単,simple,es,,,
+午,noon,en,Noon,A horse standing still under the vertical sun at noon.,"""[""""noon"""",""""midday"""",""""horse""""]"""
+午,noon,es,Mediodía,Un caballo parado inmóvil bajo el sol vertical al mediodía.,"""[""""mediodía"""",""""doce"""",""""caballo""""]"""
+午,noon,ru,Полдень,Лошадь неподвижно стоит под вертикальным солнцем в полдень.,"""[""""полдень"""",""""обед"""",""""лошадь""""]"""
+半,half,en,Half,A line cutting through three objects to split them in half.,"""[""""half"""",""""split"""",""""semi""""]"""
+半,half,es,Mitad,Una línea que corta tres objetos para dividirlos a la mitad.,"""[""""mitad"""",""""medio"""",""""dividir""""]"""
+半,half,ru,Половина,Линия проходящая через три предмета чтобы разделить их пополам.,"""[""""половина"""",""""часть"""",""""делить""""]"""
+卑,lowly,en,Fan,A hand holding a tool over a stand like a portable fan.,"""[""""fan"""",""""tool"""",""""lowly""""]"""
+卑,lowly,es,Abanico,Una mano que sostiene una herramienta sobre un soporte como un abanico.,"""[""""abanico"""",""""bajo"""",""""herramienta""""]"""
+卑,lowly,ru,Веер,Рука держащая инструмент над подставкой похожий на веер.,"""[""""веер"""",""""низкий"""",""""инструмент""""]"""
+卒,graduate,en,Soldier,Ten soldiers wearing identical hats standing in a line.,"""[""""soldier"""",""""graduate"""",""""army""""]"""
+卒,graduate,es,Soldado,Diez soldados que llevan sombreros idénticos parados en fila.,"""[""""soldado"""",""""graduado"""",""""ejército""""]"""
+卒,graduate,ru,Солдат,Десять солдат в одинаковых шляпах стоят в один ряд.,"""[""""солдат"""",""""выпускник"""",""""армия""""]"""
+卓,eminent,en,Table,A tall table used by eminent people to display fine objects.,"""[""""table"""",""""eminent"""",""""top""""]"""
+卓,eminent,es,Mesa,Una mesa alta utilizada por personas eminentes para mostrar objetos.,"""[""""mesa"""",""""eminente"""",""""arriba""""]"""
+卓,eminent,ru,Стол,Высокий стол используемый выдающимися людьми для показа вещей.,"""[""""стол"""",""""выдающийся"""",""""верх""""]"""
+南,south,en,South,Ten people under a roof looking at a warm plant in the south.,"""[""""south"""",""""direction"""",""""warm""""]"""
+南,south,es,Sur,Diez personas bajo un techo mirando una planta cálida en el sur.,"""[""""sur"""",""""dirección"""",""""calor""""]"""
+南,south,ru,Юг,Десять человек под крышей смотрят на теплое растение на юге.,"""[""""юг"""",""""направление"""",""""тепло""""]"""
+単,simple,en,Racket,A simple tool that looks like a sports racket with a long handle.,"""[""""racket"""",""""simple"""",""""single""""]"""
+単,simple,es,Raqueta,Una herramienta simple que parece una raqueta de deportes con mango.,"""[""""raqueta"""",""""simple"""",""""solo""""]"""
 単,simple,ru,,,
-卜,divining,en,,,
-卜,divining,es,,,
-卜,divining,ru,,,
-占,fortune-telling,en,,,
-占,fortune-telling,es,,,
-占,fortune-telling,ru,,,
-卩,seal radical (no. 26),en,,,
-卩,seal radical (no. 26),es,,,
-卩,seal radical (no. 26),ru,,,
-卬,lofty,en,,,
-卬,lofty,es,,,
-卬,lofty,ru,,,
-卯,sign of the hare or rabbit,en,,,
-卯,sign of the hare or rabbit,es,,,
-卯,sign of the hare or rabbit,ru,,,
-即,instant,en,,,
-即,instant,es,,,
-即,instant,ru,,,
-却,instead,en,,,
-却,instead,es,,,
-却,instead,ru,,,
-卸,wholesale,en,,,
-卸,wholesale,es,,,
-卸,wholesale,ru,,,
-厂,wild goose,en,,,
-厂,wild goose,es,,,
-厂,wild goose,ru,,,
-厄,unlucky,en,,,
-厄,unlucky,es,,,
-厄,unlucky,ru,,,
-厓,precipice,en,,,
-厓,precipice,es,,,
-厓,precipice,ru,,,
-原,meadow,en,,,
-原,meadow,es,,,
-原,meadow,ru,,,
-厳,stern,en,,,
-厳,stern,es,,,
-厳,stern,ru,,,
-厶,I,en,,,
-厶,I,es,,,
-厶,I,ru,,,
-厷,the fore-arm,en,,,
-厷,the fore-arm,es,,,
-厷,the fore-arm,ru,,,
-去,gone,en,,,
-去,gone,es,,,
-去,gone,ru,,,
+卜,divining,en,Wand,A wooden wand used for divining water or predicting luck.,"""[""""wand"""",""""divine"""",""""fortune""""]"""
+卜,divining,es,Varita,Una varita de madera usada para adivinar el agua o la suerte.,"""[""""varita"""",""""adivinar"""",""""suerte""""]"""
+卜,divining,ru,Жезл,Деревянный жезл используемый для гадания на воду или удачу.,"""[""""жезл"""",""""гадание"""",""""удача""""]"""
+占,fortune-telling,en,Fortune,A mouth speaking words from a wand about your future fortune.,"""[""""fortune"""",""""divine"""",""""prophecy""""]"""
+占,fortune-telling,es,Fortuna,Una boca que pronuncia palabras de una varita sobre tu fortuna.,"""[""""fortuna"""",""""adivinación"""",""""profecía""""]"""
+占,fortune-telling,ru,Гадание,Рот произносящий слова жезла о твоем будущем гадании.,"""[""""гадание"""",""""удача"""",""""пророчество""""]"""
+卩,seal radical (no. 26),en,Stamp,A kneeling person representing an official stamp or seal.,"""[""""stamp"""",""""seal"""",""""kneel""""]"""
+卩,seal radical (no. 26),es,Sello,Una persona arrodillada que representa un sello oficial.,"""[""""sello"""",""""estampilla"""",""""arrodillarse""""]"""
+卩,seal radical (no. 26),ru,Печать,Человек на коленях представляющий официальную печать.,"""[""""печать"""",""""клеймо"""",""""колени""""]"""
+卬,lofty,en,Tower,A person looking up at a lofty tower reaching the sky.,"""[""""tower"""",""""lofty"""",""""high""""]"""
+卬,lofty,es,Torre,Una persona que mira hacia una torre elevada que llega al cielo.,"""[""""torre"""",""""elevado"""",""""alto""""]"""
+卬,lofty,ru,Башня,Человек смотрящий вверх на высокую башню до неба.,"""[""""башня"""",""""высокий"""",""""возвышенный""""]"""
+卯,sign of the hare or rabbit,en,Rabbit,Two floppy ears of a rabbit popping out of a hole.,"""[""""rabbit"""",""""hare"""",""""zodiac""""]"""
+卯,sign of the hare or rabbit,es,Conejo,Dos orejas caídas de un conejo que salen de un agujero.,"""[""""conejo"""",""""liebre"""",""""zodiaco""""]"""
+卯,sign of the hare or rabbit,ru,Кролик,Два висячих уха кролика высовывающихся из норы.,"""[""""кролик"""",""""заяц"""",""""зодиак""""]"""
+即,instant,en,Instant,A person sitting down to eat an instant meal at a table.,"""[""""instant"""",""""quick"""",""""food""""]"""
+即,instant,es,Instante,Una persona que se sienta a comer una comida instantánea en una mesa.,"""[""""instante"""",""""rápido"""",""""comida""""]"""
+即,instant,ru,Мгновение,Человек садится за стол чтобы съесть еду быстрого приготовления.,"""[""""мгновение"""",""""быстро"""",""""еда""""]"""
+却,instead,en,Knee,Someone using their knee to push a seal away instead of their hand.,"""[""""knee"""",""""instead"""",""""reject""""]"""
+却,instead,es,Rodilla,Alguien que usa la rodilla para apartar un sello en lugar de la mano.,"""[""""rodilla"""",""""en cambio"""",""""rechazar""""]"""
+却,instead,ru,Колено,Кто-то использует колено чтобы оттолкнуть печать вместо руки.,"""[""""колено"""",""""вместо"""",""""отказ""""]"""
+卸,wholesale,en,Unload,Unloading large crates of wholesale goods from a wagon.,"""[""""unload"""",""""wholesale"""",""""goods""""]"""
+卸,wholesale,es,Descarga,Descarga de grandes cajas de mercancías al por mayor desde un vagón.,"""[""""descarga"""",""""mayoreo"""",""""bienes""""]"""
+卸,wholesale,ru,Разгрузка,Разгрузка больших ящиков с оптовыми товарами из вагона.,"""[""""разгрузка"""",""""опт"""",""""товары""""]"""
+厂,wild goose,en,Cliff,A steep cliff where a wild goose builds its nest.,"""[""""cliff"""",""""slope"""",""""goose""""]"""
+厂,wild goose,es,Acantilado,Un acantilado empinado donde un ganso salvaje construye su nido.,"""[""""acantilado"""",""""ladera"""",""""ganso""""]"""
+厂,wild goose,ru,Обрыв,Крутой обрыв где дикий гусь вьет свое гнездо.,"""[""""обрыв"""",""""склон"""",""""гусь""""]"""
+厄,unlucky,en,Trap,Falling into a trap under a cliff is very unlucky.,"""[""""unlucky"""",""""trap"""",""""danger""""]"""
+厄,unlucky,es,Trampa,Caer en una trampa bajo un acantilado es muy mala suerte.,"""[""""trampa"""",""""desgracia"""",""""peligro""""]"""
+厄,unlucky,ru,Ловушка,Попадание в ловушку под обрывом — это большое несчастье.,"""[""""ловушка"""",""""беда"""",""""опасность""""]"""
+厓,precipice,en,Ledge,A narrow ledge on a precipice where earth and rocks fall.,"""[""""ledge"""",""""precipice"""",""""edge""""]"""
+厓,precipice,es,Cornisa,Una cornisa estrecha en un precipicio donde caen tierra y rocas.,"""[""""cornisa"""",""""precipicio"""",""""borde""""]"""
+厓,precipice,ru,Уступ,Узкий уступ на обрыве с которого осыпается земля и камни.,"""[""""уступ"""",""""обрыв"""",""""край""""]"""
+原,meadow,en,Meadow,A spring of water flowing onto a meadow under a cliff.,"""[""""meadow"""",""""field"""",""""source""""]"""
+原,meadow,es,Prado,Un manantial de agua que fluye hacia un prado bajo un acantilado.,"""[""""prado"""",""""campo"""",""""fuente""""]"""
+原,meadow,ru,Луг,Источник воды вытекающий на луг под обрывом.,"""[""""луг"""",""""поле"""",""""источник""""]"""
+厳,stern,en,Rock,A stern person who is as hard and unmoving as a rock.,"""[""""rock"""",""""stern"""",""""strict""""]"""
+厳,stern,es,Roca,Una persona severa que es tan dura e inmóvil como una roca.,"""[""""roca"""",""""severo"""",""""estricto""""]"""
+厳,stern,ru,Скала,Суровый человек твердый и неподвижный словно скала.,"""[""""скала"""",""""суровый"""",""""строгий""""]"""
+厶,I,en,Cocoon,A small cocoon where a silkworm keeps its private space.,"""[""""cocoon"""",""""private"""",""""secret""""]"""
+厶,I,es,Capullo,Un pequeño capullo donde un gusano de seda guarda su espacio privado.,"""[""""capullo"""",""""privado"""",""""secreto""""]"""
+厶,I,ru,Кокон,Маленький кокон в котором шелкопряд хранит свое личное пространство.,"""[""""кокон"""",""""личный"""",""""секрет""""]"""
+厷,the fore-arm,en,Forearm,Using your forearm and elbow to push something private away.,"""[""""forearm"""",""""arm"""",""""elbow""""]"""
+厷,the fore-arm,es,Antebrazo,Usar el antebrazo y el codo para apartar algo privado.,"""[""""antebrazo"""",""""brazo"""",""""codo""""]"""
+厷,the fore-arm,ru,Предплечье,Использование предплечья и локтя чтобы оттолкнуть что-то личное.,"""[""""предплечье"""",""""рука"""",""""локоть""""]"""
+去,gone,en,Vault,Items that are gone and locked away in a deep soil vault.,"""[""""gone"""",""""vault"""",""""past""""]"""
+去,gone,es,Bóveda,Objetos que se han ido y están bajo llave en una bóveda de tierra.,"""[""""pasado"""",""""bóveda"""",""""ido""""]"""
+去,gone,ru,Хранилище,Вещи которые ушли и заперты в глубоком земляном хранилище.,"""[""""прошлое"""",""""склад"""",""""ушедший""""]"""
 参,nonplussed,en,,,
 参,nonplussed,es,,,
 参,nonplussed,ru,,,
-又,or again,en,,,
-又,or again,es,,,
-又,or again,ru,,,
-及,reach out,en,,,
-及,reach out,es,,,
-及,reach out,ru,,,
-友,friend,en,,,
-友,friend,es,,,
-友,friend,ru,,,
-反,anti-,en,,,
-反,anti-,es,,,
-反,anti-,ru,,,
-叔,uncle,en,,,
-叔,uncle,es,,,
-叔,uncle,ru,,,
-取,take,en,,,
-取,take,es,,,
-取,take,ru,,,
-受,accept,en,,,
-受,accept,es,,,
-受,accept,ru,,,
-叚,false,en,,,
-叚,false,es,,,
-叚,false,ru,,,
-口,mouth,en,,,
-口,mouth,es,,,
-口,mouth,ru,,,
-古,old,en,,,
-古,old,es,,,
-古,old,ru,,,
-句,phrase,en,,,
-句,phrase,es,,,
-句,phrase,ru,,,
-召,seduce,en,,,
-召,seduce,es,,,
-召,seduce,ru,,,
-可,can,en,,,
-可,can,es,,,
-可,can,ru,,,
-台,pedestal,en,,,
-台,pedestal,es,,,
-台,pedestal,ru,,,
-右,right,en,,,
-右,right,es,,,
-右,right,ru,,,
-司,director,en,,,
-司,director,es,,,
-司,director,ru,,,
-各,each,en,,,
-各,each,es,,,
-各,each,ru,,,
-合,fit,en,,,
-合,fit,es,,,
-合,fit,ru,,,
-吉,good luck,en,,,
-吉,good luck,es,,,
-吉,good luck,ru,,,
-同,same,en,,,
-同,same,es,,,
-同,same,ru,,,
-名,name,en,,,
-名,name,es,,,
-名,name,ru,,,
-吏,officer,en,,,
-吏,officer,es,,,
-吏,officer,ru,,,
-君,mister,en,,,
-君,mister,es,,,
-君,mister,ru,,,
-吾,I,en,,,
-吾,I,es,,,
-吾,I,ru,,,
-呂,spine,en,,,
-呂,spine,es,,,
-呂,spine,ru,,,
-呈,display,en,,,
-呈,display,es,,,
-呈,display,ru,,,
-呉,give,en,,,
-呉,give,es,,,
-呉,give,ru,,,
-告,revelation,en,,,
-告,revelation,es,,,
-告,revelation,ru,,,
-周,circumference,en,,,
-周,circumference,es,,,
-周,circumference,ru,,,
-咅,to spit out,en,,,
-咅,to spit out,es,,,
-咅,to spit out,ru,,,
-咼,crooked mouth,en,,,
-咼,crooked mouth,es,,,
-咼,crooked mouth,ru,,,
-品,goods,en,,,
-品,goods,es,,,
-品,goods,ru,,,
-員,employee,en,,,
-員,employee,es,,,
-員,employee,ru,,,
-唐,T'ang,en,,,
-唐,T'ang,es,,,
-唐,T'ang,ru,,,
-啇,the stalk,en,,,
-啇,the stalk,es,,,
-啇,the stalk,ru,,,
-善,virtuous,en,,,
-善,virtuous,es,,,
-善,virtuous,ru,,,
-喜,rejoice,en,,,
-喜,rejoice,es,,,
-喜,rejoice,ru,,,
-喬,high,en,,,
-喬,high,es,,,
-喬,high,ru,,,
-喿,chirping of birds,en,,,
-喿,chirping of birds,es,,,
-喿,chirping of birds,ru,,,
-囗,box,en,,,
-囗,box,es,,,
-囗,box,ru,,,
-因,cause,en,,,
-因,cause,es,,,
-因,cause,ru,,,
-固,harden,en,,,
-固,harden,es,,,
-固,harden,ru,,,
-土,soil,en,,,
-土,soil,es,,,
-土,soil,ru,,,
-圣,holy,en,,,
-圣,holy,es,,,
-圣,holy,ru,,,
-圭,square jewel,en,,,
-圭,square jewel,es,,,
-圭,square jewel,ru,,,
-坴,clod of earth,en,,,
-坴,clod of earth,es,,,
-坴,clod of earth,ru,,,
-垂,droop,en,,,
-垂,droop,es,,,
-垂,droop,ru,,,
-垔,to restrain,en,,,
-垔,to restrain,es,,,
-垔,to restrain,ru,,,
-執,tenacious,en,,,
-執,tenacious,es,,,
-執,tenacious,ru,,,
-堇,,en,,,
-堇,,es,,,
-堇,,ru,,,
-士,gentleman,en,,,
-士,gentleman,es,,,
-士,gentleman,ru,,,
+又,or again,en,Hand,A right hand reaching out to grab something again.,"""[""""hand"""",""""again"""",""""right""""]"""
+又,or again,es,Mano,Una mano derecha que se extiende para agarrar algo de nuevo.,"""[""""mano"""",""""otra vez"""",""""derecha""""]"""
+又,or again,ru,Рука,Правая рука тянущаяся чтобы снова что-то схватить.,"""[""""рука"""",""""снова"""",""""правая""""]"""
+及,reach out,en,Grasp,A hand reaching out to grasp a person from behind.,"""[""""grasp"""",""""reach"""",""""catch""""]"""
+及,reach out,es,Agarre,Una mano que se extiende para agarrar a una persona por detrás.,"""[""""agarrar"""",""""alcanzar"""",""""atrapada""""]"""
+及,reach out,ru,Хватка,Рука тянущаяся чтобы схватить человека сзади.,"""[""""хватка"""",""""достигать"""",""""поймать""""]"""
+友,friend,en,Friend,A person and their friend joining hands under a roof.,"""[""""friend"""",""""buddy"""",""""companion""""]"""
+友,friend,es,Amigo,Una persona y su amigo tomados de la mano bajo un techo.,"""[""""amigo"""",""""compañero"""",""""socio""""]"""
+友,friend,ru,Друг,Человек и его друг соединяющие руки под одной крышей.,"""[""""друг"""",""""приятель"""",""""товарищ""""]"""
+反,anti-,en,Bend,A hand using a tool to bend a piece of wood against a cliff.,"""[""""bend"""",""""anti"""",""""curve""""]"""
+反,anti-,es,Curva,Una mano que usa una herramienta para doblar madera contra un acantilado.,"""[""""doblar"""",""""contra"""",""""curva""""]"""
+反,anti-,ru,Изгиб,Рука использующая инструмент чтобы согнуть дерево об обрыв.,"""[""""изгиб"""",""""против"""",""""кривая""""]"""
+叔,uncle,en,Uncle,Your uncle collecting beans from a plant with his hand.,"""[""""uncle"""",""""relative"""",""""family""""]"""
+叔,uncle,es,Tío,Tu tío recolectando frijoles de una planta con su mano.,"""[""""tío"""",""""pariente"""",""""familia""""]"""
+叔,uncle,ru,Дядя,Твой дядя собирающий бобы с растения своей рукой.,"""[""""дядя"""",""""родственник"""",""""семья""""]"""
+取,take,en,Ear,A hand reaching up to take a person's ear as a trophy.,"""[""""take"""",""""ear"""",""""grab""""]"""
+取,take,es,Oreja,Una mano que se extiende para tomar la oreja de alguien como trofeo.,"""[""""tomar"""",""""oreja"""",""""agarrar""""]"""
+取,take,ru,Ухо,Рука тянущаяся чтобы взять ухо человека в качестве трофея.,"""[""""взять"""",""""ухо"""",""""хватать""""]"""
+受,accept,en,Bowl,Passing a bowl from one hand to another to accept food.,"""[""""accept"""",""""bowl"""",""""receive""""]"""
+受,accept,es,Cuenco,Pasar un cuenco de una mano a otra para aceptar comida.,"""[""""aceptar"""",""""cuenco"""",""""recibir""""]"""
+受,accept,ru,Чаша,Передача чаши из рук в руки чтобы принять еду.,"""[""""принять"""",""""чаша"""",""""получать""""]"""
+叚,false,en,Loan,A hand borrowing a false item like a fake piece of fur.,"""[""""loan"""",""""false"""",""""borrow""""]"""
+叚,false,es,Préstamo,Una mano que pide prestado un objeto falso como piel artificial.,"""[""""préstamo"""",""""falso"""",""""prestar""""]"""
+叚,false,ru,Займ,Рука берущая взаймы фальшивую вещь например искусственный мех.,"""[""""займ"""",""""ложный"""",""""одолжить""""]"""
+口,mouth,en,Mouth,A square opening representing a person's open mouth.,"""[""""mouth"""",""""opening"""",""""entrance""""]"""
+口,mouth,es,Boca,Una abertura cuadrada que representa la boca abierta de una persona.,"""[""""boca"""",""""apertura"""",""""entrada""""]"""
+口,mouth,ru,Рот,Квадратное отверстие представляющее открытый рот человека.,"""[""""рот"""",""""отверстие"""",""""вход""""]"""
+古,old,en,Antique,A story passed through ten mouths becomes a very old antique.,"""[""""old"""",""""antique"""",""""ancient""""]"""
+古,old,es,Antigüedad,Una historia pasada por diez bocas se convierte en una antigüedad muy vieja.,"""[""""viejo"""",""""antigüedad"""",""""antiguo""""]"""
+古,old,ru,Старина,История переданная через десять ртов становится глубокой стариной.,"""[""""старый"""",""""старина"""",""""древний""""]"""
+句,phrase,en,Quote,A mouth inside a bundle speaking a single quote or phrase.,"""[""""phrase"""",""""quote"""",""""sentence""""]"""
+句,phrase,es,Frase,Una boca dentro de un bulto que pronuncia una sola cita o frase.,"""[""""frase"""",""""cita"""",""""oración""""]"""
+句,phrase,ru,Фраза,Рот внутри свертка произносящий одну цитату или фразу.,"""[""""фраза"""",""""цитата"""",""""предложение""""]"""
+召,seduce,en,Summon,A mouth using its power to summon or seduce someone.,"""[""""summon"""",""""call"""",""""seduce""""]"""
+召,seduce,es,Llamada,Una boca que usa su poder para llamar o seducir a alguien.,"""[""""llamar"""",""""seducir"""",""""convocar""""]"""
+召,seduce,ru,Призыв,Рот использующий свою силу чтобы призвать или соблазнить кого-то.,"""[""""призыв"""",""""зов"""",""""соблазн""""]"""
+可,can,en,Handle,A person with a strong mouth who can carry a heavy handle.,"""[""""can"""",""""handle"""",""""able""""]"""
+可,can,es,Asa,Una persona con una boca fuerte que puede llevar un asa pesada.,"""[""""poder"""",""""asa"""",""""capaz""""]"""
+可,can,ru,Ручка,Человек с сильным ртом который может нести тяжелую ручку.,"""[""""мочь"""",""""ручка"""",""""сила""""]"""
+台,pedestal,en,Pedestal,A mouth resting on top of a sturdy pedestal.,"""[""""pedestal"""",""""stand"""",""""platform""""]"""
+台,pedestal,es,Pedestal,Una boca apoyada en la parte superior de un pedestal robusto.,"""[""""pedestal"""",""""soporte"""",""""plataforma""""]"""
+台,pedestal,ru,Пьедестал,Рот покоящийся на вершине прочного пьедестала.,"""[""""пьедестал"""",""""подставка"""",""""платформа""""]"""
+右,right,en,Right,The hand you use to put food into your mouth on the right side.,"""[""""right"""",""""hand"""",""""direction""""]"""
+右,right,es,Derecha,La mano que usas para meter comida en la boca en el lado derecho.,"""[""""derecha"""",""""mano"""",""""dirección""""]"""
+右,right,ru,Право,Рука которой вы кладете еду в рот с правой стороны.,"""[""""право"""",""""рука"""",""""направление""""]"""
+司,director,en,Director,A director using their mouth to give orders from a booth.,"""[""""director"""",""""official"""",""""boss""""]"""
+司,director,es,Director,Un director que usa la boca para dar órdenes desde una cabina.,"""[""""director"""",""""oficial"""",""""jefe""""]"""
+司,director,ru,Директор,Директор использующий рот чтобы отдавать приказы из будки.,"""[""""директор"""",""""чиновник"""",""""начальник""""]"""
+各,each,en,Footprint,Each person leaving a distinct footprint after walking through a door.,"""[""""each"""",""""footprint"""",""""every""""]"""
+各,each,es,Huella,Cada persona que deja una huella distinta después de cruzar una puerta.,"""[""""cada"""",""""huella"""",""""cada uno""""]"""
+各,each,ru,След,Каждый человек оставляет четкий след пройдя через дверь.,"""[""""каждый"""",""""след"""",""""всякий""""]"""
+合,fit,en,Lid,A lid that fits perfectly over the mouth of a container.,"""[""""fit"""",""""lid"""",""""join""""]"""
+合,fit,es,Tapa,Una tapa que encaja perfectamente sobre la boca de un contenedor.,"""[""""ajuste"""",""""tapa"""",""""unir""""]"""
+合,fit,ru,Крышка,Крышка которая идеально подходит к горлышку контейнера.,"""[""""подходить"""",""""крышка"""",""""соединять""""]"""
+吉,good luck,en,Luck,A gentleman's mouth speaking words that bring good luck.,"""[""""luck"""",""""good"""",""""fortunate""""]"""
+吉,good luck,es,Suerte,La boca de un caballero que pronuncia palabras que traen buena suerte.,"""[""""suerte"""",""""buena"""",""""afortunado""""]"""
+吉,good luck,ru,Удача,Уста дворянина произносящие слова приносящие удачу.,"""[""""удача"""",""""добро"""",""""везение""""]"""
+同,same,en,Hood,Everyone under the same hood speaks with the same mouth.,"""[""""same"""",""""hood"""",""""equal""""]"""
+同,same,es,Capucha,Todos bajo la misma capucha hablan con la misma boca.,"""[""""mismo"""",""""capucha"""",""""igual""""]"""
+同,same,ru,Капюшон,Все под одним капюшоном говорят в один голос.,"""[""""одинаковый"""",""""капюшон"""",""""равный""""]"""
+名,name,en,Name,A mouth calling out a person's name in the evening darkness.,"""[""""name"""",""""title"""",""""evening""""]"""
+名,name,es,Nombre,Una boca que grita el nombre de una persona en la oscuridad de la tarde.,"""[""""nombre"""",""""título"""",""""tarde""""]"""
+名,name,ru,Имя,Рот выкрикивающий имя человека в вечерней темноте.,"""[""""имя"""",""""название"""",""""вечер""""]"""
+吏,officer,en,Officer,An officer holding a rod and speaking with authority.,"""[""""officer"""",""""official"""",""""clerk""""]"""
+吏,officer,es,Oficial,Un oficial que sostiene una vara y habla con autoridad.,"""[""""oficial"""",""""funcionario"""",""""escribano""""]"""
+吏,officer,ru,Чиновник,Чиновник держащий жезл и говорящий властно.,"""[""""чиновник"""",""""офицер"""",""""служащий""""]"""
+君,mister,en,Scepter,A ruler holding a scepter and giving commands with their mouth.,"""[""""ruler"""",""""lord"""",""""scepter""""]"""
+君,mister,es,Cetro,Un gobernante que sostiene un cetro y da órdenes con su boca.,"""[""""gobernante"""",""""señor"""",""""cetro""""]"""
+君,mister,ru,Скипетр,Правитель держащий скипетр и отдающий приказы ртом.,"""[""""правитель"""",""""господин"""",""""скипетр""""]"""
+吾,I,en,Five Mouths,"Five mouths speaking together to represent the collective ""I"".","""[""""I"""",""""me"""",""""five""""]"""
+吾,I,es,Yo,"Cinco bocas hablando juntas para representar el ""yo"" colectivo.","""[""""yo"""",""""cinco"""",""""mí""""]"""
+吾,I,ru,Я,Пять ртов говорящих вместе представляя коллективное «Я».,"""[""""я"""",""""пять"""",""""меня""""]"""
+呂,spine,en,Spine,Two vertebrae linked together to form part of a spine.,"""[""""spine"""",""""backbone"""",""""vertebrae""""]"""
+呂,spine,es,Espina,Dos vértebras unidas para formar parte de una espina dorsal.,"""[""""espina"""",""""columna"""",""""vértebras""""]"""
+呂,spine,ru,Позвоночник,Два позвонка соединенных вместе образуя часть позвоночника.,"""[""""позвоночник"""",""""спина"""",""""позвонок""""]"""
+呈,display,en,Display,A mouth on a pedestal display used to present a gift.,"""[""""display"""",""""present"""",""""show""""]"""
+呈,display,es,Muestra,Una boca en un pedestal de muestra utilizada para presentar un regalo.,"""[""""muestra"""",""""presentar"""",""""mostrar""""]"""
+呈,display,ru,Показ,Рот на пьедестале для показа используемый для вручения подарка.,"""[""""показ"""",""""представлять"""",""""шоу""""]"""
+呉,give,en,Give,A person with a wide mouth reaching out to give a gift.,"""[""""give"""",""""present"""",""""offer""""]"""
+呉,give,es,Dar,Una persona con una boca ancha que se extiende para dar un regalo.,"""[""""dar"""",""""presentar"""",""""ofrecer""""]"""
+呉,give,ru,Дать,Человек с широким ртом тянется чтобы дать подарок.,"""[""""дать"""",""""дарить"""",""""подносить""""]"""
+告,revelation,en,Revel,A mouth and a bull's horns together to reveal a secret.,"""[""""revelation"""",""""tell"""",""""announce""""]"""
+告,revelation,es,Revelación,Una boca y los cuernos de un toro juntos para revelar un secreto.,"""[""""revelación"""",""""contar"""",""""anunciar""""]"""
+告,revelation,ru,Откровение,Рот и бычьи рога вместе чтобы открыть секрет.,"""[""""откровение"""",""""сказать"""",""""объявить""""]"""
+周,circumference,en,Circuit,A mouth walking a complete circuit around a fenced perimeter.,"""[""""circuit"""",""""circumference"""",""""round""""]"""
+周,circumference,es,Circuito,Una boca que recorre un circuito completo alrededor de un perímetro cercado.,"""[""""circuito"""",""""circunferencia"""",""""vuelta""""]"""
+周,circumference,ru,Окружность,Рот совершающий полный обход по периметру ограды.,"""[""""обход"""",""""окружность"""",""""круг""""]"""
+咅,to spit out,en,Spit,A mouth and a stand used to spit out something bitter.,"""[""""spit"""",""""mouth"""",""""stand""""]"""
+咅,to spit out,es,Escupitajo,Una boca y un soporte usados para escupir algo amargo.,"""[""""escupir"""",""""boca"""",""""soporte""""]"""
+咅,to spit out,ru,Плевок,Рот и подставка используемые чтобы выплюнуть что-то горькое.,"""[""""плевать"""",""""рот"""",""""подставка""""]"""
+咼,crooked mouth,en,Skull,A crooked mouth on a skull with a broken jawbone.,"""[""""crooked"""",""""skull"""",""""bone""""]"""
+咼,crooked mouth,es,Cráneo,Una boca torcida en un cráneo con la mandíbula rota.,"""[""""torcido"""",""""cráneo"""",""""hueso""""]"""
+咼,crooked mouth,ru,Череп,Кривой рот на черепе со сломанной челюстью.,"""[""""кривой"""",""""череп"""",""""кость""""]"""
+品,goods,en,Goods,Three boxes stacked together containing various retail goods.,"""[""""goods"""",""""boxes"""",""""items""""]"""
+品,goods,es,Bienes,Tres cajas apiladas que contienen diversos bienes de consumo.,"""[""""bienes"""",""""cajas"""",""""artículos""""]"""
+品,goods,ru,Товары,Три сложенные коробки содержащие различные товары.,"""[""""товары"""",""""коробки"""",""""изделия""""]"""
+員,employee,en,Employee,An employee with a mouth using a shell for currency.,"""[""""employee"""",""""staff"""",""""member""""]"""
+員,employee,es,Empleado,Un empleado con boca que usa una concha como moneda.,"""[""""empleado"""",""""personal"""",""""miembro""""]"""
+員,employee,ru,Сотрудник,Сотрудник с ртом использующий ракушку как валюту.,"""[""""сотрудник"""",""""персонал"""",""""член""""]"""
+唐,T'ang,en,Sugar,A mouth under a roof eating sweet sugar from a jar.,"""[""""sugar"""",""""sweet"""",""""tang""""]"""
+唐,T'ang,es,Azúcar,Una boca bajo un techo comiendo azúcar dulce de un frasco.,"""[""""azúcar"""",""""dulce"""",""""frasco""""]"""
+唐,T'ang,ru,Сахар,Рот под крышей поедающий сладкий сахар из банки.,"""[""""сахар"""",""""сладкий"""",""""банка""""]"""
+啇,the stalk,en,Stalk,A plant stalk with a decorative top and a mouth-like bud.,"""[""""stalk"""",""""stem"""",""""plant""""]"""
+啇,the stalk,es,Tallo,Un tallo de planta con una parte superior decorativa y un capullo en forma de boca.,"""[""""tallo"""",""""tronco"""",""""planta""""]"""
+啇,the stalk,ru,Стебель,Стебель растения с декоративной верхушкой и почкой похожей на рот.,"""[""""стебель"""",""""ствол"""",""""растение""""]"""
+善,virtuous,en,Virtue,A person with a sheep's heart and two mouths speaking virtue.,"""[""""virtue"""",""""good"""",""""moral""""]"""
+善,virtuous,es,Virtud,Una persona con corazón de oveja y dos bocas que hablan de virtud.,"""[""""virtud"""",""""bueno"""",""""moral""""]"""
+善,virtuous,ru,Добродетель,Человек с овечьим сердцем и двумя ртами говорящий о добродетели.,"""[""""добродетель"""",""""добро"""",""""мораль""""]"""
+喜,rejoice,en,Joy,A mouth singing with joy while a drum beats on a stand.,"""[""""joy"""",""""happy"""",""""rejoice""""]"""
+喜,rejoice,es,Alegría,Una boca que canta con alegría mientras un tambor suena en un soporte.,"""[""""alegría"""",""""feliz"""",""""regocijo""""]"""
+喜,rejoice,ru,Радость,Рот поющий от радости пока барабан бьет на подставке.,"""[""""радость"""",""""счастье"""",""""восторг""""]"""
+喬,high,en,Tower,A tall tower building with a roof and two high windows.,"""[""""tower"""",""""high"""",""""tall""""]"""
+喬,high,es,Torre,Un edificio de torre alta con techo y dos ventanas elevadas.,"""[""""torre"""",""""alto"""",""""elevado""""]"""
+喬,high,ru,Башня,Высокая башня с крышей и двумя высокими окнами.,"""[""""башня"""",""""высокий"""",""""здание""""]"""
+喿,chirping of birds,en,Chirp,Three birds in a tree using their mouths to chirp loudly.,"""[""""chirp"""",""""bird"""",""""tree""""]"""
+喿,chirping of birds,es,Gorjeo,Tres pájaros en un árbol que usan sus bocas para gorjear fuerte.,"""[""""gorjeo"""",""""pájaro"""",""""árbol""""]"""
+喿,chirping of birds,ru,Щебет,Три птицы на дереве громко щебечут своими клювами.,"""[""""щебет"""",""""птица"""",""""дерево""""]"""
+囗,box,en,Box,A large empty box or enclosure used to surround items.,"""[""""box"""",""""enclosure"""",""""border""""]"""
+囗,box,es,Caja,Una caja grande vacía o recinto usado para rodear objetos.,"""[""""caja"""",""""recinto"""",""""borde""""]"""
+囗,box,ru,Ящик,Большой пустой ящик или ограда используемая чтобы окружить предметы.,"""[""""ящик"""",""""ограда"""",""""граница""""]"""
+因,cause,en,Cause,A person trapped inside a box is the cause of the problem.,"""[""""cause"""",""""reason"""",""""inside""""]"""
+因,cause,es,Causa,Una persona atrapada dentro de una caja es la causa del problema.,"""[""""causa"""",""""razón"""",""""dentro""""]"""
+因,cause,ru,Причина,Человек запертый в ящике — вот причина проблемы.,"""[""""причина"""",""""повод"""",""""внутри""""]"""
+固,harden,en,Fort,An old antique kept safely inside a hard stone fort.,"""[""""hard"""",""""fort"""",""""solid""""]"""
+固,harden,es,Fuerte,Una antigüedad vieja guardada a salvo dentro de un fuerte de piedra dura.,"""[""""duro"""",""""fuerte"""",""""sólido""""]"""
+固,harden,ru,Крепость,Старинная вещь надежно хранящаяся в твердой каменной крепости.,"""[""""твердый"""",""""крепость"""",""""прочный""""]"""
+土,soil,en,Soil,A small sprout pushing up through a mound of soil.,"""[""""soil"""",""""earth"""",""""ground""""]"""
+土,soil,es,Suelo,Un pequeño brote que empuja a través de un montículo de suelo.,"""[""""suelo"""",""""tierra"""",""""barro""""]"""
+土,soil,ru,Почва,Маленький росток пробивающийся сквозь холмик почвы.,"""[""""почва"""",""""земля"""",""""грунт""""]"""
+圣,holy,en,Saint,A holy saint standing on the soil and reaching for the sky.,"""[""""holy"""",""""saint"""",""""sacred""""]"""
+圣,holy,es,Santo,Un santo sagrado parado en el suelo y alcanzando el cielo.,"""[""""santo"""",""""sagrado"""",""""divino""""]"""
+圣,holy,ru,Святой,Святой человек стоящий на земле и тянущийся к небу.,"""[""""святой"""",""""священный"""",""""небо""""]"""
+圭,square jewel,en,Jewel,Two mounds of soil forming a rare square-shaped jewel.,"""[""""jewel"""",""""gem"""",""""jade""""]"""
+圭,square jewel,es,Joya,Dos montículos de tierra que forman una rara joya de forma cuadrada.,"""[""""joya"""",""""gema"""",""""jade""""]"""
+圭,square jewel,ru,Драгоценность,Два холмика земли образующие редкую квадратную драгоценность.,"""[""""драгоценность"""",""""камень"""",""""нефрит""""]"""
+坴,clod of earth,en,Clod,A clod of earth on a pedestal with a small plant growing.,"""[""""clod"""",""""earth"""",""""mound""""]"""
+坴,clod of earth,es,Terrón,Un terrón de tierra en un pedestal con una pequeña planta creciendo.,"""[""""terrón"""",""""tierra"""",""""montículo""""]"""
+坴,clod of earth,ru,Ком,Ком земли на пьедестале на котором растет маленькое растение.,"""[""""ком"""",""""земля"""",""""насыпь""""]"""
+垂,droop,en,Flower,A heavy flower on a soil mound causing its petals to droop.,"""[""""droop"""",""""flower"""",""""hang""""]"""
+垂,droop,es,Flor,Una flor pesada en un montículo de tierra que hace que sus pétalos caigan.,"""[""""caer"""",""""flor"""",""""colgar""""]"""
+垂,droop,ru,Цветок,Тяжелый цветок на земляной насыпи заставляющий лепестки поникнуть.,"""[""""поникнуть"""",""""цветок"""",""""свисать""""]"""
+垔,to restrain,en,Barrier,A barrier made of soil and a lid to restrain the water.,"""[""""barrier"""",""""restrain"""",""""dam""""]"""
+垔,to restrain,es,Barrera,Una barrera hecha de tierra y una tapa para contener el agua.,"""[""""barrera"""",""""restringir"""",""""dique""""]"""
+垔,to restrain,ru,Барьер,Барьер из земли и крышки для сдерживания воды.,"""[""""барьер"""",""""сдерживать"""",""""дамба""""]"""
+執,tenacious,en,Grasp,A person using their hands to grasp a clod of soil.,"""[""""grasp"""",""""hold"""",""""seize""""]"""
+執,tenacious,es,Agarre,Una persona que usa sus manos para agarrar un terrón de tierra.,"""[""""agarrar"""",""""sujetar"""",""""asir""""]"""
+執,tenacious,ru,Хватка,Человек использующий руки чтобы схватить ком земли.,"""[""""хватка"""",""""держать"""",""""схватить""""]"""
+堇,,en,Clay,Moist soil and a person with a tool used to mold clay.,"""[""""clay"""",""""mold"""",""""pottery""""]"""
+堇,,es,Arcilla,Tierra húmeda y una persona con una herramienta para moldear arcilla.,"""[""""arcilla"""",""""moldear"""",""""alfarería""""]"""
+堇,,ru,Глина,Влажная почва и человек с инструментом для лепки из глины.,"""[""""глина"""",""""лепить"""",""""гончарство""""]"""
+士,gentleman,en,Gentleman,A gentleman with broad shoulders standing tall on the soil.,"""[""""gentleman"""",""""scholar"""",""""man""""]"""
+士,gentleman,es,Caballero,Un caballero de hombros anchos parado erguido sobre el suelo.,"""[""""caballero"""",""""erudito"""",""""hombre""""]"""
+士,gentleman,ru,Дворянин,Дворянин с широкими плечами гордо стоит на земле.,"""[""""дворянин"""",""""ученый"""",""""мужик""""]"""
 壬,9th calendar sign,en,,,
 壬,9th calendar sign,es,,,
 壬,9th calendar sign,ru,,,

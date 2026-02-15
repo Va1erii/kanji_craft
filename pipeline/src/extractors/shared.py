@@ -67,6 +67,26 @@ def load_manual_strokes(path: Path) -> dict[str, int]:
     return result
 
 
+def load_manual_furigana(path: Path) -> dict[tuple[str, str], str]:
+    """Load manual furigana overrides from CSV.
+
+    Format: ``word,reading,furigana`` (header row required).
+    Empty furigana values are skipped. Returns ``{(word, reading): furigana}``.
+    """
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    result: dict[tuple[str, str], str] = {}
+    for _, row in df.iterrows():
+        word = row.get("word", "").strip()
+        reading = row.get("reading", "").strip()
+        furigana = row.get("furigana", "").strip()
+        if word and reading and furigana:
+            result[(word, reading)] = furigana
+    log.info("Loaded %d manual furigana entries from %s", len(result), path.name)
+    return result
+
+
 def load_visual_rules(path: Path) -> dict[str, dict]:
     """Load visual disambiguation rules from JSON.
 

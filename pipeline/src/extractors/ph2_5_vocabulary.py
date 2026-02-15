@@ -19,9 +19,12 @@ from pathlib import Path
 import pandas as pd
 
 from src.config import JMDICT_LANG_MAP, TARGET_LANGS
-from src.extractors.shared import write_csv_atomic
+from src.extractors.shared import load_manual_furigana, write_csv_atomic
 
 log = logging.getLogger(__name__)
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+MANUAL_FURIGANA = DATA_DIR / "manual_furigana.csv"
 
 # ---------------------------------------------------------------------------
 # POS Tag Mapping: JMdict pos codes → PosTag enum values
@@ -185,11 +188,18 @@ def _construct_furigana(
     furigana_lookup: dict[tuple[str, str], list[dict]],
     warnings: list[dict],
     is_jlpt: bool = False,
+    manual_furigana: dict[tuple[str, str], str] | None = None,
 ) -> str:
     """Construct {kanji|reading} furigana notation.
 
-    Uses jmdict_furigana data when available, falls back to whole-word.
+    Priority: manual_furigana.csv → jmdict_furigana → whole-word fallback.
     """
+    # Check manual overrides first
+    if manual_furigana:
+        manual = manual_furigana.get((word, reading))
+        if manual:
+            return manual
+
     segments = furigana_lookup.get((word, reading))
 
     if segments is None:
@@ -205,15 +215,29 @@ def _construct_furigana(
         })
         return f"{{{word}|{reading}}}"
 
-    # Build notation from segments
+    # Build notation from segments, merging consecutive kanji into compound
     parts: list[str] = []
+    kanji_buf: str = ""
+    reading_buf: list[str] = []
+
     for seg in segments:
         ruby = seg["ruby"]
         rt = seg.get("rt")
         if rt:
-            parts.append(f"{{{ruby}|{rt}}}")
+            # Kanji segment — accumulate into buffer
+            kanji_buf += ruby
+            reading_buf.append(rt)
         else:
+            # Kana segment — flush any buffered kanji group first
+            if kanji_buf:
+                parts.append("{" + "|".join([kanji_buf, *reading_buf]) + "}")
+                kanji_buf = ""
+                reading_buf = []
             parts.append(ruby)
+
+    # Flush trailing kanji group
+    if kanji_buf:
+        parts.append("{" + "|".join([kanji_buf, *reading_buf]) + "}")
 
     result = "".join(parts)
 
@@ -317,6 +341,7 @@ def _step1_vocabulary_rows(
     kanji_df: pd.DataFrame,
     furigana_df: pd.DataFrame,
     warnings: list[dict],
+    manual_furigana: dict[tuple[str, str], str] | None = None,
 ) -> pd.DataFrame:
     """Step 1+2: Create vocabulary rows with furigana.
 
@@ -417,7 +442,8 @@ def _step1_vocabulary_rows(
         # Furigana
         has_jlpt = jlpt_level is not None
         furigana = _construct_furigana(
-            word, reading, furigana_lookup, warnings, is_jlpt=has_jlpt,
+            word, reading, furigana_lookup, warnings,
+            is_jlpt=has_jlpt, manual_furigana=manual_furigana,
         )
 
         # POS tags
@@ -794,12 +820,16 @@ def extract_vocabulary(
     parquet_dir: Path,
     csv_dir: Path,
     warnings_dir: Path,
+    manual_furigana_path: Path = MANUAL_FURIGANA,
 ) -> dict[str, pd.DataFrame]:
     """Main entry point: run Steps 1-6, write CSVs.
 
     Returns dict of output DataFrames for inspection/testing.
     """
     log.info("Phase 2.5: Vocabulary extraction starting")
+
+    # Load manual furigana overrides
+    manual_furigana = load_manual_furigana(manual_furigana_path)
 
     # Load Parquet files
     jmdict_df = pd.read_parquet(parquet_dir / "jmdict.parquet")
@@ -833,6 +863,7 @@ def extract_vocabulary(
     # Step 1+2: Vocabulary rows with furigana
     vocab_df = _step1_vocabulary_rows(
         jmdict_df, jlpt_vocab_df, kanji_df, furigana_df, warnings,
+        manual_furigana=manual_furigana,
     )
 
     # Step 3: Reading rows

@@ -41,15 +41,15 @@ Pipe-delimited notation encodes kanji readings inline within text. Used on both 
 **Single kanji:**
 
 ```
-{食|た}べる              → 食(た)べる
-{冷|れい}{蔵|ぞう}{庫|こ} → 冷(れい) 蔵(ぞう) 庫(こ)
+{食|た}べる → 食(た)べる
 ```
 
 **Compound — one reading per kanji:**
 
 ```
-{学生|がく|せい}   → 学(がく) 生(せい)
-{勉強|べん|きょう} → 勉(べん) 強(きょう)
+{学生|がく|せい}       → 学(がく) 生(せい)
+{勉強|べん|きょう}     → 勉(べん) 強(きょう)
+{冷蔵庫|れい|ぞう|こ}  → 冷(れい) 蔵(ぞう) 庫(こ)
 ```
 
 **Jukujikun — one reading for multiple kanji:**
@@ -62,13 +62,14 @@ Pipe-delimited notation encodes kanji readings inline within text. Used on both 
 
 **Parser logic:**
 - Split by `|` — first element is kanji text, rest are readings
-- Reading count == kanji character count → per-character ruby
+- Reading count == kanji character count → per-character ruby (compound)
 - Reading count == 1, kanji character count > 1 → jukujikun (one ruby span)
+- Reading count == 1, kanji character count == 1 → single kanji
 
 **Full sentence example:**
 
 ```
-{日|に}{本|ほん}に{行|い}きたい。
+{日本|に|ほん}に{行|い}きたい。
 
 Renders as:  に ほん     い
              日 本   に 行 きたい。

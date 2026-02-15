@@ -142,6 +142,7 @@ def _run_extract(
     furigana_entries=None,
     example_entries=None,
     kanji_entries=None,
+    manual_furigana_path=None,
 ):
     """Full setup-and-run helper. Returns the result dict."""
     parquet_dir = tmp_path / "parquet"
@@ -163,7 +164,14 @@ def _run_extract(
     if kanji_entries is not None:
         _make_kanji_csv(kanji_entries, csv_dir)
 
-    return extract_vocabulary(parquet_dir, csv_dir, warnings_dir)
+    # Use a non-existent path by default (no manual overrides)
+    if manual_furigana_path is None:
+        manual_furigana_path = tmp_path / "manual_furigana.csv"
+
+    return extract_vocabulary(
+        parquet_dir, csv_dir, warnings_dir,
+        manual_furigana_path=manual_furigana_path,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -781,6 +789,46 @@ class TestFurigana:
         )
         assert result["vocabulary"].iloc[0]["furigana"] == "{大人|おとな}"
 
+    def test_compound_format(self, tmp_path):
+        """学生 → {学生|がく|せい} (compound, not per-character brackets)."""
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("学生", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("がくせい", re_pri=["ichi1"])],
+                senses=[_sense(pos=["n"], glosses={"eng": ["student"]})],
+            )],
+            furigana_entries=[
+                ("学生", "がくせい", [
+                    {"ruby": "学", "rt": "がく"},
+                    {"ruby": "生", "rt": "せい"},
+                ]),
+            ],
+        )
+        assert result["vocabulary"].iloc[0]["furigana"] == "{学生|がく|せい}"
+
+    def test_compound_mixed_with_kana(self, tmp_path):
+        """お見舞い → お{見舞|み|ま}い."""
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("お見舞い", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("おみまい", re_pri=["ichi1"])],
+                senses=[_sense(pos=["n"], glosses={"eng": ["sympathy call"]})],
+            )],
+            furigana_entries=[
+                ("お見舞い", "おみまい", [
+                    {"ruby": "お"},
+                    {"ruby": "見", "rt": "み"},
+                    {"ruby": "舞", "rt": "ま"},
+                    {"ruby": "い"},
+                ]),
+            ],
+        )
+        assert result["vocabulary"].iloc[0]["furigana"] == "お{見舞|み|ま}い"
+
     def test_kana_only_plain_text(self, tmp_path):
         """すごい → すごい (no braces)."""
         result = _run_extract(
@@ -826,6 +874,35 @@ class TestFurigana:
         furigana = result["vocabulary"].iloc[0]["furigana"]
         plain = re.sub(r"\{([^|]+)\|[^}]+\}", r"\1", furigana)
         assert plain == "食べる"
+
+    def test_manual_furigana_override(self, tmp_path):
+        """manual_furigana.csv overrides jmdict_furigana and suppresses warning."""
+        # Write a manual furigana CSV
+        manual_path = tmp_path / "manual_furigana.csv"
+        manual_path.write_text("word,reading,furigana\n食べる,たべる,{食|た}べる\n")
+
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            # No jmdict furigana entries → would normally trigger fallback warning
+            jlpt_vocab_entries=[("食べる", "たべる", 5)],
+            kanji_entries=[(1, "食", 5)],
+            manual_furigana_path=manual_path,
+        )
+        assert result["vocabulary"].iloc[0]["furigana"] == "{食|た}べる"
+
+        # No furigana warning should exist
+        csv_dir = tmp_path / "csv"
+        warnings_path = csv_dir / "warnings" / "ph2_5_warnings.csv"
+        if warnings_path.exists():
+            w_df = pd.read_csv(warnings_path)
+            furigana_warns = w_df[w_df["message"].str.contains("jmdict_furigana")]
+            assert len(furigana_warns) == 0
 
 
 # ---------------------------------------------------------------------------

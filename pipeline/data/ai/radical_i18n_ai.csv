@@ -1,19 +1,19 @@
 master_symbol,stroke_count,en_name_seed,lang_code,name,system_mnemonic,search_tags
-⺍,3,,en,,,
-⺍,3,,es,,,
-⺍,3,,ru,,,
-⺤,4,,en,,,
-⺤,4,,es,,,
-⺤,4,,ru,,,
-⻌,3,,en,,,
-⻌,3,,es,,,
-⻌,3,,ru,,,
-⻖,3,,en,,,
-⻖,3,,es,,,
-⻖,3,,ru,,,
-マ,2,,en,,,
-マ,2,,es,,,
-マ,2,,ru,,,
+⺍,3,,en,Horns,Three small strokes rise at the top like horns on a head.,"[""animal"",""points"",""spikes"",""head"",""top""]"
+⺍,3,,es,Cuernos,Tres trazos pequeños se elevan en la parte superior como cuernos en una cabeza.,"[""animal"",""puntas"",""picos"",""cabeza"",""arriba""]"
+⺍,3,,ru,Рога,"Три небольших штриха поднимаются наверху, как рога на голове.","[""животное"",""острый"",""шипы"",""голова"",""верх""]"
+⺤,4,,en,Claw,Four sharp strokes reach down from the top like a bird claw.,"[""nails"",""grab"",""hand"",""scratch"",""bird""]"
+⺤,4,,es,Garra,Cuatro trazos afilados bajan desde arriba como la garra de un pájaro.,"[""uñas"",""agarrar"",""mano"",""arañar"",""pájaro""]"
+⺤,4,,ru,Коготь,"Четыре острых штриха тянутся сверху вниз, как когти птицы.","[""ногти"",""хватать"",""рука"",""царапать"",""птица""]"
+⻌,3,,en,Road,Three strokes form a winding path along the bottom. (Commonly known as the walking radical.),"[""path"",""way"",""street"",""travel"",""move""]"
+⻌,3,,es,Camino,Tres trazos forman un sendero sinuoso a lo largo de la parte inferior.,"[""senda"",""via"",""calle"",""viajar"",""mover""]"
+⻌,3,,ru,Дорога,Три штриха образуют извилистую тропу вдоль нижней части.,"[""путь"",""улица"",""трасса"",""путешествие"",""движение""]"
+⻖,3,,en,Mound,"Three strokes form a bumpy cliff on the left side. (Visual twin of City, which is on the right.)","[""hill"",""cliff"",""bank"",""left"",""earth""]"
+⻖,3,,es,Montículo,Tres trazos forman un acantilado irregular en el lado izquierdo.,"[""colina"",""barranco"",""orilla"",""izquierda"",""tierra""]"
+⻖,3,,ru,Холм,Три штриха образуют неровную скалу с левой стороны.,"[""гора"",""складка"",""лево"",""земля"",""насыпь""]"
+マ,2,,en,Corner,Two strokes meet to form a sharp corner.,"[""angle"",""wedge"",""katakana"",""bend"",""point""]"
+マ,2,,es,Esquina,Dos trazos se unen para formar una esquina afilada.,"[""angulo"",""cuña"",""katakana"",""doblez"",""punta""]"
+マ,2,,ru,Угол,"Две черты встречаются, образуя острый угол.","[""поворот"",""клин"",""катакана"",""изгиб"",""точка""]"
 㐬,7,a cup with pendants,en,,,
 㐬,7,a cup with pendants,es,,,
 㐬,7,a cup with pendants,ru,,,
@@ -53,18 +53,18 @@ master_symbol,stroke_count,en_name_seed,lang_code,name,system_mnemonic,search_ta
 䩗,9,,en,,,
 䩗,9,,es,,,
 䩗,9,,ru,,,
-一,1,one,en,,,
-一,1,one,es,,,
-一,1,one,ru,,,
-丁,2,street,en,,,
-丁,2,street,es,,,
-丁,2,street,ru,,,
-丂,2,obstruction of breath (qi) as it seeks release,en,,,
-丂,2,obstruction of breath (qi) as it seeks release,es,,,
-丂,2,obstruction of breath (qi) as it seeks release,ru,,,
-七,2,seven,en,,,
-七,2,seven,es,,,
-七,2,seven,ru,,,
+一,1,one,en,One,A single horizontal stroke makes one straight line.,"[""first"",""floor"",""level"",""line"",""single""]"
+一,1,one,es,Uno,Un solo trazo horizontal forma una línea recta.,"[""primero"",""suelo"",""nivel"",""linea"",""unico""]"
+一,1,one,ru,Один,Один горизонтальный штрих образует прямую линию.,"[""первый"",""пол"",""уровень"",""линия"",""единица""]"
+丁,2,street,en,Street,Two strokes form a T-junction where two streets meet.,"[""road"",""nail"",""junction"",""intersection"",""corner""]"
+丁,2,street,es,Calle,Dos trazos forman una unión en T donde se cruzan dos calles.,"[""camino"",""clavo"",""cruce"",""interseccion"",""esquina""]"
+丁,2,street,ru,Улица,Две черты образуют Т-образный перекресток двух улиц.,"[""дорога"",""гвоздь"",""стык"",""перекресток"",""угол""]"
+丂,2,obstruction of breath (qi) as it seeks release,en,Hook,Two strokes form a snagging hook that catches on something.,"[""snag"",""catch"",""angle"",""bend"",""curved""]"
+丂,2,obstruction of breath (qi) as it seeks release,es,Gancho,Dos trazos forman un gancho que se engancha en algo.,"[""traba"",""captura"",""angulo"",""doblez"",""curva""]"
+丂,2,obstruction of breath (qi) as it seeks release,ru,Крюк,Две черты образуют зацепляющийся крюк.,"[""зацеп"",""ловушка"",""угол"",""изгиб"",""кривой""]"
+七,2,seven,en,Seven,Two strokes cross through each other to form the number seven.,"[""7"",""count"",""digit"",""amount"",""cross""]"
+七,2,seven,es,Siete,Dos trazos se cruzan para formar el número siete.,"[""7"",""conteo"",""digito"",""cantidad"",""cruz""]"
+七,2,seven,ru,Семь,"Две черты пересекаются, образуя цифру семь.","[""7"",""счет"",""цифра"",""количество"",""крест""]"
 万,3,ten thousand,en,,,
 万,3,ten thousand,es,,,
 万,3,ten thousand,ru,,,

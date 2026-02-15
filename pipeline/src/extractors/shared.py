@@ -2,11 +2,18 @@
 
 import json
 import logging
+import re
 from pathlib import Path
 
 import pandas as pd
 
+from src.config import TARGET_LANGS
+
 log = logging.getLogger(__name__)
+
+
+class ManualFileError(Exception):
+    """Raised when a manual override file fails validation."""
 
 # KanjiVG position → Position enum value
 _POSITION_MAP: dict[str, str] = {
@@ -84,6 +91,27 @@ def load_manual_furigana(path: Path) -> dict[tuple[str, str], str]:
         if word and reading and furigana:
             result[(word, reading)] = furigana
     log.info("Loaded %d manual furigana entries from %s", len(result), path.name)
+    return result
+
+
+def load_manual_localization(path: Path) -> dict[tuple[str, str], str]:
+    """Load manual localization overrides from CSV.
+
+    Format: ``word,lang_code,meanings`` (header row required).
+    Rows with empty meanings are skipped (placeholder pattern).
+    Returns ``{(word, lang_code): meanings_json_string}``.
+    """
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    result: dict[tuple[str, str], str] = {}
+    for _, row in df.iterrows():
+        word = row.get("word", "").strip()
+        lang_code = row.get("lang_code", "").strip()
+        meanings = row.get("meanings", "").strip()
+        if word and lang_code and meanings:
+            result[(word, lang_code)] = meanings
+    log.info("Loaded %d manual localization entries from %s", len(result), path.name)
     return result
 
 
@@ -295,3 +323,183 @@ def char_to_kvg_filename(char: str) -> str:
 def parse_component_tree(json_str: str) -> dict:
     """Parse a component_tree JSON string into a dict."""
     return json.loads(json_str)
+
+
+# ---------------------------------------------------------------------------
+# Manual file validation
+# ---------------------------------------------------------------------------
+
+
+def validate_manual_keep(path: Path) -> None:
+    """Validate manual_keep.txt: each non-comment line must be a single character."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    for i, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if len(line) != 1:
+            errors.append(f"{path.name}:{i}: expected single character, got '{line}'")
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_manual_flatten(path: Path) -> None:
+    """Validate manual_flatten.txt: each line is a single char or CDP-* code."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    cdp_pattern = re.compile(r"^CDP-[A-Z0-9]+$")
+    for i, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if len(line) == 1:
+            continue
+        if cdp_pattern.match(line):
+            continue
+        errors.append(f"{path.name}:{i}: expected single char or CDP-* code, got '{line}'")
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_manual_strokes(path: Path) -> None:
+    """Validate manual_strokes.txt: each line is token + positive integer."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    for i, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) < 2:
+            errors.append(f"{path.name}:{i}: expected 'token count', got '{line}'")
+            continue
+        try:
+            count = int(parts[1])
+            if count <= 0:
+                errors.append(f"{path.name}:{i}: stroke count must be positive, got {count}")
+        except ValueError:
+            errors.append(f"{path.name}:{i}: non-integer stroke count '{parts[1]}'")
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_manual_furigana(path: Path) -> None:
+    """Validate manual_furigana.csv: header word,reading,furigana; all fields non-empty;
+    stripping {X|...} notation reproduces word."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    expected_cols = {"word", "reading", "furigana"}
+    if not expected_cols.issubset(set(df.columns)):
+        raise ManualFileError(
+            f"{path.name}: expected header columns {expected_cols}, got {set(df.columns)}"
+        )
+    for i, row in df.iterrows():
+        line_num = i + 2  # 1-indexed + header
+        word = row["word"].strip()
+        reading = row["reading"].strip()
+        furigana = row["furigana"].strip()
+        if not word or not reading or not furigana:
+            errors.append(f"{path.name}:{line_num}: empty field (word/reading/furigana)")
+            continue
+        # Strip {X|...} notation → should reproduce word
+        plain = re.sub(r"\{([^|]+)\|[^}]+\}", r"\1", furigana)
+        plain = plain.replace("{", "").replace("}", "")
+        if plain != word:
+            errors.append(
+                f"{path.name}:{line_num}: stripped furigana '{plain}' != word '{word}'"
+            )
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_manual_localization(path: Path) -> None:
+    """Validate manual_localization.csv: header word,lang_code,meanings;
+    word+lang_code non-empty; lang_code in TARGET_LANGS; no duplicate pairs;
+    meanings may be empty."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    expected_cols = {"word", "lang_code", "meanings"}
+    if not expected_cols.issubset(set(df.columns)):
+        raise ManualFileError(
+            f"{path.name}: expected header columns {expected_cols}, got {set(df.columns)}"
+        )
+    seen: set[tuple[str, str]] = set()
+    for i, row in df.iterrows():
+        line_num = i + 2
+        word = row["word"].strip()
+        lang_code = row["lang_code"].strip()
+        if not word:
+            errors.append(f"{path.name}:{line_num}: empty word")
+            continue
+        if not lang_code:
+            errors.append(f"{path.name}:{line_num}: empty lang_code")
+            continue
+        if lang_code not in TARGET_LANGS:
+            errors.append(
+                f"{path.name}:{line_num}: invalid lang_code '{lang_code}', "
+                f"expected one of {TARGET_LANGS}"
+            )
+        pair = (word, lang_code)
+        if pair in seen:
+            errors.append(f"{path.name}:{line_num}: duplicate pair ({word}, {lang_code})")
+        seen.add(pair)
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_visual_rules(path: Path) -> None:
+    """Validate visual_rules.json: valid JSON; each entry has visual_group (str)
+    and disambiguation_note (dict)."""
+    if not path.exists():
+        return
+    content = path.read_text(encoding="utf-8").strip()
+    if not content:
+        return
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError as e:
+        raise ManualFileError(f"{path.name}: invalid JSON: {e}") from e
+
+    errors: list[str] = []
+    if not isinstance(data, dict):
+        raise ManualFileError(f"{path.name}: expected top-level dict, got {type(data).__name__}")
+    for key, entry in data.items():
+        if not isinstance(entry, dict):
+            errors.append(f"{path.name}: entry '{key}' is not a dict")
+            continue
+        if "visual_group" not in entry or not isinstance(entry["visual_group"], str):
+            errors.append(f"{path.name}: entry '{key}' missing or invalid 'visual_group'")
+        if "disambiguation_note" not in entry or not isinstance(entry["disambiguation_note"], dict):
+            errors.append(f"{path.name}: entry '{key}' missing or invalid 'disambiguation_note'")
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
+def validate_all_manual_files(data_dir: Path) -> None:
+    """Run all manual file validators. Collects all errors and raises once."""
+    validators = [
+        ("manual_keep.txt", validate_manual_keep),
+        ("manual_flatten.txt", validate_manual_flatten),
+        ("manual_strokes.txt", validate_manual_strokes),
+        ("manual_furigana.csv", validate_manual_furigana),
+        ("manual_localization.csv", validate_manual_localization),
+        ("visual_rules.json", validate_visual_rules),
+    ]
+    all_errors: list[str] = []
+    for filename, validator in validators:
+        try:
+            validator(data_dir / filename)
+        except ManualFileError as e:
+            all_errors.append(str(e))
+    if all_errors:
+        raise ManualFileError(
+            "Manual file validation failed:\n" + "\n".join(all_errors)
+        )

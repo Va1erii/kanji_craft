@@ -7,4 +7,6 @@ svg/
 !manual_keep.txt
 !manual_flatten.txt
 !manual_strokes.txt
+!manual_furigana.csv
+!manual_localization.csv
 !visual_rules.json

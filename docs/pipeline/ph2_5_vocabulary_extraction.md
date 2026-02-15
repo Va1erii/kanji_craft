@@ -19,6 +19,8 @@ This phase sits after Kanji Composition (Phase 2.2) and Component Linking (Phase
 | `kanji.csv` | Steps 2, 6 | Resolving `vocabulary_kanji` links and furigana kanji references |
 | `jlpt_vocab.parquet` | Step 1 | Tanos JLPT vocabulary list (N5–N1) for `min_jlpt_level` |
 | `jmdict_furigana.parquet` | Step 2 | Per-character furigana mappings for notation construction |
+| `manual_furigana.csv` | Step 2 | Manual furigana overrides (highest priority, see §Manual Override Files) |
+| `manual_localization.csv` | Step 4 | Manual translation overrides for missing es/ru glosses (see §Manual Override Files) |
 
 ## Prerequisites
 
@@ -543,6 +545,60 @@ Phase 3: AI Enrichment (sentence translation, furigana annotation, system mnemon
 ```
 
 Steps 1–4 depend on `jmdict.parquet`, `jlpt_vocab.parquet`, `jmdict_furigana.parquet`, and `kanji.csv`. Step 5 depends on `jmdict_examples.parquet`. Step 6 depends on `kanji.csv` for character lookups.
+
+## Manual Override Files
+
+Two manual CSV files in `pipeline/data/` allow human corrections to override automated extraction.
+
+### `manual_furigana.csv`
+
+Overrides the furigana constructed from `jmdict_furigana.parquet` in Step 2.
+
+**Format:** `word,reading,furigana` (header required, all fields non-empty).
+
+```csv
+word,reading,furigana
+どうも有難う,どうもありがとう,どうも{有難|ありがと}う
+一途,いちず,{一途|いちず}
+```
+
+**Priority:** `manual_furigana.csv` > `jmdict_furigana.parquet` > whole-word fallback.
+
+### `manual_localization.csv`
+
+Provides translations for JLPT words missing es/ru glosses in JMdict. Pre-populated with placeholder rows (empty `meanings`) from `ph2_5_warnings.csv`; fill in meanings as JSON arrays to override.
+
+**Format:** `word,lang_code,meanings` (header required, word+lang_code non-empty, meanings may be empty).
+
+```csv
+word,lang_code,meanings
+食べる,es,"[""comer""]"
+食べる,ru,"[""есть""]"
+大人,es,
+```
+
+Rows with empty `meanings` are placeholders — they are skipped by the loader and do not suppress warnings. Only rows with non-empty `meanings` (valid JSON arrays) create i18n rows.
+
+**Priority:** JMdict glosses > `manual_localization.csv` > skip (warning fires). The manual override only applies when JMdict has no glosses for the target language.
+
+**Validation rules:** `word` and `lang_code` non-empty; `lang_code` must be in `TARGET_LANGS`; no duplicate `(word, lang_code)` pairs.
+
+## Manual File Validation
+
+All manual override files are validated at the start of Phase 2 (`extract.py`), before any extraction runs. Validation is fail-fast: if any file is malformed, the pipeline aborts with a combined error report listing all problems.
+
+**Validated files:** `manual_keep.txt`, `manual_flatten.txt`, `manual_strokes.txt`, `manual_furigana.csv`, `manual_localization.csv`, `visual_rules.json`.
+
+Each validator skips gracefully if the file doesn't exist. Validation rules per file:
+
+| File | Rules |
+|---|---|
+| `manual_keep.txt` | Each non-comment line is a single character |
+| `manual_flatten.txt` | Each non-comment line is a single character or `CDP-*` code |
+| `manual_strokes.txt` | Each non-comment line has a token and a positive integer |
+| `manual_furigana.csv` | Header `word,reading,furigana`; all 3 fields non-empty; stripping `{X\|...}` notation reproduces `word` |
+| `manual_localization.csv` | Header `word,lang_code,meanings`; word+lang_code non-empty; `lang_code` in `TARGET_LANGS`; no duplicate `(word, lang_code)` pairs |
+| `visual_rules.json` | Valid JSON; each entry has `visual_group` (string) and `disambiguation_note` (dict) |
 
 ## Related Docs
 

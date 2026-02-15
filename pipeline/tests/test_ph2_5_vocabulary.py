@@ -143,6 +143,7 @@ def _run_extract(
     example_entries=None,
     kanji_entries=None,
     manual_furigana_path=None,
+    manual_localization_path=None,
 ):
     """Full setup-and-run helper. Returns the result dict."""
     parquet_dir = tmp_path / "parquet"
@@ -167,10 +168,13 @@ def _run_extract(
     # Use a non-existent path by default (no manual overrides)
     if manual_furigana_path is None:
         manual_furigana_path = tmp_path / "manual_furigana.csv"
+    if manual_localization_path is None:
+        manual_localization_path = tmp_path / "manual_localization.csv"
 
     return extract_vocabulary(
         parquet_dir, csv_dir, warnings_dir,
         manual_furigana_path=manual_furigana_path,
+        manual_localization_path=manual_localization_path,
     )
 
 
@@ -1389,3 +1393,105 @@ class TestIntegration:
             df1 = pd.read_csv(tmp_path / "run1" / "csv" / name)
             df2 = pd.read_csv(tmp_path / "run2" / "csv" / name)
             pd.testing.assert_frame_equal(df1, df2)
+
+
+# ---------------------------------------------------------------------------
+# Manual Localization Override (Step 4)
+# ---------------------------------------------------------------------------
+
+
+class TestManualLocalization:
+    def test_manual_localization_override(self, tmp_path):
+        """Non-empty meanings in manual CSV creates i18n row, suppresses warning."""
+        manual_path = tmp_path / "manual_localization.csv"
+        manual_path.write_text(
+            'word,lang_code,meanings\n食べる,es,"[""comer""]"\n食べる,ru,"[""есть""]"\n'
+        )
+
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            jlpt_vocab_entries=[("食べる", "たべる", 5)],
+            furigana_entries=[
+                ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
+            ],
+            kanji_entries=[(1, "食", 5)],
+            manual_localization_path=manual_path,
+        )
+        idf = result["vocabulary_i18n"]
+        es_rows = idf[idf["lang_code"] == "es"]
+        assert len(es_rows) == 1
+        assert json.loads(es_rows.iloc[0]["meanings"]) == ["comer"]
+
+        ru_rows = idf[idf["lang_code"] == "ru"]
+        assert len(ru_rows) == 1
+        assert json.loads(ru_rows.iloc[0]["meanings"]) == ["есть"]
+
+        # No missing translation warnings should exist
+        csv_dir = tmp_path / "csv"
+        warnings_path = csv_dir / "warnings" / "ph2_5_warnings.csv"
+        if warnings_path.exists():
+            w_df = pd.read_csv(warnings_path)
+            trans_warns = w_df[w_df["message"].str.contains("missing .+ translation", regex=True)]
+            assert len(trans_warns) == 0
+
+    def test_jmdict_priority_over_manual(self, tmp_path):
+        """JMdict glosses used when available, manual ignored."""
+        manual_path = tmp_path / "manual_localization.csv"
+        manual_path.write_text(
+            'word,lang_code,meanings\n食べる,es,"[""manual_override""]"\n'
+        )
+
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"], "spa": ["comer"]})],
+            )],
+            furigana_entries=[
+                ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
+            ],
+            manual_localization_path=manual_path,
+        )
+        idf = result["vocabulary_i18n"]
+        es_rows = idf[idf["lang_code"] == "es"]
+        assert len(es_rows) == 1
+        # JMdict "comer" wins over manual "manual_override"
+        assert json.loads(es_rows.iloc[0]["meanings"]) == ["comer"]
+
+    def test_empty_manual_meanings_no_effect(self, tmp_path):
+        """Empty meanings in manual CSV = no i18n row, warning still fires."""
+        manual_path = tmp_path / "manual_localization.csv"
+        manual_path.write_text("word,lang_code,meanings\n食べる,es,\n食べる,ru,\n")
+
+        result = _run_extract(
+            tmp_path,
+            [_jmdict_row(
+                100,
+                k_ele=[_k_ele("食べる", ke_pri=["ichi1"])],
+                r_ele=[_r_ele("たべる", re_pri=["ichi1"])],
+                senses=[_sense(pos=["v1"], glosses={"eng": ["to eat"]})],
+            )],
+            jlpt_vocab_entries=[("食べる", "たべる", 5)],
+            furigana_entries=[
+                ("食べる", "たべる", [{"ruby": "食", "rt": "た"}, {"ruby": "べる"}]),
+            ],
+            kanji_entries=[(1, "食", 5)],
+            manual_localization_path=manual_path,
+        )
+        idf = result["vocabulary_i18n"]
+        # Only English row, no es/ru
+        assert set(idf["lang_code"]) == {"en"}
+
+        # Missing translation warnings should still fire
+        csv_dir = tmp_path / "csv"
+        w_df = pd.read_csv(csv_dir / "warnings" / "ph2_5_warnings.csv")
+        trans_warns = w_df[w_df["message"].str.contains("missing .+ translation", regex=True)]
+        assert len(trans_warns) == 2  # es + ru

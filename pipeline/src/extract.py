@@ -18,6 +18,7 @@ from src.extractors.ph2_2_kanji import extract_kanji
 from src.extractors.ph2_3_components import extract_components
 from src.extractors.ph2_4_svg import extract_svg
 from src.extractors.ph2_5_vocabulary import extract_vocabulary
+from src.extractors.shared import validate_all_manual_files
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +33,11 @@ def main() -> None:
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
+
+    # Validate manual override files before any phase runs
+    data_dir = Path(__file__).resolve().parent.parent / "data"
+    validate_all_manual_files(data_dir)
+    log.info("Manual override files validated")
 
     start = time.perf_counter()
     log.info("Phase 2: Extracting from %s → %s", PARQUET_DIR, CSV_DIR)

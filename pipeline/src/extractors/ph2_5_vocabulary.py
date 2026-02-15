@@ -19,12 +19,13 @@ from pathlib import Path
 import pandas as pd
 
 from src.config import JMDICT_LANG_MAP, TARGET_LANGS
-from src.extractors.shared import load_manual_furigana, write_csv_atomic
+from src.extractors.shared import load_manual_furigana, load_manual_localization, write_csv_atomic
 
 log = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 MANUAL_FURIGANA = DATA_DIR / "manual_furigana.csv"
+MANUAL_LOCALIZATION = DATA_DIR / "manual_localization.csv"
 
 # ---------------------------------------------------------------------------
 # POS Tag Mapping: JMdict pos codes → PosTag enum values
@@ -591,6 +592,7 @@ def _step4_i18n_rows(
     vocab_df: pd.DataFrame,
     jmdict_df: pd.DataFrame,
     warnings: list[dict],
+    manual_localization: dict[tuple[str, str], str] | None = None,
 ) -> pd.DataFrame:
     """Step 4: Create i18n rows for target languages."""
     log.info("Step 4: Creating i18n rows")
@@ -633,6 +635,11 @@ def _step4_i18n_rows(
                 for g in glosses:
                     if g.get("lang") == jmdict_lang and g.get("text"):
                         meanings.append(g["text"])
+
+            if not meanings and manual_localization:
+                manual_entry = manual_localization.get((word, lang_code))
+                if manual_entry:
+                    meanings = json.loads(manual_entry)
 
             if not meanings:
                 continue
@@ -821,6 +828,7 @@ def extract_vocabulary(
     csv_dir: Path,
     warnings_dir: Path,
     manual_furigana_path: Path = MANUAL_FURIGANA,
+    manual_localization_path: Path = MANUAL_LOCALIZATION,
 ) -> dict[str, pd.DataFrame]:
     """Main entry point: run Steps 1-6, write CSVs.
 
@@ -828,8 +836,9 @@ def extract_vocabulary(
     """
     log.info("Phase 2.5: Vocabulary extraction starting")
 
-    # Load manual furigana overrides
+    # Load manual overrides
     manual_furigana = load_manual_furigana(manual_furigana_path)
+    manual_localization = load_manual_localization(manual_localization_path)
 
     # Load Parquet files
     jmdict_df = pd.read_parquet(parquet_dir / "jmdict.parquet")
@@ -883,7 +892,7 @@ def extract_vocabulary(
                 })
 
     # Step 4: I18n rows
-    i18n_df = _step4_i18n_rows(vocab_df, jmdict_df, warnings)
+    i18n_df = _step4_i18n_rows(vocab_df, jmdict_df, warnings, manual_localization)
 
     # Step 5: Sentences
     sentences_df, sentence_i18n_df = _step5_sentences(vocab_df, examples_df)

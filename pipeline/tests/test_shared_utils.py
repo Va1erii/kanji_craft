@@ -1,16 +1,26 @@
 """Tests for shared extraction utilities."""
 
+import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from src.extractors.shared import (
+    ManualFileError,
     flatten_empty_elements,
     load_manual_list,
     map_position,
     merge_split_parts,
     resolve_effective_children,
     resolve_master_symbol,
+    validate_all_manual_files,
+    validate_manual_flatten,
+    validate_manual_furigana,
+    validate_manual_keep,
+    validate_manual_localization,
+    validate_manual_strokes,
+    validate_visual_rules,
     write_csv_atomic,
 )
 
@@ -416,3 +426,169 @@ class TestResolveEffectiveChildren:
         elements = [c["element"] for c in result]
         assert "辶" in elements
         assert "首" in elements
+
+
+# --- validate_manual_keep ---
+
+
+class TestValidateManualKeep:
+    def test_nonexistent_passes(self):
+        validate_manual_keep(Path("/nonexistent/file.txt"))
+
+    def test_valid_passes(self, tmp_path):
+        f = tmp_path / "manual_keep.txt"
+        f.write_text("# comment\n木\n水\n")
+        validate_manual_keep(f)
+
+    def test_multi_char_fails(self, tmp_path):
+        f = tmp_path / "manual_keep.txt"
+        f.write_text("木水\n")
+        with pytest.raises(ManualFileError, match="single character"):
+            validate_manual_keep(f)
+
+
+# --- validate_manual_flatten ---
+
+
+class TestValidateManualFlatten:
+    def test_valid_with_cdp_codes(self, tmp_path):
+        f = tmp_path / "manual_flatten.txt"
+        f.write_text("CDP-8BC4\n⻞\n㐫\n")
+        validate_manual_flatten(f)
+
+    def test_invalid_multi_char_fails(self, tmp_path):
+        f = tmp_path / "manual_flatten.txt"
+        f.write_text("abc\n")
+        with pytest.raises(ManualFileError, match="single char or CDP"):
+            validate_manual_flatten(f)
+
+
+# --- validate_manual_strokes ---
+
+
+class TestValidateManualStrokes:
+    def test_valid(self, tmp_path):
+        f = tmp_path / "manual_strokes.txt"
+        f.write_text("电  5  # Lightning\nCDP-8BC4 8\n")
+        validate_manual_strokes(f)
+
+    def test_non_integer_fails(self, tmp_path):
+        f = tmp_path / "manual_strokes.txt"
+        f.write_text("电  abc\n")
+        with pytest.raises(ManualFileError, match="non-integer"):
+            validate_manual_strokes(f)
+
+    def test_missing_count_fails(self, tmp_path):
+        f = tmp_path / "manual_strokes.txt"
+        f.write_text("电\n")
+        with pytest.raises(ManualFileError, match="token count"):
+            validate_manual_strokes(f)
+
+
+# --- validate_manual_furigana ---
+
+
+class TestValidateManualFurigana:
+    def test_valid(self, tmp_path):
+        f = tmp_path / "manual_furigana.csv"
+        f.write_text("word,reading,furigana\n食べる,たべる,{食|た}べる\n")
+        validate_manual_furigana(f)
+
+    def test_bad_header_fails(self, tmp_path):
+        f = tmp_path / "manual_furigana.csv"
+        f.write_text("a,b,c\nfoo,bar,baz\n")
+        with pytest.raises(ManualFileError, match="header columns"):
+            validate_manual_furigana(f)
+
+    def test_strip_mismatch_fails(self, tmp_path):
+        f = tmp_path / "manual_furigana.csv"
+        f.write_text("word,reading,furigana\n食べる,たべる,{飲|の}む\n")
+        with pytest.raises(ManualFileError, match="stripped furigana"):
+            validate_manual_furigana(f)
+
+    def test_empty_field_fails(self, tmp_path):
+        f = tmp_path / "manual_furigana.csv"
+        f.write_text("word,reading,furigana\n食べる,,{食|た}べる\n")
+        with pytest.raises(ManualFileError, match="empty field"):
+            validate_manual_furigana(f)
+
+
+# --- validate_manual_localization ---
+
+
+class TestValidateManualLocalization:
+    def test_valid(self, tmp_path):
+        f = tmp_path / "manual_localization.csv"
+        f.write_text('word,lang_code,meanings\n食べる,es,"[""comer""]"\n')
+        validate_manual_localization(f)
+
+    def test_empty_meanings_allowed(self, tmp_path):
+        f = tmp_path / "manual_localization.csv"
+        f.write_text("word,lang_code,meanings\n食べる,es,\n")
+        validate_manual_localization(f)
+
+    def test_invalid_lang_code_fails(self, tmp_path):
+        f = tmp_path / "manual_localization.csv"
+        f.write_text("word,lang_code,meanings\n食べる,xx,\n")
+        with pytest.raises(ManualFileError, match="invalid lang_code"):
+            validate_manual_localization(f)
+
+    def test_duplicate_pair_fails(self, tmp_path):
+        f = tmp_path / "manual_localization.csv"
+        f.write_text("word,lang_code,meanings\n食べる,es,\n食べる,es,\n")
+        with pytest.raises(ManualFileError, match="duplicate pair"):
+            validate_manual_localization(f)
+
+    def test_bad_header_fails(self, tmp_path):
+        f = tmp_path / "manual_localization.csv"
+        f.write_text("a,b,c\nfoo,bar,baz\n")
+        with pytest.raises(ManualFileError, match="header columns"):
+            validate_manual_localization(f)
+
+
+# --- validate_visual_rules ---
+
+
+class TestValidateVisualRules:
+    def test_valid(self, tmp_path):
+        f = tmp_path / "visual_rules.json"
+        data = {
+            "木": {
+                "visual_group": "木",
+                "disambiguation_note": {"en": "Tree"},
+            },
+        }
+        f.write_text(json.dumps(data))
+        validate_visual_rules(f)
+
+    def test_missing_visual_group_fails(self, tmp_path):
+        f = tmp_path / "visual_rules.json"
+        data = {"木": {"disambiguation_note": {"en": "Tree"}}}
+        f.write_text(json.dumps(data))
+        with pytest.raises(ManualFileError, match="visual_group"):
+            validate_visual_rules(f)
+
+    def test_invalid_json_fails(self, tmp_path):
+        f = tmp_path / "visual_rules.json"
+        f.write_text("{bad json")
+        with pytest.raises(ManualFileError, match="invalid JSON"):
+            validate_visual_rules(f)
+
+
+# --- validate_all_manual_files ---
+
+
+class TestValidateAllManualFiles:
+    def test_all_valid_passes(self, tmp_path):
+        """No files exist → all validators skip → passes."""
+        validate_all_manual_files(tmp_path)
+
+    def test_collects_all_errors(self, tmp_path):
+        """Multiple invalid files → combined error report."""
+        (tmp_path / "manual_keep.txt").write_text("abc\n")
+        (tmp_path / "manual_strokes.txt").write_text("电\n")
+        with pytest.raises(ManualFileError) as exc_info:
+            validate_all_manual_files(tmp_path)
+        msg = str(exc_info.value)
+        assert "single character" in msg
+        assert "token count" in msg

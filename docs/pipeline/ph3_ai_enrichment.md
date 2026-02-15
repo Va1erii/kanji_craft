@@ -2,7 +2,9 @@
 
 ## Overview
 
-AI Enrichment adds human-quality learning content to the structured CSVs produced by Phase 2. Phase 2 extracts facts (readings, meanings, component links) from dictionaries — Phase 3 transforms those facts into **memorable teaching material** (mnemonics, translations, annotated sentences) that make the SRS experience effective.
+AI Enrichment adds human-quality learning content to the structured CSVs produced by Phase 2. Phase 2 extracts facts (readings, meanings, component links) from dictionaries — Phase 3 transforms those facts into **memorable teaching material** (mnemonics, sentence translations, annotated sentences) that make the SRS experience effective.
+
+**Note:** Vocabulary i18n localization (es/ru meanings) is fully handled in Phase 2 via `manual_localization.csv` — an AI-translated override file with 14,254 entries covering all JLPT words missing JMdict glosses. Phase 3 does **not** generate vocabulary translations; it only generates **sentence** translations (Step 6).
 
 The phase has two distinct modes:
 
@@ -495,7 +497,7 @@ Before proceeding to Phase 4, the following completeness checks must pass for ea
 
 ### Vocabulary completeness
 
-- Every vocabulary in the batch has `vocabulary_i18n` rows for all 3 languages.
+- Every vocabulary in the batch has `vocabulary_i18n` rows for all 3 languages. (EN from JMdict, ES/RU from JMdict + `manual_localization.csv` in Phase 2.)
 - Every `vocabulary_i18n` row has a non-empty `search_tags` array.
 - `system_mnemonic` may be null (intentionally skipped) — no completeness check on this field.
 

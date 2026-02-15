@@ -520,11 +520,12 @@ Warnings are written to `data/csv/warnings/ph2_5_warnings.csv` with columns: `se
 | `vocabulary_sentences.csv` | `jmdict_examples.parquet` | Example sentences |
 | `vocabulary_sentence_i18n.csv` | `jmdict_examples.parquet` | English translations of sentences |
 
+**Vocabulary localization:** ES/RU `vocabulary_i18n` meanings are complete after Phase 2 — JMdict glosses supplemented by `manual_localization.csv` (AI-translated). No Phase 3 step needed for vocabulary translations.
+
 Files updated by **later phases** (not this algorithm):
 - `vocabulary_i18n.csv` `system_mnemonic`, `search_tags` — AI Enrichment (Phase 3)
-- `vocabulary_sentences.csv` (AI-translated sentences) — AI Enrichment (Phase 3)
-- `vocabulary_sentence_i18n.csv` (non-English translations) — AI Enrichment (Phase 3)
 - `vocabulary_sentences.csv` `original_text` furigana annotation — AI Enrichment (Phase 3)
+- `vocabulary_sentence_i18n.csv` (ES/RU sentence translations) — AI Enrichment (Phase 3)
 
 ## Ordering Constraints
 
@@ -566,15 +567,14 @@ word,reading,furigana
 
 ### `manual_localization.csv`
 
-Provides translations for JLPT words missing es/ru glosses in JMdict. Pre-populated with placeholder rows (empty `meanings`) from `ph2_5_warnings.csv`; fill in meanings as JSON arrays to override.
+Provides es/ru translations for JLPT words missing glosses in JMdict. The file was pre-generated from `ph2_5_warnings.csv` (all JLPT words missing non-English translations) and translated via AI. All 14,254 rows are populated — this file is complete and does not require Phase 3 AI enrichment for vocabulary localization.
 
-**Format:** `word,lang_code,meanings` (header required, word+lang_code non-empty, meanings may be empty).
+**Format:** `word,lang_code,meanings` (header required, word+lang_code non-empty, meanings as JSON array).
 
 ```csv
 word,lang_code,meanings
 食べる,es,"[""comer""]"
 食べる,ru,"[""есть""]"
-大人,es,
 ```
 
 Rows with empty `meanings` are placeholders — they are skipped by the loader and do not suppress warnings. Only rows with non-empty `meanings` (valid JSON arrays) create i18n rows.

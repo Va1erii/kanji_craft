@@ -93,6 +93,12 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `ph2_5_vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
 | `ph3_ai_enrichment.md` | Phase 3: logic hints, mnemonics (Lego Stack), sentence furigana, translations | Implementing AI enrichment or mnemonic generation |
 
+### Reference (`docs/`)
+
+| Doc | Covers |
+|---|---|
+| `glossary.md` | Quick reference for domain terms, Japanese concepts, FSRS, and abbreviations |
+
 ### ADR Docs (`docs/adr/`) — read when implementing infrastructure
 
 | Doc | Covers | When to read |

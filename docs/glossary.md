@@ -47,6 +47,19 @@ Traditional names for where a radical sits inside a kanji character (see radical
 | **lesson queue** | The queue of new items waiting for their first review. Items enter after prerequisites are met |
 | **leech** | A card with many lapses (e.g. >= 8) indicating the user keeps forgetting it. The app suggests revisiting the mnemonic |
 
+## Pipeline Concepts
+
+| Term | Meaning |
+|---|---|
+| **scope set** | The set of educationally relevant kanji (Jōyō grades 1–8 ∪ all JLPT levels). Only radicals appearing in scope kanji are considered for extraction |
+| **keep set** | The set of elements registered as radicals: scope set ∪ official Kangxi ∪ high-frequency components ∪ manual_keep − manual_flatten |
+| **ghost radical** | A KanjiVG intermediate element NOT in the keep set. Flattened by promoting its children into the parent kanji's component list |
+| **ghost flattening** | Recursive algorithm that replaces ghost radicals with their sub-components. Depth-limited to prevent infinite loops |
+| **force drop** | Elements in `manual_flatten.txt` are silently discarded during ghost flattening, even if unflattenable (no KanjiVG entry) |
+| **visual group** | A nullable string on `Radical` grouping radicals that render as the same shape (e.g. 肉 and 月 both render as 月). Sourced from curated `visual_rules.json` |
+| **disambiguation note** | Per-language teaching text on `RadicalI18n` explaining how to distinguish visual group siblings. Curated in `visual_rules.json`, not AI-generated |
+| **phonetic anchor** | A radical in `manual_keep.txt` that carries a consistent onyomi across multiple kanji (e.g. 袁 → EN in 遠/園/猿) |
+
 ## FSRS & SRS
 
 | Term | Meaning |

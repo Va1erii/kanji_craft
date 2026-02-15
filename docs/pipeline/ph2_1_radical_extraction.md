@@ -495,6 +495,24 @@ Tables populated by **later phases** (not this algorithm):
 
 **Future consideration — SVG stroke group linkage:** The current schema does not store KanjiVG `<g>` group IDs on `kanji_components`. For the UI to highlight specific strokes belonging to a merged/split part or a promoted ghost child, it will need a way to map each component back to its SVG stroke groups. This may require adding a `svg_group_ids` field or a separate mapping table. Deferred until the client rendering layer is designed — flagged here so the need is not forgotten.
 
+## Curated Input Files
+
+Phase 2.1 reads four manually maintained files from `pipeline/data/`. These give the admin control over extraction decisions that can't be fully automated from source data alone.
+
+| File | Format | Purpose |
+|---|---|---|
+| `manual_keep.txt` | One character per line, `#` comments | Force characters into the keep set regardless of frequency/scope/official status. Used for phonetic anchors (e.g. 袁 → 遠/園/猿), structural components, and WaniKani cross-references |
+| `manual_flatten.txt` | One character per line, `#` comments | Force characters OUT of the keep set (flattened as ghosts). Wins over `manual_keep.txt` if both list the same character. Used for non-Unicode KanjiVG artifacts (e.g. CDP-8BC4) and opaque intermediates |
+| `manual_strokes.txt` | `char  count  # comment` per line | Override stroke counts for radicals whose KanjiVG entry is missing or incorrect. Radicals with stroke_count=0 and no override emit a high warning |
+| `visual_rules.json` | JSON: `{symbol: {visual_group, disambiguation_note: {en,es,ru}}}` | Define visual disambiguation groups for radicals that share the same rendered shape. Curated per-language teaching notes, not AI-generated. Pipeline validates that every group has 2+ members and every entry matches a registered radical |
+
+**When to edit these files:**
+
+- **`manual_keep.txt`** — Add a character when it appears in common kanji but falls below the frequency threshold (freq < 5), or when it serves as a phonetic anchor for a reading group.
+- **`manual_flatten.txt`** — Add a character when it's a junk artifact (CDP codes, non-Unicode), or an opaque intermediate that adds no teaching value.
+- **`manual_strokes.txt`** — Add a character when it has no standalone KanjiVG entry (stroke_count defaults to 0) or when the KanjiVG stroke count is wrong.
+- **`visual_rules.json`** — Add entries when the pipeline emits a "Visually ambiguous radicals" high warning, indicating two radicals share a variant shape but have no disambiguation rule.
+
 ## Ordering Constraint
 
 Pass 0 (scope set) requires `kanjidic.parquet` and `jlpt_kanji.parquet` to be produced (Phase 1 complete). Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:

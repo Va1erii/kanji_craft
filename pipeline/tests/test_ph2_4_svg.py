@@ -115,7 +115,7 @@ def _mock_client(remote_radicals: list[str] | None = None, remote_kanji: list[st
     rad_files = [{"name": f} for f in (remote_radicals or [])]
     kanji_files = [{"name": f} for f in (remote_kanji or [])]
 
-    def list_folder(folder):
+    def list_folder(folder, *_args, **_kwargs):
         if folder == "radicals":
             return rad_files
         if folder == "kanji":

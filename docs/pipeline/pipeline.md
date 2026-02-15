@@ -119,11 +119,14 @@ kanji_craft/
     data/                           # Generated artifacts (gitignored)
       parquet/                      # Phase 1 output
       csv/                          # Phase 2 output (+ Phase 3 enrichment)
+      svg/                          # Phase 2.4 output: matched SVG files for Phase 4 upload
+        radicals/                   # Radical + variant SVGs
+        kanji/                      # Kanji SVGs
 ```
 
 - **`sources/`** — immutable, versioned snapshots of external data. Read-only for the pipeline.
 - **`pipeline/`** — self-contained Python project with its own venv. All scripts read from `sources/` and write to `pipeline/data/`.
-- **`pipeline/data/`** — gitignored, fully regenerable. Parquet and CSV files are intermediate artifacts.
+- **`pipeline/data/`** — gitignored, fully regenerable. Parquet, CSV, and SVG files are intermediate artifacts.
 
 ## Architecture
 
@@ -139,7 +142,7 @@ sources/ (read-only)              Phase 1              Phase 2             Phase
                                                                                 (PostgreSQL + Storage)
 ```
 
-**File flow:** `sources/` → `data/parquet/` (Phase 1) → `data/csv/` (Phase 2) → enriched `data/csv/` (Phase 3) → Supabase (Phase 4)
+**File flow:** `sources/` → `data/parquet/` (Phase 1) → `data/csv/` + `data/svg/` (Phase 2) → enriched `data/csv/` (Phase 3) → Supabase (Phase 4)
 
 ## Phase 1: Ingestion (Python → Parquet)
 
@@ -234,6 +237,8 @@ Reads the `kanjivg-{version}-main.zip` archive + radicals/kanji from prior steps
    - `svg_file_name` — Unicode hex filename, e.g. `06c34.svg`
    - `svg_hash` — SHA-256 hex digest
    - `svg_file_url` — constructed from bucket URL pattern: `{supabase_url}/storage/v1/object/public/svg/{svg_file_name}`
+4. **Save to disk:** Write matched SVGs to `data/svg/{radicals,kanji}/` for Phase 4 batch upload to Remote Supabase.
+5. **Local upload:** Upload to Local Supabase Storage (when env vars set) for dev verification.
 
 Updates `radicals.csv`, `radical_variants.csv`, and `kanji.csv` with SVG fields.
 
@@ -334,10 +339,10 @@ Tables are uploaded in strict order to satisfy foreign key constraints:
 
 ### 4.3 SVG Upload
 
-Before uploading database rows, upload changed SVG files to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
+Before uploading database rows, upload changed SVG files from `data/svg/` to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
 
 1. **Diff by hash:** For each radical, radical_variant, and kanji row being uploaded, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
-2. **Upload changed:** Only upload SVGs where the hash differs or the remote row is new. Use `supabase.storage.from('svg').upload()` with upsert mode.
+2. **Upload changed:** Only upload SVGs where the hash differs or the remote row is new. Read the file from `data/svg/{radicals,kanji}/` and upload via `supabase.storage.from('svg').upload()` with upsert mode.
 3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed.
 
 **Failure handling:** If an SVG upload fails, the row is skipped and logged. The database row is not uploaded without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.

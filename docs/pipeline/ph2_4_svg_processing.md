@@ -6,7 +6,7 @@ SVG Processing (pipeline Phase 2.4) populates SVG-related fields on `radicals.cs
 
 **Core principle:** Content-based hashing for delta sync. Each SVG file is hashed (SHA-256) so that the upload phase (Phase 4) can compare hashes against Remote storage and upload only changed files. Identical bytes across KanjiVG versions produce the same hash — unchanged characters are never re-uploaded.
 
-**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on output CSVs. It does **not** upload SVGs to Supabase Storage — that is the responsibility of Phase 4 (upload).
+**Scope boundary:** This phase populates `svg_file_name`, `svg_hash`, and `svg_file_url` on output CSVs. It also saves matched SVG files to `data/svg/` for Phase 4 batch upload to Remote Supabase, and uploads to Local Supabase Storage for dev verification.
 
 ## Prerequisites
 
@@ -121,6 +121,31 @@ Each variant has its own SVG showing the shape as it appears at a specific posit
 - Hash: SHA-256 of `04f11.svg` raw bytes → `"c3d4..."`
 - URL: `{supabase_url}/storage/v1/object/public/svg/04f11.svg`
 - Updated fields on `kanji.csv`: `svg_file_name = '04f11.svg'`, `svg_hash = 'c3d4...'`, `svg_file_url = '{url}'`
+
+## Disk Output
+
+Matched SVG files are saved to `data/svg/` alongside `data/csv/`. The folder structure mirrors the Supabase Storage bucket layout:
+
+```
+data/svg/
+  radicals/    # Radical + radical variant SVGs (e.g. 4e00.svg, 6c35.svg)
+  kanji/       # Kanji SVGs (e.g. 4f11.svg)
+```
+
+**Idempotency:** Files are skipped if already on disk with the same size. Re-running the phase does not re-write unchanged files.
+
+**Purpose:** This folder is the staging area for Phase 4, which batch-uploads SVGs to Remote Supabase Storage. The folder is gitignored (`pipeline/data/.gitignore`).
+
+## Local Supabase Upload
+
+When `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables are set, the phase also uploads SVGs to Local Supabase Storage for dev verification. This uses the `svg` bucket declared in `supabase/config.toml`.
+
+- **New files** are uploaded via `POST`.
+- **Existing files** (already in remote listing) are skipped.
+- **409 Duplicate** errors (race condition or incomplete listing) are handled gracefully — the file is counted as skipped.
+- **Changed hashes** (file exists remotely but local hash differs from previous CSV hash) emit a high-severity warning for admin review. The admin must re-upload manually.
+
+If the env vars are not set, uploads are skipped with a warning log — the phase still populates CSV fields and writes disk files normally.
 
 ## Warnings
 

@@ -74,21 +74,44 @@ def _load_old_hashes(
 
 
 def _list_remote_files(client, folder: str) -> set[str]:
-    """List filenames in a Supabase storage folder."""
+    """List all filenames in a Supabase storage folder (paginated)."""
+    PAGE_SIZE = 1000
+    names: set[str] = set()
     try:
-        result = client.storage.from_(BUCKET_NAME).list(folder)
-        return {item["name"] for item in result if item.get("name")}
+        offset = 0
+        while True:
+            page = client.storage.from_(BUCKET_NAME).list(
+                folder, {"limit": PAGE_SIZE, "offset": offset}
+            )
+            for item in page:
+                if item.get("name"):
+                    names.add(item["name"])
+            if len(page) < PAGE_SIZE:
+                break
+            offset += PAGE_SIZE
     except Exception:
         log.exception("Failed to list remote files in %s/%s", BUCKET_NAME, folder)
-        return set()
+    return names
 
 
-def _upload_file(client, folder: str, filename: str, data: bytes) -> None:
-    """Upload a single SVG file to Supabase storage. Raises on failure."""
+def _upload_file(client, folder: str, filename: str, data: bytes) -> bool:
+    """Upload a single SVG file to Supabase storage.
+
+    Returns True if uploaded, False if already exists (409 Duplicate).
+    Raises on other failures.
+    """
+    from storage3.exceptions import StorageApiError
+
     path = f"{folder}/{filename}"
-    client.storage.from_(BUCKET_NAME).upload(
-        path, data, {"content-type": "image/svg+xml"}
-    )
+    try:
+        client.storage.from_(BUCKET_NAME).upload(
+            path, data, {"content-type": "image/svg+xml"}
+        )
+    except StorageApiError as exc:
+        if exc.args and "already exists" in str(exc.args[0]).lower():
+            return False
+        raise
+    return True
 
 
 def _create_supabase_client():
@@ -185,8 +208,10 @@ def _process_entity(
         # Upload decision
         if client is not None:
             if storage_name not in remote_files:
-                _upload_file(client, url_folder, storage_name, raw_bytes)
-                uploaded += 1
+                if _upload_file(client, url_folder, storage_name, raw_bytes):
+                    uploaded += 1
+                else:
+                    skipped += 1  # 409 Duplicate
                 remote_files.add(storage_name)
             else:
                 old_hash = old_hashes.get(storage_name)

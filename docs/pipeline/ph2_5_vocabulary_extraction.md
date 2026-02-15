@@ -176,12 +176,12 @@ If the entry has `re_nokanji = true`, the reading is the word itself (no kanji h
 
 ### Step 4: Create I18n Rows
 
-For each vocabulary word, write localized meaning rows to `vocabulary_i18n.csv` for each target language in the pipeline configuration (default: `['en', 'es']`).
+For each vocabulary word, write localized meaning rows to `vocabulary_i18n.csv` for each language in `TARGET_LANGS` (from `src/config.py`). JMdict uses ISO 639-2/B 3-letter codes for glosses, so the extractor maps each target language via `JMDICT_LANG_MAP` (e.g. `"en" → "eng"`, `"es" → "spa"`, `"ru" → "rus"`).
 
 For each target language:
 
 1. Collect all `sense` elements from the JMdict entry.
-2. For each sense, look up `glosses[lang_code]`.
+2. For each sense, look up glosses by the mapped 3-letter code.
 3. If the language key is present and the glosses array is non-empty:
    - Aggregate glosses across all senses into a single `meanings` array (preserving sense ordering).
    - `system_mnemonic` ← empty string. Populated later during AI enrichment (Phase 3) or manually by admin.
@@ -408,7 +408,7 @@ Warnings are written to `data/csv/warnings/ph2_5_warnings.csv` with columns: `se
 |---|---|---|
 | `vocabulary.csv` | `jmdict.parquet` | Core entity with JLPT levels, furigana, POS tags, and frequency rank |
 | `vocabulary_readings.csv` | `jmdict.parquet` reading elements | Pronunciations with priority |
-| `vocabulary_i18n.csv` | `jmdict.parquet` senses | Localized meanings (en, es) |
+| `vocabulary_i18n.csv` | `jmdict.parquet` senses | Localized meanings (filtered to `TARGET_LANGS`) |
 | `vocabulary_kanji.csv` | Computed from `word` + `kanji.csv` | Kanji composition links with positions |
 | `vocabulary_sentences.csv` | `jmdict_examples.parquet` | Example sentences |
 | `vocabulary_sentence_i18n.csv` | `jmdict_examples.parquet` | English translations of sentences |

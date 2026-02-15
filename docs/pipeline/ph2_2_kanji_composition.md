@@ -95,7 +95,7 @@ For each kanji, extract readings from `kanjidic.parquet` and write to `kanji_rea
 
 ### Step 3: Create I18n Rows
 
-For each kanji, write localized meaning rows to `kanji_i18n.csv` for **every language** present in the source data. All languages are stored — target language filtering (default: `['en', 'es']`) is applied later during AI enrichment (Phase 3) and upload to Supabase (Phase 4).
+For each kanji, write localized meaning rows to `kanji_i18n.csv` for languages in `TARGET_LANGS` (from `src/config.py`). Only languages present in both the source data and `TARGET_LANGS` produce rows. Languages not in `TARGET_LANGS` (e.g. `fr`, `pt` from KANJIDIC) are skipped. Languages in `TARGET_LANGS` but absent from the source (e.g. `ru` — KANJIDIC has no Russian meanings) produce no rows here; they are populated by Phase 3 AI enrichment.
 
 For each language key in the kanji's meanings:
 
@@ -337,7 +337,7 @@ Warnings are written to `data/csv/warnings/ph2_2_warnings.csv` with columns: `se
 |---|---|---|
 | `kanji.csv` | One row per `kanjidic.parquet` entry | Step 1 |
 | `kanji_readings.csv` | One row per reading per kanji | Step 2 |
-| `kanji_i18n.csv` | One row per language per kanji (for all languages with data) | Step 3 |
+| `kanji_i18n.csv` | One row per target language per kanji (filtered to `TARGET_LANGS`) | Step 3 |
 
 Files populated by **this phase but documented elsewhere:**
 - `kanji_components.csv` — component linking (Step 4, see [ph2_1_radical_extraction.md Pass 3](ph2_1_radical_extraction.md#pass-3-link--create-kanjicomponent-rows))

@@ -113,6 +113,7 @@ kanji_craft/
     pyproject.toml                  # Dependencies (pandas, pyarrow, etc.)
     .venv/                          # Python virtual environment
     src/                            # Pipeline scripts
+      config.py                     # Central config: TARGET_LANGS, JMDICT_LANG_MAP
       ingest.py                     # Phase 1: sources → Parquet
       extract.py                    # Phase 2: Parquet → CSV
       verify.py                     # Phase 4: validate + upload
@@ -200,7 +201,7 @@ Reads `kanjidic.parquet` + `jlpt_kanji.parquet`.
 
 1. **Kanji creation:** Create rows using metadata from KANJIDIC2 (stroke count, grade, frequency, JLPT mapping). Frequency rank is always populated — synthetic values assigned for unranked kanji.
 2. **Readings:** Extract on'yomi and kun'yomi readings with priority from `re_pri`.
-3. **I18n:** Create meaning rows per language from KANJIDIC2 meanings.
+3. **I18n:** Create meaning rows per language from KANJIDIC2 meanings, filtered to `TARGET_LANGS` from `src/config.py`.
 
 **Output CSVs:**
 
@@ -374,9 +375,10 @@ Replace the local base URL in `svg_file_url` with the Remote Production Storage 
 2. Phase 4 comparison-based sync detects changed rows and uploads only the diff.
 
 **Adding a new language (e.g. French):**
-1. Phase 2 extraction produces i18n CSV rows for the new language.
-2. Phase 3 AI enrichment generates mnemonics and translations for the new language only.
-3. Phase 4 uploads the new i18n rows.
+1. Add the language code to `TARGET_LANGS` in `src/config.py` (and add the ISO 639-2/B mapping to `JMDICT_LANG_MAP` if not already present).
+2. Re-run Phase 2 — extraction produces i18n CSV rows for the new language.
+3. Phase 3 AI enrichment generates mnemonics and translations for the new language only.
+4. Phase 4 uploads the new i18n rows.
 
 **Incremental JLPT release (e.g. N5 first, then N4):**
 1. Run Phases 1–3 for the full dataset.

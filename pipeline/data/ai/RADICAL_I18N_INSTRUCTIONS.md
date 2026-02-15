@@ -264,3 +264,15 @@ Example of how it connects: If you name radical 木 "Tree", a kanji mnemonic (La
 ## Output
 
 Fill the 3 columns (`name`, `system_mnemonic`, `search_tags`) in `radical_i18n_ai.csv` and return the completed file. The pipeline will merge your content into the final `radical_i18n.csv`.
+
+### CSV Formatting Rules
+
+**CRITICAL:** The output is a CSV file. Fields containing commas, quotes, or newlines MUST be properly quoted per RFC 4180:
+
+1. **Wrap fields containing commas in double quotes.** Russian and Spanish text often contains commas.
+   - Bad: `⺍,,ru,Рога,Острые рога поднимаются наверху, как у быка.,"[""рога""]"`
+   - Good: `⺍,,ru,Рога,"Острые рога поднимаются наверху, как у быка.","[""рога""]"`
+2. **Double quotes inside quoted fields must be escaped** as `""`.
+3. **`search_tags` always needs quoting** because the JSON array contains commas: `"[""liquid"",""splash""]"`
+4. **No newlines inside fields.** Each row must be a single line.
+5. **No trailing commas or extra columns.** Every row must have exactly 6 columns: `master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags`

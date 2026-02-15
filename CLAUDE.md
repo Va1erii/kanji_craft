@@ -77,7 +77,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `srs.md` | SrsCard, ReviewLog, Rating, CardState | FSRS algorithm; difficulty 0 = new, 1-10 after first review |
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
 | `mnemonic.md` | UserMnemonic | Polymorphic: item_type + item_id |
-| `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag | Shared across entity groups |
+| `shared_types.md` | ItemType, ReadingType, ReadingPriority, PosTag, MiscTag | Shared across entity groups |
 | `teaching.md` | Teaching strategy, phono-semantic patterns, SRS card types | Color coding, sound match indicators, question formats |
 
 ### Pipeline Docs (`docs/pipeline/`) — read when implementing pipeline
@@ -125,7 +125,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
-**11 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
+**12 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `misc_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
 
 **Key constraints:**
 - `kanji_components` unique on `(kanji_id, radical_id, position)`

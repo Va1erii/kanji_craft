@@ -1,7 +1,7 @@
-/// Curated part-of-speech and usage tags derived from JMdict.
+/// Grammar classification tags derived from JMdict pos codes.
 ///
-/// Drives UI badges, color-coding, and display logic (e.g., prepending
-/// "to" for verbs, showing transitivity indicators).
+/// All values come exclusively from the JMdict `pos` field. Register,
+/// orthography, and style metadata live in [MiscTag].
 enum PosTag {
   ichidanVerb,
   godanVerb,
@@ -11,10 +11,15 @@ enum PosTag {
   intransitive,
   iAdjective,
   naAdjective,
+  noAdjective,
   noun,
   adverb,
-  usuallyKana,
-  polite,
-  humble,
-  honorific,
+  pronoun,
+  particle,
+  counter,
+  conjunction,
+  interjection,
+  expression,
+  prefix,
+  suffix,
 }

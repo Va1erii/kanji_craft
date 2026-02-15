@@ -16,7 +16,10 @@ The core identity of a single vocabulary word. Holds language-independent data: 
 | `word` | `String` | The vocabulary word as written, e.g. "日本", "食べる", "大きい". Unique across all vocabulary |
 | `furigana` | `String` | Word with inline furigana notation, e.g. `{食|た}べる`. See Furigana Notation below |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this word appears in (5 = N5, 1 = N1). Null for words outside the JLPT set |
-| `pos_tags` | `List<PosTag>` | Curated grammar/usage tags for UI badges and display logic. See [shared_types.md §PosTag](shared_types.md#postag-enum) |
+| `pos_tags` | `List<PosTag>` | Grammar classification tags from JMdict `pos`. See [shared_types.md §PosTag](shared_types.md#postag-enum) |
+| `misc_tags` | `List<MiscTag>` | Register, orthography, and style tags from JMdict `misc`/`ke_inf`. See [shared_types.md §MiscTag](shared_types.md#misctag-enum) |
+| `field_tags` | `List<String>` | Domain codes from JMdict `field` (e.g. `["food", "comp"]`). See [shared_types.md §Field Tags](shared_types.md#field-tags) |
+| `dialect_tags` | `List<String>` | Dialect codes from JMdict `dial` (e.g. `["ksb"]`). See [shared_types.md §Dialect Tags](shared_types.md#dialect-tags) |
 | `frequency_rank` | `int` | Frequency rank (1 = most common). Used for ordering within a level |
 | `created_at` | `DateTime` | Row creation timestamp (auto-set) |
 | `updated_at` | `DateTime` | Last modification timestamp. Auto-bumped on direct changes and when child tables change (propagation trigger) |
@@ -172,6 +175,10 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 18. Each `{...}` group must have at least one reading. Reading count must equal kanji character count (per-character) or be exactly 1 (jukujikun).
 20. `pos_tags` must be a JSON array of valid `PosTag` enum values. May be empty for words that don't match any curated tag.
 21. `pos_tags` values must not contain duplicates.
+22. `misc_tags` must be a JSON array of valid `MiscTag` enum values. May be empty (most words have no misc tags).
+23. `field_tags` must be a JSON array of strings (raw JMdict field codes). May be empty.
+24. `dialect_tags` must be a JSON array of strings (raw JMdict dialect codes). May be empty.
+25. `misc_tags`, `field_tags`, and `dialect_tags` values must not contain duplicates within each array.
 
 ## Edge Cases
 
@@ -185,6 +192,9 @@ Vocabulary  ──N:M──→ Kanji                      (via VocabularyKanji; 
 - **Missing sentence translations:** A sentence may exist but lack a `VocabularySentenceI18n` row in the user's language. Fall back to "en". If no translations exist at all, hide the translation.
 - **Jukujikun in furigana:** Irregular compound readings like 大人(おとな) use single-reading notation: `{大人|おとな}`. The client detects jukujikun (1 reading, multiple kanji) and renders one ruby span over the entire group.
 - **Words with multiple POS tags:** A word like 勉強 is both a noun and a suru-verb (`[noun, suru_verb]`). A verb like 消す is godan and transitive (`[godan_verb, transitive]`). The UI determines the dominant badge/color from the tag list — this is a presentation concern, not an entity concern.
-- **Words with `usually_kana` tag:** Words like 有難う (ありがとう) have `usually_kana` in their `pos_tags`. The client should default to showing the kana form even if the kanji form exists.
+- **Words with `usually_kana` tag:** Words like 有難う (ありがとう) have `usually_kana` in their `misc_tags`. The client should default to showing the kana form even if the kanji form exists.
 - **Words with no matching POS tags:** Rare words that don't match any curated JMdict code get an empty `pos_tags` array. The UI shows no badge.
+- **Words with domain tags:** Specialized vocabulary like 味噌 (miso) may have `field_tags: ["food"]`. The UI can optionally show a domain badge or use it for filtered study paths.
+- **Words with dialect tags:** Regional vocabulary may have `dialect_tags: ["ksb"]` (Kansai-ben). The UI can optionally indicate the dialect.
+- **Words with multiple misc tags:** A word can carry several misc tags (e.g. `[colloquial, abbreviation]`). All tags are stored; UI determines which to display.
 - **Word deleted:** Deleting a Vocabulary must cascade-delete VocabularyReading, VocabularyKanji, VocabularyI18n, VocabularySentence (which cascades to VocabularySentenceI18n), and associated SrsCard/ReviewLog rows.

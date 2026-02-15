@@ -24,8 +24,13 @@ rating:              again, hard, good, easy
 auth_provider:       email, google, apple, facebook
 study_path:          jlpt, grade
 pos_tag:             ichidan_verb, godan_verb, suru_verb, kuru_verb, transitive,
-                     intransitive, i_adjective, na_adjective, noun, adverb,
-                     usually_kana, polite, humble, honorific
+                     intransitive, i_adjective, na_adjective, no_adjective, noun,
+                     adverb, pronoun, particle, counter, conjunction, interjection,
+                     expression, prefix, suffix
+misc_tag:            usually_kana, usually_kanji, exclusively_kana, exclusively_kanji,
+                     polite, humble, honorific, colloquial, slang, archaism,
+                     onomatopoeia, yojijukugo, idiomatic, abbreviation, proverb,
+                     irregular_verb, ateji, rare, sensitive, vulgar
 ```
 
 ### Table Dependencies (FK order for sync)
@@ -62,7 +67,10 @@ users (UUID, references auth.users)
 - `review_logs`: append-only, no `updated_at`, no UPDATE/DELETE RLS
 - `srs_cards.difficulty`: 0-10 range (0 = new card sentinel)
 - `kanji_components.is_primary`: `GENERATED ALWAYS AS (radical_type = 'general') STORED`
-- `vocabulary.pos_tags`: JSONB array of pos_tag enum values for UI badges and display logic
+- `vocabulary.pos_tags`: JSONB array of pos_tag enum values for grammar badges
+- `vocabulary.misc_tags`: JSONB array of misc_tag enum values for register/orthography/style
+- `vocabulary.field_tags`: JSONB array of strings (raw JMdict field codes)
+- `vocabulary.dialect_tags`: JSONB array of strings (raw JMdict dialect codes)
 - `vocabulary_sentences.original_text`: Japanese sentence with `{kanji|reading}` inline furigana
 
 ### Propagation Triggers

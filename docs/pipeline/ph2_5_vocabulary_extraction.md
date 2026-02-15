@@ -51,7 +51,10 @@ This ensures both common words (frequency-based) and pedagogically important wor
 | `kanji_elements[0].keb` | `word` | Use the first (most common) kanji headword. If null, use `reading_elements[0].reb` (kana-only word) |
 | (Derived) | `furigana` | Construct `{kanji\|reading}` notation using `jmdict_furigana.parquet` (see §Furigana Construction) |
 | (Derived) | `min_jlpt_level` | Primary: lookup in `jlpt_vocab.parquet`. Fallback: `MAX(kanji.min_jlpt_level)` across constituent kanji (see §JLPT Level Strategy) |
-| (Derived) | `pos_tags` | Collect `pos` and `misc` from all senses, map to `PosTag` enum (see §POS Tag Extraction) |
+| (Derived) | `pos_tags` | Collect `pos` from all senses, map to `PosTag` enum (see §POS Tag Extraction) |
+| (Derived) | `misc_tags` | Collect `misc` + `ke_inf`, map to `MiscTag` enum (see §Misc Tag Extraction) |
+| (Derived) | `field_tags` | Collect `field` from all senses as raw strings (see §Field Tag Extraction) |
+| (Derived) | `dialect_tags` | Collect `dial` from all senses as raw strings (see §Dialect Tag Extraction) |
 | Priority flags | `frequency_rank` | Map priority flags to an integer rank (see below) |
 
 **Frequency rank mapping:**
@@ -279,55 +282,153 @@ If a word is not in `jlpt_vocab.parquet` and all its kanji have `null` JLPT leve
 
 ## POS Tag Extraction
 
-The `pos_tags` field on `vocabulary` is derived from JMdict `pos` and `misc` codes across all senses of the entry, mapped to the curated `PosTag` enum (see [shared_types.md §PosTag](../domain/shared_types.md#postag-enum)).
+The `pos_tags` field on `vocabulary` is derived exclusively from JMdict `pos` codes across all senses of the entry, mapped to the curated `PosTag` enum (see [shared_types.md §PosTag](../domain/shared_types.md#postag-enum)).
 
 **Collection logic:**
 
 1. Iterate over all `senses` in the JMdict entry.
 2. For each sense, collect `pos` codes (with inheritance — carry forward from previous sense if `pos` is null).
-3. For each sense, collect `misc` codes.
-4. Map each collected code to a `PosTag` value using these rules:
+3. Map each collected code to a `PosTag` value using these rules:
 
-| JMdict Code | Maps To | Source Field |
-|---|---|---|
-| `v1` | `ichidan_verb` | `pos` |
-| `v5u`, `v5k`, `v5r`, `v5s`, `v5t`, `v5b`, `v5g`, `v5m`, `v5n`, `v5k-s`, `v5r-i`, `v5u-s`, `v5aru` | `godan_verb` | `pos` |
-| `vs`, `vs-i`, `vs-s` | `suru_verb` | `pos` |
-| `vk` | `kuru_verb` | `pos` |
-| `vt` | `transitive` | `pos` |
-| `vi` | `intransitive` | `pos` |
-| `adj-i` | `i_adjective` | `pos` |
-| `adj-na` | `na_adjective` | `pos` |
-| `n` | `noun` | `pos` |
-| `adv` | `adverb` | `pos` |
-| `uk` | `usually_kana` | `misc` |
-| `pol` | `polite` | `misc` |
-| `hum` | `humble` | `misc` |
-| `hon` | `honorific` | `misc` |
+| JMdict Code | Maps To |
+|---|---|
+| `v1` | `ichidan_verb` |
+| `v5u`, `v5k`, `v5r`, `v5s`, `v5t`, `v5b`, `v5g`, `v5m`, `v5n`, `v5k-s`, `v5r-i`, `v5u-s`, `v5aru` | `godan_verb` |
+| `vs`, `vs-i`, `vs-s` | `suru_verb` |
+| `vk` | `kuru_verb` |
+| `vt` | `transitive` |
+| `vi` | `intransitive` |
+| `adj-i` | `i_adjective` |
+| `adj-na` | `na_adjective` |
+| `adj-no` | `no_adjective` |
+| `n` | `noun` |
+| `adv` | `adverb` |
+| `pn` | `pronoun` |
+| `prt` | `particle` |
+| `ctr` | `counter` |
+| `conj` | `conjunction` |
+| `int` | `interjection` |
+| `exp` | `expression` |
+| `pref` | `prefix` |
+| `suf` | `suffix` |
 
-5. Deduplicate the result — a word gets each tag at most once, regardless of how many senses carry it.
-6. Store as a JSON array on `vocabulary.csv` `pos_tags`.
+4. Deduplicate the result — a word gets each tag at most once, regardless of how many senses carry it.
+5. Store as a JSON array on `vocabulary.csv` `pos_tags`.
 
 **POS inheritance:** JMdict applies `pos` to subsequent senses until a new `pos` appears. The extractor must track the "current POS" state while iterating senses. When a sense has `pos: null`, it inherits the most recent non-null `pos`. All inherited codes are included in the collection.
 
 **Example — 勉強 (Study):**
 
-Sense 1: `pos: ["n", "vs"]`, `misc: null` → `[noun, suru_verb]`
+Sense 1: `pos: ["n", "vs"]`, `misc: null` → `pos_tags: [noun, suru_verb]`
 Sense 2: `pos: null` (inherits `["n", "vs"]`), `misc: null` → no new tags
 
 Result: `pos_tags = ["noun", "suru_verb"]`
 
 **Example — 消す (To Erase):**
 
-Sense 1: `pos: ["v5s", "vt"]`, `misc: null` → `[godan_verb, transitive]`
+Sense 1: `pos: ["v5s", "vt"]`, `misc: null` → `pos_tags: [godan_verb, transitive]`
 
 Result: `pos_tags = ["godan_verb", "transitive"]`
 
 **Example — 有難う (Thank You):**
 
-Sense 1: `pos: ["int"]`, `misc: ["uk"]` → `[usually_kana]` (int is not in our curated set)
+Sense 1: `pos: ["int"]`, `misc: ["uk"]` → `pos_tags: [interjection]`, `misc_tags: [usually_kana]`
 
-Result: `pos_tags = ["usually_kana"]`
+Result: `pos_tags = ["interjection"]`, `misc_tags = ["usually_kana"]`
+
+## Misc Tag Extraction
+
+The `misc_tags` field on `vocabulary` is derived from JMdict `misc` codes on senses and `ke_inf` codes on kanji elements, mapped to the curated `MiscTag` enum (see [shared_types.md §MiscTag](../domain/shared_types.md#misctag-enum)).
+
+**Collection logic:**
+
+1. Iterate over all `senses` in the JMdict entry. For each sense, collect `misc` codes.
+2. Iterate over `kanji_elements`. For each element, collect `ke_inf` codes.
+3. Map each collected code to a `MiscTag` value using these rules:
+
+| JMdict Code | Source Field | Maps To |
+|---|---|---|
+| `uk` | `misc` | `usually_kana` |
+| `uK` | `misc` | `usually_kanji` |
+| `ek` | `ke_inf` | `exclusively_kana` |
+| `eK` | `ke_inf` | `exclusively_kanji` |
+| `pol` | `misc` | `polite` |
+| `hum` | `misc` | `humble` |
+| `hon` | `misc` | `honorific` |
+| `col` | `misc` | `colloquial` |
+| `sl` | `misc` | `slang` |
+| `arch` | `misc` | `archaism` |
+| `on-mim` | `misc` | `onomatopoeia` |
+| `yoji` | `misc` | `yojijukugo` |
+| `id` | `misc` | `idiomatic` |
+| `abbr` | `misc` | `abbreviation` |
+| `proverb` | `misc` | `proverb` |
+| `iv` | `misc` | `irregular_verb` |
+| `ateji` | `ke_inf` | `ateji` |
+| `rare` | `misc` | `rare` |
+| `sens` | `misc` | `sensitive` |
+| `vulg` | `misc` | `vulgar` |
+
+4. Deduplicate the result — each tag appears at most once per word.
+5. Store as a JSON array on `vocabulary.csv` `misc_tags`.
+
+**Note:** Unlike `pos`, `misc` codes do **not** use inheritance across senses. Each sense's `misc` is independent.
+
+**Example — 有難う (Thank You):**
+
+Sense 1: `misc: ["uk"]` → `misc_tags: [usually_kana]`
+
+Result: `misc_tags = ["usually_kana"]`
+
+**Example — お願いします (Please):**
+
+Sense 1: `misc: ["uk", "hon"]` → `misc_tags: [usually_kana, honorific]`
+
+Result: `misc_tags = ["usually_kana", "honorific"]`
+
+## Field Tag Extraction
+
+The `field_tags` field on `vocabulary` stores raw JMdict `field` codes as strings. No enum mapping — codes are passed through as-is.
+
+**Collection logic:**
+
+1. Iterate over all `senses` in the JMdict entry.
+2. For each sense, collect all `field` codes.
+3. Deduplicate across senses.
+4. Store as a JSON array of strings on `vocabulary.csv` `field_tags`.
+
+**Example — 味噌 (Miso):**
+
+Sense 1: `field: ["food"]` → `field_tags: ["food"]`
+
+Result: `field_tags = ["food"]`
+
+**Example — サーバー (Server):**
+
+Sense 1: `field: ["comp"]` → `field_tags: ["comp"]`
+
+Result: `field_tags = ["comp"]`
+
+Most words have no field codes — `field_tags` will be an empty array `[]`.
+
+## Dialect Tag Extraction
+
+The `dialect_tags` field on `vocabulary` stores raw JMdict `dial` codes as strings. No enum mapping — codes are passed through as-is.
+
+**Collection logic:**
+
+1. Iterate over all `senses` in the JMdict entry.
+2. For each sense, collect all `dial` codes.
+3. Deduplicate across senses.
+4. Store as a JSON array of strings on `vocabulary.csv` `dialect_tags`.
+
+**Example — おおきに (Thank You — Kansai):**
+
+Sense 1: `dial: ["ksb"]` → `dialect_tags: ["ksb"]`
+
+Result: `dialect_tags = ["ksb"]`
+
+Most words have no dialect codes — `dialect_tags` will be an empty array `[]`.
 
 ## Grade Path Note
 
@@ -401,12 +502,15 @@ Warnings are written to `data/csv/warnings/ph2_5_warnings.csv` with columns: `se
 13. Re-processing the same data produces the same output files (idempotent file writes).
 14. `pos_tags` must be a JSON array of valid `PosTag` enum values with no duplicates.
 15. POS inheritance must be tracked across senses — a sense with `pos: null` inherits from the most recent non-null `pos`.
+16. `misc_tags` must be a JSON array of valid `MiscTag` enum values with no duplicates.
+17. `field_tags` must be a JSON array of strings (raw JMdict field codes) with no duplicates.
+18. `dialect_tags` must be a JSON array of strings (raw JMdict dialect codes) with no duplicates.
 
 ## Output Summary
 
 | File | Source | Description |
 |---|---|---|
-| `vocabulary.csv` | `jmdict.parquet` | Core entity with JLPT levels, furigana, POS tags, and frequency rank |
+| `vocabulary.csv` | `jmdict.parquet` | Core entity with JLPT levels, furigana, pos/misc/field/dialect tags, and frequency rank |
 | `vocabulary_readings.csv` | `jmdict.parquet` reading elements | Pronunciations with priority |
 | `vocabulary_i18n.csv` | `jmdict.parquet` senses | Localized meanings (filtered to `TARGET_LANGS`) |
 | `vocabulary_kanji.csv` | Computed from `word` + `kanji.csv` | Kanji composition links with positions |

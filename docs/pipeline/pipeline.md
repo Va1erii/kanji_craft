@@ -258,7 +258,7 @@ Reads `jmdict.parquet` + `jmdict_examples.parquet` + `jlpt_vocab.parquet` + `jmd
 
 **From JMdict + reference data:**
 
-1. **Vocabulary creation:** Select common words (priority-flagged or in JLPT vocab mapping) and create rows using `ent_seq` as stable ID. Resolve `min_jlpt_level` from JLPT vocab mapping (authoritative) with fallback to `MAX(kanji.min_jlpt_level)`.
+1. **Vocabulary creation:** Select common words (priority-flagged or in JLPT vocab mapping) and create rows using `ent_seq` as stable ID. Resolve `min_jlpt_level` from JLPT vocab mapping (authoritative) with fallback to `MAX(kanji.min_jlpt_level)`. Extract `pos_tags` (grammar from `pos`), `misc_tags` (register/style from `misc`/`ke_inf`), `field_tags` (domain codes from `field`), and `dialect_tags` (dialect codes from `dial`).
 2. **Furigana:** Construct `{kanji|reading}` notation using JmdictFurigana data. Per-character readings for standard words, single-span for jukujikun.
 3. **Readings:** Extract into vocabulary_readings with primary/secondary priority.
 4. **I18n:** Create meaning rows per language from JMdict senses/glosses.
@@ -275,7 +275,7 @@ Reads `jmdict.parquet` + `jmdict_examples.parquet` + `jlpt_vocab.parquet` + `jmd
 
 | File | Content | Maps to table |
 |---|---|---|
-| `vocabulary.csv` | Vocabulary rows (ent_seq, furigana, jlpt_level, is_common) | `vocabulary` |
+| `vocabulary.csv` | Vocabulary rows (ent_seq, furigana, jlpt_level, pos/misc/field/dialect tags) | `vocabulary` |
 | `vocabulary_readings.csv` | Readings with priority | `vocabulary_readings` |
 | `vocabulary_i18n.csv` | Meanings per language (deferred i18n fields populated in Phase 3) | `vocabulary_i18n` |
 | `vocabulary_kanji.csv` | Word ↔ kanji links with position | `vocabulary_kanji` |

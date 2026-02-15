@@ -287,6 +287,10 @@ def _build_parent_index(parquet_dir: Path) -> dict[str, list[tuple[str, int]]]:
             elem = child.get("element")
             if elem:
                 index.setdefault(elem, []).append((parent_char, depth))
+            # Also index by original (canonical form) when variant=True
+            orig = child.get("original")
+            if orig and orig != elem:
+                index.setdefault(orig, []).append((parent_char, depth))
             _walk(child, parent_char, depth + 1)
 
     for _, row in df.iterrows():
@@ -326,16 +330,24 @@ def _parse_svg_extract_paths(
 ) -> list[str] | None:
     """Extract path d-strings for a target element from a parent SVG.
 
-    Finds all <g kvg:element="target"> groups (handles split parts)
-    and collects descendant <path> d attributes.
+    First tries kvg:element match, then falls back to kvg:original.
+    KanjiVG stores variant forms as kvg:element with the canonical
+    (master) form in kvg:original — e.g. element="寉" original="隺".
     """
     try:
         root = etree.fromstring(svg_bytes)  # noqa: S320
     except etree.XMLSyntaxError:
         return None
 
+    # Try kvg:element first (direct match — common case)
     xpath = f'.//svg:g[@kvg:element="{target_element}"]'
     groups = root.xpath(xpath, namespaces=_NS_MAP)
+
+    # Fall back to kvg:original (variant-encoded radicals)
+    if not groups:
+        xpath = f'.//svg:g[@kvg:original="{target_element}"]'
+        groups = root.xpath(xpath, namespaces=_NS_MAP)
+
     if not groups:
         return None
 

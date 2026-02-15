@@ -66,7 +66,7 @@ After Pass 1, some radicals/variants have no standalone SVG in the KanjiVG archi
 
 For each radical/variant still missing SVG fields after Pass 1:
 
-1. Search `kanjivg.parquet` component trees for any kanji whose `component_tree` contains the target character as an `element` value.
+1. Search `kanjivg.parquet` component trees for any kanji whose `component_tree` contains the target character as an `element` or `original` value. KanjiVG stores variant forms with `element` set to the visual shape and `original` set to the canonical master — e.g. `element="寉" original="隺"`. The parent index maps both values so that radicals whose master_symbol matches either field are found.
 2. Select the best parent — prefer one where the target is a direct child (not deeply nested) and that has a standalone SVG in the ZIP.
 3. If no parent found, the radical truly has no SVG source — emit a high-severity warning.
 
@@ -75,7 +75,7 @@ For each radical/variant still missing SVG fields after Pass 1:
 For each matched parent kanji:
 
 1. Parse the parent's SVG bytes from the ZIP.
-2. Locate the `<g>` group with `kvg:element` matching the target character.
+2. Locate the `<g>` group with `kvg:element` matching the target character. If no match, fall back to `kvg:original` — this handles variant-encoded radicals where KanjiVG uses the visual variant as `element` and the canonical form as `original` (e.g. 隺 is stored as `kvg:element="寉" kvg:original="隺"` inside 確's SVG).
 3. Extract all `<path>` elements within that group (these are the strokes for the radical).
 4. Re-wrap into a standalone SVG with a viewBox fitted to the extracted paths' bounding area.
 5. Compute SHA-256 of the generated SVG bytes.

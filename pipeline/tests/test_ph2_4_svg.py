@@ -672,6 +672,72 @@ def test_pass2_basic_extraction(tmp_path, monkeypatch):
     assert row["svg_file_url"] == f"{SVG_BASE_URL}/radicals/{_TARGET_RADICAL_HEX}.svg"
 
 
+def test_pass2_original_fallback(tmp_path, monkeypatch):
+    """Radical found via kvg:original when kvg:element uses the variant form."""
+    csv_dir = tmp_path / "csv"
+    warnings_dir = csv_dir / "warnings"
+    parquet_dir = tmp_path / "parquet"
+
+    # Simulate 確's SVG: element="寉" original="隺"
+    original_char = "隺"  # canonical master_symbol
+    variant_elem = "寉"  # visual variant stored as kvg:element
+    parent_char = "確"
+    parent_hex = f"{ord(parent_char):05x}"
+    original_hex = f"{ord(original_char):x}"
+
+    # Component tree uses element="寉" with original="隺"
+    parent_tree = {
+        "element": parent_char,
+        "children": [{
+            "element": variant_elem,
+            "original": original_char,
+            "variant": True,
+            "children": [],
+        }],
+    }
+
+    # SVG has kvg:element="寉" kvg:original="隺"
+    parent_svg_str = (
+        f'<svg xmlns="{_SVG_NS}" xmlns:kvg="{_KVG_NS}" width="109" height="109">'
+        f'<g id="kvg:{parent_hex}" kvg:element="{parent_char}">'
+        f'<g kvg:element="{variant_elem}" kvg:variant="true" kvg:original="{original_char}">'
+        '<path d="M50 10 C60 20 70 30 80 40"/>'
+        '<path d="M55 15 C65 25 75 35 85 45"/>'
+        '</g>'
+        '</g></svg>'
+    )
+    parent_svg = parent_svg_str.encode("utf-8")
+
+    zip_path = _make_zip({parent_hex + ".svg": parent_svg}, tmp_path)
+
+    # Radical uses canonical form 隺 as master_symbol
+    _make_radicals_csv(csv_dir, [(1, original_char, 10, 3)])
+    _make_variants_csv(csv_dir, [])
+    _make_kanji_csv(csv_dir, [])
+
+    _make_kanjivg_parquet(parquet_dir, [(parent_char, parent_tree)])
+
+    monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
+    client, _ = _mock_client()
+
+    result = extract_svg(
+        csv_dir, warnings_dir,
+        supabase_client=client, zip_path=zip_path, parquet_dir=parquet_dir,
+    )
+
+    rad = result["radicals"]
+    row = rad[rad["master_symbol"] == original_char].iloc[0]
+    assert row["svg_file_name"] == f"{original_hex}.svg"
+    assert pd.notna(row["svg_hash"])
+    assert row["svg_file_url"] == f"{SVG_BASE_URL}/radicals/{original_hex}.svg"
+
+    # Warning should be "Extracted" (low), not "Missing" (high)
+    w_df = pd.read_csv(warnings_dir / "ph2_4_warnings.csv")
+    entity_w = w_df[w_df["entity"] == original_char]
+    assert all(entity_w["severity"] == "low")
+    assert all(entity_w["message"].str.contains("Extracted SVG"))
+
+
 def test_pass2_variant_extraction(tmp_path, monkeypatch):
     """Missing variant extracted via shape column."""
     csv_dir = tmp_path / "csv"

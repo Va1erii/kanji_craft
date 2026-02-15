@@ -384,7 +384,7 @@ class TestI18nRows:
         kanjidic_df = _make_kanjidic_df([
             _kanjidic_row(
                 "日", stroke_count=4, ja_on=["ニチ"],
-                meanings={"en": ["day"], "fr": [], "de": ["Tag"]},
+                meanings={"en": ["day"], "es": []},
             ),
         ])
         jlpt_df = _make_jlpt_df([])
@@ -400,11 +400,34 @@ class TestI18nRows:
         result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
         i18n_df = result["kanji_i18n"]
 
-        # fr has empty array → no row
+        # es has empty array → no row
         lang_codes = set(i18n_df["lang_code"])
         assert "en" in lang_codes
-        assert "de" in lang_codes
-        assert "fr" not in lang_codes
+        assert "es" not in lang_codes
+
+    def test_filter_non_target_langs(self, tmp_path):
+        """Languages not in TARGET_LANGS are excluded from i18n output."""
+        kanjidic_df = _make_kanjidic_df([
+            _kanjidic_row(
+                "日", stroke_count=4, ja_on=["ニチ"],
+                meanings={"en": ["day"], "fr": ["jour"], "pt": ["dia"]},
+            ),
+        ])
+        jlpt_df = _make_jlpt_df([])
+
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        kanjidic_df.to_parquet(parquet_dir / "kanjidic.parquet", index=False)
+        jlpt_df.to_parquet(parquet_dir / "jlpt_kanji.parquet", index=False)
+
+        result = extract_kanji(parquet_dir, csv_dir, warnings_dir)
+        i18n_df = result["kanji_i18n"]
+
+        # fr and pt are not in TARGET_LANGS → filtered out
+        assert set(i18n_df["lang_code"]) == {"en"}
 
     def test_system_mnemonic_empty(self, basic_kanjidic_df, basic_jlpt_df, tmp_path):
         """system_mnemonic is empty string (Phase 3 placeholder)."""

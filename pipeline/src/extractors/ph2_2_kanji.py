@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from src.config import TARGET_LANGS
 from src.extractors.shared import write_csv_atomic
 
 log = logging.getLogger(__name__)
@@ -167,6 +168,8 @@ def _step3_i18n_rows(
             meanings = {}
 
         for lang_code in sorted(meanings.keys()):
+            if lang_code not in TARGET_LANGS:
+                continue
             lang_meanings = meanings[lang_code]
             if not lang_meanings:
                 continue

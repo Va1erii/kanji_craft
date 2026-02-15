@@ -54,19 +54,22 @@ A short story (1-2 sentences) that teaches the radical's visual shape and connec
 
 ### Rules
 
-1. **Describe the physical shape** of the character. What does it look like? How do the strokes form the image?
-2. **Describe strokes as a drawing of the keyword** — not as abstract geometry. The reader should "see" the keyword object in the strokes.
+1. **GOLDEN RULE — Stroke count accuracy (STOP AND CHECK):** The mnemonic MUST match the `stroke_count` column. If `stroke_count` is 4, do not describe "three streams" or "five lines". Count the strokes in the `master_symbol` character and verify your description matches. Always describe the `master_symbol` form first; if the radical has a common variant (e.g. 水→氵), mention it in parentheses after.
+   - Bad: 水 (stroke_count=4) — "Three streams flowing down." (3 ≠ 4)
+   - Good: 水 (stroke_count=4) — "Four strokes splash outward like water from a fountain. (Variant 氵 appears as three drops on the left side.)"
+2. **Describe the physical shape** of the character. What does it look like? How do the strokes form the image?
+3. **Describe strokes as a drawing of the keyword** — not as abstract geometry. The reader should "see" the keyword object in the strokes.
    - Bad: "A horizontal line and a vertical line." (abstract stroke inventory)
    - Bad: "See this as a cross." (forbidden "See X as Y" phrasing)
    - Good: "A cross shape, like a grave marker planted in the earth." (concrete image from the strokes)
-3. **Never use "See X as Y", "Think of X as Y", or "Imagine X as Y"** phrasing. Describe the shape directly as if it IS the object.
-4. **Connect shape to meaning.** The story must link the visual appearance to the keyword name.
-4. **A2/B1 level language.** Simple, common words. Prefer physical actions (hit, run, eat) over abstract language.
-5. **1-2 sentences max.** Keep it concise and vivid.
-6. **Each language is independent.** EN, ES, RU mnemonics may tell different stories if that works better for the language. They don't need to be literal translations.
-7. **Spanish:** Standard neutral (Latin American generic). No regional slang.
-8. **Russian:** Standard literary. No regional colloquialisms.
-9. **Positional clues (visual group radicals only):** For the 32 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
+4. **Never use "See X as Y", "Think of X as Y", or "Imagine X as Y"** phrasing. Describe the shape directly as if it IS the object.
+5. **Connect shape to meaning.** The story must link the visual appearance to the keyword name.
+6. **A2/B1 level language.** Simple, common words. Prefer physical actions (hit, run, eat) over abstract language.
+7. **1-2 sentences max.** Keep it concise and vivid.
+8. **Each language is independent.** EN, ES, RU mnemonics may tell different stories if that works better for the language. They don't need to be literal translations.
+9. **Spanish:** Standard neutral (Latin American generic). No regional slang.
+10. **Russian:** Standard literary. No regional colloquialisms.
+11. **Positional clues (visual group radicals only):** For the 32 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
 
 ### Examples
 

@@ -172,7 +172,7 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 乞,beg,ru,Попрошайка,Человек на коленях просящий еду или деньги.,"""[""""просить"""",""""умолять"""",""""колени""""]"""
 也,to be (classical),en,Funnel,A wide funnel used to pour liquid into a small opening.,"""[""""funnel"""",""""be"""",""""vessel""""]"""
 也,to be (classical),es,Embudo,Un embudo ancho utilizado para verter líquido en una abertura pequeña.,"""[""""embudo"""",""""ser"""",""""vasija""""]"""
-也,to be (classical),ru,,,
+也,to be (classical),ru,Воронка,"Широкая воронка, используемая для наливания жидкости в узкое отверстие.","""[""""воронка"""",""""сосуд"""",""""быть""""]"""
 乡,,en,Village,A collection of small houses nestled together in a village.,"""[""""village"""",""""hometown"""",""""houses""""]"""
 乡,,es,Aldea,Un conjunto de pequeñas casas agrupadas en una aldea.,"""[""""aldea"""",""""pueblo"""",""""casas""""]"""
 乡,,ru,Деревня,Группа маленьких домов тесно стоящих в деревне.,"""[""""деревня"""",""""село"""",""""дома""""]"""
@@ -463,7 +463,7 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 動,move,ru,Двигатель,Тяжелый груз перемещаемый мощным двигателем.,"""[""""двигать"""",""""двигатель"""",""""движение""""]"""
 務,task,en,Task,Using power to complete a difficult and official task.,"""[""""task"""",""""duty"""",""""work""""]"""
 務,task,es,Tarea,Uso de la fuerza para completar una tarea oficial y difícil.,"""[""""tarea"""",""""deber"""",""""trabajo""""]"""
-務,task,ru,,,
+務,task,ru,Задача,Использование силы для выполнения сложной и официальной задачи.,"""[""""задача"""",""""работа"""",""""долг""""]"""
 勹,wrapping enclosure,en,Bundle,A person bending over to wrap a large bundle.,"""[""""wrap"""",""""bundle"""",""""enclosure""""]"""
 勹,wrapping enclosure,es,Bulto,Una persona que se inclina para envolver un bulto grande.,"""[""""envolver"""",""""bulto"""",""""recinto""""]"""
 勹,wrapping enclosure,ru,Сверток,Человек наклонившийся чтобы завернуть большой сверток.,"""[""""заворачивать"""",""""сверток"""",""""ограда""""]"""
@@ -535,7 +535,7 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 南,south,ru,Юг,Десять человек под крышей смотрят на теплое растение на юге.,"""[""""юг"""",""""направление"""",""""тепло""""]"""
 単,simple,en,Racket,A simple tool that looks like a sports racket with a long handle.,"""[""""racket"""",""""simple"""",""""single""""]"""
 単,simple,es,Raqueta,Una herramienta simple que parece una raqueta de deportes con mango.,"""[""""raqueta"""",""""simple"""",""""solo""""]"""
-単,simple,ru,,,
+単,simple,ru,Ракетка,"Инструмент, похожий на спортивную ракетку с длинной ручкой.","""[""""ракетка"""",""""простой"""",""""один""""]"""
 卜,divining,en,Wand,A wooden wand used for divining water or predicting luck.,"""[""""wand"""",""""divine"""",""""fortune""""]"""
 卜,divining,es,Varita,Una varita de madera usada para adivinar el agua o la suerte.,"""[""""varita"""",""""adivinar"""",""""suerte""""]"""
 卜,divining,ru,Жезл,Деревянный жезл используемый для гадания на воду или удачу.,"""[""""жезл"""",""""гадание"""",""""удача""""]"""
@@ -584,9 +584,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 去,gone,en,Vault,Items that are gone and locked away in a deep soil vault.,"""[""""gone"""",""""vault"""",""""past""""]"""
 去,gone,es,Bóveda,Objetos que se han ido y están bajo llave en una bóveda de tierra.,"""[""""pasado"""",""""bóveda"""",""""ido""""]"""
 去,gone,ru,Хранилище,Вещи которые ушли и заперты в глубоком земляном хранилище.,"""[""""прошлое"""",""""склад"""",""""ушедший""""]"""
-参,nonplussed,en,,,
-参,nonplussed,es,,,
-参,nonplussed,ru,,,
+参,nonplussed,en,Star,A person looking at a bright star and feeling nonplussed.,"""[""""star"""",""""constellation"""",""""three""""]"""
+参,nonplussed,es,Estrella,Una persona que mira una estrella brillante y se siente desconcertada.,"""[""""estrella"""",""""constelación"""",""""tres""""]"""
+参,nonplussed,ru,Звезда,"Человек, смотрящий на яркую звезду в полном замешательстве.","""[""""звезда"""",""""созвездие"""",""""три""""]"""
 又,or again,en,Hand,A right hand reaching out to grab something again.,"""[""""hand"""",""""again"""",""""right""""]"""
 又,or again,es,Mano,Una mano derecha que se extiende para agarrar algo de nuevo.,"""[""""mano"""",""""otra vez"""",""""derecha""""]"""
 又,or again,ru,Рука,Правая рука тянущаяся чтобы снова что-то схватить.,"""[""""рука"""",""""снова"""",""""правая""""]"""
@@ -1439,9 +1439,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 栗,chestnut,en,Chestnut,A tree with spikes at the top protecting a chestnut.,"""[""""chestnut"""",""""nut"""",""""tree""""]"""
 栗,chestnut,es,Castaña,Un árbol con picos en la copa que protegen una castaña.,"""[""""castaña"""",""""nuez"""",""""árbol""""]"""
 栗,chestnut,ru,Каштан,"Дерево с шипами на верхушке, защищающими каштан.","""[""""каштан"""",""""орех"""",""""дерево""""]"""
-楽,music,en,,,
-楽,music,es,,,
-楽,music,ru,,,
+楽,music,en,Music,Drums on a wooden stand being played as joyful music.,"""[""""music"""",""""comfort"""",""""ease""""]"""
+楽,music,es,Música,Tambores en un soporte de madera que suenan como música alegre.,"""[""""música"""",""""confort"""",""""alegría""""]"""
+楽,music,ru,Музыка,"Барабаны на деревянной подставке, на которых играют веселую музыку.","""[""""музыка"""",""""комфорт"""",""""радость""""]"""
 欠,lack,en,Yawn,A person with their mouth wide open letting out a yawn.,"""[""""yawn"""",""""lack"""",""""gap""""]"""
 欠,lack,es,Bostezo,Una persona con la boca muy abierta soltando un bostezo.,"""[""""bostezo"""",""""falta"""",""""brecha""""]"""
 欠,lack,ru,Зевота,"Человек с широко открытым ртом, из которого вырывается зевота.","""[""""зевота"""",""""нехватка"""",""""щель""""]"""
@@ -1453,13 +1453,13 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 止,stop,ru,След,"Одиночный след на земле в месте, где нужно остановиться.","""[""""след"""",""""стоп"""",""""остановка""""]"""
 正,correct,en,Correct,A footprint aligned perfectly to a line showing it is correct.,"""[""""correct"""",""""right"""",""""justice""""]"""
 正,correct,es,Correcto,Una huella alineada perfectamente con una línea que muestra que es correcta.,"""[""""correcto"""",""""bien"""",""""justicia""""]"""
-正,correct,ru,,,
+正,correct,ru,След,"След, идеально выровненный по линии, что означает «верно».","""[""""верно"""",""""право"""",""""след""""]"""
 武,warrior,en,Warrior,A warrior with a spear ready to stop any attack.,"""[""""warrior"""",""""military"""",""""martial""""]"""
 武,warrior,es,Guerrero,Un guerrero con una lanza listo para detener cualquier ataque.,"""[""""guerrero"""",""""militar"""",""""marcial""""]"""
 武,warrior,ru,Воин,"Воин с копьем наготове, способный остановить любую атаку.","""[""""воин"""",""""военный"""",""""боевой""""]"""
-歩,walk,en,,,
-歩,walk,es,,,
-歩,walk,ru,,,
+歩,walk,en,Step,Moving one foot after another to take a step and walk.,"""[""""step"""",""""walk"""",""""pace""""]"""
+歩,walk,es,Paso,Mover un pie tras otro para dar un paso y caminar.,"""[""""paso"""",""""caminar"""",""""ritmo""""]"""
+歩,walk,ru,Шаг,"Передвижение ног одна за другой, чтобы сделать шаг и идти.","""[""""шаг"""",""""ходьба"""",""""темп""""]"""
 歹,bare bone,en,Bone,A fragment of a bare bone left on the ground.,"""[""""bone"""",""""skeleton"""",""""death""""]"""
 歹,bare bone,es,Hueso,Un fragmento de un hueso pelado dejado en el suelo.,"""[""""hueso"""",""""esqueleto"""",""""muerte""""]"""
 歹,bare bone,ru,Кость,"Фрагмент голой кости, оставленный на земле.","""[""""кость"""",""""скелет"""",""""смерть""""]"""
@@ -1481,9 +1481,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 母,mother,en,Mother,A mother with two dots representing her breasts as she feeds a child.,"""[""""mother"""",""""mama"""",""""female""""]"""
 母,mother,es,Madre,Una madre con dos puntos que representan sus pechos mientras alimenta a un niño.,"""[""""madre"""",""""mamá"""",""""femenino""""]"""
 母,mother,ru,Мать,"Мать с двумя точками, символизирующими грудь, когда она кормит ребенка.","""[""""мать"""",""""мама"""",""""женщина""""]"""
-毎,every,en,,,
-毎,every,es,,,
-毎,every,ru,,,
+毎,every,en,Sprout,A mother plant from which every new sprout grows.,"""[""""every"""",""""each"""",""""often""""]"""
+毎,every,es,Brote,Una planta madre de la cual crece cada nuevo brote.,"""[""""cada"""",""""siempre"""",""""frecuente""""]"""
+毎,every,ru,Росток,"Материнское растение, от которого растет каждый новый росток.","""[""""каждый"""",""""всякий"""",""""часто""""]"""
 比,compare,en,Pair,Two identical people standing side by side to compare them.,"""[""""compare"""",""""pair"""",""""ratio""""]"""
 比,compare,es,Pareja,Dos personas idénticas paradas una junto a la otra para compararlas.,"""[""""comparar"""",""""pareja"""",""""razón""""]"""
 比,compare,ru,Пара,"Два одинаковых человека, стоящих рядом для сравнения.","""[""""сравнение"""",""""пара"""",""""соотношение""""]"""
@@ -1494,7 +1494,7 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 氏,family name,es,Raíz,Las raíces de un árbol genealógico que representan un apellido.,"""[""""raíz"""",""""nombre"""",""""clan""""]"""
 氏,family name,ru,Корень,"Корни генеалогического древа, символизирующие фамилию.","""[""""корень"""",""""имя"""",""""клан""""]"""
 氐,name of an ancient tribe,en,Base,Una raíz sobre un soporte horizontal que representa la base de una tribu.,"""[""""base"""",""""tribu"""",""""fundamento""""]"""
-氐,name of an ancient tribe,es,,,
+氐,name of an ancient tribe,es,Base,Una raíz sobre un soporte horizontal que representa la base de una tribu.,"""[""""base"""",""""tribu"""",""""fundamento""""]"""
 氐,name of an ancient tribe,ru,Основа,"Корень на горизонтальной подставке, представляющий основу племени.","""[""""основа"""",""""племя"""",""""база""""]"""
 民,people,en,Civilians,Many people sharing the same family root as civilians.,"""[""""civilians"""",""""people"""",""""folk""""]"""
 民,people,es,Civiles,Muchas personas que comparten la misma raíz familiar como civiles.,"""[""""civiles"""",""""gente"""",""""pueblo""""]"""
@@ -1628,9 +1628,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 申,have the honor to,en,Report,A person giving an official report to have the honor.,"""[""""report"""",""""honor"""",""""speak""""]"""
 申,have the honor to,es,Informe,Una persona dando un informe oficial para tener el honor.,"""[""""informe"""",""""honor"""",""""hablar""""]"""
 申,have the honor to,ru,Доклад,"Человек, делающий официальный доклад, чтобы иметь честь.","""[""""доклад"""",""""честь"""",""""говорить""""]"""
-电,,en,,,
-电,,es,,,
-电,,ru,,,
+电,,en,Lightning,Electric lightning striking down from a cloud over a field.,"""[""""lightning"""",""""electric"""",""""storm""""]"""
+电,,es,Rayo,Un rayo eléctrico cayendo desde una nube sobre un campo.,"""[""""rayo"""",""""eléctrico"""",""""tormenta""""]"""
+电,,ru,Молния,"Электрическая молния, бьющая из облака над полем.","""[""""молния"""",""""ток"""",""""гроза""""]"""
 甶,,en,Mask,A decorative mask with a distinctive head and eyes.,"""[""""mask"""",""""ghost"""",""""head""""]"""
 甶,,es,Máscara,Una máscara decorativa con una cabeza y ojos distintivos.,"""[""""máscara"""",""""fantasma"""",""""cabeza""""]"""
 甶,,ru,Маска,Декоративная маска с характерной головой и глазами.,"""[""""маска"""",""""призрак"""",""""голова""""]"""
@@ -1670,9 +1670,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 癶,dotted tent radical (no. 105),en,Tent,A dotted tent with two people inside to keep them safe.,"""[""""tent"""",""""shelter"""",""""cover""""]"""
 癶,dotted tent radical (no. 105),es,Tienda,Una tienda con puntos con dos personas dentro para mantenerlas seguras.,"""[""""tienda"""",""""refugio"""",""""cubierta""""]"""
 癶,dotted tent radical (no. 105),ru,Шатер,"Шатер с точками, внутри которого находятся два человека для безопасности.","""[""""шатер"""",""""укрытие"""",""""покров""""]"""
-発,departure,en,,,
-発,departure,es,,,
-発,departure,ru,,,
+発,departure,en,Launch,A tent and a tool used to launch a departure.,"""[""""launch"""",""""departure"""",""""emit""""]"""
+発,departure,es,Lanzar,Una tienda y una herramienta usadas para lanzar una partida.,"""[""""lanzar"""",""""partida"""",""""emitir""""]"""
+発,departure,ru,Пуск,"Шатер и инструмент, используемые для пуска или отправления.","""[""""пуск"""",""""отправление"""",""""излучать""""]"""
 登,ascend,en,Climb,A person using a vessel to climb and ascend a mountain.,"""[""""climb"""",""""ascend"""",""""mount""""]"""
 登,ascend,es,Subir,Una persona usando una vasija para trepar y subir una montaña.,"""[""""subir"""",""""ascender"""",""""montar""""]"""
 登,ascend,ru,Восхождение,"Человек использует сосуд, чтобы подняться и совершить восхождение на гору.","""[""""восхождение"""",""""подъем"""",""""всходить""""]"""
@@ -1706,9 +1706,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 盾,shield,en,Shield,A protective shield with an eye-slit used in battle.,"""[""""shield"""",""""protect"""",""""buckler""""]"""
 盾,shield,es,Escudo,Un escudo protector con una ranura para el ojo usado en la batalla.,"""[""""escudo"""",""""proteger"""",""""rodela""""]"""
 盾,shield,ru,Щит,"Защитный щит со смотровой щелью, используемый в бою.","""[""""щит"""",""""защита"""",""""панцирь""""]"""
-県,prefecture,en,,,
-県,prefecture,es,,,
-県,prefecture,ru,,,
+県,prefecture,en,Head,A head hanging from a tree representing an official prefecture.,"""[""""prefecture"""",""""head"""",""""district""""]"""
+県,prefecture,es,Cabeza,Una cabeza colgando de un árbol que representa una prefectura oficial.,"""[""""prefectura"""",""""cabeza"""",""""distrito""""]"""
+県,prefecture,ru,Голова,"Голова, висящая на дереве, символизирующая официальную префектуру.","""[""""префектура"""",""""голова"""",""""округ""""]"""
 真,true,en,Truth,A person on a stand seeing the truth with a clear eye.,"""[""""truth"""",""""true"""",""""real""""]"""
 真,true,es,Verdad,Una persona en un soporte viendo la verdad con un ojo claro.,"""[""""verdad"""",""""verdadero"""",""""real""""]"""
 真,true,ru,Правда,"Человек на подставке, видящий правду ясным взором.","""[""""правда"""",""""истина"""",""""реальность""""]"""
@@ -1961,9 +1961,9 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 蒦,to measure,en,Rule,Using a tool in the grass to find a rule and measure.,"""[""""measure"""",""""rule"""",""""standard""""]"""
 蒦,to measure,es,Medir,Usando una herramienta entre la hierba para hallar una regla y medir.,"""[""""medir"""",""""regla"""",""""estándar""""]"""
 蒦,to measure,ru,Мера,Использование инструмента в траве для установления правила и меры.,"""[""""мера"""",""""правило"""",""""стандарт""""]"""
-蔵,storehouse,en,,,
-蔵,storehouse,es,,,
-蔵,storehouse,ru,,,
+蔵,storehouse,en,Vault,Grass and an eye under a roof representing a secret store vault.,"""[""""vault"""",""""store"""",""""keep""""]"""
+蔵,storehouse,es,Bóveda,Hierba y un ojo bajo un techo que representan una bóveda secreta.,"""[""""bóveda"""",""""guardar"""",""""almacén""""]"""
+蔵,storehouse,ru,Хранилище,"Трава и глаз под крышей, символизирующие тайное хранилище.","""[""""хранилище"""",""""склад"""",""""беречь""""]"""
 虍,tiger spots,en,Stripes,The stripes and spots on the back of a powerful tiger.,"""[""""stripes"""",""""spots"""",""""tiger""""]"""
 虍,tiger spots,es,Rayas,Las rayas y manchas en el lomo de un tigre poderoso.,"""[""""rayas"""",""""manchas"""",""""tigre""""]"""
 虍,tiger spots,ru,Полосы,Полосы и пятна на шкуре могучего тигра.,"""[""""полосы"""",""""пятна"""",""""тигр""""]"""

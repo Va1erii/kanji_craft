@@ -427,6 +427,52 @@ def test_upload_skipped_for_existing(basic_setup):
 
 
 # ---------------------------------------------------------------------------
+# Tests: Disk write
+# ---------------------------------------------------------------------------
+
+
+def test_svg_files_written_to_disk(basic_setup):
+    """SVG files written to svg_dir/radicals/ and svg_dir/kanji/."""
+    csv_dir, warnings_dir, zip_path = basic_setup
+    client, _ = _mock_client()
+
+    extract_svg(csv_dir, warnings_dir, supabase_client=client, zip_path=zip_path)
+
+    svg_dir = csv_dir.parent / "svg"
+    assert (svg_dir / "radicals" / "4e00.svg").exists()  # 一
+    assert (svg_dir / "radicals" / "6c34.svg").exists()  # 水
+    assert (svg_dir / "radicals" / "6c35.svg").exists()  # 氵 (variant)
+    assert (svg_dir / "kanji" / "4f11.svg").exists()     # 休
+
+
+def test_svg_disk_content_matches_zip(basic_setup):
+    """Written bytes match ZIP source exactly."""
+    csv_dir, warnings_dir, zip_path = basic_setup
+    client, _ = _mock_client()
+
+    extract_svg(csv_dir, warnings_dir, supabase_client=client, zip_path=zip_path)
+
+    svg_dir = csv_dir.parent / "svg"
+    assert (svg_dir / "radicals" / "4e00.svg").read_bytes() == MINIMAL_SVG
+    assert (svg_dir / "radicals" / "6c35.svg").read_bytes() == MINIMAL_SVG
+    assert (svg_dir / "kanji" / "4f11.svg").read_bytes() == MINIMAL_SVG
+
+
+def test_svg_disk_idempotent(basic_setup):
+    """Second run doesn't error; files still correct."""
+    csv_dir, warnings_dir, zip_path = basic_setup
+    client1, _ = _mock_client()
+    client2, _ = _mock_client()
+
+    extract_svg(csv_dir, warnings_dir, supabase_client=client1, zip_path=zip_path)
+    extract_svg(csv_dir, warnings_dir, supabase_client=client2, zip_path=zip_path)
+
+    svg_dir = csv_dir.parent / "svg"
+    assert (svg_dir / "radicals" / "4e00.svg").read_bytes() == MINIMAL_SVG
+    assert (svg_dir / "kanji" / "4f11.svg").read_bytes() == MINIMAL_SVG
+
+
+# ---------------------------------------------------------------------------
 # Tests: Idempotency & integration
 # ---------------------------------------------------------------------------
 
@@ -505,6 +551,13 @@ def test_integration(tmp_path, monkeypatch):
     # Re-read from disk to verify persistence
     disk_rad = pd.read_csv(csv_dir / "radicals.csv")
     assert disk_rad["svg_file_name"].notna().all()
+
+    # Verify SVG files written to disk
+    svg_dir = csv_dir.parent / "svg"
+    assert (svg_dir / "radicals" / "4eba.svg").read_bytes() == svg_a
+    assert (svg_dir / "radicals" / "4ebb.svg").read_bytes() == svg_b
+    assert (svg_dir / "radicals" / "6728.svg").read_bytes() == svg_c
+    assert (svg_dir / "kanji" / "4f11.svg").read_bytes() == svg_d
 
     # Verify warnings (unmatched file)
     assert (warnings_dir / "ph2_4_warnings.csv").exists()

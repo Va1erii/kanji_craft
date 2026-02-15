@@ -1,6 +1,7 @@
 # All generated data is gitignored — fully regenerable from sources/
 parquet/
 csv/
+svg/
 
 # Keep manual override files
 !manual_keep.txt

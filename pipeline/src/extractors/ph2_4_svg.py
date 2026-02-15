@@ -112,6 +112,7 @@ def _process_entity(
     client,
     warnings: list[dict],
     jlpt_series: pd.Series | None = None,
+    svg_dir: Path | None = None,
 ) -> pd.DataFrame:
     """Update SVG fields on a DataFrame and upload new files.
 
@@ -127,6 +128,7 @@ def _process_entity(
         client: Supabase client (or None to skip uploads).
         warnings: Accumulator for warning dicts.
         jlpt_series: Optional Series of JLPT levels aligned with df index for severity.
+        svg_dir: Optional directory to save SVG files to disk.
 
     Returns:
         Updated DataFrame.
@@ -140,6 +142,7 @@ def _process_entity(
     skipped = 0
     changed = 0
     missing = 0
+    written = 0
 
     for idx, row in df.iterrows():
         char = row[char_col]
@@ -171,6 +174,14 @@ def _process_entity(
         df.at[idx, "svg_hash"] = sha256
         df.at[idx, "svg_file_url"] = f"{base_url}/{url_folder}/{storage_name}"
 
+        # Save to disk
+        if svg_dir is not None:
+            dest = svg_dir / url_folder / storage_name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            if not dest.exists() or dest.stat().st_size != len(raw_bytes):
+                dest.write_bytes(raw_bytes)
+                written += 1
+
         # Upload decision
         if client is not None:
             if storage_name not in remote_files:
@@ -194,9 +205,10 @@ def _process_entity(
                     skipped += 1
 
     log.info(
-        "  %s: %d uploaded, %d skipped, %d changed (admin review), %d missing, %d total",
+        "  %s: %d uploaded, %d written, %d skipped, %d changed, %d missing, %d total",
         entity_label,
         uploaded,
+        written,
         skipped,
         changed,
         missing,
@@ -238,6 +250,12 @@ def extract_svg(
     if zip_path is None:
         zip_path = _discover_zip()
     svg_map = _build_svg_map(zip_path)
+
+    # SVG disk output directory
+    svg_dir = csv_dir.parent / "svg"
+    svg_dir.mkdir(parents=True, exist_ok=True)
+    (svg_dir / "radicals").mkdir(exist_ok=True)
+    (svg_dir / "kanji").mkdir(exist_ok=True)
 
     # Step 2: Load old hashes + list remote files
     old_radical_hashes = _load_old_hashes(csv_dir / "radicals.csv")
@@ -282,6 +300,7 @@ def extract_svg(
         client,
         warnings,
         jlpt_series=jlpt_radicals,
+        svg_dir=svg_dir,
     )
     write_csv_atomic(radicals_df, radicals_path)
 
@@ -307,6 +326,7 @@ def extract_svg(
         client,
         warnings,
         jlpt_series=variant_jlpt,
+        svg_dir=svg_dir,
     )
     write_csv_atomic(variants_df, variants_path)
 
@@ -328,6 +348,7 @@ def extract_svg(
         client,
         warnings,
         jlpt_series=jlpt_kanji,
+        svg_dir=svg_dir,
     )
     write_csv_atomic(kanji_df, kanji_path)
 

@@ -79,7 +79,7 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 上,above,ru,Над,Платформа с отметкой указывающей вверх чтобы показать пространство над ней.,"""[""""над"""",""""вверх"""",""""верх""""]"""
 下,below,en,Below,A platform with a mark pointing downwards to show the space below.,"""[""""below"""",""""down"""",""""bottom""""]"""
 下,below,es,Abajo,Una plataforma con una marca que apunta hacia abajo para mostrar el espacio inferior.,"""[""""abajo"""",""""debajo"""",""""inferior""""]"""
-下,below,ru,Под,Платформа с отметкой указывающей вниз чтобы показать пространство под ней.,"""[""""под"""",""""вниз"""",""""низ""""]"""
+下,below,ru,Воронка,Широкая воронка используемая для наливания жидкости в узкое отверстие.,"""[""""воронка"""",""""быть"""",""""сосуд""""]"""
 不,negative,en,Bird,"A bird flying away from its nest to signify ""not"" being there.","""[""""negative"""",""""not"""",""""no""""]"""
 不,negative,es,Negativo,"Un pájaro que vuela lejos de su nido para significar que ""no"" está allí.","""[""""negativo"""",""""no"""",""""pájaro""""]"""
 不,negative,ru,Отрицание,Птица улетающая из гнезда чтобы показать что её там «нет».,"""[""""нет"""",""""не"""",""""отрицание""""]"""
@@ -98,207 +98,207 @@ master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
 丘,hill,en,Hill,The shape of a rounded mound of earth rising from the flat ground.,"""[""""hill"""",""""mound"""",""""rise""""]"""
 丘,hill,es,Colina,La forma de un montículo redondeado de tierra que se eleva desde el suelo.,"""[""""colina"""",""""loma"""",""""montículo""""]"""
 丘,hill,ru,Холм,Форма округлой насыпи земли возвышающейся над плоской равниной.,"""[""""холм"""",""""курган"""",""""горка""""]"""
-丙,third class,en,,,
-丙,third class,es,,,
-丙,third class,ru,,,
-业,,en,,,
-业,,es,,,
-业,,ru,,,
-丞,help,en,,,
-丞,help,es,,,
-丞,help,ru,,,
-両,both,en,,,
-両,both,es,,,
-両,both,ru,,,
-並,row,en,,,
-並,row,es,,,
-並,row,ru,,,
-丨,number one,en,,,
-丨,number one,es,,,
-丨,number one,ru,,,
-丩,to join or connect the vine,en,,,
-丩,to join or connect the vine,es,,,
-丩,to join or connect the vine,ru,,,
-中,in,en,,,
-中,in,es,,,
-中,in,ru,,,
-丰,abundant,en,,,
-丰,abundant,es,,,
-丰,abundant,ru,,,
-串,spit,en,,,
-串,spit,es,,,
-串,spit,ru,,,
-丶,dot,en,,,
-丶,dot,es,,,
-丶,dot,ru,,,
-丸,round,en,,,
-丸,round,es,,,
-丸,round,ru,,,
-主,lord,en,,,
-主,lord,es,,,
-主,lord,ru,,,
-丿,katakana no radical (no. 4),en,,,
-丿,katakana no radical (no. 4),es,,,
-丿,katakana no radical (no. 4),ru,,,
-乂,mow,en,,,
-乂,mow,es,,,
-乂,mow,ru,,,
-乃,from,en,,,
-乃,from,es,,,
-乃,from,ru,,,
-久,long time,en,,,
-久,long time,es,,,
-久,long time,ru,,,
-乇,to depend on,en,,,
-乇,to depend on,es,,,
-乇,to depend on,ru,,,
-之,of,en,,,
-之,of,es,,,
-之,of,ru,,,
-乍,though,en,,,
-乍,though,es,,,
-乍,though,ru,,,
-乗,ride,en,,,
-乗,ride,es,,,
-乗,ride,ru,,,
-乙,the latter,en,,,
-乙,the latter,es,,,
-乙,the latter,ru,,,
-九,nine,en,,,
-九,nine,es,,,
-九,nine,ru,,,
-乞,beg,en,,,
-乞,beg,es,,,
-乞,beg,ru,,,
-也,to be (classical),en,,,
-也,to be (classical),es,,,
+丙,third class,en,Table,A sturdy table with four legs standing firmly on the floor.,"""[""""table"""",""""third"""",""""pedestal""""]"""
+丙,third class,es,Mesa,Una mesa robusta con cuatro patas apoyada firmemente en el suelo.,"""[""""mesa"""",""""tercero"""",""""pedestal""""]"""
+丙,third class,ru,Стол,Прочный стол на четырех ножках надежно стоит на полу.,"""[""""стол"""",""""третий"""",""""подставка""""]"""
+业,,en,Spikes,A set of sharp spikes or jagged teeth pointing upwards.,"""[""""spikes"""",""""industry"""",""""teeth""""]"""
+业,,es,Picos,Un conjunto de picos afilados o dientes dentados que apuntan hacia arriba.,"""[""""picos"""",""""industria"""",""""dientes""""]"""
+业,,ru,Шипы,Набор острых шипов или зазубренных зубьев направленных вверх.,"""[""""шипы"""",""""промышленность"""",""""зубья""""]"""
+丞,help,en,Rescue,A person being pulled up from a hole by a helping hand.,"""[""""help"""",""""rescue"""",""""assist""""]"""
+丞,help,es,Rescate,Una persona que es sacada de un agujero por una mano amiga.,"""[""""ayuda"""",""""rescate"""",""""asistir""""]"""
+丞,help,ru,Спасение,Человека вытаскивают из ямы протянутой рукой помощи.,"""[""""помощь"""",""""спасение"""",""""выручать""""]"""
+両,both,en,Scale,A balanced scale with two weights on each side showing both sides are equal.,"""[""""both"""",""""scale"""",""""balance""""]"""
+両,both,es,Balanza,Una balanza equilibrada con dos pesas a cada lado que muestra que ambos lados son iguales.,"""[""""ambos"""",""""balanza"""",""""equilibrio""""]"""
+両,both,ru,Весы,Сбалансированные весы с двумя гирями по обе стороны показывают что обе стороны равны.,"""[""""оба"""",""""весы"""",""""баланс""""]"""
+並,row,en,Fence,Two people standing in a row behind a wooden fence.,"""[""""row"""",""""line"""",""""fence""""]"""
+並,row,es,Fila,Dos personas paradas en fila detrás de una cerca de madera.,"""[""""fila"""",""""hileria"""",""""cerca""""]"""
+並,row,ru,Ряд,Два человека стоят в ряду за деревянным забором.,"""[""""ряд"""",""""шеренга"""",""""забор""""]"""
+丨,number one,en,Stick,A single vertical stick or rod stuck into the ground.,"""[""""stick"""",""""line"""",""""vertical""""]"""
+丨,number one,es,Vara,Una sola vara o palo vertical clavado en el suelo.,"""[""""vara"""",""""palo"""",""""vertical""""]"""
+丨,number one,ru,Палка,Одиночная вертикальная палка или стержень воткнутый в землю.,"""[""""палка"""",""""линия"""",""""вертикаль""""]"""
+丩,to join or connect the vine,en,Vine,Two vines twisting together as they join on a trellis.,"""[""""vine"""",""""join"""",""""twist""""]"""
+丩,to join or connect the vine,es,Enredadera,Dos enredaderas que se retuercen juntas al unirse en un enrejado.,"""[""""enredadera"""",""""unir"""",""""torcer""""]"""
+丩,to join or connect the vine,ru,Лоза,Две лозы переплетаются вместе соединяясь на шпалере.,"""[""""лоза"""",""""соединять"""",""""плетение""""]"""
+中,in,en,Center,A vertical line passing right through the middle of a target center.,"""[""""center"""",""""middle"""",""""inside""""]"""
+中,in,es,Centro,Una línea vertical que pasa justo por la mitad del centro de un objetivo.,"""[""""centro"""",""""medio"""",""""dentro""""]"""
+中,in,ru,Центр,Вертикальная линия проходящая прямо через середину центра мишени.,"""[""""центр"""",""""середина"""",""""внутри""""]"""
+丰,abundant,en,Wheat,A stalk of wheat with many grains representing an abundant harvest.,"""[""""abundant"""",""""wheat"""",""""lush""""]"""
+丰,abundant,es,Trigo,Un tallo de trigo con muchos granos que representa una cosecha abundante.,"""[""""abundante"""",""""trigo"""",""""exuberante""""]"""
+丰,abundant,ru,Пшеница,Стебель пшеницы со множеством зерен символизирующий обильный урожай.,"""[""""обильный"""",""""пшеница"""",""""колос""""]"""
+串,spit,en,Skewer,A wooden skewer piercing through two pieces of meat.,"""[""""skewer"""",""""spit"""",""""kebab""""]"""
+串,spit,es,Brocheta,Una brocheta de madera que atraviesa dos trozos de carne.,"""[""""brocheta"""",""""espeto"""",""""kebab""""]"""
+串,spit,ru,Шампур,Деревянный шампур протыкающий два куска мяса.,"""[""""шампур"""",""""вертел"""",""""шашлык""""]"""
+丶,dot,en,Drop,A single drop of liquid falling from above.,"""[""""dot"""",""""drop"""",""""point""""]"""
+丶,dot,es,Gota,Una sola gota de líquido que cae desde arriba.,"""[""""punto"""",""""gota"""",""""pizca""""]"""
+丶,dot,ru,Капля,Одиночная капля жидкости падающая сверху.,"""[""""точка"""",""""капля"""",""""пятнышко""""]"""
+丸,round,en,Pill,A small round pill that you swallow when you are sick.,"""[""""pill"""",""""round"""",""""ball""""]"""
+丸,round,es,Píldora,Una pequeña píldora redonda que tragas cuando estás enfermo.,"""[""""píldora"""",""""redondo"""",""""bola""""]"""
+丸,round,ru,Пилюля,Маленькая круглая пилюля которую глотают во время болезни.,"""[""""пилюля"""",""""круглый"""",""""шарик""""]"""
+主,lord,en,Lamp,A lamp on a stand with a flame burning at the top.,"""[""""lord"""",""""master"""",""""lamp""""]"""
+主,lord,es,Lámpara,Una lámpara en un soporte con una llama ardiendo en la parte superior.,"""[""""señor"""",""""dueño"""",""""lámpara""""]"""
+主,lord,ru,Лампа,Лампа на подставке с горящим пламенем наверху.,"""[""""господин"""",""""хозяин"""",""""лампа""""]"""
+丿,katakana no radical (no. 4),en,Slide,A curved line representing a playground slide or a slash.,"""[""""slide"""",""""slash"""",""""no""""]"""
+丿,katakana no radical (no. 4),es,Tobogán,Una línea curva que representa un tobogán o una barra inclinada.,"""[""""tobogán"""",""""barra"""",""""no""""]"""
+丿,katakana no radical (no. 4),ru,Горка,Изогнутая линия представляющая детскую горку или наклонную черту.,"""[""""горка"""",""""черта"""",""""но""""]"""
+乂,mow,en,Shears,A pair of shears crossing as they mow the tall grass.,"""[""""mow"""",""""shears"""",""""scissors""""]"""
+乂,mow,es,Cizalla,Un par de cizallas que se cruzan mientras cortan la hierba alta.,"""[""""segar"""",""""cizalla"""",""""tijeras""""]"""
+乂,mow,ru,Секатор,Пара лезвий секатора скрещиваются когда косят высокую траву.,"""[""""косить"""",""""ножницы"""",""""секатор""""]"""
+乃,from,en,String,A piece of string curving down from a hook.,"""[""""string"""",""""from"""",""""curve""""]"""
+乃,from,es,Cuerda,Un trozo de cuerda que se curva hacia abajo desde un gancho.,"""[""""cuerda"""",""""desde"""",""""curva""""]"""
+乃,from,ru,Верёвка,Кусок верёвки свисающий вниз от крючка.,"""[""""верёвка"""",""""от"""",""""кривая""""]"""
+久,long time,en,Cane,An old person using a cane for a very long time.,"""[""""long time"""",""""cane"""",""""old""""]"""
+久,long time,es,Bastón,Una persona anciana que usa un bastón durante mucho tiempo.,"""[""""mucho tiempo"""",""""bastón"""",""""viejo""""]"""
+久,long time,ru,Трость,Пожилой человек использующий трость в течение долгого времени.,"""[""""долго"""",""""трость"""",""""старый""""]"""
+乇,to depend on,en,Leaf,A single leaf depending on a thin stem for nutrients.,"""[""""leaf"""",""""depend"""",""""stem""""]"""
+乇,to depend on,es,Hoja,Una sola hoja que depende de un tallo delgado para obtener nutrientes.,"""[""""hoja"""",""""depender"""",""""tallo""""]"""
+乇,to depend on,ru,Лист,Одиночный лист зависящий от тонкого стебля в получении питательных веществ.,"""[""""лист"""",""""зависеть"""",""""стебель""""]"""
+之,of,en,Path,A winding path going forward from a starting point.,"""[""""path"""",""""of"""",""""move""""]"""
+之,of,es,Senda,Una senda sinuosa que avanza desde un punto de partida.,"""[""""senda"""",""""de"""",""""moverse""""]"""
+之,of,ru,Тропа,Извилистая тропа идущая вперед от начальной точки.,"""[""""тропа"""",""""из"""",""""движение""""]"""
+乍,though,en,Saw,A sharp saw blade cutting through a piece of wood.,"""[""""saw"""",""""cut"""",""""sudden""""]"""
+乍,though,es,Sierra,Una hoja de sierra afilada que corta un trozo de madera.,"""[""""sierra"""",""""cortar"""",""""repentino""""]"""
+乍,though,ru,Пила,Острое лезвие пилы распиливающее кусок дерева.,"""[""""пила"""",""""резать"""",""""внезапно""""]"""
+乗,ride,en,Coach,People sitting on top of a horse-drawn coach for a ride.,"""[""""ride"""",""""coach"""",""""mount""""]"""
+乗,ride,es,Carruaje,Personas sentadas encima de un carruaje tirado por caballos para dar un paseo.,"""[""""montar"""",""""carruaje"""",""""viaje""""]"""
+乗,ride,ru,Экипаж,Люди сидящие верхом на конном экипаже во время поездки.,"""[""""ехать"""",""""экипаж"""",""""садиться""""]"""
+乙,the latter,en,Hook,A bent fishhook waiting for the latter fish to bite.,"""[""""hook"""",""""second"""",""""fishhook""""]"""
+乙,the latter,es,Anzuelo,Un anzuelo doblado esperando a que el último pez muerda.,"""[""""anzuelo"""",""""segundo"""",""""gancho""""]"""
+乙,the latter,ru,Крючок,Изогнутый рыболовный крючок ждет когда клюнет рыба.,"""[""""крючок"""",""""второй"""",""""рыболовный""""]"""
+九,nine,en,Nine,A hand showing nine fingers by curling one under.,"""[""""nine"""",""""number""""]"""
+九,nine,es,Nueve,Una mano que muestra nueve dedos doblando uno hacia abajo.,"""[""""nueve"""",""""número""""]"""
+九,nine,ru,Девять,Рука показывающая девять пальцев поджав один.,"""[""""девять"""",""""число""""]"""
+乞,beg,en,Beggar,A person kneeling down to beg for food or money.,"""[""""beg"""",""""kneel"""",""""request""""]"""
+乞,beg,es,Mendigo,Una persona arrodillada para pedir comida o dinero.,"""[""""pedir"""",""""mendigar"""",""""arrodillarse""""]"""
+乞,beg,ru,Попрошайка,Человек на коленях просящий еду или деньги.,"""[""""просить"""",""""умолять"""",""""колени""""]"""
+也,to be (classical),en,Funnel,A wide funnel used to pour liquid into a small opening.,"""[""""funnel"""",""""be"""",""""vessel""""]"""
+也,to be (classical),es,Embudo,Un embudo ancho utilizado para verter líquido en una abertura pequeña.,"""[""""embudo"""",""""ser"""",""""vasija""""]"""
 也,to be (classical),ru,,,
-乡,,en,,,
-乡,,es,,,
-乡,,ru,,,
-亅,feathered stick,en,,,
-亅,feathered stick,es,,,
-亅,feathered stick,ru,,,
-了,complete,en,,,
-了,complete,es,,,
-了,complete,ru,,,
-予,beforehand,en,,,
-予,beforehand,es,,,
-予,beforehand,ru,,,
-争,contend,en,,,
-争,contend,es,,,
-争,contend,ru,,,
-二,two,en,,,
-二,two,es,,,
-二,two,ru,,,
-云,say,en,,,
-云,say,es,,,
-云,say,ru,,,
-五,five,en,,,
-五,five,es,,,
-五,five,ru,,,
-井,well,en,,,
-井,well,es,,,
-井,well,ru,,,
-亘,span,en,,,
-亘,span,es,,,
-亘,span,ru,,,
-亚,,en,,,
-亚,,es,,,
-亚,,ru,,,
-亜,Asia,en,,,
-亜,Asia,es,,,
-亜,Asia,ru,,,
-亠,kettle lid radical (no. 8),en,,,
-亠,kettle lid radical (no. 8),es,,,
-亠,kettle lid radical (no. 8),ru,,,
-亡,deceased,en,,,
-亡,deceased,es,,,
-亡,deceased,ru,,,
-亢,high spirits,en,,,
-亢,high spirits,es,,,
-亢,high spirits,ru,,,
-交,mingle,en,,,
-交,mingle,es,,,
-交,mingle,ru,,,
-亥,sign of the hog,en,,,
-亥,sign of the hog,es,,,
-亥,sign of the hog,ru,,,
-亦,also,en,,,
-亦,also,es,,,
-亦,also,ru,,,
-亩,,en,,,
-亩,,es,,,
-亩,,ru,,,
-享,enjoy,en,,,
-享,enjoy,es,,,
-享,enjoy,ru,,,
-京,capital,en,,,
-京,capital,es,,,
-京,capital,ru,,,
-亭,pavilion,en,,,
-亭,pavilion,es,,,
-亭,pavilion,ru,,,
-人,person,en,,,
-人,person,es,,,
-人,person,ru,,,
-亻,radical number 9,en,,,
-亻,radical number 9,es,,,
-亻,radical number 9,ru,,,
-今,now,en,,,
-今,now,es,,,
-今,now,ru,,,
-介,jammed in,en,,,
-介,jammed in,es,,,
-介,jammed in,ru,,,
-从,two people,en,,,
-从,two people,es,,,
-从,two people,ru,,,
-付,adhere,en,,,
-付,adhere,es,,,
-付,adhere,ru,,,
-代,substitute,en,,,
-代,substitute,es,,,
-代,substitute,ru,,,
-令,orders,en,,,
-令,orders,es,,,
-令,orders,ru,,,
-以,by means of,en,,,
-以,by means of,es,,,
-以,by means of,ru,,,
-任,responsibility,en,,,
-任,responsibility,es,,,
-任,responsibility,ru,,,
-伐,fell,en,,,
-伐,fell,es,,,
-伐,fell,ru,,,
-会,meeting,en,,,
-会,meeting,es,,,
-会,meeting,ru,,,
-何,what,en,,,
-何,what,es,,,
-何,what,ru,,,
-余,too much,en,,,
-余,too much,es,,,
-余,too much,ru,,,
-侖,think,en,,,
-侖,think,es,,,
-侖,think,ru,,,
-侯,marquis,en,,,
-侯,marquis,es,,,
-侯,marquis,ru,,,
-保,protect,en,,,
-保,protect,es,,,
-保,protect,ru,,,
-倉,godown,en,,,
-倉,godown,es,,,
-倉,godown,ru,,,
-倠,,en,,,
-倠,,es,,,
-倠,,ru,,,
-儿,legs radical (no. 10),en,,,
-儿,legs radical (no. 10),es,,,
-儿,legs radical (no. 10),ru,,,
+乡,,en,Village,A collection of small houses nestled together in a village.,"""[""""village"""",""""hometown"""",""""houses""""]"""
+乡,,es,Aldea,Un conjunto de pequeñas casas agrupadas en una aldea.,"""[""""aldea"""",""""pueblo"""",""""casas""""]"""
+乡,,ru,Деревня,Группа маленьких домов тесно стоящих в деревне.,"""[""""деревня"""",""""село"""",""""дома""""]"""
+亅,feathered stick,en,Hook,A stick with a hook at the bottom for catching items.,"""[""""hook"""",""""stick"""",""""barb""""]"""
+亅,feathered stick,es,Garfio,Un palo con un garfio en la parte inferior para atrapar objetos.,"""[""""gancho"""",""""palo"""",""""garfio""""]"""
+亅,feathered stick,ru,Крюк,Палка с крюком на нижнем конце для захвата предметов.,"""[""""крюк"""",""""палка"""",""""зацеп""""]"""
+了,complete,en,Bundle,A baby wrapped in a bundle to signify a task is complete.,"""[""""complete"""",""""finish"""",""""bundle""""]"""
+了,complete,es,Bulto,Un bebé envuelto en un bulto para indicar que una tarea está completa.,"""[""""completar"""",""""terminar"""",""""bulto""""]"""
+了,complete,ru,Сверток,Ребенок завернутый в сверток символизирует завершение дела.,"""[""""завершить"""",""""конец"""",""""сверток""""]"""
+予,beforehand,en,Shuttle,A weaver's shuttle moving back and forth beforehand.,"""[""""beforehand"""",""""shuttle"""",""""weave""""]"""
+予,beforehand,es,Lanzadera,Una lanzadera de tejedor que se mueve de un lado a otro de antemano.,"""[""""antemano"""",""""lanzadera"""",""""tejer""""]"""
+予,beforehand,ru,Челнок,Ткацкий челнок заранее движущийся туда-сюда.,"""[""""заранее"""",""""челнок"""",""""ткать""""]"""
+争,contend,en,Claw,Two animals using claws to contend for a piece of meat.,"""[""""contend"""",""""fight"""",""""claw""""]"""
+争,contend,es,Contienda,Dos animales que usan las garras para luchar por un trozo de carne.,"""[""""lucha"""",""""pelea"""",""""garra""""]"""
+争,contend,ru,Борьба,Два животных используют когти чтобы бороться за кусок мяса.,"""[""""борьба"""",""""спор"""",""""когти""""]"""
+二,two,en,Two,Two parallel lines representing the number two.,"""[""""two"""",""""number""""]"""
+二,two,es,Dos,Dos líneas paralelas que representan el número dos.,"""[""""dos"""",""""número""""]"""
+二,two,ru,Два,Две параллельные линии представляющие число два.,"""[""""два"""",""""число""""]"""
+云,say,en,Cloud,A cloud in the sky that looks like it is whispering or saying something.,"""[""""say"""",""""cloud"""",""""speak""""]"""
+云,say,es,Nube,Una nube en el cielo que parece estar susurrando o diciendo algo.,"""[""""decir"""",""""nube"""",""""hablar""""]"""
+云,say,ru,Облако,Облако в небе которое будто шепчет или говорит что-то.,"""[""""говорить"""",""""облако"""",""""молвить""""]"""
+五,five,en,Five,Five horizontal and vertical lines joined to make the number five.,"""[""""five"""",""""number""""]"""
+五,five,es,Cinco,Cinco líneas horizontales y verticales unidas para formar el número cinco.,"""[""""cinco"""",""""número""""]"""
+五,five,ru,Пять,Пять горизонтальных и вертикальных линий соединенных в число пять.,"""[""""пять"""",""""число""""]"""
+井,well,en,Well,A wooden frame over a deep water well.,"""[""""well"""",""""frame"""",""""water""""]"""
+井,well,es,Pozo,Un marco de madera sobre un pozo de agua profundo.,"""[""""pozo"""",""""marco"""",""""agua""""]"""
+井,well,ru,Колодец,Деревянный сруб над глубоким водяным колодцем.,"""[""""колодец"""",""""рамка"""",""""вода""""]"""
+亘,span,en,Horizon,A sun spanning the distance between the top and bottom horizon lines.,"""[""""span"""",""""horizon"""",""""sun""""]"""
+亘,span,es,Horizonte,Un sol que recorre la distancia entre las líneas del horizonte superior e inferior.,"""[""""abarcar"""",""""horizonte"""",""""sol""""]"""
+亘,span,ru,Горизонт,Солнце охватывающее расстояние между верхней и нижней линиями горизонта.,"""[""""охват"""",""""горизонт"""",""""солнце""""]"""
+亚,,en,Frame,A decorative wooden frame used to display artwork.,"""[""""frame"""",""""border"""",""""display""""]"""
+亚,,es,Marco,Un marco de madera decorativo utilizado para mostrar obras de arte.,"""[""""marco"""",""""borde"""",""""exhibir""""]"""
+亚,,ru,Рамка,Декоративная деревянная рамка используемая для показа произведений искусства.,"""[""""рамка"""",""""граница"""",""""стенд""""]"""
+亜,Asia,en,Tomb,A large burial tomb with a decorative entrance in Asia.,"""[""""Asia"""",""""tomb"""",""""burial""""]"""
+亜,Asia,es,Tumba,Una gran tumba funeraria con una entrada decorativa en Asia.,"""[""""Asia"""",""""tumba"""",""""sepulcro""""]"""
+亜,Asia,ru,Гробница,Большая погребальная гробница с декоративным входом в Азии.,"""[""""Азия"""",""""гробница"""",""""склеп""""]"""
+亠,kettle lid radical (no. 8),en,Lid,A small lid with a handle sitting on top of a kettle.,"""[""""lid"""",""""top"""",""""cover""""]"""
+亠,kettle lid radical (no. 8),es,Tapa,Una pequeña tapa con asa colocada sobre una tetera.,"""[""""tapa"""",""""arriba"""",""""cubierta""""]"""
+亠,kettle lid radical (no. 8),ru,Крышка,Маленькая крышка с ручкой лежащая на чайнике.,"""[""""крышка"""",""""верх"""",""""покров""""]"""
+亡,deceased,en,Ghost,A ghost of a deceased person hiding behind a corner.,"""[""""deceased"""",""""ghost"""",""""dead""""]"""
+亡,deceased,es,Difunto,El fantasma de una persona difunta escondida tras una esquina.,"""[""""difunto"""",""""fantasma"""",""""muerto""""]"""
+亡,deceased,ru,Покойник,Призрак покойника прячущийся за углом.,"""[""""покойник"""",""""призрак"""",""""мертвый""""]"""
+亢,high spirits,en,Cap,A person wearing a fancy cap and feeling in high spirits.,"""[""""spirits"""",""""cap"""",""""proud""""]"""
+亢,high spirits,es,Gorro,Una persona que lleva un gorro elegante y se siente de muy buen humor.,"""[""""ánimo"""",""""gorro"""",""""orgulloso""""]"""
+亢,high spirits,ru,Кепка,Человек в модной кепке в приподнятом настроении.,"""[""""настроение"""",""""кепка"""",""""гордость""""]"""
+交,mingle,en,Legs,A person crossing their legs as they mingle at a party.,"""[""""mingle"""",""""legs"""",""""cross""""]"""
+交,mingle,es,Piernas,Una persona que cruza las piernas mientras se mezcla en una fiesta.,"""[""""mezclar"""",""""piernas"""",""""cruzar""""]"""
+交,mingle,ru,Ноги,Человек скрестивший ноги во время общения на вечеринке.,"""[""""смешиваться"""",""""ноги"""",""""скрещивание""""]"""
+亥,sign of the hog,en,Pig,A pig with its snout and curly tail resting in the mud.,"""[""""pig"""",""""hog"""",""""zodiac""""]"""
+亥,sign of the hog,es,Cerdo,Un cerdo con su hocico y cola rizada descansando en el barro.,"""[""""cerdo"""",""""marrano"""",""""zodiaco""""]"""
+亥,sign of the hog,ru,Свинья,Свинья с пятачком и закрученным хвостом отдыхает в грязи.,"""[""""свинья"""",""""кабан"""",""""зодиак""""]"""
+亦,also,en,Armpits,"A person showing their armpits, also indicating a part of the body.","""[""""also"""",""""armpits"""",""""body""""]"""
+亦,also,es,Axilas,"Una persona que muestra las axilas, indicando también una parte del cuerpo.","""[""""también"""",""""axilas"""",""""cuerpo""""]"""
+亦,also,ru,Подмышки,"Человек показывает подмышки, также указывая на часть тела.","""[""""также"""",""""подмышки"""",""""тело""""]"""
+亩,,en,Field,A square field marked out for planting crops.,"""[""""field"""",""""acre"""",""""farm""""]"""
+亩,,es,Campo,Un campo cuadrado marcado para plantar cultivos.,"""[""""campo"""",""""acre"""",""""granja""""]"""
+亩,,ru,Поле,Квадратное поле размеченное для посадки сельскохозяйственных культур.,"""[""""поле"""",""""акр"""",""""ферма""""]"""
+享,enjoy,en,Banquet,A tall building where people gather to enjoy a banquet.,"""[""""enjoy"""",""""banquet"""",""""receive""""]"""
+享,enjoy,es,Banquete,Un edificio alto donde la gente se reúne para disfrutar de un banquete.,"""[""""disfrutar"""",""""banquete"""",""""recibir""""]"""
+享,enjoy,ru,Банкет,Высокое здание где люди собираются чтобы насладиться банкетом.,"""[""""наслаждаться"""",""""банкет"""",""""пир""""]"""
+京,capital,en,Capital,A tall building representing the seat of power in a capital city.,"""[""""capital"""",""""city"""",""""metropolis""""]"""
+京,capital,es,Capital,Un edificio alto que representa la sede del poder en una ciudad capital.,"""[""""capital"""",""""ciudad"""",""""metrópolis""""]"""
+京,capital,ru,Столица,Высокое здание представляющее центр власти в столице.,"""[""""столица"""",""""город"""",""""метрополия""""]"""
+亭,pavilion,en,Pavilion,A fancy roofed structure in a park used as a pavilion.,"""[""""pavilion"""",""""kiosk"""",""""arbor""""]"""
+亭,pavilion,es,Pabellón,Una estructura con techo elegante en un parque utilizada como pabellón.,"""[""""pabellón"""",""""quiosco"""",""""glorieta""""]"""
+亭,pavilion,ru,Павильон,Красивое крытое сооружение в парке используемое как павильон.,"""[""""павильон"""",""""беседка"""",""""киоск""""]"""
+人,person,en,Person,"A person standing on two legs, seen from the side.","""[""""person"""",""""man"""",""""human""""]"""
+人,person,es,Persona,"Una persona de pie sobre dos piernas, vista de lado.","""[""""persona"""",""""hombre"""",""""humano""""]"""
+人,person,ru,Человек,"Человек стоящий на двух ногах, вид сбоку.","""[""""человек"""",""""мужчина"""",""""люди""""]"""
+亻,radical number 9,en,Person,"A person standing upright, represented as a vertical component.","""[""""person"""",""""side"""",""""human""""]"""
+亻,radical number 9,es,Persona,"Una persona de pie, representada como un componente vertical.","""[""""persona"""",""""lado"""",""""humano""""]"""
+亻,radical number 9,ru,Человек,"Человек стоящий прямо, представленный как вертикальный элемент.","""[""""человек"""",""""сбоку"""",""""люди""""]"""
+今,now,en,Clock,A roof over a clock showing that the time is now.,"""[""""now"""",""""clock"""",""""present""""]"""
+今,now,es,Reloj,Un techo sobre un reloj que muestra que la hora es ahora.,"""[""""ahora"""",""""reloj"""",""""presente""""]"""
+今,now,ru,Часы,Крыша над часами показывающая что время пришло сейчас.,"""[""""сейчас"""",""""часы"""",""""настоящее""""]"""
+介,jammed in,en,Umbrella,A person jammed in under a small umbrella during a storm.,"""[""""jammed"""",""""umbrella"""",""""between""""]"""
+介,jammed in,es,Paraguas,Una persona encajonada bajo un paraguas pequeño durante una tormenta.,"""[""""atascado"""",""""paraguas"""",""""entre""""]"""
+介,jammed in,ru,Зонт,Человек зажатый под маленьким зонтом во время шторма.,"""[""""зажатый"""",""""зонт"""",""""между""""]"""
+从,two people,en,Follower,"One person walking behind another, like a follower.","""[""""follow"""",""""people"""",""""two""""]"""
+从,two people,es,Seguidor,"Una persona que camina detrás de otra, como un seguidor.","""[""""seguir"""",""""personas"""",""""dos""""]"""
+从,two people,ru,Последователь,"Один человек идет за другим, словно последователь.","""[""""следовать"""",""""люди"""",""""двое""""]"""
+付,adhere,en,Glue,A person using their hand to make a label adhere to a box.,"""[""""adhere"""",""""glue"""",""""attach""""]"""
+付,adhere,es,Pegamento,Una persona que usa su mano para hacer que una etiqueta se adhiera a una caja.,"""[""""adherir"""",""""pegar"""",""""adjuntar""""]"""
+付,adhere,ru,Клей,Человек рукой приклеивает этикетку к коробке.,"""[""""приклеивать"""",""""клей"""",""""прикреплять""""]"""
+代,substitute,en,Actor,An actor standing in as a substitute for another person.,"""[""""substitute"""",""""actor"""",""""replace""""]"""
+代,substitute,es,Actor,Un actor que sustituye a otra persona.,"""[""""sustituto"""",""""actor"""",""""reemplazar""""]"""
+代,substitute,ru,Актер,Актер выступающий в качестве замены другого человека.,"""[""""замена"""",""""актер"""",""""смена""""]"""
+令,orders,en,Command,A person under a roof receiving official orders.,"""[""""order"""",""""command"""",""""decree""""]"""
+令,orders,es,Orden,Una persona bajo un techo que recibe órdenes oficiales.,"""[""""orden"""",""""mando"""",""""decreto""""]"""
+令,orders,ru,Приказ,Человек под крышей получающий официальные приказы.,"""[""""приказ"""",""""команда"""",""""указ""""]"""
+以,by means of,en,Tool,Using a sharp tool by means of a handle to complete a task.,"""[""""means"""",""""tool"""",""""use""""]"""
+以,by means of,es,Herramienta,Usar una herramienta afilada mediante un mango para completar una tarea.,"""[""""medio"""",""""herramienta"""",""""usar""""]"""
+以,by means of,ru,Инструмент,Использование острого инструмента с помощью рукоятки для выполнения задачи.,"""[""""посредством"""",""""инструмент"""",""""способ""""]"""
+任,responsibility,en,Porter,A porter taking the responsibility of carrying a heavy load.,"""[""""responsibility"""",""""porter"""",""""load""""]"""
+任,responsibility,es,Porteador,Un porteador que asume la responsabilidad de llevar una carga pesada.,"""[""""responsabilidad"""",""""porteador"""",""""carga""""]"""
+任,responsibility,ru,Носильщик,Носильщик берущий на себя ответственность за переноску тяжелого груза.,"""[""""ответственность"""",""""носильщик"""",""""груз""""]"""
+伐,fell,en,Axe,A person using an axe to fell a large tree.,"""[""""fell"""",""""axe"""",""""cut""""]"""
+伐,fell,es,Hacha,Una persona que usa un hacha para talar un árbol grande.,"""[""""talar"""",""""hacha"""",""""cortar""""]"""
+伐,fell,ru,Топор,Человек использующий топор чтобы срубить большое дерево.,"""[""""рубить"""",""""топор"""",""""валить""""]"""
+会,meeting,en,Meeting,People gathering under a roof for a formal meeting.,"""[""""meeting"""",""""meet"""",""""gather""""]"""
+会,meeting,es,Reunión,Personas que se reúnen bajo un techo para una reunión formal.,"""[""""reunión"""",""""quedada"""",""""juntar""""]"""
+会,meeting,ru,Встреча,Люди собираются под крышей для официальной встречи.,"""[""""встреча"""",""""собрание"""",""""сбор""""]"""
+何,what,en,Question,"A person carrying a burden and asking ""what"" is inside.","""[""""what"""",""""question"""",""""burden""""]"""
+何,what,es,Pregunta,"Una persona que lleva una carga y pregunta ""qué"" hay dentro.","""[""""qué"""",""""pregunta"""",""""carga""""]"""
+何,what,ru,Вопрос,Человек несущий ношу и спрашивающий «что» внутри.,"""[""""что"""",""""вопрос"""",""""ноша""""]"""
+余,too much,en,Leftover,Extra food under a roof that is too much to eat.,"""[""""too much"""",""""leftover"""",""""surplus""""]"""
+余,too much,es,Sobra,Comida extra bajo un techo que es demasiada para comer.,"""[""""demasiado"""",""""sobra"""",""""exceso""""]"""
+余,too much,ru,Излишек,Лишняя еда под крышей которой слишком много.,"""[""""лишний"""",""""остаток"""",""""избыток""""]"""
+侖,think,en,Scrolls,Organized scrolls under a roof help you think clearly.,"""[""""think"""",""""scrolls"""",""""order""""]"""
+侖,think,es,Pergaminos,Pergaminos organizados bajo un techo que te ayudan a pensar con claridad.,"""[""""pensar"""",""""pergaminos"""",""""orden""""]"""
+侖,think,ru,Свитки,Упорядоченные свитки под крышей помогают ясно мыслить.,"""[""""думать"""",""""свитки"""",""""порядок""""]"""
+侯,marquis,en,Archer,A marquis practicing with a bow and arrow at a target.,"""[""""marquis"""",""""archer"""",""""lord""""]"""
+侯,marquis,es,Marqués,Un marqués que practica con arco y flecha en un blanco.,"""[""""marqués"""",""""arquero"""",""""señor""""]"""
+侯,marquis,ru,Маркиз,Маркиз тренирующийся в стрельбе из лука по мишени.,"""[""""маркиз"""",""""лучник"""",""""лорд""""]"""
+保,protect,en,Nurse,A person acting as a nurse to protect a small child.,"""[""""protect"""",""""nurse"""",""""guard""""]"""
+保,protect,es,Enfermera,Una persona que actúa como enfermera para proteger a un niño pequeño.,"""[""""proteger"""",""""enfermera"""",""""guardar""""]"""
+保,protect,ru,Няня,Человек в роли няни защищающий маленького ребенка.,"""[""""защищать"""",""""няня"""",""""охранять""""]"""
+倉,godown,en,Warehouse,A large warehouse or godown used to store goods safely.,"""[""""warehouse"""",""""godown"""",""""store""""]"""
+倉,godown,es,Almacén,Un gran almacén utilizado para guardar mercancías de forma segura.,"""[""""almacén"""",""""depósito"""",""""tienda""""]"""
+倉,godown,ru,Склад,Большой склад используемый для безопасного хранения товаров.,"""[""""склад"""",""""хранилище"""",""""амбар""""]"""
+倠,,en,Bird,A small bird standing upright like a person.,"""[""""bird"""",""""upright"""",""""small""""]"""
+倠,,es,Pájaro,Un pájaro pequeño que está de pie como una persona.,"""[""""pájaro"""",""""erguido"""",""""pequeño""""]"""
+倠,,ru,Птица,Маленькая птица стоящая прямо словно человек.,"""[""""птица"""",""""прямо"""",""""маленький""""]"""
+儿,legs radical (no. 10),en,Legs,A pair of long legs walking or standing alone.,"""[""""legs"""",""""human"""",""""stand""""]"""
+儿,legs radical (no. 10),es,Piernas,Un par de piernas largas caminando o paradas solas.,"""[""""piernas"""",""""humano"""",""""pararse""""]"""
+儿,legs radical (no. 10),ru,Ноги,Пара длинных ног которые идут или стоят сами по себе.,"""[""""ноги"""",""""человек"""",""""стоять""""]"""
 兀,high & level,en,,,
 兀,high & level,es,,,
 兀,high & level,ru,,,

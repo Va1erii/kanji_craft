@@ -88,7 +88,7 @@ After Pass 2, rebuild the warnings list:
 
 - Radicals/variants that were **extracted** in Pass 2: emit a **low**-severity `"extracted"` warning so the admin knows which SVGs are component-extracted (not from standalone files). These may need visual review.
 - Radicals/variants still **missing** after both passes: emit a **high**-severity warning (JLPT-mapped) or **low**-severity warning (non-JLPT), same as before.
-- Kanji missing SVGs: unchanged from Pass 1 (high/low based on JLPT mapping).
+- Kanji missing SVGs: **high** severity (JLPT-mapped) or **low** severity (non-JLPT).
 
 ## File Naming
 

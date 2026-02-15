@@ -1,103 +1,103 @@
 master_symbol,en_name_seed,lang_code,name,system_mnemonic,search_tags
-⺍,,en,,,
-⺍,,es,,,
-⺍,,ru,,,
-⺤,,en,,,
-⺤,,es,,,
-⺤,,ru,,,
-⻌,,en,,,
-⻌,,es,,,
-⻌,,ru,,,
-⻖,,en,,,
-⻖,,es,,,
-⻖,,ru,,,
-マ,,en,,,
-マ,,es,,,
-マ,,ru,,,
-㐬,a cup with pendants,en,,,
-㐬,a cup with pendants,es,,,
-㐬,a cup with pendants,ru,,,
-㐭,,en,,,
-㐭,,es,,,
-㐭,,ru,,,
-㑒,,en,,,
-㑒,,es,,,
-㑒,,ru,,,
-㔾,,en,,,
-㔾,,es,,,
-㔾,,ru,,,
-㕣,a marsh at the foot of the hills,en,,,
-㕣,a marsh at the foot of the hills,es,,,
-㕣,a marsh at the foot of the hills,ru,,,
-㝵,to get,en,,,
-㝵,to get,es,,,
-㝵,to get,ru,,,
-㠯,,en,,,
-㠯,,es,,,
-㠯,,ru,,,
-㳟,,en,,,
-㳟,,es,,,
-㳟,,ru,,,
-䍃,a vase,en,,,
-䍃,a vase,es,,,
-䍃,a vase,ru,,,
-䏍,,en,,,
-䏍,,es,,,
-䏍,,ru,,,
-䒑,grass,en,,,
-䒑,grass,es,,,
-䒑,grass,ru,,,
-䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",en,,,
-䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",es,,,
-䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",ru,,,
-䩗,,en,,,
-䩗,,es,,,
-䩗,,ru,,,
-一,one,en,,,
-一,one,es,,,
-一,one,ru,,,
-丁,street,en,,,
-丁,street,es,,,
-丁,street,ru,,,
-丂,obstruction of breath (qi) as it seeks release,en,,,
-丂,obstruction of breath (qi) as it seeks release,es,,,
-丂,obstruction of breath (qi) as it seeks release,ru,,,
-七,seven,en,,,
-七,seven,es,,,
-七,seven,ru,,,
-万,ten thousand,en,,,
-万,ten thousand,es,,,
-万,ten thousand,ru,,,
-丈,length,en,,,
-丈,length,es,,,
-丈,length,ru,,,
-三,three,en,,,
-三,three,es,,,
-三,three,ru,,,
-上,above,en,,,
-上,above,es,,,
-上,above,ru,,,
-下,below,en,,,
-下,below,es,,,
-下,below,ru,,,
-不,negative,en,,,
-不,negative,es,,,
-不,negative,ru,,,
-与,bestow,en,,,
-与,bestow,es,,,
-与,bestow,ru,,,
-丑,sign of the ox or cow,en,,,
-丑,sign of the ox or cow,es,,,
-丑,sign of the ox or cow,ru,,,
-且,moreover,en,,,
-且,moreover,es,,,
-且,moreover,ru,,,
-世,generation,en,,,
-世,generation,es,,,
-世,generation,ru,,,
-丘,hill,en,,,
-丘,hill,es,,,
-丘,hill,ru,,,
+⺍,,en,Horn,Three sharp spikes pointing up look like the horns of a small animal.,"""[""""horn"""",""""spike"""",""""top""""]"""
+⺍,,es,Cuerno,Tres picos afilados en la parte superior parecen los cuernos de un animal.,"""[""""cuerno"""",""""pico"""",""""arriba""""]"""
+⺍,,ru,Рога,Три острых шипа наверху выглядят как рога маленького животного.,"""[""""рога"""",""""шипы"""",""""верх""""]"""
+⺤,,en,Claw,A hand reaching down with sharp nails looks like a predator's claw.,"""[""""claw"""",""""hand"""",""""nail""""]"""
+⺤,,es,Garra,Una mano que baja con uñas afiladas parece la garra de un depredador.,"""[""""garra"""",""""mano"""",""""uña""""]"""
+⺤,,ru,Коготь,Рука с острыми ногтями тянется вниз словно коготь хищника.,"""[""""коготь"""",""""рука"""",""""ногти""""]"""
+⻌,,en,Road,The long line at the bottom represents a road for a person to walk on.,"""[""""road"""",""""walk"""",""""movement""""]"""
+⻌,,es,Camino,La línea larga en la parte inferior representa un camino para caminar.,"""[""""camino"""",""""andar"""",""""movimiento""""]"""
+⻌,,ru,Дорога,Длинная линия внизу представляет собой дорогу по которой идет человек.,"""[""""дорога"""",""""ходьба"""",""""движение""""]"""
+⻖,,en,Mound,The shape looks like a steep mound of earth or a small hill.,"""[""""mound"""",""""hill"""",""""wall""""]"""
+⻖,,es,Montículo,La forma parece un montículo de tierra empinado o una colina pequeña.,"""[""""montículo"""",""""colina"""",""""muro""""]"""
+⻖,,ru,Холм,Форма напоминает крутой земляной холм или небольшую насыпь.,"""[""""холм"""",""""насыпь"""",""""стена""""]"""
+マ,,en,Katakana Ma,The shape is the katakana character Ma used as a component.,"""[""""ma"""",""""katakana""""]"""
+マ,,es,Katakana Ma,La forma es el carácter katakana Ma utilizado como componente.,"""[""""ma"""",""""katakana""""]"""
+マ,,ru,Катакана Ма,Форма представляет собой символ катаканы Ма используемый как элемент.,"""[""""ма"""",""""катакана""""]"""
+㐬,a cup with pendants,en,Banner,A pole with several pendants hanging down looks like a decorative banner.,"""[""""banner"""",""""flag"""",""""pendant""""]"""
+㐬,a cup with pendants,es,Estandarte,Un asta con varios colgantes parece un estandarte decorativo.,"""[""""estandarte"""",""""bandera"""",""""colgante""""]"""
+㐬,a cup with pendants,ru,Знамя,Шест с несколькими свисающими подвесками напоминает декоративное знамя.,"""[""""знамя"""",""""флаг"""",""""подвеска""""]"""
+㐭,,en,Granary,A tall building with a roof used to store grain safely.,"""[""""granary"""",""""storehouse"""",""""grain""""]"""
+㐭,,es,Granero,Un edificio alto con techo utilizado para almacenar grano de forma segura.,"""[""""granero"""",""""almacén"""",""""grano""""]"""
+㐭,,ru,Амбар,Высокое здание с крышей используемое для хранения зерна.,"""[""""амбар"""",""""склад"""",""""зерно""""]"""
+㑒,,en,Cap,A lid or cap covering the top of a person or object.,"""[""""cap"""",""""lid"""",""""cover""""]"""
+㑒,,es,Gorra,Una tapa o gorra que cubre la parte superior de una persona u objeto.,"""[""""gorra"""",""""tapa"""",""""cubierta""""]"""
+㑒,,ru,Кепка,Крышка или кепка закрывающая верхнюю часть человека или предмета.,"""[""""кепка"""",""""крышка"""",""""покров""""]"""
+㔾,,en,Stamp,A small hand-held stamp used to press a seal onto paper.,"""[""""stamp"""",""""seal"""",""""kneel""""]"""
+㔾,,es,Sello,Un pequeño sello de mano utilizado para presionar una marca en el papel.,"""[""""sello"""",""""marca"""",""""arrodillarse""""]"""
+㔾,,ru,Печать,Небольшая ручная печать используемая для оттиска на бумаге.,"""[""""печать"""",""""клеймо"""",""""колено""""]"""
+㕣,a marsh at the foot of the hills,en,Marsh,Water gathering in a low spot at the foot of a hill creates a marsh.,"""[""""marsh"""",""""swamp"""",""""valley""""]"""
+㕣,a marsh at the foot of the hills,es,Pantano,El agua que se acumula en un lugar bajo al pie de una colina crea un pantano.,"""[""""pantano"""",""""ciénaga"""",""""valle""""]"""
+㕣,a marsh at the foot of the hills,ru,Болото,Вода собирающаяся в низине у подножия холма образует болото.,"""[""""болото"""",""""трясина"""",""""долина""""]"""
+㝵,to get,en,Acquisition,Using hands and tools to gather and get what you need.,"""[""""get"""",""""obtain"""",""""acquisition""""]"""
+㝵,to get,es,Adquisición,Usar las manos y herramientas para recolectar y obtener lo que necesitas.,"""[""""obtener"""",""""conseguir"""",""""adquisición""""]"""
+㝵,to get,ru,Приобретение,Использование рук и инструментов чтобы собрать и получить необходимое.,"""[""""получать"""",""""приобретать"""",""""добыча""""]"""
+㠯,,en,Container,A box-like shape used for holding and organizing items.,"""[""""container"""",""""box"""",""""holder""""]"""
+㠯,,es,Contenedor,Una forma similar a una caja utilizada para guardar y organizar artículos.,"""[""""contenedor"""",""""caja"""",""""soporte""""]"""
+㠯,,ru,Контейнер,Коробчатая форма используемая для хранения и организации вещей.,"""[""""контейнер"""",""""ящик"""",""""хранилище""""]"""
+㳟,,en,Respect,A person bowing deeply with water flowing nearby in a garden of respect.,"""[""""respect"""",""""honor"""",""""bow""""]"""
+㳟,,es,Respeto,Una persona que se inclina profundamente con agua fluyendo cerca en un jardín de respeto.,"""[""""respeto"""",""""honor"""",""""reverencia""""]"""
+㳟,,ru,Уважение,Человек глубоко кланяется рядом с текущей водой в саду уважения.,"""[""""уважение"""",""""почет"""",""""поклон""""]"""
+䍃,a vase,en,Vase,A tall elegant vessel designed to hold flowers or water.,"""[""""vase"""",""""jar"""",""""pot""""]"""
+䍃,a vase,es,Jarrón,Un recipiente alto y elegante diseñado para contener flores o agua.,"""[""""jarrón"""",""""vasija"""",""""florero""""]"""
+䍃,a vase,ru,Ваза,Высокий элегантный сосуд предназначенный для цветов или воды.,"""[""""ваза"""",""""кувшин"""",""""сосуд""""]"""
+䏍,,en,Womb,A protected inner space where life grows and develops.,"""[""""womb"""",""""belly"""",""""inside""""]"""
+䏍,,es,Útero,Un espacio interior protegido donde la vida crece y se desarrolla.,"""[""""útero"""",""""vientre"""",""""dentro""""]"""
+䏍,,ru,Утроба,Защищенное внутреннее пространство где растет и развивается жизнь.,"""[""""утроба"""",""""живот"""",""""внутри""""]"""
+䒑,grass,en,Grass,Small sprouts of grass pushing up through the soil.,"""[""""grass"""",""""sprout"""",""""plant""""]"""
+䒑,grass,es,Hierba,Pequeños brotes de hierba que empujan a través del suelo.,"""[""""hierba"""",""""pasto"""",""""planta""""]"""
+䒑,grass,ru,Трава,Маленькие ростки травы пробивающиеся сквозь почву.,"""[""""трава"""",""""росток"""",""""растение""""]"""
+䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",en,Punishment,Using words and weapons to quell a rebellion or punish an offender.,"""[""""punish"""",""""quell"""",""""force""""]"""
+䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",es,Castigo,Usar palabras y armas para sofocar una rebelión o castigar a un delincuente.,"""[""""castigo"""",""""reprimir"""",""""fuerza""""]"""
+䚯,"to quell (uprising, rebellion, etc.) to punish (another nation, etc.) by force of arms",ru,Наказание,Использование слов и оружия для подавления восстания или наказания.,"""[""""наказание"""",""""кара"""",""""сила""""]"""
+䩗,,en,Scabbard,A protective sheath used to hold the blade of a sword.,"""[""""scabbard"""",""""sheath"""",""""sword""""]"""
+䩗,,es,Vaina,Una funda protectora utilizada para guardar la hoja de una espada.,"""[""""vaina"""",""""funda"""",""""espada""""]"""
+䩗,,ru,Ножны,Защитный чехол используемый для хранения лезвия меча.,"""[""""ножны"""",""""чехол"""",""""меч""""]"""
+一,one,en,Ceiling,A single horizontal line representing a flat ceiling or floor.,"""[""""one"""",""""ceiling"""",""""floor""""]"""
+一,one,es,Techo,Una sola línea horizontal que representa un techo plano o el suelo.,"""[""""uno"""",""""techo"""",""""suelo""""]"""
+一,one,ru,Потолок,Одна горизонтальная линия представляющая плоский потолок или пол.,"""[""""один"""",""""потолок"""",""""пол""""]"""
+丁,street,en,Street,The shape of a T-junction where two streets meet.,"""[""""street"""",""""nail"""",""""t-shape""""]"""
+丁,street,es,Calle,La forma de un cruce en T donde se encuentran dos calles.,"""[""""calle"""",""""clavo"""",""""forma-t""""]"""
+丁,street,ru,Улица,Форма Т-образного перекрестка где встречаются две улицы.,"""[""""улица"""",""""гвоздь"""",""""т-образный""""]"""
+丂,obstruction of breath (qi) as it seeks release,en,Hook,A bent hook that catches something and obstructs its path.,"""[""""hook"""",""""breath"""",""""block""""]"""
+丂,obstruction of breath (qi) as it seeks release,es,Gancho,Un gancho doblado que atrapa algo y obstruye su camino.,"""[""""gancho"""",""""aliento"""",""""bloqueo""""]"""
+丂,obstruction of breath (qi) as it seeks release,ru,Крюк,Изогнутый крюк который цепляет что-то и преграждает путь.,"""[""""крюк"""",""""дыхание"""",""""преграда""""]"""
+七,seven,en,Seven,Seven items sliced together by a single horizontal line.,"""[""""seven"""",""""number""""]"""
+七,seven,es,Siete,Siete elementos cortados juntos por una sola línea horizontal.,"""[""""siete"""",""""número""""]"""
+七,seven,ru,Семь,Семь предметов перечеркнутых одной горизонтальной линией.,"""[""""семь"""",""""число""""]"""
+万,ten thousand,en,Myriad,A huge number like ten thousand insects moving together.,"""[""""myriad"""",""""ten thousand"""",""""many""""]"""
+万,ten thousand,es,Miriada,Un número enorme como diez mil insectos moviéndose juntos.,"""[""""miriada"""",""""diez mil"""",""""muchos""""]"""
+万,ten thousand,ru,Мириада,Огромное число подобное десяти тысячам насекомых движущихся вместе.,"""[""""мириада"""",""""десять тысяч"""",""""много""""]"""
+丈,length,en,Cane,A walking cane used to measure a certain length on the ground.,"""[""""length"""",""""cane"""",""""measure""""]"""
+丈,length,es,Bastón,Un bastón de caminar utilizado para medir una cierta longitud en el suelo.,"""[""""longitud"""",""""bastón"""",""""medida""""]"""
+丈,length,ru,Трость,Трость для ходьбы используемая для измерения определенной длины на земле.,"""[""""длина"""",""""трость"""",""""мера""""]"""
+三,three,en,Three,Three horizontal lines stacked to represent the number three.,"""[""""three"""",""""number""""]"""
+三,three,es,Tres,Tres líneas horizontales apiladas para representar el número tres.,"""[""""tres"""",""""número""""]"""
+三,three,ru,Три,Три горизонтальные линии сложенные вместе обозначают число три.,"""[""""три"""",""""число""""]"""
+上,above,en,Above,A platform with a mark pointing upwards to show the space above.,"""[""""above"""",""""up"""",""""top""""]"""
+上,above,es,Arriba,Una plataforma con una marca que apunta hacia arriba para mostrar el espacio superior.,"""[""""arriba"""",""""encima"""",""""superior""""]"""
+上,above,ru,Над,Платформа с отметкой указывающей вверх чтобы показать пространство над ней.,"""[""""над"""",""""вверх"""",""""верх""""]"""
+下,below,en,Below,A platform with a mark pointing downwards to show the space below.,"""[""""below"""",""""down"""",""""bottom""""]"""
+下,below,es,Abajo,Una plataforma con una marca que apunta hacia abajo para mostrar el espacio inferior.,"""[""""abajo"""",""""debajo"""",""""inferior""""]"""
+下,below,ru,Под,Платформа с отметкой указывающей вниз чтобы показать пространство под ней.,"""[""""под"""",""""вниз"""",""""низ""""]"""
+不,negative,en,Bird,"A bird flying away from its nest to signify ""not"" being there.","""[""""negative"""",""""not"""",""""no""""]"""
+不,negative,es,Negativo,"Un pájaro que vuela lejos de su nido para significar que ""no"" está allí.","""[""""negativo"""",""""no"""",""""pájaro""""]"""
+不,negative,ru,Отрицание,Птица улетающая из гнезда чтобы показать что её там «нет».,"""[""""нет"""",""""не"""",""""отрицание""""]"""
+与,bestow,en,Gift,Handing over a gift to bestow honor upon someone.,"""[""""bestow"""",""""give"""",""""gift""""]"""
+与,bestow,es,Otorgar,Entregar un regalo para otorgar honor a alguien.,"""[""""otorgar"""",""""dar"""",""""regalo""""]"""
+与,bestow,ru,Даровать,Вручение подарка чтобы даровать кому-то почести.,"""[""""даровать"""",""""давать"""",""""дар""""]"""
+丑,sign of the ox or cow,en,Cow,The horns and head of a cow tied to a post.,"""[""""cow"""",""""ox"""",""""zodiac""""]"""
+丑,sign of the ox or cow,es,Vaca,Los cuernos и la cabeza de una vaca atada a un poste.,"""[""""vaca"""",""""buey"""",""""zodiaco""""]"""
+丑,sign of the ox or cow,ru,Корова,Рога и голова коровы привязанной к столбу.,"""[""""корова"""",""""бык"""",""""зодиак""""]"""
+且,moreover,en,Shelf,"A shelf with many items stacked up, meaning ""moreover"" or ""furthermore"".","""[""""moreover"""",""""shelf"""",""""further""""]"""
+且,moreover,es,Estante,"Un estante con muchos artículos apilados, que significa ""además"" o ""asimismo"".","""[""""además"""",""""estante"""",""""asimismo""""]"""
+且,moreover,ru,Полка,Полка с множеством сложенных предметов означающая «кроме того» или «вдобавок».,"""[""""кроме того"""",""""полка"""",""""вдобавок""""]"""
+世,generation,en,World,Thirty years linked together to represent a generation or the world.,"""[""""world"""",""""generation"""",""""society""""]"""
+世,generation,es,Mundo,Treinta años vinculados para representar una generación o el mundo.,"""[""""mundo"""",""""generación"""",""""sociedad""""]"""
+世,generation,ru,Мир,Тридцать лет связанных вместе чтобы представить поколение или мир.,"""[""""мир"""",""""поколение"""",""""свет""""]"""
+丘,hill,en,Hill,The shape of a rounded mound of earth rising from the flat ground.,"""[""""hill"""",""""mound"""",""""rise""""]"""
+丘,hill,es,Colina,La forma de un montículo redondeado de tierra que se eleva desde el suelo.,"""[""""colina"""",""""loma"""",""""montículo""""]"""
+丘,hill,ru,Холм,Форма округлой насыпи земли возвышающейся над плоской равниной.,"""[""""холм"""",""""курган"""",""""горка""""]"""
 丙,third class,en,,,
 丙,third class,es,,,
 丙,third class,ru,,,

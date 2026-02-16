@@ -104,9 +104,10 @@ def _list_remote_files(client, folder: str) -> set[str]:
 def _upload_file(client, folder: str, filename: str, data: bytes) -> bool:
     """Upload a single SVG file to Supabase storage.
 
-    Returns True if uploaded, False if already exists (409 Duplicate).
-    Raises on other failures.
+    Returns True if uploaded, False if already exists (409 Duplicate)
+    or connection failed. Raises on other storage API failures.
     """
+    import httpx
     from storage3.exceptions import StorageApiError
 
     path = f"{folder}/{filename}"
@@ -118,6 +119,9 @@ def _upload_file(client, folder: str, filename: str, data: bytes) -> bool:
         if exc.args and "already exists" in str(exc.args[0]).lower():
             return False
         raise
+    except httpx.ConnectError:
+        log.warning("Connection refused — is Supabase running? Skipping upload for %s", path)
+        return False
     return True
 
 

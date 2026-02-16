@@ -322,7 +322,10 @@ def create_radical_i18n(
         existing_path = warnings_dir / "ph3_warnings.csv"
         if existing_path.exists():
             existing_df = pd.read_csv(existing_path, dtype=str, keep_default_na=False)
-            combined_df = pd.concat([existing_df, new_warnings_df], ignore_index=True)
+            combined = pd.concat([existing_df, new_warnings_df], ignore_index=True)
+            combined_rows = combined.to_dict(orient="records")
+            combined_rows.sort(key=severity_sort_key)
+            combined_df = pd.DataFrame(combined_rows)
         else:
             combined_df = new_warnings_df
         warnings_dir.mkdir(parents=True, exist_ok=True)

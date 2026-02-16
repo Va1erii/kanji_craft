@@ -14,6 +14,7 @@ from src.extractors.shared import (
     merge_split_parts,
     resolve_effective_children,
     resolve_master_symbol,
+    severity_sort_key,
     validate_all_manual_files,
     validate_manual_flatten,
     validate_manual_furigana,
@@ -592,3 +593,46 @@ class TestValidateAllManualFiles:
         msg = str(exc_info.value)
         assert "single character" in msg
         assert "token count" in msg
+
+
+# --- severity_sort_key ---
+
+
+class TestSeveritySortKey:
+    def test_high_before_medium_before_low(self):
+        warnings = [
+            {"severity": "low", "entity": "A", "message": "msg"},
+            {"severity": "high", "entity": "B", "message": "msg"},
+            {"severity": "medium", "entity": "C", "message": "msg"},
+        ]
+        result = sorted(warnings, key=severity_sort_key)
+        assert [w["severity"] for w in result] == ["high", "medium", "low"]
+
+    def test_same_severity_sorted_by_entity_then_message(self):
+        warnings = [
+            {"severity": "high", "entity": "B", "message": "z"},
+            {"severity": "high", "entity": "A", "message": "y"},
+            {"severity": "high", "entity": "A", "message": "x"},
+        ]
+        result = sorted(warnings, key=severity_sort_key)
+        assert [(w["entity"], w["message"]) for w in result] == [
+            ("A", "x"), ("A", "y"), ("B", "z"),
+        ]
+
+    def test_missing_entity_defaults_to_empty(self):
+        warnings = [
+            {"severity": "low", "message": "no entity"},
+            {"severity": "low", "entity": "A", "message": "has entity"},
+        ]
+        result = sorted(warnings, key=severity_sort_key)
+        assert result[0]["message"] == "no entity"
+        assert result[1]["message"] == "has entity"
+
+    def test_unknown_severity_sorts_last(self):
+        warnings = [
+            {"severity": "unknown", "entity": "A", "message": "msg"},
+            {"severity": "low", "entity": "B", "message": "msg"},
+        ]
+        result = sorted(warnings, key=severity_sort_key)
+        assert result[0]["severity"] == "low"
+        assert result[1]["severity"] == "unknown"

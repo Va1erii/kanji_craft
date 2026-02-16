@@ -1,9 +1,11 @@
-"""Release bundle CLI — slice, validate, and push content batches.
+"""Release bundle CLI — slice, validate, push, review, and apply content batches.
 
 Usage:
     uv run python -m src.release slice <name> --jlpt <level> --kanji <N> --vocab <N>
     uv run python -m src.release validate <name>
     uv run python -m src.release push <name>
+    uv run python -m src.release review <name>
+    uv run python -m src.release apply <name>
 """
 
 import argparse
@@ -45,6 +47,16 @@ def main() -> None:
     push_p = subparsers.add_parser("push", help="Validate and push batch to Supabase")
     push_p.add_argument("name", help="Batch name to push")
 
+    # ── review ────────────────────────────────────────────────────────────
+
+    review_p = subparsers.add_parser("review", help="Generate review.xlsx from batch CSVs")
+    review_p.add_argument("name", help="Batch name to review")
+
+    # ── apply ─────────────────────────────────────────────────────────────
+
+    apply_p = subparsers.add_parser("apply", help="Apply review.xlsx edits back to batch CSVs")
+    apply_p.add_argument("name", help="Batch name to apply edits to")
+
     args = parser.parse_args()
 
     if args.command == "slice":
@@ -68,6 +80,18 @@ def main() -> None:
         from src.releases.uploader import push_batch
 
         push_batch(args.name)
+
+    elif args.command == "review":
+        from src.releases.reviewer import generate_review_xlsx
+
+        path = generate_review_xlsx(args.name)
+        print(f"Review workbook: {path}")
+
+    elif args.command == "apply":
+        from src.releases.reviewer import apply_review_xlsx
+
+        apply_review_xlsx(args.name)
+        print("Applied edits from review.xlsx to batch CSVs.")
 
     else:
         parser.print_help()

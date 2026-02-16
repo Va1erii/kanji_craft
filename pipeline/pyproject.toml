@@ -15,6 +15,9 @@ dependencies = [
     "sudachipy>=0.6",
     "sudachidict-small>=20240716",
 
+    # Excel review workbooks
+    "openpyxl>=3.1",
+
     # Supabase upload (Phase 4)
     "supabase>=2.0",
 

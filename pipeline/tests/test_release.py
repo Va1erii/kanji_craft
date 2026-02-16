@@ -808,3 +808,214 @@ class TestUploader:
         df = pd.DataFrame({"master_symbol": ["丿"], "is_official": ["True"]})
         result = _coerce_bool_columns(df.copy(), "radicals")
         assert bool(result.iloc[0]["is_official"]) is True
+
+
+# ── Reviewer tests ──────────────────────────────────────────────────────────
+
+
+class TestReviewer:
+    """Tests for src.releases.reviewer — review.xlsx generation and apply."""
+
+    def _make_batch(self, tmp_path: Path) -> Path:
+        """Create a minimal valid batch and return batch_dir."""
+        batch_dir = tmp_path / "releases" / "test_batch"
+        batch_dir.mkdir(parents=True)
+
+        kanji_chars = ["日", "一"]
+        radical_symbols = ["丿"]
+        vocab_ids = [100, 200]
+        langs = ["en", "es", "ru"]
+
+        _make_radicals(radical_symbols).to_csv(batch_dir / "radicals.csv", index=False)
+        _make_radical_i18n(radical_symbols, langs).to_csv(
+            batch_dir / "radical_i18n.csv", index=False,
+        )
+        _make_radical_variants(radical_symbols).to_csv(
+            batch_dir / "radical_variants.csv", index=False,
+        )
+        _make_kanji(kanji_chars).to_csv(batch_dir / "kanji.csv", index=False)
+        _make_kanji_readings(kanji_chars).to_csv(batch_dir / "kanji_readings.csv", index=False)
+        _make_kanji_i18n(kanji_chars, langs).to_csv(
+            batch_dir / "kanji_i18n.csv", index=False,
+        )
+        _make_kanji_components({"日": ["丿"]}).to_csv(
+            batch_dir / "kanji_components.csv", index=False,
+        )
+        _make_vocabulary(vocab_ids).to_csv(batch_dir / "vocabulary.csv", index=False)
+        _make_vocabulary_readings(vocab_ids).to_csv(
+            batch_dir / "vocabulary_readings.csv", index=False,
+        )
+        _make_vocabulary_i18n(vocab_ids, langs).to_csv(
+            batch_dir / "vocabulary_i18n.csv", index=False,
+        )
+        _make_vocabulary_kanji({100: ["日"]}).to_csv(
+            batch_dir / "vocabulary_kanji.csv", index=False,
+        )
+        _make_vocabulary_sentences(vocab_ids).to_csv(
+            batch_dir / "vocabulary_sentences.csv", index=False,
+        )
+        _make_vocabulary_sentence_i18n(vocab_ids, langs).to_csv(
+            batch_dir / "vocabulary_sentence_i18n.csv", index=False,
+        )
+        return batch_dir
+
+    def test_generate_creates_xlsx(self, tmp_path, monkeypatch):
+        from src.releases.reviewer import generate_review_xlsx
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+
+        assert path == batch_dir / "review.xlsx"
+        assert path.is_file()
+
+    def test_xlsx_has_four_sheets(self, tmp_path, monkeypatch):
+        from src.releases.reviewer import generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+        sheets = pd.read_excel(path, sheet_name=None, engine="openpyxl")
+
+        assert set(sheets.keys()) == {"Radicals", "Kanji", "Vocabulary", "Sentences"}
+
+    def test_radicals_sheet_has_wide_columns(self, tmp_path, monkeypatch):
+        from src.releases.reviewer import generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+        df = pd.read_excel(path, sheet_name="Radicals", engine="openpyxl")
+
+        assert "master_symbol" in df.columns
+        assert "name_en" in df.columns
+        assert "name_es" in df.columns
+        assert "name_ru" in df.columns
+        assert "system_mnemonic_en" in df.columns
+        assert len(df) == 1  # one radical
+
+    def test_kanji_sheet_row_count_and_context(self, tmp_path, monkeypatch):
+        from src.releases.reviewer import generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+        df = pd.read_excel(path, sheet_name="Kanji", engine="openpyxl")
+
+        assert len(df) == 2
+        assert "character" in df.columns
+        assert "frequency_rank" in df.columns
+        assert "meanings_en" in df.columns
+
+    def test_sentences_sheet_has_word_context(self, tmp_path, monkeypatch):
+        from src.releases.reviewer import generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+        df = pd.read_excel(path, sheet_name="Sentences", engine="openpyxl")
+
+        assert "word" in df.columns
+        assert "original_text" in df.columns
+        assert "sentence_translated_en" in df.columns
+        assert len(df) == 2
+
+    def test_round_trip_preserves_data(self, tmp_path, monkeypatch):
+        """review → apply → review produces identical data."""
+        from src.releases.reviewer import apply_review_xlsx, generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        # First pass: generate
+        path1 = generate_review_xlsx("test_batch")
+        sheets1 = pd.read_excel(path1, sheet_name=None, engine="openpyxl", dtype=str)
+        sheets1 = {k: v.fillna("") for k, v in sheets1.items()}
+
+        # Apply (no edits)
+        apply_review_xlsx("test_batch")
+
+        # Second pass: regenerate
+        path2 = generate_review_xlsx("test_batch")
+        sheets2 = pd.read_excel(path2, sheet_name=None, engine="openpyxl", dtype=str)
+        sheets2 = {k: v.fillna("") for k, v in sheets2.items()}
+
+        for sheet_name in sheets1:
+            pd.testing.assert_frame_equal(
+                sheets1[sheet_name], sheets2[sheet_name],
+                check_names=True, obj=sheet_name,
+            )
+
+    def test_apply_writes_edited_value(self, tmp_path, monkeypatch):
+        """Editing a cell in xlsx propagates to the CSV."""
+        from src.releases.reviewer import apply_review_xlsx, generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+
+        # Edit a kanji mnemonic in the xlsx
+        sheets = pd.read_excel(path, sheet_name=None, engine="openpyxl", dtype=str)
+        sheets["Kanji"].loc[0, "system_mnemonic_en"] = "EDITED_MNEMONIC"
+        with pd.ExcelWriter(path, engine="openpyxl") as writer:
+            for name, df in sheets.items():
+                df.to_excel(writer, sheet_name=name, index=False)
+
+        apply_review_xlsx("test_batch")
+
+        # Verify the CSV was updated
+        batch_dir = tmp_path / "releases" / "test_batch"
+        kanji_i18n = pd.read_csv(batch_dir / "kanji_i18n.csv", dtype=str, keep_default_na=False)
+        en_rows = kanji_i18n[kanji_i18n["lang_code"] == "en"]
+        assert "EDITED_MNEMONIC" in en_rows["system_mnemonic"].values
+
+    def test_apply_updates_original_text(self, tmp_path, monkeypatch):
+        """Editing original_text in Sentences sheet writes to vocabulary_sentences.csv."""
+        from src.releases.reviewer import apply_review_xlsx, generate_review_xlsx
+
+        self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        path = generate_review_xlsx("test_batch")
+
+        sheets = pd.read_excel(path, sheet_name=None, engine="openpyxl", dtype=str)
+        sheets["Sentences"].loc[0, "original_text"] = "{新|あたら}しいテスト"
+        with pd.ExcelWriter(path, engine="openpyxl") as writer:
+            for name, df in sheets.items():
+                df.to_excel(writer, sheet_name=name, index=False)
+
+        apply_review_xlsx("test_batch")
+
+        batch_dir = tmp_path / "releases" / "test_batch"
+        sentences = pd.read_csv(
+            batch_dir / "vocabulary_sentences.csv", dtype=str, keep_default_na=False,
+        )
+        assert "{新|あたら}しいテスト" in sentences["original_text"].values
+
+    def test_missing_batch_raises(self, tmp_path, monkeypatch):
+        import pytest
+
+        from src.releases.reviewer import generate_review_xlsx
+
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        with pytest.raises(FileNotFoundError):
+            generate_review_xlsx("nonexistent")
+
+    def test_missing_xlsx_raises(self, tmp_path, monkeypatch):
+        import pytest
+
+        from src.releases.reviewer import apply_review_xlsx
+
+        batch_dir = tmp_path / "releases" / "test_batch"
+        batch_dir.mkdir(parents=True)
+        monkeypatch.setattr("src.releases.reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        with pytest.raises(FileNotFoundError):
+            apply_review_xlsx("test_batch")

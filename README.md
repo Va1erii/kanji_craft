@@ -64,7 +64,9 @@ Slice enriched CSVs into reviewable batches, validate completeness, then push to
 ```bash
 cd pipeline
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
-# → Edit CSVs in data/releases/n5_kanji_1/ (fill mnemonics, furigana, translations)
+uv run python -m src.release review n5_kanji_1
+# → Review and edit review.xlsx (all languages side-by-side)
+uv run python -m src.release apply n5_kanji_1
 uv run python -m src.release validate n5_kanji_1
 uv run python -m src.release push n5_kanji_1
 ```

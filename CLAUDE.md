@@ -93,7 +93,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `ph2_3_component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
 | `ph2_4_svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
 | `ph2_5_vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
-| `ph3_ai_enrichment.md` | Phase 3: logic hints, mnemonics (Lego Stack), sentence furigana, translations | Implementing AI enrichment or mnemonic generation |
+| `ph3_ai_enrichment.md` | Phase 3: radical classification, logic hints, mnemonics (Lego Stack), sentence furigana, translations | Implementing AI enrichment, radical classification, or mnemonic generation |
 | `ph4_release_bundles.md` | Phase 4: release batches — slice, validate, push to Supabase | Implementing or modifying release bundle workflow |
 
 ### Reference (`docs/`)
@@ -101,6 +101,24 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | Doc | Covers |
 |---|---|
 | `glossary.md` | Quick reference for domain terms, Japanese concepts, FSRS, and abbreviations |
+
+### Guides (`docs/guides/`) — operational procedures
+
+| Doc | Covers |
+|---|---|
+| `apple-sign-in-key-rotation.md` | Apple OAuth JWT key rotation schedule and Service ID details |
+
+### Legal (`docs/legal/`) — licensing and attribution
+
+| Doc | Covers |
+|---|---|
+| `attributions.md` | Required attribution for EDRDG (CC BY-SA 4.0), KanjiVG (CC BY-SA 3.0), Tanos/kanji-data (MIT) |
+
+### Product (`docs/product/`) — business decisions
+
+| Doc | Covers |
+|---|---|
+| `monetization.md` | Freemium tiers: N5 free, N4-N1 paid (monthly/yearly/lifetime) |
 
 ### ADR Docs (`docs/adr/`) — read when implementing infrastructure
 

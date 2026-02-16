@@ -1,7 +1,7 @@
 """Phase 3: AI Enrichment — add mnemonics, translations, furigana to CSVs.
 
 Reads and updates CSVs in pipeline/data/csv/.
-Step 1 (logic hints) is deterministic; Steps 2-6 use AI generation.
+Steps 0-1 are deterministic; Steps 2-6 use AI generation.
 
 Usage:
     uv run python -m src.enrich
@@ -13,6 +13,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from src.enrichers.ph3_0_classify_radicals import classify_radicals
 from src.enrichers.ph3_1_logic_hints import refine_logic_hints
 from src.enrichers.ph3_2_radical_i18n import create_radical_i18n
 from src.extractors.shared import validate_all_manual_files
@@ -41,6 +42,23 @@ def main() -> None:
     log.info("Phase 3: Enriching CSVs in %s", CSV_DIR)
 
     WARNINGS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Step 0: Radical classification (deterministic analysis)
+    step_start = time.perf_counter()
+    try:
+        result = classify_radicals(CSV_DIR, WARNINGS_DIR)
+        elapsed = time.perf_counter() - step_start
+        df = result["radical_classification"]
+        counts = df["classification"].value_counts()
+        log.info(
+            "  3.0 Radical classification: done in %.1fs (%d radicals: %s)",
+            elapsed,
+            len(df),
+            ", ".join(f"{k}={v}" for k, v in counts.items()),
+        )
+    except Exception:
+        log.exception("Failed during Step 3.0 radical classification")
+        raise
 
     # Step 1: Logic hint refinement (deterministic onyomi comparison)
     step_start = time.perf_counter()

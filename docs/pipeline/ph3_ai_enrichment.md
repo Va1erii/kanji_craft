@@ -8,7 +8,7 @@ AI Enrichment adds human-quality learning content to the structured CSVs produce
 
 The phase has two distinct modes:
 
-- **Deterministic** (Step 1): Logic hint refinement — pure onyomi comparison, no AI. Runs as a script, no review needed.
+- **Deterministic** (Steps 0–1): Radical classification (analysis pass for multi-level decomposition) and logic hint refinement (onyomi comparison). No AI needed — runs as scripts, no review needed.
 - **AI-generated** (Steps 2–6): Mnemonics, translations, furigana annotation, search tags. Generated via AI (chat, batch API, or scripts), then reviewed by the admin before proceeding to Phase 4.
 
 **Key properties:**
@@ -21,10 +21,11 @@ The phase has two distinct modes:
 
 | Source | Used in | Purpose |
 |---|---|---|
-| `kanji_components.csv` | Step 1 | Rows to refine `logic_hint` |
+| `kanji_components.csv` | Steps 0, 1 | Usage stats for radical classification; rows to refine `logic_hint` |
 | `kanjidic.parquet` | Steps 1, 2 | Onyomi lookup for kanji and radical master symbols; KANJIDIC meanings for radical names |
 | `radicals.csv` | Steps 1, 2 | `master_symbol` → onyomi lookup; radical identity for i18n creation |
-| `kanji.csv` | Steps 1, 3 | `character` → onyomi lookup; kanji identity for mnemonic context |
+| `radicals.csv` | Step 0 | Radical identity, `is_official`, `impact_score` for classification |
+| `kanji.csv` | Steps 0, 1, 3 | `character` → onyomi lookup; `min_jlpt_level` for cross-JLPT analysis; kanji identity for mnemonic context |
 | `kanji_readings.csv` | Step 1 | Onyomi readings for kanji (alternative to `kanjidic.parquet` lookup) |
 | `kanji_i18n.csv` | Step 3 | Rows to enrich with `system_mnemonic` and `search_tags` |
 | `vocabulary_i18n.csv` | Step 4 | Rows to enrich with `system_mnemonic` and `search_tags` |
@@ -72,11 +73,57 @@ N5 → N4 → N3 → N2 → N1 → ungraded
 
 Radical counts are incremental — many radicals are shared across levels. A radical is assigned to the batch of its `min_jlpt_level`.
 
+## Step 0: Radical Classification (Deterministic)
+
+**Target:** `radical_classification.csv` (new file — analysis output, not a content table)
+
+**Purpose:** Classify every radical as either kept (as a radical) or convertible to a kanji component reference, supporting the multi-level decomposition strategy described in [component_model.md](../adr/component_model.md). The output CSV is for **human review** — it does not modify any existing content tables.
+
+### Classification Rules (first match wins)
+
+| Priority | Classification | Condition |
+|---|---|---|
+| 1 | `keep_kangxi` | `is_official == True` (Kangxi radical) |
+| 2 | `keep_radical_only` | `master_symbol` not in `kanji.csv` characters (no kanji form exists) |
+| 3 | `keep_cross_jlpt` | Radical IS a kanji but used in parents with easier JLPT (higher number). Also: null-JLPT component used in any JLPT-assigned parent (play safe) |
+| 4 | `keep_high_freq` | Usage count >= 15 (tunable threshold) |
+| 5 | `convert_to_kanji` | Everything else — candidate for kanji→kanji component reference |
+
+### Cross-JLPT Rule Detail
+
+- `min_parent_jlpt > kanji_jlpt[master_symbol]` → cross-JLPT (harder component in easier parent). `min_parent_jlpt` follows project convention: MAX of parent JLPT numbers (N5=5 easiest = earliest encounter).
+- Component has null JLPT, any parent has JLPT → cross-JLPT (unknown difficulty, play safe).
+- Both null → skip rule, fall through to next priority.
+
+### Output Columns
+
+| Column | Type | Source |
+|---|---|---|
+| `master_symbol` | str | `radicals.csv` |
+| `family_symbol` | str | `radicals.csv` |
+| `is_official` | bool | `radicals.csv` |
+| `is_kanji` | bool | computed: `master_symbol` in `kanji.csv` |
+| `kanji_jlpt` | int? | `kanji.csv` `min_jlpt_level` |
+| `min_parent_jlpt` | int? | computed from `kanji_components.csv` + `kanji.csv` |
+| `usage_count` | int | computed from `kanji_components.csv` |
+| `impact_score` | int? | `radicals.csv` |
+| `classification` | str | computed |
+| `reason` | str | computed |
+
+Output sorted by `classification` then `master_symbol`. Target: 300–400 radicals classified as "keep".
+
+### Warnings
+
+| Severity | Condition |
+|---|---|
+| medium | Null-JLPT component with high usage classified as cross-JLPT |
+| low | Radical not used in any kanji component |
+
 ## Step 1: Logic Hint Refinement (Deterministic)
 
 **Target:** `kanji_components.csv` → `logic_hint` field
 
-**This is the only fully deterministic step.** No AI is needed — it compares onyomi readings using data already available in the pipeline. It can run as a standalone script before any AI generation begins.
+**This is a fully deterministic step.** No AI is needed — it compares onyomi readings using data already available in the pipeline. It can run as a standalone script before any AI generation begins.
 
 ### Permissive Heuristic
 
@@ -443,12 +490,13 @@ Phase 3 is the human-in-the-loop checkpoint. The admin reviews AI output before 
 
 ### Review process
 
-1. **Step 1 output (logic hints):** Deterministic — run the script, spot-check a sample of `phonetic` assignments against known phono-semantic compounds. No full review needed.
-2. **Step 2 output (radical i18n):** Review all radical names for accuracy and consistency. This is the foundation — errors here cascade into kanji mnemonics.
-3. **Step 3 output (kanji i18n):** Review mnemonics for correct radical name usage, sound anchor consistency, and story quality.
-4. **Step 4 output (vocabulary i18n):** Review mnemonics where present. Verify that skipped words (null mnemonic) are genuinely self-explanatory.
-5. **Step 5 output (sentence furigana):** Validate a sample of annotated sentences. Check that context-dependent readings are correct.
-6. **Step 6 output (sentence translations):** Review ES/RU translations for accuracy and natural phrasing.
+1. **Step 0 output (radical classification):** Deterministic — review `radical_classification.csv` for correct keep/convert decisions. Adjust `HIGH_FREQ_THRESHOLD` if the total "kept" count is outside the 300–400 target range.
+2. **Step 1 output (logic hints):** Deterministic — run the script, spot-check a sample of `phonetic` assignments against known phono-semantic compounds. No full review needed.
+3. **Step 2 output (radical i18n):** Review all radical names for accuracy and consistency. This is the foundation — errors here cascade into kanji mnemonics.
+4. **Step 3 output (kanji i18n):** Review mnemonics for correct radical name usage, sound anchor consistency, and story quality.
+5. **Step 4 output (vocabulary i18n):** Review mnemonics where present. Verify that skipped words (null mnemonic) are genuinely self-explanatory.
+6. **Step 5 output (sentence furigana):** Validate a sample of annotated sentences. Check that context-dependent readings are correct.
+7. **Step 6 output (sentence translations):** Review ES/RU translations for accuracy and natural phrasing.
 
 ### Review tools
 
@@ -468,6 +516,8 @@ Warnings are written to `data/csv/warnings/ph3_warnings.csv` with columns: `seve
 
 | Condition | Severity | Rationale |
 |---|---|---|
+| Null-JLPT component with high usage classified as cross-JLPT (Step 0) | medium | May need manual JLPT assignment or reclassification |
+| Radical not used in any kanji component (Step 0) | low | Orphaned radical — verify if it should exist |
 | Onyomi comparison and position heuristic disagree on `logic_hint` | medium | May indicate an unusual phono-semantic pattern — admin should verify |
 | Radical `master_symbol` not found in `kanjidic.parquet` (Step 1) | low | Custom radical with no KANJIDIC entry — `logic_hint` stays `semantic` |
 | Radical name differs from kanji meaning for dual-identity character | high | Radical-kanji name consistency violation — must be resolved before Step 3 |
@@ -515,6 +565,7 @@ Before proceeding to Phase 4, the following completeness checks must pass for ea
 
 | File | Action | Step | Description |
 |---|---|---|---|
+| `radical_classification.csv` | **Created** | Step 0 | Analysis output — radical classification for multi-level decomposition review |
 | `kanji_components.csv` | Updated | Step 1 | `logic_hint` refined from default `semantic` to `phonetic` where onyomi match |
 | `radical_i18n.csv` | **Created** | Step 2 | New file — radical names, Layer 1 mnemonics, search tags for EN/ES/RU |
 | `kanji_i18n.csv` | Updated | Step 3 | `system_mnemonic` and `search_tags` populated on existing rows |
@@ -530,6 +581,9 @@ Phase 3 sits between Phase 2 (extraction) and Phase 4 (verification & upload). W
 
 ```
 Phase 2 (all sub-phases complete)
+    |
+    v
+Step 0: Radical Classification (deterministic — analysis pass, no table mutations)
     |
     v
 Step 1: Logic Hint Refinement (deterministic — can run immediately)

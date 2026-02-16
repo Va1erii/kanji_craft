@@ -28,6 +28,13 @@ _POSITION_MAP: dict[str, str] = {
 
 _UNKNOWN_POSITIONS = frozenset({"tarec", "nyoc"})
 
+_SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
+
+
+def severity_sort_key(w: dict) -> tuple:
+    """Sort key for warning dicts: high → medium → low, then entity, message."""
+    return (_SEVERITY_RANK.get(w["severity"], 9), w.get("entity", ""), w["message"])
+
 _MAX_GHOST_DEPTH = 10
 _WARN_GHOST_DEPTH = 5
 

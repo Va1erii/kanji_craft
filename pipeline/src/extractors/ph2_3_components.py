@@ -21,6 +21,7 @@ from src.extractors.shared import (
     map_radical_type,
     parse_component_tree,
     resolve_effective_children,
+    severity_sort_key,
     write_csv_atomic,
 )
 
@@ -267,7 +268,7 @@ def extract_components(
 
     if unique_warnings:
         warnings_dir.mkdir(parents=True, exist_ok=True)
-        unique_warnings.sort(key=lambda w: (w["severity"], w["entity"], w["message"]))
+        unique_warnings.sort(key=severity_sort_key)
         warnings_df = pd.DataFrame(unique_warnings)
         write_csv_atomic(warnings_df, warnings_dir / "ph2_3_warnings.csv")
         log.info("Phase 2.3: %d warnings written", len(unique_warnings))

@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.config import TARGET_LANGS
-from src.extractors.shared import load_visual_rules, write_csv_atomic
+from src.extractors.shared import load_visual_rules, severity_sort_key, write_csv_atomic
 
 log = logging.getLogger(__name__)
 
@@ -317,7 +317,7 @@ def create_radical_i18n(
 
     # Append warnings to ph3_warnings.csv (merge with existing)
     if warnings:
-        warnings.sort(key=lambda w: (w["severity"], w["entity"], w["message"]))
+        warnings.sort(key=severity_sort_key)
         new_warnings_df = pd.DataFrame(warnings)
         existing_path = warnings_dir / "ph3_warnings.csv"
         if existing_path.exists():

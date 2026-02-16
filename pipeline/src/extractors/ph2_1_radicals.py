@@ -27,6 +27,7 @@ from src.extractors.shared import (
     parse_component_tree,
     resolve_effective_children,
     resolve_master_symbol,
+    severity_sort_key,
     write_csv_atomic,
 )
 
@@ -448,7 +449,7 @@ def extract_radicals(
     # Write warnings (sorted for deterministic output)
     if all_warnings:
         warnings_dir.mkdir(parents=True, exist_ok=True)
-        all_warnings.sort(key=lambda w: (w["severity"], w["entity"], w["message"]))
+        all_warnings.sort(key=severity_sort_key)
         warnings_df = pd.DataFrame(all_warnings)
         write_csv_atomic(warnings_df, warnings_dir / "ph2_1_warnings.csv")
         log.info("Phase 2.1: %d warnings written", len(all_warnings))

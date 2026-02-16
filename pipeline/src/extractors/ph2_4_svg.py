@@ -22,6 +22,7 @@ from src.extractors.shared import (
     char_to_kvg_filename,
     char_to_svg_filename,
     parse_component_tree,
+    severity_sort_key,
     write_csv_atomic,
 )
 
@@ -725,6 +726,7 @@ def extract_svg(
 
     # Write warnings
     if warnings:
+        warnings.sort(key=severity_sort_key)
         warnings_df = pd.DataFrame(warnings, columns=["severity", "phase", "entity", "message"])
         write_csv_atomic(warnings_df, warnings_dir / "ph2_4_warnings.csv")
         high_count = sum(1 for w in warnings if w["severity"] == "high")

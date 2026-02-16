@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.extractors.shared import write_csv_atomic
+from src.extractors.shared import severity_sort_key, write_csv_atomic
 
 log = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ def refine_logic_hints(
     # Write warnings
     if warnings:
         warnings_dir.mkdir(parents=True, exist_ok=True)
-        warnings.sort(key=lambda w: (w["severity"], w["entity"], w["message"]))
+        warnings.sort(key=severity_sort_key)
         warnings_df = pd.DataFrame(warnings)
         write_csv_atomic(warnings_df, warnings_dir / "ph3_warnings.csv")
         log.info("Phase 3.1: %d warnings written", len(warnings))

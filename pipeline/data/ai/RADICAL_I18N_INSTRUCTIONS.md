@@ -1,10 +1,10 @@
 # AI Instructions: Radical I18n Generation
 
-You are generating localized learning content for a Japanese kanji learning app. Your task is to fill in the `radical_i18n_ai.csv` file with names, mnemonics, and search tags for 777 radicals across 3 languages (EN, ES, RU).
+You are generating localized learning content for a Japanese kanji learning app. Your task is to fill in the `radical_i18n_ai.csv` file with names, mnemonics, and search tags for 791 radicals across 3 languages (EN, ES, RU).
 
 ## Input File
 
-`radical_i18n_ai.csv` — 2,331 rows (777 radicals x 3 languages).
+`radical_i18n_ai.csv` — 2,373 rows (791 radicals x 3 languages).
 
 | Column | Description |
 |---|---|
@@ -23,29 +23,37 @@ A single concrete noun that becomes the radical's keyword throughout the app. Th
 
 ### Rules
 
-1. **Single concrete noun.** "Water", not "water radical". "Legs", not "human legs radical (no. 10)".
-2. **Capitalize** the first letter (EN/ES). Russian uses standard capitalization.
-3. **EN name:** Start from the `en_name_seed` column. Clean it into a single noun. If the seed is already a clean noun (e.g. "water", "fire", "tree"), capitalize and use it. If the seed is verbose (e.g. "katakana no radical (no. 4)"), pick a better concrete noun based on the shape.
-4. **ES/RU names:** Translate from the finalized EN name. Must also be a single concrete noun — no descriptive suffixes or qualifiers. "Persona", not "El radical de la persona". "Ноги", not "Радикал ноги". Just the bare noun.
-5. **No KANJIDIC entry** (41 radicals with empty `en_name_seed`): Invent a name based on what the character visually resembles. These are often rare components or CJK variants (⺍, ⺤, ⻌, マ, 龰, etc.).
-6. **Radical-kanji consistency (STOP AND CHECK):** Many radicals are also kanji characters (水 is both radical and kanji). Before writing the name, check: does this character also exist as a kanji? If yes, the radical name MUST match the kanji's primary meaning. The kanji meaning is the source of truth. If radical 州's kanji meaning is "Province", the radical name must be "Province" — never "Sandbar" or "River". Why: if a student learns the radical name "Sandbar" but later the kanji card for the same character says "Province", they lose trust in the app. When in doubt, the kanji meaning always wins.
+1. **STRICT SOURCE OF TRUTH (most important rule):** If a radical is also a standalone kanji (e.g. 不, 一, 万), you MUST use its primary kanji meaning as the name.
+   - DO NOT use visual mnemonics as names: No "Bird" for 不 — use "Not". No "Ceiling" for 一 — use "One". No "Myriad" for 万 — use "Ten Thousand".
+   - DO NOT use positional/shape-based names when a real meaning exists.
+   - The `en_name_seed` column IS the kanji meaning when present. Use it.
+   - You MAY simplify archaic/verbose seeds into a cleaner modern noun (e.g. "a marsh at the foot of the hills" → "Marsh"), but the core meaning must stay the same.
+   - **EXCEPTION:** Only invent a visual name if `en_name_seed` is empty OR is a technical description like "radical number 4" / "katakana no radical (no. 4)".
+2. **Single concrete noun.** "Water", not "water radical". "Legs", not "human legs radical (no. 10)".
+3. **Capitalize** the first letter (EN/ES). Russian uses standard capitalization.
+4. **EN name:** Start from the `en_name_seed` column. Clean it into a single noun. If the seed is already a clean noun (e.g. "water", "fire", "tree"), capitalize and use it. If the seed is verbose (e.g. "katakana no radical (no. 4)"), pick a better concrete noun based on the shape.
+5. **ES/RU names:** Translate from the finalized EN name. Must also be a single concrete noun — no descriptive suffixes or qualifiers. "Persona", not "El radical de la persona". "Ноги", not "Радикал ноги". Just the bare noun.
+6. **No KANJIDIC entry** (41 radicals with empty `en_name_seed`): Invent a name based on what the character visually resembles. These are often rare components or CJK variants (⺍, ⺤, ⻌, マ, 龰, etc.).
 
 ### Cleaning Examples
 
-| master_symbol | en_name_seed (from KANJIDIC) | Correct `name` (EN) |
-|---|---|---|
-| 水 | water | Water |
-| 人 | person | Person |
-| 丿 | katakana no radical (no. 4) | Slash |
-| 亠 | kettle lid radical (no. 8) | Lid |
-| 儿 | legs radical (no. 10) | Legs |
-| 冖 | wa-shaped crown radical (no. 14) | Crown |
-| 冂 | upside-down box radical (no. 13) | Box |
-| 丑 | sign of the ox or cow | Ox |
-| 又 | or again | Again |
-| 丶 | dot | Dot |
-| 㕣 | a marsh at the foot of the hills | Marsh |
-| ⺍ | *(empty — no KANJIDIC)* | Horns *(visual shape)* |
+| master_symbol | en_name_seed (from KANJIDIC) | Correct `name` (EN) | Why |
+|---|---|---|---|
+| 水 | water | Water | Clean seed → capitalize |
+| 人 | person | Person | Clean seed → capitalize |
+| 不 | negative | Negative | Kanji meaning wins — NOT "Bird" |
+| 一 | one | One | Kanji meaning wins — NOT "Ceiling" |
+| 万 | ten thousand | Ten Thousand | Kanji meaning wins — NOT "Myriad" |
+| 丿 | katakana no radical (no. 4) | Slash | Technical seed → invent from shape |
+| 亠 | kettle lid radical (no. 8) | Lid | Technical seed → simplify |
+| 儿 | legs radical (no. 10) | Legs | Technical seed → simplify |
+| 冖 | wa-shaped crown radical (no. 14) | Crown | Technical seed → simplify |
+| 冂 | upside-down box radical (no. 13) | Box | Technical seed → simplify |
+| 丑 | sign of the ox or cow | Ox | Verbose seed → simplify (same meaning) |
+| 又 | or again | Again | Verbose seed → simplify |
+| 丶 | dot | Dot | Clean seed → capitalize |
+| 㕣 | a marsh at the foot of the hills | Marsh | Verbose seed → simplify (same meaning) |
+| ⺍ | *(empty — no KANJIDIC)* | Horns | Empty seed → invent from shape |
 
 ## Field 2: `system_mnemonic` — Layer 1 Mnemonic
 
@@ -78,7 +86,7 @@ A short story (1-2 sentences) that teaches the radical's visual shape and connec
 10. **Each language is independent.** EN, ES, RU mnemonics may tell different stories if that works better for the language. They don't need to be literal translations.
 11. **Spanish:** Standard neutral (Latin American generic). No regional slang.
 12. **Russian:** Standard literary. No regional colloquialisms.
-13. **Positional clues (visual group radicals only):** For the 32 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
+13. **Positional clues (visual group radicals only):** For the 14 radicals that belong to a `visual_group`, the mnemonic MUST mention the radical's standard position inside kanji (e.g. "on the left side", "at the bottom", "always on top"). This reinforces disambiguation — the learner needs to associate both shape AND position to tell visual twins apart.
 
 ### Examples
 
@@ -126,11 +134,11 @@ A JSON array of 3-8 alternative terms a learner might search for. Helps the app'
 
 | Category | Count |
 |---|---|
-| Total radicals | 777 |
-| Total rows (777 x 3 langs) | 2,331 |
-| EN with KANJIDIC seed name | 736 |
-| EN without KANJIDIC seed (need visual naming) | 41 |
-| Radicals with visual_group (have disambiguation_note) | 32 |
+| Total radicals | 791 |
+| Total rows (791 x 3 langs) | 2,373 |
+| EN with KANJIDIC seed name | 738 |
+| EN without KANJIDIC seed (need visual naming) | 53 |
+| Radicals with visual_group (have disambiguation_note) | 14 |
 
 ### JLPT Distribution
 
@@ -153,24 +161,17 @@ However, your mnemonic should acknowledge the visual similarity when relevant. F
 
 ## Visual Groups Reference
 
-These radicals share identical rendered forms inside kanji. The `name` and `system_mnemonic` must clearly distinguish them:
+These radicals share identical or near-identical rendered forms inside kanji. The `name` and `system_mnemonic` must clearly distinguish them. Only true visual-confusion pairs are listed — family relationships (e.g. 人/亻, 水/氵) are handled by `family_symbol`, not visual groups.
 
 | Visual Form | Radicals | Key Distinction |
 |---|---|---|
 | 月 | 肉 (flesh), 月 (moon) | Position: left/bottom = flesh, right/top = moon |
-| 阝 | ⻖ (mound), ⻏ (city) | Position: left = mound, right = city |
-| 人-like | 人 (person full), 亻 (person side), 儿 (legs) | Form: full / left-side / bottom |
-| ⺤/爫 | ⺤ (claw top), 爫 (claw alt) | Top variation vs alternate form |
-| 水-like | 水 (water full), 氵 (water drops) | Full form vs 3-dot left-side form |
-| 火-like | 火 (fire full), 灬 (fire dots) | Full form vs 4-dot bottom form |
-| 土/士 | 土 (earth), 士 (samurai) | Top stroke: shorter = earth, longer = samurai |
-| 王/玉 | 王 (king), 玉 (jewel) | Dot: 玉 has a dot, 王 doesn't |
-| 礻/衤 | 礻 (spirit), 衤 (clothing) | Stroke count differs |
-| 罒/⺲ | 罒 (net top), ⺲ (net alt) | Positioning variant |
-| 匚/匸 | 匚 (box open), 匸 (box hidden) | Opening direction |
-| 艹 variants | 艹 (grass) forms | Stroke style varies |
-| 母/毋 | 母 (mother), 毋 (do not) | Internal strokes differ |
-| 西/覀 | 西 (west), 覀 (west top) | Full vs top-component form |
+| 儿 | 儿 (legs), 八 (eight) | Strokes: touch at bottom = legs, don't touch = eight |
+| 匚 | 匚 (box), 匸 (hiding box) | Top bar: doesn't overlap = box, overlaps = hiding |
+| 土 | 土 (earth), 士 (samurai) | Top stroke: shorter = earth, longer = samurai |
+| 王 | 王 (king), 玉 (jewel) | Dot: 玉 has a dot, 王 doesn't |
+| 西 | 西 (west), 覀 (cover) | Look identical — different meanings |
+| 礻 | 礻 (spirit), 衤 (clothing) | Dots: one dot = spirit, two dots = clothing |
 
 ## Quality Checklist
 

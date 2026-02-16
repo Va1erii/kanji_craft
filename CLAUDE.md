@@ -74,7 +74,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 |---|---|---|
 | `radical.md` | Radical, RadicalI18n, Position enum | master_symbol = shape; family_symbol groups related forms |
 | `kanji.md` | Kanji, KanjiReading, KanjiI18n | frequency_rank always populated (synthetic for unranked) |
-| `kanji_component.md` | KanjiComponent, LogicHint, RadicalType | logic_hint is per-kanji-radical pair, not global; is_primary is generated from radical_type |
+| `kanji_component.md` | KanjiComponent, ComponentType, LogicHint, RadicalType | component_type discriminator (radical/kanji); logic_hint is per-component pair; is_primary from radical_type |
 | `vocabulary.md` | Vocabulary, VocabularyReading/I18n/Kanji/Sentence | furigana uses `{kanji\|reading}` per-character notation |
 | `srs.md` | SrsCard, ReviewLog, Rating, CardState | FSRS algorithm; difficulty 0 = new, 1-10 after first review |
 | `user.md` | User, UserSettings, StudyPath, AuthProvider | users.id is UUID referencing auth.users |
@@ -108,6 +108,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 |---|---|---|
 | `supabase.md` | Auth, database, storage, RLS, migrations | Any Supabase/migration work |
 | `offline.md` | Client sync, conflict resolution | Client-side data sync |
+| `component_model.md` | Multi-level kanji decomposition (kanji→kanji + kanji→radical) | Modifying component linking, radical qualification, SRS unlock gate |
 
 ### Source Format Docs (`docs/sources/`) — read when modifying parsers
 
@@ -128,10 +129,10 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 
-**12 enums:** `position_type`, `item_type`, `reading_priority`, `reading_type`, `pos_tag`, `misc_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
+**13 enums:** `position_type`, `item_type`, `component_type`, `reading_priority`, `reading_type`, `pos_tag`, `misc_tag`, `logic_hint`, `radical_type`, `card_state`, `rating`, `auth_provider`, `study_path`
 
 **Key constraints:**
-- `kanji_components` unique on `(kanji_id, radical_id, position)`
+- `kanji_components` unique on `(kanji_id, component_type, component_id, position)` — polymorphic FK, no DB FK on component_id
 - `srs_cards` unique on `(user_id, item_type, item_id)` — polymorphic FK, no DB FK on item_id
 - `review_logs` is append-only (no UPDATE/DELETE RLS)
 - `is_primary` on `kanji_components` is a generated column: `radical_type = 'general'`
@@ -140,8 +141,8 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 ## Key Architectural Decisions
 
 1. **Docs-first design:** Domain specs in `docs/domain/` are written before code. Implementation must follow the spec. The `/doc-entity` skill generates these specs.
-2. **Progressive decomposition:** Each kanji records only direct child radicals (one level deep). Multi-level learning chains emerge from the dataset.
-3. **Polymorphic FKs:** `srs_cards` and `user_mnemonics` use `item_type` + `item_id` — no DB FK on `item_id`.
+2. **Multi-level decomposition:** Kanji decompose into a mix of simpler kanji and radicals (see `docs/adr/component_model.md`). `kanji_components` uses `component_type` + `component_id` polymorphic FK. Decomposition graph must be a DAG.
+3. **Polymorphic FKs:** `srs_cards`, `user_mnemonics`, and `kanji_components` use discriminator + id pattern — no DB FK on the polymorphic id column.
 4. **Content tables are complete:** All fields NOT NULL — they hold ready-to-sync rows only.
 5. **Comparison-based sync:** No `last_synced_at` column. Sync queries Remote at push time and diffs against local state.
 6. **Pipeline uploads via service_role key:** Bypasses RLS for content table operations.

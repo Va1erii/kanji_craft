@@ -73,8 +73,9 @@ Kanji are inherently polysemous. 日 means "day", "sun", and (in compounds) "Jap
 ```
 Kanji  ──1:N──→ KanjiReading      (one kanji, many pronunciations)
 Kanji  ──1:N──→ KanjiI18n         (one kanji, one row per language)
-Kanji  ──1:N──→ KanjiComponent    (one kanji, many radical components; see kanji_component.md)
-Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
+Kanji  ──1:N──→ KanjiComponent    (one kanji, many components; see kanji_component.md)
+Kanji  ──N:M──→ Radical           (via KanjiComponent where component_type=radical; see radical.md)
+Kanji  ──N:M──→ Kanji             (via KanjiComponent where component_type=kanji; simpler kanji as building blocks)
 ```
 
 `ReadingType` and `ReadingPriority` (see shared_types.md) are properties of `KanjiReading`, not of the kanji itself.
@@ -86,7 +87,7 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 3. Every kanji must have at least one `primary` reading.
 4. `KanjiI18n` must exist for the default language ("en") at minimum.
 5. `meanings` in `KanjiI18n` must have at least one entry.
-6. A kanji cannot enter the lesson queue until all its radicals (via `KanjiComponent`) have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
+6. A kanji cannot enter the lesson queue until all its components — both radicals and simpler kanji (via `KanjiComponent`) — have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
 7. Kanji are reviewed on both meaning and reading — unlike radicals, which are meaning-only.
 8. `frequency_rank` must be a positive integer (1 = most common).
 9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8.
@@ -100,5 +101,6 @@ Kanji  ──N:M──→ Radical           (via KanjiComponent; see radical.md)
 - **Multiple primary readings per type:** This is normal, not an error. 日 has two primary onyomi (ニチ, ジツ). SRS should test all primary readings, not just the first.
 - **SVG asset missing:** Same local-first fallback as radicals (see radical.md): bundled asset → remote download → unicode character text fallback.
 - **Missing translations:** If a user's language has no `KanjiI18n` row, fall back to "en". Never show blank meanings or system mnemonic.
-- **Kanji with no components:** Should not happen in production — every kanji is composed of at least one radical. Flag in content validation tooling (see kanji_component.md).
+- **Kanji with no components:** Should not happen in production — every kanji is composed of at least one component (radical or simpler kanji). Flag in content validation tooling (see kanji_component.md).
+- **Kanji as both parent and component:** A kanji can appear as a component inside other kanji (via `component_type=kanji` in `kanji_components`). The decomposition graph must be acyclic — the pipeline validates this.
 - **Rare kanji outside both JLPT and grade:** These have null `min_jlpt_level` and null `min_grade`. They should only surface via explicit search, never in the default lesson queue.

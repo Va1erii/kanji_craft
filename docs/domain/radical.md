@@ -2,7 +2,20 @@
 
 ## Overview
 
-A radical is the smallest meaningful building block of a kanji character. Most kanji are composed of one or more radicals — for example, the kanji 休 ("rest") combines the radicals 亻 ("person") and 木 ("tree"). A single radical concept can have multiple visual forms depending on where it sits inside a kanji: 水 ("water") becomes 氵 when placed on the left side. In the flattened model, each distinct visual form is its own first-class radical row — 水 and 氵 are separate radicals linked by a shared `family_symbol`. Our app teaches radicals first because recognizing them makes learning kanji significantly easier. Radicals are the entry point of the SRS progression: radical → kanji → vocabulary (see srs.md).
+A radical is the smallest meaningful building block of a kanji character — the leaf node in the decomposition chain. Most kanji are composed of a mix of radicals and simpler kanji (see [component_model.md](../adr/component_model.md)). For example, 休 ("rest") = 亻 ("person" radical) + 木 ("tree" radical). A single radical concept can have multiple visual forms depending on where it sits inside a kanji: 水 ("water") becomes 氵 when placed on the left side. In the flattened model, each distinct visual form is its own first-class radical row — 水 and 氵 are separate radicals linked by a shared `family_symbol`. Our app teaches radicals first because recognizing them makes learning kanji significantly easier. Radicals are the entry point of the SRS progression: radical → kanji → vocabulary (see srs.md).
+
+## What Qualifies as a Radical
+
+With multi-level kanji decomposition (see [component_model.md](../adr/component_model.md)), kanji can reference both radicals and simpler kanji as components. This means radicals are reserved for true building blocks — not every character that appears inside another kanji:
+
+| Category | Description |
+|---|---|
+| **Official Kangxi** | The 214 traditional radicals present in our kanji dataset (~150). Non-negotiable — the foundation of the classification system |
+| **Radical-only shapes** | Shapes with no standalone kanji form (e.g. 亻, 氵, 忄, 艹). These can only be radicals |
+| **Cross-JLPT protectors** | Higher-JLPT kanji used as components in lower-JLPT kanji. Kept as radicals to avoid SRS blocking — a radical card teaches meaning only (quick), while a kanji card requires learning readings |
+| **High-frequency non-official** | Non-Kangxi shapes that appear in many kanji. Threshold determined during pipeline classification |
+
+Characters that don't meet these criteria are referenced as kanji components instead, keeping the radical deck focused (~190–250 radicals).
 
 ## Design Rationale: Why Flattened Model?
 
@@ -135,4 +148,5 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol`) as a text fallback.
 - **Visually identical radicals:** Some distinct radicals render as the same shape inside kanji (e.g. 肉 "flesh" and 月 "moon" both appear as 月). The `visual_group` field groups them, and `disambiguation_note` in RadicalI18n provides the per-language teaching logic (e.g. "left/bottom = flesh, right/top = moon"). Both fields are sourced from the curated `pipeline/data/visual_rules.json` — not AI-generated — because positional disambiguation requires human-verified accuracy. The app should surface this note whenever a kanji contains a radical from a multi-member visual group.
 - **Family groups:** Radicals in the same family (same `family_symbol`) represent different visual forms of the same concept — e.g. 人 (standalone) and 亻 (person-hen). Each is a first-class radical with its own i18n, mnemonics, and SRS card.
-- **Kanji-like radicals:** Some radicals are visually identical to learnable kanji (e.g., 青 is both Kangxi radical #174 and a kanji meaning "Blue"). Both rows must exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. This dual existence is natural for many Kangxi radicals (木, 金, 山, etc.) and is also used for custom non-Kangxi building blocks (`is_official: false`). For example, 清 (Pure) = 氵 (Water) + 青 (Blue) — `kanji_components` always references `radicals.id`, never `kanji.id`.
+- **Dual-identity radicals:** Some radicals are also standalone kanji (e.g., 木 is both Kangxi radical #75 and a kanji meaning "Tree"). Both rows exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. The SRS progression: learn 木 as radical (meaning only, quick) → unlocks kanji containing 木 → later learn 木 as kanji (adds readings). This dual identity is natural for many Kangxi radicals and for cross-JLPT protectors (see "What Qualifies as a Radical" above).
+- **Kanji-only components:** Characters that appear inside kanji but don't qualify as radicals are referenced via `component_type=kanji` in `kanji_components`. For example, 語 (language) = 言 (kanji component) + 吾 (kanji component). See [kanji_component.md](kanji_component.md).

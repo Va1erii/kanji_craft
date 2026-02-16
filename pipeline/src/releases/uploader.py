@@ -93,7 +93,7 @@ def _rewrite_svg_urls(df: pd.DataFrame, svg_base_url: str) -> pd.DataFrame:
 def _upload_svgs(client, batch_dir: Path, svg_base_url: str) -> int:
     """Upload SVG files referenced in the batch to Supabase Storage.
 
-    Reads svg_file_name + svg_hash from radicals, radical_variants, and kanji
+    Reads svg_file_name + svg_hash from radicals and kanji
     CSVs. For each, checks if the file already exists remotely and uploads if
     new or changed.
 
@@ -107,7 +107,6 @@ def _upload_svgs(client, batch_dir: Path, svg_base_url: str) -> int:
     entries: list[tuple[str, str, str]] = []
     for csv_name, folder in [
         ("radicals", "radicals"),
-        ("radical_variants", "radicals"),
         ("kanji", "kanji"),
     ]:
         df = _read_csv(batch_dir / f"{csv_name}.csv")
@@ -176,7 +175,6 @@ def _coerce_int_columns(df: pd.DataFrame, table: str) -> pd.DataFrame:
     """Convert known integer columns from string back to int for upsert."""
     int_cols: dict[str, list[str]] = {
         "radicals": ["stroke_count", "impact_score", "min_grade", "min_jlpt_level"],
-        "radical_variants": [],
         "radical_i18n": [],
         "kanji": ["stroke_count", "min_grade", "min_jlpt_level", "frequency_rank"],
         "kanji_readings": [],

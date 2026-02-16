@@ -15,7 +15,6 @@ export 'domain/entities/verification_status.dart';
 export 'domain/entities/radical/position.dart';
 export 'domain/entities/radical/radical.dart';
 export 'domain/entities/radical/radical_i18n.dart';
-export 'domain/entities/radical/radical_variant.dart';
 
 // Kanji
 export 'domain/entities/kanji/kanji.dart';

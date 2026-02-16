@@ -8,10 +8,16 @@ import pandas as pd
 # ── Test data builders ───────────────────────────────────────────────────────
 
 
-def _make_radicals(symbols: list[str]) -> pd.DataFrame:
+def _make_radicals(
+    symbols: list[str], family_map: dict[str, str | None] | None = None,
+) -> pd.DataFrame:
+    if family_map is None:
+        family_map = {}
     return pd.DataFrame([
         {
             "master_symbol": s,
+            "family_symbol": family_map.get(s, ""),
+            "positions": '["unknown"]',
             "is_official": "True",
             "stroke_count": "3",
             "visual_group": "lines",
@@ -39,20 +45,6 @@ def _make_radical_i18n(symbols: list[str], langs: list[str]) -> pd.DataFrame:
                 "disambiguation_note": "",
             })
     return pd.DataFrame(rows)
-
-
-def _make_radical_variants(symbols: list[str]) -> pd.DataFrame:
-    return pd.DataFrame([
-        {
-            "master_symbol": s,
-            "shape": s,
-            "positions": '["hen"]',
-            "svg_file_name": f"{ord(s):x}.svg",
-            "svg_file_url": f"http://localhost:54321/storage/v1/object/public/svg/radicals/{ord(s):x}.svg",
-            "svg_hash": "abc123",
-        }
-        for s in symbols
-    ])
 
 
 def _make_kanji(chars: list[str], jlpt: int = 5) -> pd.DataFrame:
@@ -208,7 +200,6 @@ def _write_all_csvs(
     _make_kanji_components(char_to_radicals).to_csv(csv_dir / "kanji_components.csv", index=False)
     _make_radicals(radical_symbols).to_csv(csv_dir / "radicals.csv", index=False)
     _make_radical_i18n(radical_symbols, langs).to_csv(csv_dir / "radical_i18n.csv", index=False)
-    _make_radical_variants(radical_symbols).to_csv(csv_dir / "radical_variants.csv", index=False)
     _make_vocabulary(vocab_ids, vocab_jlpt).to_csv(csv_dir / "vocabulary.csv", index=False)
     _make_vocabulary_readings(vocab_ids).to_csv(csv_dir / "vocabulary_readings.csv", index=False)
     _make_vocabulary_i18n(vocab_ids, langs).to_csv(csv_dir / "vocabulary_i18n.csv", index=False)
@@ -275,7 +266,7 @@ class TestSlicer:
 
         expected_files = [
             "batch.toml", "radicals.csv", "radical_i18n.csv",
-            "radical_variants.csv", "kanji.csv", "kanji_readings.csv",
+            "kanji.csv", "kanji_readings.csv",
             "kanji_i18n.csv", "kanji_components.csv", "vocabulary.csv",
             "vocabulary_readings.csv", "vocabulary_i18n.csv",
             "vocabulary_kanji.csv", "vocabulary_sentences.csv",
@@ -418,9 +409,6 @@ class TestSlicer:
         _make_radicals(["丿"]).to_csv(csv_dir / "radicals.csv", index=False)
         _make_radical_i18n(["丿"], ["en", "es", "ru"]).to_csv(
             csv_dir / "radical_i18n.csv", index=False,
-        )
-        _make_radical_variants(["丿"]).to_csv(
-            csv_dir / "radical_variants.csv", index=False,
         )
         _make_vocabulary([100], 5).to_csv(csv_dir / "vocabulary.csv", index=False)
         _make_vocabulary_readings([100]).to_csv(
@@ -565,9 +553,6 @@ class TestValidator:
         _make_radicals(radical_symbols).to_csv(batch_dir / "radicals.csv", index=False)
         _make_radical_i18n(radical_symbols, ["en", "es", "ru"]).to_csv(
             batch_dir / "radical_i18n.csv", index=False,
-        )
-        _make_radical_variants(radical_symbols).to_csv(
-            batch_dir / "radical_variants.csv", index=False,
         )
         _make_kanji(kanji_chars).to_csv(batch_dir / "kanji.csv", index=False)
         _make_kanji_readings(kanji_chars).to_csv(batch_dir / "kanji_readings.csv", index=False)
@@ -829,9 +814,6 @@ class TestReviewer:
         _make_radicals(radical_symbols).to_csv(batch_dir / "radicals.csv", index=False)
         _make_radical_i18n(radical_symbols, langs).to_csv(
             batch_dir / "radical_i18n.csv", index=False,
-        )
-        _make_radical_variants(radical_symbols).to_csv(
-            batch_dir / "radical_variants.csv", index=False,
         )
         _make_kanji(kanji_chars).to_csv(batch_dir / "kanji.csv", index=False)
         _make_kanji_readings(kanji_chars).to_csv(batch_dir / "kanji_readings.csv", index=False)

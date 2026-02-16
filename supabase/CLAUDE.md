@@ -38,7 +38,6 @@ misc_tag:            usually_kana, usually_kanji, exclusively_kana, exclusively_
 ```
 radicals
   ├── radical_i18n          (radical_id)
-  ├── radical_variants      (radical_id)
   └──┐
 kanji │
   ├── kanji_readings        (kanji_id)
@@ -77,7 +76,7 @@ users (UUID, references auth.users)
 
 Child table changes bump parent `updated_at` so sync detects updates:
 - `kanji_readings`, `kanji_i18n`, `kanji_components` → bump `kanji.updated_at`
-- `radical_i18n`, `radical_variants` → bump `radicals.updated_at`
+- `radical_i18n` → bump `radicals.updated_at`
 - `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences` → bump `vocabulary.updated_at`
 - `vocabulary_sentence_i18n` → bump `vocabulary_sentences.updated_at`
 

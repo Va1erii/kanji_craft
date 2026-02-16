@@ -187,7 +187,21 @@ def slice_batch(
 
     radicals_df = _read_csv(CSV_DIR / "radicals.csv")
     batch_radicals = radicals_df[radicals_df["master_symbol"].isin(resolved_radicals)]
-    log.info("Resolved %d radicals from kanji components", len(batch_radicals))
+
+    # Family-aware resolution: pull all family members for resolved radicals
+    family_symbols = set(
+        batch_radicals["family_symbol"].dropna()
+    ) if "family_symbol" in batch_radicals.columns else set()
+    if family_symbols:
+        family_members = radicals_df[
+            radicals_df["family_symbol"].isin(family_symbols)
+        ]
+        batch_radicals = pd.concat([batch_radicals, family_members]).drop_duplicates(
+            subset=["master_symbol"]
+        )
+        resolved_radicals = set(batch_radicals["master_symbol"])
+
+    log.info("Resolved %d radicals from kanji components (including families)", len(batch_radicals))
 
     # ── 3. Select vocabulary ─────────────────────────────────────────────
     # Only include vocab with a direct JLPT mapping (Tanos word list),
@@ -211,11 +225,6 @@ def slice_batch(
     remaining_vocab = len(vocab_available) - len(selected_vocab_ids)
 
     # ── 4. Slice related tables ──────────────────────────────────────────
-
-    radical_variants_df = _read_csv(CSV_DIR / "radical_variants.csv")
-    batch_variants = radical_variants_df[
-        radical_variants_df["master_symbol"].isin(resolved_radicals)
-    ]
 
     radical_i18n_df = _read_csv(CSV_DIR / "radical_i18n.csv")
     batch_radical_i18n = radical_i18n_df[
@@ -325,7 +334,6 @@ def slice_batch(
         write_csv_atomic(df.reset_index(drop=True), batch_dir / filename)
 
     _w(batch_radicals, "radicals.csv")
-    _w(batch_variants, "radical_variants.csv")
     _w(batch_radical_i18n, "radical_i18n.csv")
     _w(kanji_pool, "kanji.csv")
     _w(batch_kanji_readings, "kanji_readings.csv")

@@ -37,7 +37,6 @@ JMDICT_LANG_MAP: dict[str, str] = {
 # Upsert order respects FK dependencies (parents before children).
 TABLE_UPLOAD_ORDER: list[str] = [
     "radicals",
-    "radical_variants",
     "radical_i18n",
     "kanji",
     "kanji_readings",
@@ -54,7 +53,6 @@ TABLE_UPLOAD_ORDER: list[str] = [
 # Natural keys used for upsert conflict resolution per table.
 TABLE_NATURAL_KEYS: dict[str, str] = {
     "radicals": "master_symbol",
-    "radical_variants": "master_symbol,shape",
     "radical_i18n": "master_symbol,lang_code",
     "kanji": "character",
     "kanji_readings": "character,reading",

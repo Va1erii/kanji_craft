@@ -105,10 +105,10 @@ def _make_kanji_csv(csv_dir, kanji_list):
 
 @pytest.fixture
 def basic_setup(tmp_path):
-    """Standard setup: 休 = 亻(variant of 人) + 木, plus leaf entries.
+    """Standard setup: 休 = 亻 + 木, plus leaf entries.
 
-    Scope: {休}  Keep: {人, 木, 休}
-    Radicals: 人(2 strokes), 木(4 strokes)
+    Scope: {休}  Keep: {亻, 木, 休}
+    Radicals: 亻(2 strokes), 木(4 strokes)
     Kanji: 休(grade=2, jlpt=4)
     """
     parquet_dir = tmp_path / "parquet"
@@ -127,11 +127,11 @@ def basic_setup(tmp_path):
     ])
     kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
-    _make_radicals_csv(csv_dir, [("人", 2), ("木", 4)])
+    _make_radicals_csv(csv_dir, [("亻", 2), ("木", 4)])
     _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
 
     scope_set = {"休"}
-    keep_set = {"人", "木", "休"}
+    keep_set = {"亻", "木", "休"}
 
     return parquet_dir, csv_dir, warnings_dir, scope_set, keep_set
 
@@ -143,7 +143,7 @@ def basic_setup(tmp_path):
 
 class TestBasicComponentLinking:
     def test_basic_component_linking(self, basic_setup):
-        """休 produces two component rows: 人@hen + 木@tsukuri."""
+        """休 produces two component rows: 亻@hen + 木@tsukuri."""
         parquet_dir, csv_dir, warnings_dir, scope_set, keep_set = basic_setup
 
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
@@ -151,7 +151,7 @@ class TestBasicComponentLinking:
 
         assert len(comp_df) == 2
 
-        person = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
+        person = comp_df[comp_df["master_symbol"] == "亻"].iloc[0]
         assert person["character"] == "休"
         assert person["position"] == "hen"
 
@@ -160,15 +160,15 @@ class TestBasicComponentLinking:
         assert tree["position"] == "tsukuri"
 
 
-class TestVariantResolution:
-    def test_variant_resolution(self, basic_setup):
-        """亻 (variant=True, original=人) resolves to master_symbol 人."""
+class TestElementUsedDirectly:
+    def test_element_used_directly(self, basic_setup):
+        """亻 element used directly as master_symbol (flattened model)."""
         parquet_dir, csv_dir, warnings_dir, scope_set, keep_set = basic_setup
 
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp_df = result["kanji_components"]
 
-        person_row = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
+        person_row = comp_df[comp_df["master_symbol"] == "亻"].iloc[0]
         assert person_row["position"] == "hen"
 
 
@@ -275,7 +275,7 @@ class TestIsPrimary:
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp_df = result["kanji_components"]
 
-        person = comp_df[comp_df["master_symbol"] == "人"].iloc[0]
+        person = comp_df[comp_df["master_symbol"] == "亻"].iloc[0]
         assert person["is_primary"] == True  # noqa: E712
 
         tree_row = comp_df[comp_df["master_symbol"] == "木"].iloc[0]
@@ -691,7 +691,7 @@ class TestRadicalsCsvUpdated:
         rad_df = pd.read_csv(csv_dir / "radicals.csv")
 
         # Both radicals appear in 1 kanji each → impact_score = 1
-        person = rad_df[rad_df["master_symbol"] == "人"].iloc[0]
+        person = rad_df[rad_df["master_symbol"] == "亻"].iloc[0]
         assert person["impact_score"] == 1
 
         tree_row = rad_df[rad_df["master_symbol"] == "木"].iloc[0]
@@ -810,7 +810,7 @@ class TestIntegration:
         kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
 
         _make_radicals_csv(csv_dir, [
-            ("人", 2), ("木", 4), ("言", 7),
+            ("亻", 2), ("木", 4), ("言", 7),
             ("吾", 7), ("五", 4), ("口", 3),
         ])
         _make_kanji_csv(csv_dir, [
@@ -820,7 +820,7 @@ class TestIntegration:
         ])
 
         scope = {"休", "語", "吾"}
-        keep = {"人", "木", "言", "吾", "五", "口", "休", "語"}
+        keep = {"亻", "木", "言", "吾", "五", "口", "休", "語"}
 
         result = extract_components(parquet_dir, csv_dir, warnings_dir, scope, keep)
 
@@ -855,7 +855,7 @@ class TestDeterministicOutput:
 
         # Run 2 (same inputs — rewrite CSVs)
         # Recreate radicals.csv since it was overwritten by run 1
-        _make_radicals_csv(csv_dir, [("人", 2), ("木", 4)])
+        _make_radicals_csv(csv_dir, [("亻", 2), ("木", 4)])
         result2 = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
         comp2 = result2["kanji_components"]
         rad2 = result2["radicals"]

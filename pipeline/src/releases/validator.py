@@ -152,7 +152,6 @@ def validate_batch(name: str) -> list[ValidationError]:
     # Load all tables
     radicals = _read_csv(batch_dir / "radicals.csv")
     radical_i18n = _read_csv(batch_dir / "radical_i18n.csv")
-    radical_variants = _read_csv(batch_dir / "radical_variants.csv")
     kanji = _read_csv(batch_dir / "kanji.csv")
     kanji_readings = _read_csv(batch_dir / "kanji_readings.csv")
     kanji_i18n = _read_csv(batch_dir / "kanji_i18n.csv")
@@ -164,13 +163,31 @@ def validate_batch(name: str) -> list[ValidationError]:
     vocabulary_sentences = _read_csv(batch_dir / "vocabulary_sentences.csv")
     vocabulary_sentence_i18n = _read_csv(batch_dir / "vocabulary_sentence_i18n.csv")
 
-    # ── radicals: all columns non-empty ──────────────────────────────────
+    # ── radicals: all columns non-empty (except nullable family_symbol) ──
 
-    _check_all_columns_nonempty(radicals, "radicals", "master_symbol", errors)
+    for _, row in radicals.iterrows():
+        key = row.get("master_symbol", "?")
+        for col in radicals.columns:
+            if col == "family_symbol":
+                continue  # nullable
+            if _is_empty(row[col]):
+                errors.append(ValidationError("radicals", f"master_symbol={key}", f"empty '{col}'"))
 
-    # ── radical_variants: all columns non-empty ──────────────────────────
-
-    _check_all_columns_nonempty(radical_variants, "radical_variants", "master_symbol", errors)
+    # ── radicals: family_symbol consistency ───────────────────────────────
+    # If family_symbol is set, at least one other batch radical should share it
+    if not radicals.empty and "family_symbol" in radicals.columns:
+        family_counts: dict[str, int] = {}
+        for _, row in radicals.iterrows():
+            fs = row.get("family_symbol", "")
+            if fs and not _is_empty(fs):
+                family_counts[fs] = family_counts.get(fs, 0) + 1
+        for _, row in radicals.iterrows():
+            fs = row.get("family_symbol", "")
+            if fs and not _is_empty(fs) and family_counts.get(fs, 0) < 2:
+                errors.append(ValidationError(
+                    "radicals", f"master_symbol={row['master_symbol']}",
+                    f"family_symbol='{fs}' has no other family member in batch",
+                ))
 
     # ── radical_i18n: name, system_mnemonic, search_tags required ────────
 

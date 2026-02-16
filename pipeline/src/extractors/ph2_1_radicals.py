@@ -1,7 +1,7 @@
 """Phase 2.1: Radical Extraction — Passes 0–2.
 
 Reads kanjivg.parquet, kanjidic.parquet, jlpt_kanji.parquet to produce
-radicals.csv and radical_variants.csv.
+radicals.csv (flattened: each shape is its own radical row).
 
 Passes 0-2 only: scope set, keep set, radical registration.
 Passes 3-4 (component linking + metadata) are Phase 2.3.
@@ -178,18 +178,19 @@ def scan_and_register(
     visual_rules: dict[str, dict] | None = None,
     manual_flatten: set[str] | None = None,
     freq_threshold: int = 5,
-) -> tuple[pd.DataFrame, pd.DataFrame, list[dict]]:
+) -> tuple[pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
 
-    Returns (radicals_df, radical_variants_df, warnings).
+    Flattened model: each shape becomes its own radical row.
+    family_symbol groups related shapes (e.g. 人 ↔ 亻).
+
+    Returns (radicals_df, warnings).
     """
     warnings: list[dict] = []
     warned: set[tuple[str, str]] = set()  # (entity, message_key) → dedup warnings
 
-    # Collect radical candidates: master_symbol → info
-    radicals_info: dict[str, dict] = {}
-    # Collect variant info: (master_symbol, shape) → set of positions
-    variants_info: dict[tuple[str, str], set[str]] = {}
+    # Collect shape info: shape → {old_master, is_official, positions}
+    shape_info: dict[str, dict] = {}
 
     for char in sorted(scope_set):
         tree = tree_map.get(char)
@@ -208,7 +209,7 @@ def scan_and_register(
 
             variant = child.get("variant", False)
             original = child.get("original")
-            master = resolve_master_symbol(element, variant, original)
+            old_master = resolve_master_symbol(element, variant, original)
             is_official = child.get("radical") == "general"
             position = map_position(child.get("position"))
 
@@ -224,33 +225,22 @@ def scan_and_register(
                         "message": "Variant without original — treated as own master symbol",
                     })
 
-            # Register or update radical info
-            if master not in radicals_info:
-                # Stroke count from master's own KanjiVG entry only —
-                # component node values are unreliable (vary across parents)
-                master_tree = tree_map.get(master)
-                stroke_count = master_tree.get("stroke_count", 0) if master_tree else 0
-                radicals_info[master] = {
-                    "master_symbol": master,
+            # Register or update shape info — keyed by actual element (shape)
+            if element not in shape_info:
+                # Stroke count from shape's own KanjiVG entry
+                shape_tree = tree_map.get(element)
+                stroke_count = shape_tree.get("stroke_count", 0) if shape_tree else 0
+                shape_info[element] = {
+                    "shape": element,
+                    "old_master": old_master,
                     "is_official": is_official,
                     "stroke_count": stroke_count,
+                    "positions": set(),
                 }
             elif is_official:
-                radicals_info[master]["is_official"] = True
+                shape_info[element]["is_official"] = True
 
-            # Track variant shapes and positions
-            if variant and original:
-                # This element is a variant shape of the master
-                key = (master, element)
-                if key not in variants_info:
-                    variants_info[key] = set()
-                variants_info[key].add(position)
-            else:
-                # Track as self-shape positions
-                key = (master, master)
-                if key not in variants_info:
-                    variants_info[key] = set()
-                variants_info[key].add(position)
+            shape_info[element]["positions"].add(position)
 
     # Log ghost flattening warnings for near-threshold elements
     ghosts_flattened = set()
@@ -287,30 +277,58 @@ def scan_and_register(
                     })
 
     # --- Apply manual stroke overrides + warn on missing ---
-    for master, info in sorted(radicals_info.items()):
-        if master in manual_strokes:
-            info["stroke_count"] = manual_strokes[master]
+    for shape, info in sorted(shape_info.items()):
+        if shape in manual_strokes:
+            info["stroke_count"] = manual_strokes[shape]
         elif info["stroke_count"] == 0:
             warnings.append({
                 "severity": "high",
                 "phase": "2.1",
-                "entity": master,
+                "entity": shape,
                 "message": "Missing stroke count (add to manual_strokes.txt)",
             })
 
+    # --- Compute family_symbol from old-master grouping ---
+    # Group shapes by their old_master
+    master_to_shapes: dict[str, set[str]] = {}
+    for shape, info in shape_info.items():
+        om = info["old_master"]
+        if om not in master_to_shapes:
+            master_to_shapes[om] = set()
+        master_to_shapes[om].add(shape)
+
+    # Determine family_symbol per shape
+    family_map: dict[str, str | None] = {}
+    for old_master, shapes in master_to_shapes.items():
+        if len(shapes) == 1:
+            shape = next(iter(shapes))
+            if shape == old_master:
+                # Single-form radical: shape matches old master → null
+                family_map[shape] = None
+            else:
+                # Discrepancy radical: shape ≠ old master (e.g. 攴→攵)
+                family_map[shape] = old_master
+        else:
+            # Multi-variant family: all members get family_symbol = canonical form
+            for shape in shapes:
+                family_map[shape] = old_master
+
     # --- Pass 2: Register ---
 
-    # Build radicals DataFrame
     vr = visual_rules or {}
     radical_rows: list[dict] = []
     registered_masters: set[str] = set()
-    for master, info in sorted(radicals_info.items()):
-        registered_masters.add(master)
+    for shape, info in sorted(shape_info.items()):
+        registered_masters.add(shape)
+        # is_official: only for shapes where shape == old_master AND old_master was official
+        is_official_for_shape = info["is_official"] and shape == info["old_master"]
         radical_rows.append({
-            "master_symbol": info["master_symbol"],
-            "is_official": info["is_official"],
+            "master_symbol": shape,
+            "family_symbol": family_map.get(shape),
+            "positions": json.dumps(sorted(info["positions"])),
+            "is_official": is_official_for_shape,
             "stroke_count": info["stroke_count"],
-            "visual_group": vr[master]["visual_group"] if master in vr else None,
+            "visual_group": vr[shape]["visual_group"] if shape in vr else None,
             "svg_file_name": None,
             "svg_file_url": None,
             "svg_hash": None,
@@ -322,32 +340,6 @@ def scan_and_register(
     radicals_df = pd.DataFrame(radical_rows)
     if not radicals_df.empty:
         radicals_df["stroke_count"] = radicals_df["stroke_count"].astype("int64")
-
-    # Build radical_variants DataFrame
-    variant_rows: list[dict] = []
-
-    # Track which masters have variant shapes (not self)
-    masters_with_variants: set[str] = set()
-    for (master, shape), _positions in sorted(variants_info.items()):
-        if shape != master:
-            masters_with_variants.add(master)
-
-    for (master, shape), positions in sorted(variants_info.items()):
-        if master not in registered_masters:
-            continue
-
-        sorted_positions = json.dumps(sorted(positions))
-
-        variant_rows.append({
-            "master_symbol": master,
-            "shape": shape,
-            "positions": sorted_positions,
-            "svg_file_name": None,
-            "svg_file_url": None,
-            "svg_hash": None,
-        })
-
-    variants_df = pd.DataFrame(variant_rows)
 
     # --- Visual group validation ---
     # Check that every visual_group value has 2+ members (catches typos)
@@ -381,37 +373,12 @@ def scan_and_register(
                 "message": "Entry in visual_rules.json but not a registered radical",
             })
 
-    # --- Visual ambiguity check ---
-    shape_to_masters: dict[str, set[str]] = {}
-    for (master, shape), _positions in variants_info.items():
-        if master not in registered_masters:
-            continue
-        if shape not in shape_to_masters:
-            shape_to_masters[shape] = set()
-        shape_to_masters[shape].add(master)
-
-    for shape, masters in sorted(shape_to_masters.items()):
-        if len(masters) < 2:
-            continue
-        uncovered = sorted(m for m in masters if m not in vr)
-        if uncovered:
-            warnings.append({
-                "severity": "high",
-                "phase": "2.1",
-                "entity": shape,
-                "message": (
-                    f"Visually ambiguous radicals not in visual_rules.json: "
-                    f"shape '{shape}' shared by {sorted(masters)}"
-                ),
-            })
-
     log.info(
-        "Pass 2: registered %d radicals, %d variants",
+        "Pass 2: registered %d radicals",
         len(radicals_df),
-        len(variants_df),
     )
 
-    return radicals_df, variants_df, warnings
+    return radicals_df, warnings
 
 
 def extract_radicals(
@@ -458,7 +425,7 @@ def extract_radicals(
     visual_rules = load_visual_rules(VISUAL_RULES)
 
     # Pass 1d + Pass 2: Scan and register
-    radicals_df, variants_df, scan_warnings = scan_and_register(
+    radicals_df, scan_warnings = scan_and_register(
         kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes,
         visual_rules, manual_flatten,
     )
@@ -477,7 +444,6 @@ def extract_radicals(
     # Write outputs
     csv_dir.mkdir(parents=True, exist_ok=True)
     write_csv_atomic(radicals_df, csv_dir / "radicals.csv")
-    write_csv_atomic(variants_df, csv_dir / "radical_variants.csv")
 
     # Write warnings (sorted for deterministic output)
     if all_warnings:
@@ -490,14 +456,12 @@ def extract_radicals(
         log.info("Phase 2.1: no warnings")
 
     log.info(
-        "Phase 2.1 complete: %d radicals, %d variants",
+        "Phase 2.1 complete: %d radicals",
         len(radicals_df),
-        len(variants_df),
     )
 
     return {
         "radicals": radicals_df,
-        "radical_variants": variants_df,
         "scope_set": scope_set,
         "keep_set": keep_set,
     }

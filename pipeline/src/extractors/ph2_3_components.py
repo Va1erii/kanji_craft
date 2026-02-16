@@ -21,7 +21,6 @@ from src.extractors.shared import (
     map_radical_type,
     parse_component_tree,
     resolve_effective_children,
-    resolve_master_symbol,
     write_csv_atomic,
 )
 
@@ -155,30 +154,15 @@ def extract_components(
             if not element:
                 continue
 
-            variant = child.get("variant", False)
-            original = child.get("original")
-
-            # Warn on variant without original
-            if variant and not original:
-                wkey = (element, "variant_no_original")
-                if wkey not in warned:
-                    warned.add(wkey)
-                    warnings.append({
-                        "severity": "low",
-                        "phase": "2.3",
-                        "entity": element,
-                        "message": "Variant without original — treated as own master symbol",
-                    })
-
-            master = resolve_master_symbol(element, variant, original)
-            if master not in registered_masters:
-                wkey = (master, "missing_radical")
+            # Flattened model: element IS the radical's master_symbol
+            if element not in registered_masters:
+                wkey = (element, "missing_radical")
                 if wkey not in warned:
                     warned.add(wkey)
                     warnings.append({
                         "severity": "high",
                         "phase": "2.3",
-                        "entity": master,
+                        "entity": element,
                         "message": "Child element not resolved to a radical",
                     })
                 continue
@@ -188,14 +172,14 @@ def extract_components(
             is_primary = radical_type == "general"
 
             # Deduplicate on (character, master_symbol, position)
-            key = (char, master, position)
+            key = (char, element, position)
             if key in seen_keys:
                 continue
             seen_keys.add(key)
 
             component_rows.append({
                 "character": char,
-                "master_symbol": master,
+                "master_symbol": element,
                 "position": position,
                 "logic_hint": "semantic",
                 "radical_type": radical_type,

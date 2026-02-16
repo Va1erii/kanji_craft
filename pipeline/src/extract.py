@@ -45,16 +45,15 @@ def main() -> None:
     CSV_DIR.mkdir(parents=True, exist_ok=True)
     WARNINGS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 2.1 Radical extraction (radicals.csv, radical_variants.csv)
+    # 2.1 Radical extraction (radicals.csv)
     step_start = time.perf_counter()
     try:
         rad_result = extract_radicals(PARQUET_DIR, CSV_DIR, WARNINGS_DIR)
         elapsed = time.perf_counter() - step_start
         log.info(
-            "  2.1 Radical extraction: done in %.1fs (%d radicals, %d variants)",
+            "  2.1 Radical extraction: done in %.1fs (%d radicals)",
             elapsed,
             len(rad_result["radicals"]),
-            len(rad_result["radical_variants"]),
         )
     except Exception:
         log.exception("Failed during Phase 2.1 radical extraction")
@@ -96,19 +95,17 @@ def main() -> None:
         log.exception("Failed during Phase 2.3 component linking")
         raise
 
-    # 2.4 SVG processing (updates svg fields on radicals/variants/kanji)
+    # 2.4 SVG processing (updates svg fields on radicals/kanji)
     step_start = time.perf_counter()
     try:
         svg_result = extract_svg(CSV_DIR, WARNINGS_DIR)
         elapsed = time.perf_counter() - step_start
         rad_svg = svg_result["radicals"]["svg_file_name"].notna().sum()
-        var_svg = svg_result["radical_variants"]["svg_file_name"].notna().sum()
         kan_svg = svg_result["kanji"]["svg_file_name"].notna().sum()
         log.info(
-            "  2.4 SVG processing: done in %.1fs (%d radicals, %d variants, %d kanji with SVG)",
+            "  2.4 SVG processing: done in %.1fs (%d radicals, %d kanji with SVG)",
             elapsed,
             rad_svg,
-            var_svg,
             kan_svg,
         )
     except Exception:

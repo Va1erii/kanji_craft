@@ -2,7 +2,7 @@
 
 ## Overview
 
-Radical extraction turns the nested KanjiVG component trees (from `kanjivg.parquet`) into flat, queryable rows in `radicals`, `radical_variants`, and `kanji_components`. The result is a **Lego-style learning graph** — every kanji is built from a small set of meaningful pieces, and the learner masters each piece before assembling the next character.
+Radical extraction turns the nested KanjiVG component trees (from `kanjivg.parquet`) into flat, queryable rows in `radicals` and `kanji_components`. The result is a **Lego-style learning graph** — every kanji is built from a small set of meaningful pieces, and the learner masters each piece before assembling the next character.
 
 **Core principle:** Each kanji decomposes into **meaningful building blocks** — either standalone learnable kanji, official Kangxi radicals, or high-frequency components. Intermediate structural groupings ("ghost radicals") that aren't independently useful to learners are transparently flattened: their children are promoted to become direct children of the parent kanji. Progressive decomposition still applies — multi-level learning chains emerge from the dataset — but only between meaningful components, never through opaque intermediates.
 
@@ -27,7 +27,7 @@ Only KanjiVG entries whose `character` is in the scope set are scanned in Passes
 
 ## Keep Set: What Becomes a Radical
 
-Not every element encountered during scanning becomes a radical. To keep the radical count learnable (~600–700), the pipeline builds a **keep set** — the set of elements that are meaningful enough to register as radicals. An element is in the keep set if ANY of the following is true:
+Not every element encountered during scanning becomes a radical. To keep the radical count learnable (~800), the pipeline builds a **keep set** — the set of elements that are meaningful enough to register as radicals. An element is in the keep set if ANY of the following is true:
 
 1. **Learnable kanji:** The element is in the JLPT/grade scope set. These are standalone characters the learner will encounter — they should be recognizable building blocks.
 
@@ -205,41 +205,37 @@ Load `pipeline/data/manual_keep.txt` and `pipeline/data/manual_flatten.txt` (one
 
 ### Pass 2: Register — Create Radical Rows
 
-Write `radicals` and `radical_variants` from the candidate set. Also load curated visual disambiguation data from `pipeline/data/visual_rules.json`.
+Write `radicals` from the candidate set. Also load curated visual disambiguation data from `pipeline/data/visual_rules.json`.
+
+In the flattened model, each unique **element** (shape) from Pass 1 becomes its own radical row with `master_symbol = element`. There is no separate `radical_variants` table — every shape is a first-class radical.
 
 **Radical registration:**
 
 For each unique element from Pass 1:
 
-1. **Determine `master_symbol`:**
-   - If the element was seen with `variant == true` and an `original` value, the `master_symbol` is the `original` (e.g. for 亻 → master is 人).
-   - Otherwise, the `master_symbol` is the element itself (e.g. 木 → master is 木).
+1. **Determine `master_symbol`:** The element itself is the `master_symbol`. For example, 亻 becomes a radical with `master_symbol = 亻`, and 木 becomes a radical with `master_symbol = 木`.
 
-2. **Create `radicals` row:**
-   - `master_symbol` — as determined above.
-   - `is_official` — `true` if any occurrence had `radical == 'general'` (Kangxi marker). Default `false`.
-   - `stroke_count` — looked up from KanjiVG data where `character == master_symbol` (the master's own entry, from ALL entries not just in-scope).
-   - `visual_group` — looked up from `pipeline/data/visual_rules.json` by master symbol. Null if the master symbol has no entry.
+2. **Compute `family_symbol`:** Group shapes by their resolved old master (the `original` value from KanjiVG's variant attribute, or the element itself if it is not a variant):
+   - **Single form, shape == old master** → `family_symbol = null`. The element is standalone with no family relationship (e.g. 木 is never a variant of anything → `family_symbol = null`).
+   - **Single form, shape ≠ old master (discrepancy)** → `family_symbol = old_master`. The element is a sole variant form (e.g. if 氺 were the only variant of 水 and 水 itself were not in the candidate set → `family_symbol = 水`).
+   - **Multi-variant family** → all members get `family_symbol = old_master`. When a master has multiple shapes (including itself), every member of the family is tagged with the old master's symbol (e.g. 水 gets `family_symbol = 水`, 氵 gets `family_symbol = 水`).
+
+3. **Determine `is_official`:** `true` only when the element equals the old master AND that old master had `radical = 'general'` (Kangxi marker) in any KanjiVG entry. Variant shapes are NOT official even if their old master was — only the canonical Kangxi form carries the flag (e.g. 水 is official, 氵 is not).
+
+4. **Create `radicals` row:**
+   - `master_symbol` — the element itself.
+   - `family_symbol` — as computed above.
+   - `is_official` — as determined above.
+   - `stroke_count` — looked up from the shape's own KanjiVG entry where `character == element` (from ALL entries, not just in-scope). This is the shape's own stroke count, not the old master's.
+   - `visual_group` — looked up from `pipeline/data/visual_rules.json` by master symbol. Null if the symbol has no entry.
    - `svg_file_name`, `svg_file_url`, `svg_hash` — from SVG Processing (pipeline Phase 2.4).
    - `min_grade`, `min_jlpt_level`, `impact_score` — from Pass 4 (metadata derivation).
 
-3. **Create `radical_variants` rows:**
-   - For every element seen with `variant == true`:
-     - `radical_id` — FK to the radical with `master_symbol == original`.
-     - `shape` — the variant element (e.g. 氵).
-     - `position` — the most common `position` value seen for this variant across all trees.
-     - `is_locked` — `true` if this variant was **only** ever seen in a single position across all kanji trees.
-     - SVG fields — from SVG Processing (Phase 2.4).
-   - For every radical whose `master_symbol` was NOT seen as a variant of anything (it is its own canonical form):
-     - Create a self-variant row: `shape == master_symbol`, `position` from the most common occurrence, `is_locked` accordingly. (See [radical.md rule #2](../domain/radical.md): every radical has at least one variant.)
-
-**Visual ambiguity check:** After all variant rows are created, build a reverse index: `Map<String, List<radical_id>>` — shape → list of radicals that use that shape (including self-variants where `shape == master_symbol`). For each shape mapped to 2+ distinct radicals, check whether ALL of those radicals have a `visual_group` entry (from `visual_rules.json`). If any radical in the collision set is missing a `visual_group`, emit a **high** warning listing the colliding radicals and the shared shape. This lets the admin discover new visual twins as the dataset evolves and update `visual_rules.json` accordingly.
-
 ### Pass 3: Link — Create KanjiComponent Rows
 
-For each **in-scope** KanjiVG entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, variant resolution, position mapping, radical_type determination, and worked examples — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
+For each **in-scope** KanjiVG entry, create `kanji_components` linking the kanji to its **effective child radicals** (after ghost flattening). The same keep set and flattening algorithm from Pass 1 is applied to ensure consistency. Only kanji in `scopeCharacters` are processed — out-of-scope kanji get no component links. The full algorithm — including structural group flattening, split part merging, position mapping, radical_type determination, and worked examples — is documented in [ph2_3_component_linking.md](ph2_3_component_linking.md).
 
-**Summary:** For each in-scope kanji, resolve effective children via ghost flattening, resolve each child to its master radical, map position and radical_type from KanjiVG attributes, and write a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI enrichment in Phase 3). Unique key: `(kanji_id, radical_id, position)`.
+**Summary:** For each in-scope kanji, resolve effective children via ghost flattening, then use each child's `element` directly as the `master_symbol` reference (the specific shape used, not the abstract parent radical). Map position and radical_type from KanjiVG attributes, and write a `kanji_components` row. Default `logic_hint = semantic` (refined later by AI enrichment in Phase 3). Unique key: `(kanji_id, radical_id, position)`.
 
 ### Pass 4: Derive — Compute Radical Metadata
 
@@ -256,16 +252,16 @@ KanjiVG tree:
 └── 木 — position: tsukuri
 ```
 
-Both 人 (master of 亻) and 木 are in the keep set (learnable kanji). No ghost flattening needed.
+Both 亻 and 木 are in the keep set (亻 via its old master 人 being a learnable kanji; 木 directly). No ghost flattening needed.
 
 **Pass 1** collects: `{亻 (variant of 人), 木}`
 
-**Pass 2** creates:
-- `radicals`: (master_symbol=人, is_official=true), (master_symbol=木, is_official=false)
-- `radical_variants`: (radical=人, shape=亻, position=hen, is_locked=true), (radical=人, shape=人, position=...), (radical=木, shape=木, position=...)
+**Pass 2** creates two separate radicals:
+- `radicals`: (master_symbol=亻, family_symbol=人, is_official=false), (master_symbol=木, family_symbol=null, is_official=false)
+- If 人 also appears as a direct element elsewhere, it gets its own radical row: (master_symbol=人, family_symbol=人, is_official=true)
 
-**Pass 3** creates:
-- `kanji_components`: (kanji=休, radical=人, position=hen), (kanji=休, radical=木, position=tsukuri)
+**Pass 3** creates — components link to the specific shape used:
+- `kanji_components`: (kanji=休, radical=亻, position=hen), (kanji=休, radical=木, position=tsukuri)
 
 ### Ghost Flattening: Kanji with Non-Learnable Intermediate
 
@@ -363,13 +359,13 @@ KanjiVG tree:
 ```
 
 **Pass 2:**
-- `radicals`: (master_symbol=水), (master_symbol=青)
-- `radical_variants`: (radical=水, shape=氵, position=hen, is_locked=true)
+- `radicals`: (master_symbol=氵, family_symbol=水, is_official=false), (master_symbol=青, family_symbol=null, is_official=false)
+- If 水 also appears as a direct element elsewhere, it gets its own radical row: (master_symbol=水, family_symbol=水, is_official=true)
 
 **Pass 3:**
-- `kanji_components`: (kanji=清, **radical=水**, position=hen), (kanji=清, radical=青, position=tsukuri)
+- `kanji_components`: (kanji=清, **radical=氵**, position=hen), (kanji=清, radical=青, position=tsukuri)
 
-Note: the component points to radical **水** (the master), not 氵. The variant shape is captured in `radical_variants` and determines which SVG to show for water-in-left-position.
+Note: the component points to radical **氵** directly (the specific shape used), not the abstract parent 水. The `family_symbol` on 氵 links it back to the 水 family for grouping and teaching purposes.
 
 ### Split Part: 道 (Way) = 辶 + 首
 
@@ -473,25 +469,22 @@ Warnings are written to `data/csv/warnings/ph2_1_warnings.csv` with columns: `se
 | Character in both `manual_keep.txt` and `manual_flatten.txt` | medium | Conflict — `manual_flatten` wins; admin should resolve the inconsistency |
 | Rare ghost flattened (freq < 2) | low | Expected behaviour for infrequent intermediates — informational only |
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol; admin can manually link later |
-| Visually ambiguous radicals not in `visual_rules.json` | high | Two or more distinct radicals share the same variant shape (e.g. 肉 and 月 both have shape 月) but none of them has a `visual_group` entry in `visual_rules.json`. Admin should add disambiguation rules so learners can tell them apart |
 | KanjiVG entry skipped (character not in JLPT/grade scope) | — | Not a warning — expected behaviour. Logged at debug level only |
 
 ## Output Summary
 
 | Table | What gets created | Source |
 |---|---|---|
-| `radicals` | One row per unique keep-set element (by master symbol) found as effective children of in-scope kanji | Pass 2 |
-| `radical_variants` | One row per visual shape per radical | Pass 2 |
+| `radicals` | One row per unique keep-set element (by shape) found as effective children of in-scope kanji | Pass 2 |
 | `kanji_components` | One row per effective-child component per in-scope kanji (after ghost flattening) | Pass 3 |
 
 **Expected counts** (approximate, for KanjiVG ~20250816 + KANJIDIC ~20260208):
 - ~2,136 kanji in scope (Jōyō grades 1–8 + JLPT)
-- ~600–700 unique radicals (down from ~900 with scope-only filtering, ~1,400 unfiltered)
-- ~600–750 radical variants
+- ~806 unique radicals (each shape is its own radical; up from ~600–700 in the old master+variant model)
 
 Tables populated by **later phases** (not this algorithm):
 - `radical_i18n` — names and mnemonics (Phase 3, KANJIDIC meanings + AI); `disambiguation_note` is populated from `visual_rules.json` (curated per-language text, not AI-generated)
-- SVG fields on `radicals` and `radical_variants` — (Phase 2.4, SVG Processing)
+- SVG fields on `radicals` — (Phase 2.4, SVG Processing)
 
 **Future consideration — SVG stroke group linkage:** The current schema does not store KanjiVG `<g>` group IDs on `kanji_components`. For the UI to highlight specific strokes belonging to a merged/split part or a promoted ghost child, it will need a way to map each component back to its SVG stroke groups. This may require adding a `svg_group_ids` field or a separate mapping table. Deferred until the client rendering layer is designed — flagged here so the need is not forgotten.
 
@@ -511,16 +504,16 @@ Phase 2.1 reads four manually maintained files from `pipeline/data/`. These give
 - **`manual_keep.txt`** — Add a character when it appears in common kanji but falls below the frequency threshold (freq < 5), or when it serves as a phonetic anchor for a reading group.
 - **`manual_flatten.txt`** — Add a character when it's a junk artifact (CDP codes, non-Unicode), or an opaque intermediate that adds no teaching value.
 - **`manual_strokes.txt`** — Add a character when it has no standalone KanjiVG entry (stroke_count defaults to 0) or when the KanjiVG stroke count is wrong.
-- **`visual_rules.json`** — Add entries when the pipeline emits a "Visually ambiguous radicals" high warning, indicating two radicals share a variant shape but have no disambiguation rule.
+- **`visual_rules.json`** — Add entries when radicals sharing the same `visual_group` need disambiguation teaching notes, or when visual twins are discovered during content review.
 
 ## Ordering Constraint
 
-Pass 0 (scope set) requires `kanjidic.parquet` and `jlpt_kanji.parquet` to be produced (Phase 1 complete). Passes 1–2 (radical and variant creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
+Pass 0 (scope set) requires `kanjidic.parquet` and `jlpt_kanji.parquet` to be produced (Phase 1 complete). Passes 1–2 (radical creation) have **no dependency** on the `kanji` table and can run independently after Pass 0. Pass 3 (component linking) must run **after** kanji creation from KANJIDIC ([pipeline.md §2.3](pipeline.md#23-kanji--component-composition)), because `kanji_components.kanji_id` references the `kanji` table. Pass 4 (metadata derivation) must run after Pass 3. The full Phase 2 order is:
 
-1. **Radical extraction Passes 1–2** from KanjiVG data → populates `radicals`, `radical_variants` (pipeline §2.2)
+1. **Radical extraction Passes 1–2** from KanjiVG data → populates `radicals` (pipeline §2.2)
 2. **Kanji creation** from KANJIDIC data → populates `kanji`, `kanji_i18n`, `kanji_readings` (pipeline §2.3)
 3. **Radical extraction Passes 3–4** → populates `kanji_components`, derives radical metadata (pipeline §2.3)
-4. **SVG processing** from KanjiVG ZIP → populates SVG fields on `radicals`, `radical_variants`, `kanji` (pipeline §2.4)
+4. **SVG processing** from KanjiVG ZIP → populates SVG fields on `radicals`, `kanji` (pipeline §2.4)
 5. **Vocabulary extraction** from JMdict data → populates vocabulary tables (pipeline §2.5)
 
 ## Related Docs

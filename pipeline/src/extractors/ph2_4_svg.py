@@ -1,7 +1,7 @@
 """Phase 2.4: SVG Processing, Hashing & Upload.
 
-Populates svg_file_name, svg_file_url, svg_hash on radicals.csv,
-radical_variants.csv, and kanji.csv from the KanjiVG ZIP archive.
+Populates svg_file_name, svg_file_url, svg_hash on radicals.csv
+and kanji.csv from the KanjiVG ZIP archive.
 Uploads new SVGs to Supabase Storage.
 
 Usage:
@@ -387,7 +387,7 @@ def _process_entity(
         svg_map: kvg_filename → (bytes, sha256).
         base_url: SVG_BASE_URL for URL construction.
         url_folder: 'radicals' or 'kanji' for URL path.
-        entity_label: For logging ('radical', 'radical_variant', 'kanji').
+        entity_label: For logging ('radical', 'kanji').
         old_hashes: svg_file_name → old sha256 from previous CSV.
         remote_files: Set of filenames already in remote storage folder.
         client: Supabase client (or None to skip uploads).
@@ -486,7 +486,6 @@ def _process_entity(
 
 def _extract_component_svgs(
     radicals_df: pd.DataFrame,
-    variants_df: pd.DataFrame,
     svg_map: dict[str, tuple[bytes, str]],
     parent_index: dict[str, list[tuple[str, int]]],
     svg_base_url: str,
@@ -494,10 +493,10 @@ def _extract_component_svgs(
     remote_files: set[str],
     client,
     warnings: list[dict],
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Pass 2: Extract component SVGs from parent kanji for missing radicals/variants.
+) -> pd.DataFrame:
+    """Pass 2: Extract component SVGs from parent kanji for missing radicals.
 
-    For each radical/variant still missing SVG fields, find a parent kanji that
+    For each radical still missing SVG fields, find a parent kanji that
     contains it as a component, extract the stroke paths, generate a standalone SVG,
     and populate the CSV fields.
     """
@@ -506,70 +505,63 @@ def _extract_component_svgs(
 
     extracted_count = 0
 
-    def _try_extract(df: pd.DataFrame, char_col: str, entity_label: str) -> pd.DataFrame:
-        nonlocal extracted_count
-        for idx, row in df.iterrows():
-            # Skip rows that already have SVG from Pass 1
-            if pd.notna(row.get("svg_file_name")):
-                continue
+    for idx, row in radicals_df.iterrows():
+        # Skip rows that already have SVG from Pass 1
+        if pd.notna(row.get("svg_file_name")):
+            continue
 
-            char = row[char_col]
-            if pd.isna(char) or not char:
-                continue
+        char = row["master_symbol"]
+        if pd.isna(char) or not char:
+            continue
 
-            candidates = parent_index.get(char, [])
-            if not candidates:
-                continue
+        candidates = parent_index.get(char, [])
+        if not candidates:
+            continue
 
-            parent_char = _select_best_parent(candidates, svg_map)
-            if parent_char is None:
-                continue
+        parent_char = _select_best_parent(candidates, svg_map)
+        if parent_char is None:
+            continue
 
-            parent_kvg = char_to_kvg_filename(parent_char)
-            parent_bytes, _ = svg_map[parent_kvg]
+        parent_kvg = char_to_kvg_filename(parent_char)
+        parent_bytes, _ = svg_map[parent_kvg]
 
-            d_values = _parse_svg_extract_paths(parent_bytes, char)
-            if not d_values:
-                continue
+        d_values = _parse_svg_extract_paths(parent_bytes, char)
+        if not d_values:
+            continue
 
-            bbox = _compute_bbox_from_paths(d_values)
-            svg_bytes = _generate_extracted_svg(d_values, bbox)
-            sha256 = hashlib.sha256(svg_bytes).hexdigest()
+        bbox = _compute_bbox_from_paths(d_values)
+        svg_bytes = _generate_extracted_svg(d_values, bbox)
+        sha256 = hashlib.sha256(svg_bytes).hexdigest()
 
-            storage_name = char_to_svg_filename(char)
-            df.at[idx, "svg_file_name"] = storage_name
-            df.at[idx, "svg_hash"] = sha256
-            df.at[idx, "svg_file_url"] = f"{svg_base_url}/radicals/{storage_name}"
+        storage_name = char_to_svg_filename(char)
+        radicals_df.at[idx, "svg_file_name"] = storage_name
+        radicals_df.at[idx, "svg_hash"] = sha256
+        radicals_df.at[idx, "svg_file_url"] = f"{svg_base_url}/radicals/{storage_name}"
 
-            # Save to extracted/ subfolder
-            dest = extracted_dir / storage_name
-            if not dest.exists() or dest.stat().st_size != len(svg_bytes):
-                dest.write_bytes(svg_bytes)
+        # Save to extracted/ subfolder
+        dest = extracted_dir / storage_name
+        if not dest.exists() or dest.stat().st_size != len(svg_bytes):
+            dest.write_bytes(svg_bytes)
 
-            # Upload to radicals/ folder in bucket
-            if client is not None and storage_name not in remote_files:
-                if _upload_file(client, "radicals", storage_name, svg_bytes):
-                    pass
-                remote_files.add(storage_name)
+        # Upload to radicals/ folder in bucket
+        if client is not None and storage_name not in remote_files:
+            if _upload_file(client, "radicals", storage_name, svg_bytes):
+                pass
+            remote_files.add(storage_name)
 
-            extracted_count += 1
-            warnings.append({
-                "severity": "low",
-                "phase": "2.4",
-                "entity": char,
-                "message": (
-                    f"Extracted SVG for {entity_label} '{char}' "
-                    f"from parent {parent_char}"
-                ),
-            })
-
-        return df
-
-    radicals_df = _try_extract(radicals_df, "master_symbol", "radical")
-    variants_df = _try_extract(variants_df, "shape", "radical_variant")
+        extracted_count += 1
+        warnings.append({
+            "severity": "low",
+            "phase": "2.4",
+            "entity": char,
+            "message": (
+                f"Extracted SVG for radical '{char}' "
+                f"from parent {parent_char}"
+            ),
+        })
 
     log.info("Pass 2: extracted %d component SVGs", extracted_count)
-    return radicals_df, variants_df
+    return radicals_df
 
 
 def extract_svg(
@@ -583,7 +575,7 @@ def extract_svg(
     """Phase 2.4 entry point: populate SVG fields and upload to storage.
 
     Args:
-        csv_dir: Directory containing radicals.csv, radical_variants.csv, kanji.csv.
+        csv_dir: Directory containing radicals.csv, kanji.csv.
         warnings_dir: Directory for ph2_4_warnings.csv.
         supabase_client: Optional pre-built Supabase client (for testing).
             If None, creates from env vars.
@@ -593,7 +585,7 @@ def extract_svg(
             Defaults to csv_dir.parent / "parquet".
 
     Returns:
-        Dict with updated DataFrames: radicals, radical_variants, kanji.
+        Dict with updated DataFrames: radicals, kanji.
     """
     # Config from env
     svg_base_url = os.environ.get("SVG_BASE_URL")
@@ -617,7 +609,6 @@ def extract_svg(
 
     # Step 2: Load old hashes + list remote files
     old_radical_hashes = _load_old_hashes(csv_dir / "radicals.csv")
-    old_variant_hashes = _load_old_hashes(csv_dir / "radical_variants.csv")
     old_kanji_hashes = _load_old_hashes(csv_dir / "kanji.csv")
 
     # Create/use Supabase client
@@ -662,35 +653,7 @@ def extract_svg(
     )
     write_csv_atomic(radicals_df, radicals_path)
 
-    # Step 4: Radical variants
-    variants_path = csv_dir / "radical_variants.csv"
-    variants_df = pd.read_csv(variants_path)
-
-    # Variants inherit JLPT from parent radical
-    variant_jlpt = None
-    if "master_symbol" in variants_df.columns and "min_jlpt_level" in radicals_df.columns:
-        rad_jlpt_map = dict(zip(
-            radicals_df["master_symbol"], radicals_df["min_jlpt_level"], strict=False,
-        ))
-        variant_jlpt = variants_df["master_symbol"].map(rad_jlpt_map)
-
-    variants_df = _process_entity(
-        variants_df,
-        "shape",
-        svg_map,
-        svg_base_url,
-        "radicals",
-        "radical_variant",
-        old_variant_hashes,
-        remote_radicals,  # variants share the radicals/ folder
-        client,
-        warnings,
-        jlpt_series=variant_jlpt,
-        svg_dir=svg_dir,
-    )
-    write_csv_atomic(variants_df, variants_path)
-
-    # Step 5: Kanji
+    # Step 4: Kanji
     kanji_path = csv_dir / "kanji.csv"
     kanji_df = pd.read_csv(kanji_path)
 
@@ -712,15 +675,14 @@ def extract_svg(
     )
     write_csv_atomic(kanji_df, kanji_path)
 
-    # Pass 2: Component extraction for missing radicals/variants
+    # Pass 2: Component extraction for missing radicals
     if parquet_dir is None:
         parquet_dir = csv_dir.parent / "parquet"
     pq_path = parquet_dir / "kanjivg.parquet"
     if pq_path.exists():
         parent_index = _build_parent_index(parquet_dir)
-        radicals_df, variants_df = _extract_component_svgs(
+        radicals_df = _extract_component_svgs(
             radicals_df,
-            variants_df,
             svg_map,
             parent_index,
             svg_base_url,
@@ -730,7 +692,6 @@ def extract_svg(
             warnings,
         )
         write_csv_atomic(radicals_df, radicals_path)
-        write_csv_atomic(variants_df, variants_path)
 
         # Replace "Missing SVG" warnings with "Extracted SVG" for entities that got extracted
         extracted_entities = {
@@ -749,9 +710,6 @@ def extract_svg(
     for _, row in radicals_df.iterrows():
         if pd.notna(row.get("svg_file_name")):
             matched_kvg.add(char_to_kvg_filename(row["master_symbol"]))
-    for _, row in variants_df.iterrows():
-        if pd.notna(row.get("svg_file_name")):
-            matched_kvg.add(char_to_kvg_filename(row["shape"]))
     for _, row in kanji_df.iterrows():
         if pd.notna(row.get("svg_file_name")):
             matched_kvg.add(char_to_kvg_filename(row["character"]))
@@ -774,6 +732,5 @@ def extract_svg(
 
     return {
         "radicals": radicals_df,
-        "radical_variants": variants_df,
         "kanji": kanji_df,
     }

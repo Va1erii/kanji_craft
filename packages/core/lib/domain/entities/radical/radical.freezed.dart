@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Radical {
 
- int get id; String get masterSymbol; int get strokeCount; int get impactScore; int get minJlptLevel; int get minGrade; String get svgFileName; String get svgFileUrl; String get svgHash; bool get isOfficial; DateTime get createdAt; DateTime get updatedAt;
+ int get id; String get masterSymbol; String? get familySymbol; List<Position> get positions; int get strokeCount; int get impactScore; int get minJlptLevel; int get minGrade; String get svgFileName; String get svgFileUrl; String get svgHash; bool get isOfficial; DateTime get createdAt; DateTime get updatedAt;
 /// Create a copy of Radical
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $RadicalCopyWith<Radical> get copyWith => _$RadicalCopyWithImpl<Radical>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Radical&&(identical(other.id, id) || other.id == id)&&(identical(other.masterSymbol, masterSymbol) || other.masterSymbol == masterSymbol)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&(identical(other.impactScore, impactScore) || other.impactScore == impactScore)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.minGrade, minGrade) || other.minGrade == minGrade)&&(identical(other.svgFileName, svgFileName) || other.svgFileName == svgFileName)&&(identical(other.svgFileUrl, svgFileUrl) || other.svgFileUrl == svgFileUrl)&&(identical(other.svgHash, svgHash) || other.svgHash == svgHash)&&(identical(other.isOfficial, isOfficial) || other.isOfficial == isOfficial)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Radical&&(identical(other.id, id) || other.id == id)&&(identical(other.masterSymbol, masterSymbol) || other.masterSymbol == masterSymbol)&&(identical(other.familySymbol, familySymbol) || other.familySymbol == familySymbol)&&const DeepCollectionEquality().equals(other.positions, positions)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&(identical(other.impactScore, impactScore) || other.impactScore == impactScore)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.minGrade, minGrade) || other.minGrade == minGrade)&&(identical(other.svgFileName, svgFileName) || other.svgFileName == svgFileName)&&(identical(other.svgFileUrl, svgFileUrl) || other.svgFileUrl == svgFileUrl)&&(identical(other.svgHash, svgHash) || other.svgHash == svgHash)&&(identical(other.isOfficial, isOfficial) || other.isOfficial == isOfficial)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,masterSymbol,strokeCount,impactScore,minJlptLevel,minGrade,svgFileName,svgFileUrl,svgHash,isOfficial,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,masterSymbol,familySymbol,const DeepCollectionEquality().hash(positions),strokeCount,impactScore,minJlptLevel,minGrade,svgFileName,svgFileUrl,svgHash,isOfficial,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Radical(id: $id, masterSymbol: $masterSymbol, strokeCount: $strokeCount, impactScore: $impactScore, minJlptLevel: $minJlptLevel, minGrade: $minGrade, svgFileName: $svgFileName, svgFileUrl: $svgFileUrl, svgHash: $svgHash, isOfficial: $isOfficial, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Radical(id: $id, masterSymbol: $masterSymbol, familySymbol: $familySymbol, positions: $positions, strokeCount: $strokeCount, impactScore: $impactScore, minJlptLevel: $minJlptLevel, minGrade: $minGrade, svgFileName: $svgFileName, svgFileUrl: $svgFileUrl, svgHash: $svgHash, isOfficial: $isOfficial, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $RadicalCopyWith<$Res>  {
   factory $RadicalCopyWith(Radical value, $Res Function(Radical) _then) = _$RadicalCopyWithImpl;
 @useResult
 $Res call({
- int id, String masterSymbol, int strokeCount, int impactScore, int minJlptLevel, int minGrade, String svgFileName, String svgFileUrl, String svgHash, bool isOfficial, DateTime createdAt, DateTime updatedAt
+ int id, String masterSymbol, String? familySymbol, List<Position> positions, int strokeCount, int impactScore, int minJlptLevel, int minGrade, String svgFileName, String svgFileUrl, String svgHash, bool isOfficial, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -62,11 +62,13 @@ class _$RadicalCopyWithImpl<$Res>
 
 /// Create a copy of Radical
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? masterSymbol = null,Object? strokeCount = null,Object? impactScore = null,Object? minJlptLevel = null,Object? minGrade = null,Object? svgFileName = null,Object? svgFileUrl = null,Object? svgHash = null,Object? isOfficial = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? masterSymbol = null,Object? familySymbol = freezed,Object? positions = null,Object? strokeCount = null,Object? impactScore = null,Object? minJlptLevel = null,Object? minGrade = null,Object? svgFileName = null,Object? svgFileUrl = null,Object? svgHash = null,Object? isOfficial = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,masterSymbol: null == masterSymbol ? _self.masterSymbol : masterSymbol // ignore: cast_nullable_to_non_nullable
-as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
+as String,familySymbol: freezed == familySymbol ? _self.familySymbol : familySymbol // ignore: cast_nullable_to_non_nullable
+as String?,positions: null == positions ? _self.positions : positions // ignore: cast_nullable_to_non_nullable
+as List<Position>,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,impactScore: null == impactScore ? _self.impactScore : impactScore // ignore: cast_nullable_to_non_nullable
 as int,minJlptLevel: null == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
 as int,minGrade: null == minGrade ? _self.minGrade : minGrade // ignore: cast_nullable_to_non_nullable
@@ -161,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String masterSymbol,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String masterSymbol,  String? familySymbol,  List<Position> positions,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Radical() when $default != null:
-return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.masterSymbol,_that.familySymbol,_that.positions,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -182,10 +184,10 @@ return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String masterSymbol,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String masterSymbol,  String? familySymbol,  List<Position> positions,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _Radical():
-return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.masterSymbol,_that.familySymbol,_that.positions,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +204,10 @@ return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String masterSymbol,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String masterSymbol,  String? familySymbol,  List<Position> positions,  int strokeCount,  int impactScore,  int minJlptLevel,  int minGrade,  String svgFileName,  String svgFileUrl,  String svgHash,  bool isOfficial,  DateTime createdAt,  DateTime updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Radical() when $default != null:
-return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
+return $default(_that.id,_that.masterSymbol,_that.familySymbol,_that.positions,_that.strokeCount,_that.impactScore,_that.minJlptLevel,_that.minGrade,_that.svgFileName,_that.svgFileUrl,_that.svgHash,_that.isOfficial,_that.createdAt,_that.updatedAt);case _:
   return null;
 
 }
@@ -217,11 +219,19 @@ return $default(_that.id,_that.masterSymbol,_that.strokeCount,_that.impactScore,
 
 
 class _Radical implements Radical {
-  const _Radical({required this.id, required this.masterSymbol, required this.strokeCount, required this.impactScore, required this.minJlptLevel, required this.minGrade, required this.svgFileName, required this.svgFileUrl, required this.svgHash, required this.isOfficial, required this.createdAt, required this.updatedAt});
+  const _Radical({required this.id, required this.masterSymbol, this.familySymbol, required final  List<Position> positions, required this.strokeCount, required this.impactScore, required this.minJlptLevel, required this.minGrade, required this.svgFileName, required this.svgFileUrl, required this.svgHash, required this.isOfficial, required this.createdAt, required this.updatedAt}): _positions = positions;
   
 
 @override final  int id;
 @override final  String masterSymbol;
+@override final  String? familySymbol;
+ final  List<Position> _positions;
+@override List<Position> get positions {
+  if (_positions is EqualUnmodifiableListView) return _positions;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_positions);
+}
+
 @override final  int strokeCount;
 @override final  int impactScore;
 @override final  int minJlptLevel;
@@ -243,16 +253,16 @@ _$RadicalCopyWith<_Radical> get copyWith => __$RadicalCopyWithImpl<_Radical>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Radical&&(identical(other.id, id) || other.id == id)&&(identical(other.masterSymbol, masterSymbol) || other.masterSymbol == masterSymbol)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&(identical(other.impactScore, impactScore) || other.impactScore == impactScore)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.minGrade, minGrade) || other.minGrade == minGrade)&&(identical(other.svgFileName, svgFileName) || other.svgFileName == svgFileName)&&(identical(other.svgFileUrl, svgFileUrl) || other.svgFileUrl == svgFileUrl)&&(identical(other.svgHash, svgHash) || other.svgHash == svgHash)&&(identical(other.isOfficial, isOfficial) || other.isOfficial == isOfficial)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Radical&&(identical(other.id, id) || other.id == id)&&(identical(other.masterSymbol, masterSymbol) || other.masterSymbol == masterSymbol)&&(identical(other.familySymbol, familySymbol) || other.familySymbol == familySymbol)&&const DeepCollectionEquality().equals(other._positions, _positions)&&(identical(other.strokeCount, strokeCount) || other.strokeCount == strokeCount)&&(identical(other.impactScore, impactScore) || other.impactScore == impactScore)&&(identical(other.minJlptLevel, minJlptLevel) || other.minJlptLevel == minJlptLevel)&&(identical(other.minGrade, minGrade) || other.minGrade == minGrade)&&(identical(other.svgFileName, svgFileName) || other.svgFileName == svgFileName)&&(identical(other.svgFileUrl, svgFileUrl) || other.svgFileUrl == svgFileUrl)&&(identical(other.svgHash, svgHash) || other.svgHash == svgHash)&&(identical(other.isOfficial, isOfficial) || other.isOfficial == isOfficial)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,masterSymbol,strokeCount,impactScore,minJlptLevel,minGrade,svgFileName,svgFileUrl,svgHash,isOfficial,createdAt,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,masterSymbol,familySymbol,const DeepCollectionEquality().hash(_positions),strokeCount,impactScore,minJlptLevel,minGrade,svgFileName,svgFileUrl,svgHash,isOfficial,createdAt,updatedAt);
 
 @override
 String toString() {
-  return 'Radical(id: $id, masterSymbol: $masterSymbol, strokeCount: $strokeCount, impactScore: $impactScore, minJlptLevel: $minJlptLevel, minGrade: $minGrade, svgFileName: $svgFileName, svgFileUrl: $svgFileUrl, svgHash: $svgHash, isOfficial: $isOfficial, createdAt: $createdAt, updatedAt: $updatedAt)';
+  return 'Radical(id: $id, masterSymbol: $masterSymbol, familySymbol: $familySymbol, positions: $positions, strokeCount: $strokeCount, impactScore: $impactScore, minJlptLevel: $minJlptLevel, minGrade: $minGrade, svgFileName: $svgFileName, svgFileUrl: $svgFileUrl, svgHash: $svgHash, isOfficial: $isOfficial, createdAt: $createdAt, updatedAt: $updatedAt)';
 }
 
 
@@ -263,7 +273,7 @@ abstract mixin class _$RadicalCopyWith<$Res> implements $RadicalCopyWith<$Res> {
   factory _$RadicalCopyWith(_Radical value, $Res Function(_Radical) _then) = __$RadicalCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String masterSymbol, int strokeCount, int impactScore, int minJlptLevel, int minGrade, String svgFileName, String svgFileUrl, String svgHash, bool isOfficial, DateTime createdAt, DateTime updatedAt
+ int id, String masterSymbol, String? familySymbol, List<Position> positions, int strokeCount, int impactScore, int minJlptLevel, int minGrade, String svgFileName, String svgFileUrl, String svgHash, bool isOfficial, DateTime createdAt, DateTime updatedAt
 });
 
 
@@ -280,11 +290,13 @@ class __$RadicalCopyWithImpl<$Res>
 
 /// Create a copy of Radical
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? masterSymbol = null,Object? strokeCount = null,Object? impactScore = null,Object? minJlptLevel = null,Object? minGrade = null,Object? svgFileName = null,Object? svgFileUrl = null,Object? svgHash = null,Object? isOfficial = null,Object? createdAt = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? masterSymbol = null,Object? familySymbol = freezed,Object? positions = null,Object? strokeCount = null,Object? impactScore = null,Object? minJlptLevel = null,Object? minGrade = null,Object? svgFileName = null,Object? svgFileUrl = null,Object? svgHash = null,Object? isOfficial = null,Object? createdAt = null,Object? updatedAt = null,}) {
   return _then(_Radical(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,masterSymbol: null == masterSymbol ? _self.masterSymbol : masterSymbol // ignore: cast_nullable_to_non_nullable
-as String,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
+as String,familySymbol: freezed == familySymbol ? _self.familySymbol : familySymbol // ignore: cast_nullable_to_non_nullable
+as String?,positions: null == positions ? _self._positions : positions // ignore: cast_nullable_to_non_nullable
+as List<Position>,strokeCount: null == strokeCount ? _self.strokeCount : strokeCount // ignore: cast_nullable_to_non_nullable
 as int,impactScore: null == impactScore ? _self.impactScore : impactScore // ignore: cast_nullable_to_non_nullable
 as int,minJlptLevel: null == minJlptLevel ? _self.minJlptLevel : minJlptLevel // ignore: cast_nullable_to_non_nullable
 as int,minGrade: null == minGrade ? _self.minGrade : minGrade // ignore: cast_nullable_to_non_nullable

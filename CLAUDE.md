@@ -72,7 +72,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 | Doc | Covers | Key decisions |
 |---|---|---|
-| `radical.md` | Radical, RadicalI18n, RadicalVariant, Position enum | master_symbol is canonical identity; variants are shapes at positions |
+| `radical.md` | Radical, RadicalI18n, Position enum | master_symbol = shape; family_symbol groups related forms |
 | `kanji.md` | Kanji, KanjiReading, KanjiI18n | frequency_rank always populated (synthetic for unranked) |
 | `kanji_component.md` | KanjiComponent, LogicHint, RadicalType | logic_hint is per-kanji-radical pair, not global; is_primary is generated from radical_type |
 | `vocabulary.md` | Vocabulary, VocabularyReading/I18n/Kanji/Sentence | furigana uses `{kanji\|reading}` per-character notation |
@@ -88,7 +88,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 |---|---|---|
 | `pipeline.md` | Full pipeline: Python + Parquet ingestion → CSV extraction → AI enrichment → Supabase upload | Understanding overall data flow |
 | `ph1_ingestion.md` | Phase 1 correctness invariants | Implementing/fixing parsers or import logic |
-| `ph2_1_radical_extraction.md` | Passes 1-2: radical/variant registration | Implementing radical scanning from KanjiVG |
+| `ph2_1_radical_extraction.md` | Passes 1-2: radical registration (flattened model) | Implementing radical scanning from KanjiVG |
 | `ph2_2_kanji_composition.md` | Steps 1-3: kanji row creation from KANJIDIC | Implementing kanji/reading/i18n creation |
 | `ph2_3_component_linking.md` | Steps 4-5: kanji↔radical linking + metadata | Implementing component linking or radical metadata |
 | `ph2_4_svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
@@ -122,9 +122,9 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 
 ## Database Schema Digest
 
-**17 tables:** 12 content + 5 user. Schema defined in `docs/domain/` entity specs.
+**16 tables:** 11 content + 5 user. Schema defined in `docs/domain/` entity specs.
 
-**Content tables:** `radicals`, `radical_i18n`, `radical_variants`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`, `vocabulary_sentence_i18n`
+**Content tables:** `radicals`, `radical_i18n`, `kanji`, `kanji_readings`, `kanji_i18n`, `kanji_components`, `vocabulary`, `vocabulary_readings`, `vocabulary_i18n`, `vocabulary_kanji`, `vocabulary_sentences`, `vocabulary_sentence_i18n`
 
 **User tables:** `users`, `user_settings`, `srs_cards`, `review_logs`, `user_mnemonics`
 

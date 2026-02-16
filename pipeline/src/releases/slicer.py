@@ -157,11 +157,12 @@ def slice_batch(
     kanji_df["min_jlpt_level"] = pd.to_numeric(kanji_df["min_jlpt_level"])
     kanji_df["frequency_rank"] = pd.to_numeric(kanji_df["frequency_rank"])
 
-    kanji_pool = kanji_df[kanji_df["min_jlpt_level"] == jlpt_level].copy()
-    kanji_pool = kanji_pool[~kanji_pool["character"].isin(allocated_kanji)]
-    kanji_pool = kanji_pool.sort_values("frequency_rank").head(kanji_count)
+    kanji_at_level = kanji_df[kanji_df["min_jlpt_level"] == jlpt_level]
+    kanji_available = kanji_at_level[~kanji_at_level["character"].isin(allocated_kanji)]
+    kanji_pool = kanji_available.sort_values("frequency_rank").head(kanji_count).copy()
     selected_kanji = set(kanji_pool["character"])
-    log.info("Selected %d kanji", len(selected_kanji))
+    total_kanji_at_level = len(kanji_at_level)
+    remaining_kanji = len(kanji_available) - len(selected_kanji)
 
     # ── 2. Resolve radicals from kanji_components ────────────────────────
 
@@ -180,11 +181,12 @@ def slice_batch(
     vocab_df["frequency_rank"] = pd.to_numeric(vocab_df["frequency_rank"])
     vocab_df["id"] = pd.to_numeric(vocab_df["id"])
 
-    vocab_pool = vocab_df[vocab_df["min_jlpt_level"] == jlpt_level].copy()
-    vocab_pool = vocab_pool[~vocab_pool["id"].isin(allocated_vocab)]
-    vocab_pool = vocab_pool.sort_values("frequency_rank").head(vocab_count)
+    vocab_at_level = vocab_df[vocab_df["min_jlpt_level"] == jlpt_level]
+    vocab_available = vocab_at_level[~vocab_at_level["id"].isin(allocated_vocab)]
+    vocab_pool = vocab_available.sort_values("frequency_rank").head(vocab_count).copy()
     selected_vocab_ids = set(vocab_pool["id"].astype(int))
-    log.info("Selected %d vocabulary items", len(selected_vocab_ids))
+    total_vocab_at_level = len(vocab_at_level)
+    remaining_vocab = len(vocab_available) - len(selected_vocab_ids)
 
     # ── 4. Slice related tables ──────────────────────────────────────────
 
@@ -314,5 +316,15 @@ def slice_batch(
     _w(batch_vocab_sentences, "vocabulary_sentences.csv")
     _w(batch_vocab_sentence_i18n, "vocabulary_sentence_i18n.csv")
 
-    log.info("Batch '%s' sliced → %s", name, batch_dir)
+    # ── Summary ────────────────────────────────────────────────────────
+
+    log.info("─── Batch '%s' sliced → %s", name, batch_dir)
+    log.info("  Kanji:      %d selected  (N%d total: %d, remaining: %d%s)",
+             len(selected_kanji), jlpt_level, total_kanji_at_level,
+             remaining_kanji, " ✓ all done" if remaining_kanji == 0 else "")
+    log.info("  Radicals:   %d auto-resolved", len(resolved_radicals))
+    log.info("  Vocabulary: %d selected  (N%d total: %d, remaining: %d%s)",
+             len(selected_vocab_ids), jlpt_level, total_vocab_at_level,
+             remaining_vocab, " ✓ all done" if remaining_vocab == 0 else "")
+
     return batch_dir

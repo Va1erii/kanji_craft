@@ -429,6 +429,63 @@ class TestSlicer:
         kanji_df = pd.read_csv(releases_dir / "n5_only" / "kanji.csv", dtype=str)
         assert set(kanji_df["character"]) == {"日", "一"}
 
+    def test_summary_log_shows_counts(self, tmp_path, monkeypatch, caplog):
+        import logging
+
+        from src.releases.slicer import slice_batch
+
+        _, releases_dir = self._setup(tmp_path, monkeypatch)
+
+        with caplog.at_level(logging.INFO, logger="src.releases.slicer"):
+            slice_batch("test_batch", jlpt_level=5, kanji_count=3, vocab_count=2)
+
+        log_text = caplog.text
+        assert "Kanji:" in log_text
+        assert "3 selected" in log_text
+        assert "remaining: 2" in log_text
+        assert "Vocabulary:" in log_text
+        assert "2 selected" in log_text
+        assert "remaining: 3" in log_text
+        assert "Radicals:" in log_text
+
+    def test_summary_log_all_done_when_exhausted(self, tmp_path, monkeypatch, caplog):
+        import logging
+
+        from src.releases.slicer import slice_batch
+
+        _, releases_dir = self._setup(tmp_path, monkeypatch)
+
+        # Take all 5 kanji and all 5 vocab
+        with caplog.at_level(logging.INFO, logger="src.releases.slicer"):
+            slice_batch("test_batch", jlpt_level=5, kanji_count=10, vocab_count=10)
+
+        log_text = caplog.text
+        assert "remaining: 0" in log_text
+        assert "all done" in log_text
+
+    def test_summary_log_zero_kanji_when_exhausted(self, tmp_path, monkeypatch, caplog):
+        import logging
+
+        from src.releases.slicer import slice_batch
+
+        _, releases_dir = self._setup(tmp_path, monkeypatch)
+
+        # First batch takes all 5 kanji
+        slice_batch("batch_1", jlpt_level=5, kanji_count=10, vocab_count=2)
+        caplog.clear()
+
+        # Second batch — no kanji left
+        with caplog.at_level(logging.INFO, logger="src.releases.slicer"):
+            slice_batch("batch_2", jlpt_level=5, kanji_count=10, vocab_count=2)
+
+        log_text = caplog.text
+        assert "Kanji:" in log_text
+        assert "0 selected" in log_text
+        assert "all done" in log_text
+        # Vocab should still have items
+        assert "Vocabulary:" in log_text
+        assert "2 selected" in log_text
+
 
 # ── Validator tests ──────────────────────────────────────────────────────────
 

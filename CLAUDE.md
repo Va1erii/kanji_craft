@@ -35,7 +35,9 @@ dart pub get                                    # Resolve all packages from root
 cd pipeline && uv run python -m src.ingest      # Phase 1: sources → Parquet
 cd pipeline && uv run python -m src.extract     # Phase 2: Parquet → CSV
 cd pipeline && uv run python -m src.enrich      # Phase 3: AI enrichment
-cd pipeline && uv run python -m src.verify      # Phase 4: verify + upload
+cd pipeline && uv run python -m src.release slice <name> --jlpt <N> --kanji <N> --vocab <N>  # Slice batch
+cd pipeline && uv run python -m src.release validate <name>   # Validate batch
+cd pipeline && uv run python -m src.release push <name>       # Push batch to Supabase
 cd pipeline && uv run ruff check src/           # Lint pipeline
 cd pipeline && uv run pytest                    # Test pipeline
 ```
@@ -50,7 +52,7 @@ cd pipeline && uv run pytest                    # Test pipeline
 - **Remote:** Supabase (PostgreSQL + Auth + Storage)
 - **Code Gen:** Freezed for immutable data classes, Drift for SQLite, json_serializable for DTOs
 - **SRS Engine:** `fsrs` package for spaced repetition scheduling (runs locally)
-- **Content Pipeline:** Python scripts (`pipeline/`) — Parquet ingestion → CSV extraction → AI enrichment → Supabase upload
+- **Content Pipeline:** Python scripts (`pipeline/`) — Parquet ingestion → CSV extraction → AI enrichment → release bundles → Supabase upload
 
 ## Key Directories
 
@@ -92,6 +94,7 @@ Read specific docs only when relevant to the task. Do not load all docs at once.
 | `ph2_4_svg_processing.md` | Phase 2.4: SVG file matching, SHA-256 hashing, URL construction | Implementing SVG processing or delta sync |
 | `ph2_5_vocabulary_extraction.md` | Phase 2.5: JMdict → vocabulary tables, segmentation, JLPT strategy | Implementing vocabulary extraction or Ghost Kanji segments |
 | `ph3_ai_enrichment.md` | Phase 3: logic hints, mnemonics (Lego Stack), sentence furigana, translations | Implementing AI enrichment or mnemonic generation |
+| `ph4_release_bundles.md` | Phase 4: release batches — slice, validate, push to Supabase | Implementing or modifying release bundle workflow |
 
 ### Reference (`docs/`)
 

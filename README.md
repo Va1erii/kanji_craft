@@ -8,7 +8,7 @@ Dart native workspace with 2 packages:
 
 - `packages/core` — shared domain entities and design system
 - `apps/client` — Flutter mobile/web/desktop app for learners
-- `pipeline/` — Python content pipeline (Parquet ingestion → CSV extraction → AI enrichment → Supabase upload)
+- `pipeline/` — Python content pipeline (Parquet → CSV → AI enrichment → release bundles → Supabase)
 
 ## Prerequisites
 
@@ -55,8 +55,21 @@ uv sync                                # Install dependencies (first time)
 uv run python -m src.ingest            # Phase 1: sources → Parquet
 uv run python -m src.extract           # Phase 2: Parquet → CSV
 uv run python -m src.enrich            # Phase 3: AI enrichment
-uv run python -m src.verify            # Phase 4: verify + upload to Supabase
 ```
+
+### Release Bundles (Phase 4)
+
+Slice enriched CSVs into reviewable batches, validate completeness, then push to Supabase:
+
+```bash
+cd pipeline
+uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
+# → Edit CSVs in data/releases/n5_kanji_1/ (fill mnemonics, furigana, translations)
+uv run python -m src.release validate n5_kanji_1
+uv run python -m src.release push n5_kanji_1
+```
+
+See [ph4_release_bundles.md](docs/pipeline/ph4_release_bundles.md) for the full workflow.
 
 Source data goes in `sources/` (see [pipeline.md](docs/pipeline/pipeline.md) for folder naming). Generated artifacts live in `pipeline/data/` (gitignored).
 

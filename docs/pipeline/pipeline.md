@@ -113,18 +113,28 @@ kanji_craft/
     pyproject.toml                  # Dependencies (pandas, pyarrow, etc.)
     .venv/                          # Python virtual environment
     src/                            # Pipeline scripts
-      config.py                     # Central config: TARGET_LANGS, JMDICT_LANG_MAP
+      config.py                     # Central config: TARGET_LANGS, paths, upload order
       ingest.py                     # Phase 1: sources → Parquet
       extract.py                    # Phase 2: Parquet → CSV
-      verify.py                     # Phase 4: validate + upload
+      enrich.py                     # Phase 3: AI enrichment
+      release.py                    # Phase 4 CLI: slice / validate / push
+      releases/                     # Phase 4 release bundle modules
+        slicer.py                   # Slice main CSVs → batch directory
+        validator.py                # Completeness + referential integrity checks
+        uploader.py                 # Push batch to Supabase
     data/                           # Generated artifacts (gitignored)
       parquet/                      # Phase 1 output
       csv/                          # Phase 2 output (+ Phase 3 enrichment)
-      svg/                          # Phase 2.4 output: SVG files for Phase 4 upload
+      svg/                          # Phase 2.4 output: SVG files for upload
         radicals/                   # Pass 1: ZIP-matched radical + variant SVGs
         kanji/                      # Pass 1: ZIP-matched kanji SVGs
         extracted/
           radicals/                 # Pass 2: Component-extracted radical SVGs
+      releases/                     # Phase 4: one directory per release batch
+        n5_kanji_1/                 # Example batch
+          batch.toml                # Batch definition (editable)
+          manifest.json             # Push history (auto-generated)
+          *.csv                     # Sliced CSVs for review
 ```
 
 - **`sources/`** — immutable, versioned snapshots of external data. Read-only for the pipeline.
@@ -145,7 +155,7 @@ sources/ (read-only)              Phase 1              Phase 2             Phase
                                                                                 (PostgreSQL + Storage)
 ```
 
-**File flow:** `sources/` → `data/parquet/` (Phase 1) → `data/csv/` + `data/svg/` (Phase 2) → enriched `data/csv/` (Phase 3) → Supabase (Phase 4)
+**File flow:** `sources/` → `data/parquet/` (Phase 1) → `data/csv/` + `data/svg/` (Phase 2) → enriched `data/csv/` (Phase 3) → `data/releases/<batch>/` → Supabase (Phase 4)
 
 ## Phase 1: Ingestion (Python → Parquet)
 
@@ -313,77 +323,73 @@ See [vocabulary.md](../domain/vocabulary.md), [ph2_5_vocabulary_extraction.md](p
 
 Batches are ordered by JLPT level (N5 → N1) to prioritize beginner content. Within each level, items are grouped by grade. This ensures the most commonly studied content is enriched and reviewed first.
 
-## Phase 4: Verification & Upload
+## Phase 4: Release Bundles
 
-**Goal:** Validate the final CSVs from Phase 3 for completeness and referential integrity, then upload to Remote Supabase.
+**Goal:** Push content to Supabase in small, fully-reviewed batches so the client can be built in parallel. Each batch must be complete (all fields populated, strict NOT NULL) before pushing.
 
-### 4.1 Verification Checks
+See [ph4_release_bundles.md](ph4_release_bundles.md) for the full specification.
 
-Before uploading, the pipeline validates the complete CSV dataset:
+### Workflow
 
-**Referential integrity:**
-- All foreign keys resolve (e.g. every `kanji_components.radical_id` exists in `radicals.csv`)
-- Unique constraints hold (e.g. `(kanji_id, radical_id, position)` on kanji_components)
-- All NOT NULL fields in the Supabase schema are present and non-empty
+```bash
+# 1. Slice: create a batch from main CSVs
+uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
 
-**Completeness (per JLPT level being uploaded):**
-- Every kanji has components, readings, i18n for all 3 languages (EN/ES/RU), SVG fields, system mnemonic
-- Every radical has at least one variant, i18n for all languages, system mnemonic, SVG fields
-- Every vocabulary has readings, kanji links, i18n for all languages, furigana
-- Every vocabulary sentence has translations for all languages, furigana annotation on `original_text`
+# 2. Review: edit CSVs in data/releases/n5_kanji_1/ to fill gaps
+#    - kanji_i18n.csv: add system_mnemonic, search_tags, ru rows
+#    - vocabulary_sentences.csv: add furigana to original_text
+#    - vocabulary_sentence_i18n.csv: add es/ru translations
 
-Verification failures are reported with the specific rows and fields that failed. The pipeline does not proceed to upload until all checks pass.
+# 3. Validate: check completeness before push
+uv run python -m src.release validate n5_kanji_1
 
-### 4.2 Upload Order (FK Dependency Resolution)
+# 4. Push: validate + upload to Supabase
+uv run python -m src.release push n5_kanji_1
+```
 
-Tables are uploaded in strict order to satisfy foreign key constraints:
+### 4.1 Slice
 
-1. **radicals** + `radical_i18n` + `radical_variants` — root entities
-2. **kanji** + `kanji_i18n` + `kanji_readings` — depends on nothing directly
-3. **kanji_components** — depends on both `radicals` and `kanji`
-4. **vocabulary** + `vocabulary_i18n` + `vocabulary_readings` + `vocabulary_kanji` + `vocabulary_sentences` + `vocabulary_sentence_i18n` — depends on `kanji`
+Selects kanji and vocabulary by JLPT level (sorted by `frequency_rank`), auto-resolves radicals from `kanji_components`, slices all 13 related tables, and scaffolds missing i18n rows as empty placeholders for review. Auto-excludes items already allocated in other batches at the same JLPT level.
 
-### 4.3 SVG Upload
+Output: `data/releases/<name>/` containing `batch.toml` + 13 CSV files.
 
-Before uploading database rows, upload changed SVG files from `data/svg/` to the remote `svg` bucket so that `svg_file_url` values are valid when clients receive them.
+### 4.2 Validate
 
-1. **Diff by hash:** For each radical, radical_variant, and kanji row being uploaded, compare local `svg_hash` against the remote row's `svg_hash` (if it exists).
-2. **Upload changed:** Only upload SVGs where the hash differs or the remote row is new. Read the file from `data/svg/{radicals,kanji}/` or `data/svg/extracted/radicals/` and upload via `supabase.storage.from('svg').upload()` with upsert mode. Both sources upload to the same bucket folders.
-3. **Skip unchanged:** Identical hashes mean identical bytes — no upload needed.
+Checks every table for completeness:
+- All NOT NULL columns are non-empty
+- i18n tables have rows for all 3 languages (EN/ES/RU) per entity
+- `kanji_i18n`: `meanings`, `system_mnemonic`, `search_tags` required
+- `vocabulary_i18n`: `meanings`, `search_tags` required; `system_mnemonic` nullable
+- `vocabulary_sentences.original_text`: must contain `{X|Y}` furigana notation (unless pure kana)
+- `vocabulary_sentence_i18n`: `sentence_translated` required for all 3 languages
 
-**Failure handling:** If an SVG upload fails, the row is skipped and logged. The database row is not uploaded without its SVG — this prevents clients from receiving a `svg_file_url` that 404s.
+Cross-checks:
+- Every `kanji_components.master_symbol` exists in batch `radicals.csv`
+- Every `vocabulary_kanji.character` exists in batch kanji OR previously-pushed batches
 
-### 4.4 Comparison-Based Sync
+### 4.3 Push
 
-The upload uses **comparison-based sync** — it queries Remote at upload time and compares against the CSV data:
+1. Runs validation — aborts on errors
+2. Uploads SVG files (delta by hash) from `data/svg/` to Supabase Storage
+3. Upserts 13 tables in FK order using natural-key conflict resolution
+4. Rewrites localhost SVG URLs with production `SVG_BASE_URL`
+5. Updates `manifest.json` with push timestamp, version, row counts, and content checksum
 
-1. Query Remote for all IDs + `updated_at` within the selected scope (e.g. all N5 kanji).
-2. Compare each CSV row against the remote result:
-   - **New** — no remote match → upsert
-   - **Updated** — content differs → upsert
-   - **Unchanged** — identical → skip
-3. Batch upsert in FK dependency order.
+Version tracking: v1 on first push; auto-increments when CSV content changes between pushes.
 
-### 4.5 URL Rewrite
-
-Replace the local base URL in `svg_file_url` with the Remote Production Storage URL (e.g. `https://<project-ref>.supabase.co/storage/v1/object/public/svg/...`). Local development URLs must never reach production.
-
-### 4.6 Scenarios
+### 4.4 Scenarios
 
 **Source update (e.g. new KANJIDIC version):**
 1. Re-run Phase 1 (new Parquet), Phase 2 (new CSVs), Phase 3 (re-enrich only changed items).
-2. Phase 4 comparison-based sync detects changed rows and uploads only the diff.
+2. Re-slice affected batches. Review changes, then re-push — version increments automatically.
 
 **Adding a new language (e.g. French):**
-1. Add the language code to `TARGET_LANGS` in `src/config.py` (and add the ISO 639-2/B mapping to `JMDICT_LANG_MAP` if not already present).
-2. Re-run Phase 2 — extraction produces i18n CSV rows for the new language.
-3. Phase 3 AI enrichment generates mnemonics and translations for the new language only.
-4. Phase 4 uploads the new i18n rows.
+1. Add the language code to `TARGET_LANGS` in `src/config.py`.
+2. Re-run Phase 2 → Phase 3. Re-slice batches to pick up new i18n rows. Fill translations, then push.
 
 **Incremental JLPT release (e.g. N5 first, then N4):**
 1. Run Phases 1–3 for the full dataset.
-2. Phase 4 upload scoped to N5 only for initial release.
-3. Later, re-run Phase 4 scoped to N4 — comparison-based sync uploads only the new level.
+2. Slice and push N5 batches first. Push N4 batches later — kanji cross-refs resolve against previously-pushed N5 batches.
 
 ## Related Docs
 
@@ -396,6 +402,7 @@ Replace the local base URL in `svg_file_url` with the Remote Production Storage 
 - [ph2_4_svg_processing.md](ph2_4_svg_processing.md) — SVG file matching, SHA-256 hashing, URL construction
 - [ph2_5_vocabulary_extraction.md](ph2_5_vocabulary_extraction.md) — Vocabulary extraction from JMdict
 - [ph3_ai_enrichment.md](ph3_ai_enrichment.md) — AI enrichment: logic hints, mnemonics, translations, furigana annotation
+- [ph4_release_bundles.md](ph4_release_bundles.md) — Release bundles: slice, validate, push to Supabase
 
 ### Domain specs
 

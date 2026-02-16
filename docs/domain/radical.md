@@ -2,23 +2,43 @@
 
 ## Overview
 
-A radical is the smallest meaningful building block of a kanji character. Most kanji are composed of one or more radicals — for example, the kanji 休 ("rest") combines the radicals 亻 ("person") and 木 ("tree"). A single radical can appear in many different visual forms depending on where it sits inside a kanji: 水 ("water") becomes 氵 when placed on the left side. Our app teaches radicals first because recognizing them — in all their shapes — makes learning kanji significantly easier. Radicals are the entry point of the SRS progression: radical → kanji → vocabulary (see srs.md).
+A radical is the smallest meaningful building block of a kanji character. Most kanji are composed of one or more radicals — for example, the kanji 休 ("rest") combines the radicals 亻 ("person") and 木 ("tree"). A single radical concept can have multiple visual forms depending on where it sits inside a kanji: 水 ("water") becomes 氵 when placed on the left side. In the flattened model, each distinct visual form is its own first-class radical row — 水 and 氵 are separate radicals linked by a shared `family_symbol`. Our app teaches radicals first because recognizing them makes learning kanji significantly easier. Radicals are the entry point of the SRS progression: radical → kanji → vocabulary (see srs.md).
+
+## Design Rationale: Why Flattened Model?
+
+An earlier design used a separate `radical_variants` table — the parent `radicals` row held the abstract concept (e.g. 人 "person") and child `radical_variants` rows held each positional shape (人 standalone, 亻 hen-form). This was replaced with a flattened model where every shape is its own radical row, linked by `family_symbol`.
+
+**Why the change:**
+
+1. **96.5% of radicals had a single variant.** The extra table was almost entirely 1:1 overhead — 750 of 777 radicals had exactly one shape, making the parent/child split pointless for the vast majority of data.
+
+2. **High-frequency shapes deserve first-class status.** Variant shapes like 亻 (person-hen), 氵 (water-hen), and 忄 (heart-hen) appear in dozens of kanji and are visually distinct from their parent. Learners encounter these shapes constantly — they need their own names, mnemonics, SRS cards, and i18n rows, not a secondary position under a parent radical.
+
+3. **Simpler component linking.** In the old model, `kanji_components.master_symbol` referenced the abstract parent, requiring `resolve_master_symbol()` to map a KanjiVG element back to its parent. In the flattened model, the element IS the radical — no resolution step, no ambiguity.
+
+4. **More accurate per-shape metadata.** `impact_score`, `min_jlpt_level`, and `min_grade` are now computed per shape. 亻 appears in far more kanji than 人 used as a standalone radical — the old model averaged these into a single score on the parent, hiding this difference.
+
+5. **Cleaner pipeline.** One table to scan, one CSV to output, one set of SVGs to match. No variant resolution, no parent/child bookkeeping, no two-pass SVG assignment.
+
+The `family_symbol` field preserves the conceptual grouping (人 and 亻 are related forms of the same concept) without the structural overhead of a separate table.
 
 ## Entities
 
 ### Radical (Entity)
 
-The source of truth for a radical's core identity. Uses the master symbol (the simplest full form) as the anchor. All variants, translations, and examples link back here.
+The source of truth for a radical's core identity. Each distinct visual form (e.g. 水, 氵) is its own radical row. Related shapes are linked via `family_symbol`.
 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `int` | Unique identifier |
-| `master_symbol` | `String` | The radical's canonical character, e.g. "水". Unique across all radicals |
+| `master_symbol` | `String` | The radical's canonical character — in the flattened model this IS the shape. Unique across all radicals |
 | `stroke_count` | `int` | Stroke count of the master symbol |
+| `family_symbol` | `String?` | Groups related shapes — e.g. both 人 and 亻 have family_symbol="人". Null for standalone radicals with no family |
+| `positions` | `List<Position>` | All positions where this shape appears, e.g. `["hen"]` for 氵 |
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1). Null if all containing kanji are outside JLPT |
 | `min_grade` | `int?` | The earliest Japanese school grade this appears in. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null if all containing kanji are ungraded |
-| `svg_file_name` | `String?` | Local asset filename for the master symbol SVG, e.g. "06c34.svg". Null if no SVG exists — client should render `master_symbol` as text fallback |
+| `svg_file_name` | `String?` | Local asset filename for the SVG, e.g. "06c34.svg". Null if no SVG exists — client should render `master_symbol` as text fallback |
 | `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
 | `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
 | `is_official` | `bool` | `true` for official Kangxi radicals (214 traditional set), `false` for custom radicals invented as learning aids. Defaults to `false` |
@@ -36,7 +56,7 @@ Many kanji learning systems create custom radicals that aren't part of the 214 K
 
 **Why `master_symbol` instead of storing every shape?**
 
-A radical can look different depending on position (水 → 氵), but its identity is always the same. The master symbol is the canonical form; visual variants live in `RadicalVariant`.
+In the flattened model, `master_symbol` IS the shape. Each distinct visual form (e.g. 人, 亻) is its own radical row. Related shapes are linked via `family_symbol`.
 
 **Why store both `min_jlpt_level` and `min_grade`?**
 
@@ -48,7 +68,7 @@ Helps prioritize which radicals to teach first within a level. A radical appeari
 
 **Why `svg_file_name` + `svg_file_url` instead of inline SVG data or implicit paths?**
 
-Each radical and variant needs a visual SVG for teaching stroke order and shape recognition. The app uses a local-first resolution strategy: (1) look for `svg_file_name` in bundled assets, (2) check device cache, (3) download from `svg_file_url` and cache locally. Storing both fields explicitly in the schema means the data layer controls which file maps to which entity — no filename conventions to guess, no magic path construction. Common radicals ship pre-bundled for instant offline rendering; rare ones are fetched on demand.
+Each radical needs a visual SVG for teaching stroke order and shape recognition. The app uses a local-first resolution strategy: (1) look for `svg_file_name` in bundled assets, (2) check device cache, (3) download from `svg_file_url` and cache locally. Storing both fields explicitly in the schema means the data layer controls which file maps to which entity — no filename conventions to guess, no magic path construction. Common radicals ship pre-bundled for instant offline rendering; rare ones are fetched on demand.
 
 ### RadicalI18n (Value Object)
 
@@ -86,53 +106,33 @@ The spatial position a radical occupies within a kanji character. Uses tradition
 |---|---|---|
 | `description` | `String` | Human-readable label, e.g. "Left Side", "Top Crown" |
 
-### RadicalVariant (Entity)
-
-A specific visual form a radical takes when placed in a particular position inside a kanji. One radical can have multiple variants.
-
-| Field | Type | Description |
-|---|---|---|
-| `id` | `int` | Unique identifier |
-| `radical_id` | `int` | FK to the parent Radical |
-| `shape` | `String` | The specific form, e.g. "氵" |
-| `positions` | `List<Position>` | All positions where this shape appears, e.g. `[hen]` for 氵 |
-| `svg_file_name` | `String?` | Local asset filename for the variant SVG, e.g. "06c35.svg". Null if no SVG exists — client should render `shape` as text fallback |
-| `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
-| `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
-
-`isLocked` is a derived getter: `true` when `positions.length == 1` — the shape never moves to another position (e.g. 氵 is always left). The UI can skip position context for locked variants.
-
 ## Relationships
 
 ```
 Radical ──1:N──→ RadicalI18n       (one radical, one row per language)
-Radical ──1:N──→ RadicalVariant    (one radical, many visual forms)
 Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_component.md)
 ```
 
-`Position` is a property of `RadicalVariant`, not of the radical itself — the same radical (e.g. 水/氵) can appear in different positions in different kanji. Each variant stores all the positions where that shape is used.
+`Position` is a property of `Radical` itself — the `positions` list stores all the positions where this shape is used across kanji.
 
 ## Business Rules
 
 1. Every radical must have a non-empty `master_symbol`.
-2. `RadicalVariant` rows are optional — only radicals that change shape at different positions (e.g. 水→氵) need them.
-3. `RadicalI18n` must exist for the default language ("en") at minimum.
-4. `shape` + `radical_id` should be unique in `RadicalVariant` — a radical doesn't have two rows for the same shape.
-5. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
-6. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
-7. `impact_score` must be in the range 1–10.
-8. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8. Null if all containing kanji lack the corresponding field.
-9. Every `Radical` and `RadicalVariant` must have both `svg_file_name` and `svg_file_url` populated.
-10. A radical's `master_symbol` may duplicate a kanji's `character`. Both rows must exist independently — the radical serves as a building block in `kanji_components`, the kanji serves as a learnable item with its own readings and SRS card.
-11. When `visual_group` is set on a radical, at least one other radical must share the same `visual_group` value.
-12. Radicals in a visual group may have overlapping positions. The `disambiguation_note` clarifies meaning by position tendency, not a strict rule.
+2. `RadicalI18n` must exist for the default language ("en") at minimum.
+3. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
+4. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
+5. `impact_score` must be in the range 1–10.
+6. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8. Null if all containing kanji lack the corresponding field.
+7. Every `Radical` must have both `svg_file_name` and `svg_file_url` populated.
+8. A radical's `master_symbol` may duplicate a kanji's `character`. Both rows must exist independently — the radical serves as a building block in `kanji_components`, the kanji serves as a learnable item with its own readings and SRS card.
+9. When `visual_group` is set on a radical, at least one other radical must share the same `visual_group` value.
+10. Radicals in a visual group may have overlapping positions. The `disambiguation_note` clarifies meaning by position tendency, not a strict rule.
+11. When `family_symbol` is set on a radical, at least one other radical in the same batch must share the same `family_symbol` value.
 
 ## Edge Cases
 
-- **Radical with no variants:** Some radicals look the same in every position (e.g. 口). They have no `RadicalVariant` rows — the master symbol and its SVG are sufficient.
-- **Locked vs unlocked variants:** A locked variant (`positions.length == 1`, e.g. 氵 always left) means the UI can skip position context. An unlocked variant means the app should show "this shape can appear here or here."
 - **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or system mnemonic.
-- **Radical reuse across positions:** The same radical (e.g. 口) can appear as `left` in one kanji and `enclosure` in another. If the shape is the same, these positions are combined in a single `RadicalVariant` row's `positions` list.
-- **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol` or variant `shape`) as a text fallback.
+- **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol`) as a text fallback.
 - **Visually identical radicals:** Some distinct radicals render as the same shape inside kanji (e.g. 肉 "flesh" and 月 "moon" both appear as 月). The `visual_group` field groups them, and `disambiguation_note` in RadicalI18n provides the per-language teaching logic (e.g. "left/bottom = flesh, right/top = moon"). Both fields are sourced from the curated `pipeline/data/visual_rules.json` — not AI-generated — because positional disambiguation requires human-verified accuracy. The app should surface this note whenever a kanji contains a radical from a multi-member visual group.
+- **Family groups:** Radicals in the same family (same `family_symbol`) represent different visual forms of the same concept — e.g. 人 (standalone) and 亻 (person-hen). Each is a first-class radical with its own i18n, mnemonics, and SRS card.
 - **Kanji-like radicals:** Some radicals are visually identical to learnable kanji (e.g., 青 is both Kangxi radical #174 and a kanji meaning "Blue"). Both rows must exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. This dual existence is natural for many Kangxi radicals (木, 金, 山, etc.) and is also used for custom non-Kangxi building blocks (`is_official: false`). For example, 清 (Pure) = 氵 (Water) + 青 (Blue) — `kanji_components` always references `radicals.id`, never `kanji.id`.

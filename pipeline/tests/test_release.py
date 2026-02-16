@@ -231,6 +231,8 @@ class TestSlicer:
         """Create test CSV data and patch config paths."""
         csv_dir = tmp_path / "csv"
         releases_dir = tmp_path / "releases"
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir(parents=True)
 
         kanji_chars = ["日", "一", "人", "国", "年"]
         radical_symbols = ["丿", "囗"]
@@ -243,8 +245,16 @@ class TestSlicer:
             vocab_ids, vid_to_chars,
         )
 
+        # Create Tanos JLPT vocab parquet with all test words at N5
+        jlpt_vocab = pd.DataFrame([
+            {"expression": f"word_{vid}", "reading": f"reading_{vid}", "level": 5}
+            for vid in vocab_ids
+        ])
+        jlpt_vocab.to_parquet(parquet_dir / "jlpt_vocab.parquet", index=False)
+
         monkeypatch.setattr("src.releases.slicer.CSV_DIR", csv_dir)
         monkeypatch.setattr("src.releases.slicer.RELEASES_DIR", releases_dir)
+        monkeypatch.setattr("src.releases.slicer.PARQUET_DIR", parquet_dir)
 
         return csv_dir, releases_dir
 
@@ -352,6 +362,8 @@ class TestSlicer:
 
         csv_dir = tmp_path / "csv"
         releases_dir = tmp_path / "releases"
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir(parents=True)
 
         # Write CSVs with only EN i18n rows
         _write_all_csvs(
@@ -363,9 +375,13 @@ class TestSlicer:
             vid_to_chars={100: ["日"]},
             langs=["en"],  # Only EN — ES and RU missing
         )
+        pd.DataFrame([
+            {"expression": "word_100", "reading": "r", "level": 5},
+        ]).to_parquet(parquet_dir / "jlpt_vocab.parquet", index=False)
 
         monkeypatch.setattr("src.releases.slicer.CSV_DIR", csv_dir)
         monkeypatch.setattr("src.releases.slicer.RELEASES_DIR", releases_dir)
+        monkeypatch.setattr("src.releases.slicer.PARQUET_DIR", parquet_dir)
 
         slice_batch("test_batch", jlpt_level=5, kanji_count=1, vocab_count=1)
 
@@ -381,6 +397,8 @@ class TestSlicer:
 
         csv_dir = tmp_path / "csv"
         releases_dir = tmp_path / "releases"
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir(parents=True)
 
         # Mix N5 and N4 kanji
         n5 = _make_kanji(["日", "一"], jlpt=5)
@@ -420,14 +438,56 @@ class TestSlicer:
         _make_vocabulary_sentence_i18n([100], ["en", "es", "ru"]).to_csv(
             csv_dir / "vocabulary_sentence_i18n.csv", index=False,
         )
+        # JLPT vocab parquet
+        pd.DataFrame([
+            {"expression": "word_100", "reading": "r", "level": 5},
+        ]).to_parquet(parquet_dir / "jlpt_vocab.parquet", index=False)
 
         monkeypatch.setattr("src.releases.slicer.CSV_DIR", csv_dir)
         monkeypatch.setattr("src.releases.slicer.RELEASES_DIR", releases_dir)
+        monkeypatch.setattr("src.releases.slicer.PARQUET_DIR", parquet_dir)
 
         slice_batch("n5_only", jlpt_level=5, kanji_count=10, vocab_count=0)
 
         kanji_df = pd.read_csv(releases_dir / "n5_only" / "kanji.csv", dtype=str)
         assert set(kanji_df["character"]) == {"日", "一"}
+
+    def test_slice_excludes_vocab_not_in_tanos(self, tmp_path, monkeypatch):
+        """Vocab with matching JLPT level but NOT in Tanos parquet is excluded."""
+        from src.releases.slicer import slice_batch
+
+        csv_dir = tmp_path / "csv"
+        releases_dir = tmp_path / "releases"
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir(parents=True)
+
+        # 5 vocab items at N5
+        vocab_ids = [100, 200, 300, 400, 500]
+        _write_all_csvs(
+            csv_dir,
+            kanji_chars=["日"],
+            radical_symbols=["丿"],
+            char_to_radicals={"日": ["丿"]},
+            vocab_ids=vocab_ids,
+            vid_to_chars={100: ["日"]},
+        )
+
+        # Tanos parquet only includes word_100 and word_300
+        pd.DataFrame([
+            {"expression": "word_100", "reading": "r", "level": 5},
+            {"expression": "word_300", "reading": "r", "level": 5},
+        ]).to_parquet(parquet_dir / "jlpt_vocab.parquet", index=False)
+
+        monkeypatch.setattr("src.releases.slicer.CSV_DIR", csv_dir)
+        monkeypatch.setattr("src.releases.slicer.RELEASES_DIR", releases_dir)
+        monkeypatch.setattr("src.releases.slicer.PARQUET_DIR", parquet_dir)
+
+        slice_batch("test_batch", jlpt_level=5, kanji_count=1, vocab_count=10)
+
+        vocab_df = pd.read_csv(releases_dir / "test_batch" / "vocabulary.csv", dtype=str)
+        words = set(vocab_df["word"])
+        # Only the 2 Tanos words should be included
+        assert words == {"word_100", "word_300"}
 
     def test_summary_log_shows_counts(self, tmp_path, monkeypatch, caplog):
         import logging

@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.config import CSV_DIR, RELEASES_DIR, TARGET_LANGS
+from src.config import CSV_DIR, PARQUET_DIR, RELEASES_DIR, TARGET_LANGS
 from src.extractors.shared import write_csv_atomic
 
 log = logging.getLogger(__name__)
@@ -23,6 +23,21 @@ log = logging.getLogger(__name__)
 def _read_csv(path: Path) -> pd.DataFrame:
     """Read CSV with string dtype to prevent NaN coercion."""
     return pd.read_csv(path, dtype=str, keep_default_na=False)
+
+
+def _load_jlpt_vocab_words(jlpt_level: int) -> set[str]:
+    """Load Tanos JLPT vocab expressions for a given level.
+
+    Returns the set of 'expression' values from jlpt_vocab.parquet
+    that match the target level. Only these words should be included
+    in release batches (excludes kanji-derived JLPT assignments).
+    """
+    pq_path = PARQUET_DIR / "jlpt_vocab.parquet"
+    if not pq_path.exists():
+        log.warning("jlpt_vocab.parquet not found — no vocab filtering applied")
+        return set()
+    df = pd.read_parquet(pq_path)
+    return set(df[df["level"] == jlpt_level]["expression"])
 
 
 def _find_already_allocated(
@@ -175,13 +190,20 @@ def slice_batch(
     log.info("Resolved %d radicals from kanji components", len(batch_radicals))
 
     # ── 3. Select vocabulary ─────────────────────────────────────────────
+    # Only include vocab with a direct JLPT mapping (Tanos word list),
+    # excluding kanji-derived fallback assignments.
+
+    jlpt_vocab_words = _load_jlpt_vocab_words(jlpt_level)
 
     vocab_df = _read_csv(CSV_DIR / "vocabulary.csv")
     vocab_df["min_jlpt_level"] = pd.to_numeric(vocab_df["min_jlpt_level"])
     vocab_df["frequency_rank"] = pd.to_numeric(vocab_df["frequency_rank"])
     vocab_df["id"] = pd.to_numeric(vocab_df["id"])
 
-    vocab_at_level = vocab_df[vocab_df["min_jlpt_level"] == jlpt_level]
+    vocab_at_level = vocab_df[
+        (vocab_df["min_jlpt_level"] == jlpt_level)
+        & (vocab_df["word"].isin(jlpt_vocab_words))
+    ]
     vocab_available = vocab_at_level[~vocab_at_level["id"].isin(allocated_vocab)]
     vocab_pool = vocab_available.sort_values("frequency_rank").head(vocab_count).copy()
     selected_vocab_ids = set(vocab_pool["id"].astype(int))

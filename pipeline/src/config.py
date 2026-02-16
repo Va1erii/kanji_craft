@@ -6,6 +6,7 @@ from pathlib import Path
 
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 
+PARQUET_DIR: Path = _PIPELINE_ROOT / "data" / "parquet"
 CSV_DIR: Path = _PIPELINE_ROOT / "data" / "csv"
 RELEASES_DIR: Path = _PIPELINE_ROOT / "data" / "releases"
 SVG_DIR: Path = _PIPELINE_ROOT / "data" / "svg"

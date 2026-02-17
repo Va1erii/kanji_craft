@@ -171,12 +171,18 @@ def refine_logic_hints(
         len(updated_df),
     )
 
-    # Write warnings
+    # Append warnings to existing ph3_warnings.csv
     if warnings:
         warnings_dir.mkdir(parents=True, exist_ok=True)
-        warnings.sort(key=severity_sort_key)
-        warnings_df = pd.DataFrame(warnings)
-        write_csv_atomic(warnings_df, warnings_dir / "ph3_warnings.csv")
+        warnings_path = warnings_dir / "ph3_warnings.csv"
+        if warnings_path.exists():
+            existing_df = pd.read_csv(warnings_path)
+            existing_warnings = existing_df.to_dict("records")
+        else:
+            existing_warnings = []
+        all_warnings = existing_warnings + warnings
+        all_warnings.sort(key=severity_sort_key)
+        write_csv_atomic(pd.DataFrame(all_warnings), warnings_path)
         log.info("Phase 3.1: %d warnings written", len(warnings))
     else:
         log.info("Phase 3.1: no warnings")

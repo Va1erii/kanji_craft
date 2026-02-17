@@ -15,7 +15,7 @@ from pathlib import Path
 import pandas as pd
 from flask import Flask, jsonify, request
 
-from src.config import RELEASES_DIR, TARGET_LANGS
+from src.config import CSV_DIR, RELEASES_DIR, TARGET_LANGS
 
 log = logging.getLogger(__name__)
 
@@ -111,14 +111,55 @@ def apply_changes_json(name: str) -> int:
 # ── Data loading ─────────────────────────────────────────────────────────────
 
 
+def _load_warnings(
+    radical_symbols: set[str], kanji_chars: set[str],
+) -> dict[str, list[dict]]:
+    """Load ph3_warnings.csv and return warnings grouped by entity key.
+
+    Returns a dict mapping entity identifier to a list of warning dicts.
+    Radical warnings are keyed by master_symbol, kanji warnings by character.
+    """
+    warnings_path = CSV_DIR / "warnings" / "ph3_warnings.csv"
+    if not warnings_path.is_file():
+        return {}
+
+    df = pd.read_csv(warnings_path, dtype=str, keep_default_na=False)
+    result: dict[str, list[dict]] = {}
+
+    for _, row in df.iterrows():
+        entity = row["entity"]
+        entry = {
+            "severity": row["severity"],
+            "phase": row["phase"],
+            "message": row["message"],
+        }
+
+        # Phase 3.1: entity is "kanji=X" format
+        if entity.startswith("kanji="):
+            char = entity[len("kanji="):]
+            if char in kanji_chars:
+                result.setdefault(char, []).append(entry)
+        # Phases 3.0, 3.2: entity is a radical master_symbol
+        elif entity in radical_symbols:
+            result.setdefault(entity, []).append(entry)
+
+    return result
+
+
 def _load_batch_data(batch_dir: Path, batch_name: str = "") -> dict:
     """Read all 12 batch CSVs and structure into nested dicts for the template."""
 
     def _read(filename: str) -> pd.DataFrame:
         return pd.read_csv(batch_dir / filename, dtype=str, keep_default_na=False)
 
-    # --- Radicals ---
+    # --- Load warnings for batch entities ---
     radicals_df = _read("radicals.csv")
+    kanji_df = _read("kanji.csv")
+    radical_symbols = set(radicals_df["master_symbol"])
+    kanji_chars = set(kanji_df["character"])
+    warnings_map = _load_warnings(radical_symbols, kanji_chars)
+
+    # --- Radicals ---
     radical_i18n_df = _read("radical_i18n.csv")
     radicals = []
     for _, r in radicals_df.iterrows():
@@ -149,10 +190,10 @@ def _load_batch_data(batch_dir: Path, batch_name: str = "") -> dict:
             "is_official": r.get("is_official", ""),
             "stroke_count": r.get("stroke_count", ""),
             "i18n": i18n,
+            "warnings": warnings_map.get(symbol, []),
         })
 
     # --- Kanji ---
-    kanji_df = _read("kanji.csv")
     kanji_i18n_df = _read("kanji_i18n.csv")
     kanji_readings_df = _read("kanji_readings.csv")
     kanji_components_df = _read("kanji_components.csv")
@@ -201,6 +242,7 @@ def _load_batch_data(batch_dir: Path, batch_name: str = "") -> dict:
             "components": components,
             "readings": readings,
             "i18n": i18n,
+            "warnings": warnings_map.get(char, []),
         })
 
     # --- Vocabulary ---

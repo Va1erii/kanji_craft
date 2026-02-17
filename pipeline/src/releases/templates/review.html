@@ -268,6 +268,42 @@ textarea { min-height: 60px; }
 .diff-item .diff-before { color: #f87171; text-decoration: line-through; }
 .diff-item .diff-after { color: var(--success); }
 .diff-empty { color: var(--muted); font-style: italic; padding: 20px; text-align: center; }
+
+/* Warnings */
+.warnings {
+  padding: 8px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.warning-item {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-left: 3px solid;
+}
+.warning-item.high {
+  background: rgba(248, 113, 113, 0.15);
+  border-left-color: #f87171;
+  color: #fca5a5;
+}
+.warning-item.medium {
+  background: rgba(251, 191, 36, 0.15);
+  border-left-color: #fbbf24;
+  color: #fde68a;
+}
+.warning-item.low {
+  background: rgba(148, 163, 184, 0.1);
+  border-left-color: #64748b;
+  color: var(--muted);
+}
+.warning-item .warning-severity {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  margin-right: 6px;
+}
+.card.has-warnings { border-color: #f59e0b; }
 </style>
 </head>
 <body>
@@ -378,6 +414,9 @@ function renderRadicalCard(item) {
     </div>
   `;
 
+  const warnEl = renderWarnings(item.warnings);
+  if (warnEl) { card.appendChild(warnEl); card.classList.add("has-warnings"); }
+
   LANGS.forEach(lang => {
     const i = item.i18n[lang] || {};
     card.appendChild(langSection(lang, [
@@ -416,6 +455,9 @@ function renderKanjiCard(item) {
       ${compStr ? `<span class="components">${esc(compStr)}</span>` : ""}
     </div>
   `;
+
+  const warnEl = renderWarnings(item.warnings);
+  if (warnEl) { card.appendChild(warnEl); card.classList.add("has-warnings"); }
 
   LANGS.forEach(lang => {
     const i = item.i18n[lang] || {};
@@ -489,6 +531,22 @@ function renderSentenceCard(item) {
 }
 
 // ── UI Helpers ──────────────────────────────────────────────────────────────
+
+function renderWarnings(warnings) {
+  if (!warnings || warnings.length === 0) return null;
+  const div = document.createElement("div");
+  div.className = "warnings";
+  // Sort: high first, then medium, then low
+  const order = {high: 0, medium: 1, low: 2};
+  const sorted = [...warnings].sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+  for (const w of sorted) {
+    const item = document.createElement("div");
+    item.className = `warning-item ${w.severity}`;
+    item.innerHTML = `<span class="warning-severity">${esc(w.severity)}</span>${esc(w.message)}`;
+    div.appendChild(item);
+  }
+  return div;
+}
 
 function langSection(lang, fieldElements) {
   const div = document.createElement("div");

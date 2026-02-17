@@ -18,6 +18,9 @@ dependencies = [
     # Excel review workbooks
     "openpyxl>=3.1",
 
+    # HTML batch review server
+    "flask>=3.0",
+
     # Supabase upload (Phase 4)
     "supabase>=2.0",
 

@@ -64,9 +64,9 @@ Slice enriched CSVs into reviewable batches, validate completeness, then push to
 ```bash
 cd pipeline
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
-uv run python -m src.release review n5_kanji_1
-# → Review and edit review.xlsx (all languages side-by-side)
-uv run python -m src.release apply n5_kanji_1
+uv run python -m src.release review n5_kanji_1          # HTML card-based review (opens browser)
+uv run python -m src.release review n5_kanji_1 --xlsx   # Legacy xlsx review
+uv run python -m src.release apply n5_kanji_1           # Auto-detects changes.json or review.xlsx
 uv run python -m src.release validate n5_kanji_1
 uv run python -m src.release push n5_kanji_1
 ```

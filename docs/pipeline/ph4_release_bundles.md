@@ -3,7 +3,7 @@
 Phase 4 pushes content to Supabase in small, fully-reviewed batches. Each batch must be complete (all fields NOT NULL) before pushing.
 
 **Entry point:** `pipeline/src/release.py` (CLI)
-**Modules:** `pipeline/src/releases/` (slicer, validator, uploader)
+**Modules:** `pipeline/src/releases/` (slicer, validator, uploader, reviewer, web_reviewer)
 
 ## Commands
 
@@ -11,10 +11,13 @@ Phase 4 pushes content to Supabase in small, fully-reviewed batches. Each batch 
 # Slice: create a batch from main CSVs
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
 
-# Review: generate review.xlsx for side-by-side editing
+# Review: HTML card-based review (default)
 uv run python -m src.release review n5_kanji_1
 
-# Apply: write review.xlsx edits back to batch CSVs
+# Review: legacy xlsx format
+uv run python -m src.release review n5_kanji_1 --xlsx
+
+# Apply: auto-detects changes.json (HTML) or review.xlsx (legacy)
 uv run python -m src.release apply n5_kanji_1
 
 # Validate: check completeness before push
@@ -114,6 +117,40 @@ uv run python -m src.release slice n5_kanji_2 --jlpt 5 --kanji 30 --vocab 60  # 
 
 ## Review
 
+Two review modes are available. Both produce edits that `apply` writes back to batch CSVs.
+
+### HTML Review (default)
+
+`src/releases/web_reviewer.py` — `start_review_server(name, port=5111)`
+
+Starts a local Flask server serving a card-based review UI. Batch data is embedded as JSON in the page. Edits are tracked in-browser as a diff against originals.
+
+```bash
+uv run python -m src.release review n5_kanji_1              # port 5111
+uv run python -m src.release review n5_kanji_1 --port 8080  # custom port
+```
+
+**Layout:** Header with change counter + Save button, tab bar (Radicals / Kanji / Vocabulary / Sentences), search box, scrollable card list. Each card shows entity metadata and per-language editable fields.
+
+**Changeset:** On Save, the browser POSTs only modified fields to `/api/save`, which writes `changes.json` to the batch directory:
+
+```json
+{
+  "version": 1,
+  "batch_name": "n5_kanji_1",
+  "created_at": "2026-02-17T12:00:00Z",
+  "changes": {
+    "radical_i18n": [
+      {"key": {"master_symbol": "⺍", "lang_code": "en"}, "fields": {"name": "Horn"}}
+    ]
+  }
+}
+```
+
+Editable tables: `radical_i18n`, `kanji_i18n`, `vocabulary_i18n`, `vocabulary_sentences`, `vocabulary_sentence_i18n`.
+
+### XLSX Review (legacy)
+
 `src/releases/reviewer.py` — `generate_review_xlsx(name) -> Path`
 
 Generates `review.xlsx` in the batch directory with 4 sheets for side-by-side multilingual editing:
@@ -131,7 +168,11 @@ i18n columns are pivoted wide: `name_en`, `name_es`, `name_ru`, etc. — one col
 
 ### Apply
 
-`apply_review_xlsx(name)` reads the edited `review.xlsx` and writes changes back to the batch i18n CSVs.
+`apply` auto-detects the review format:
+
+1. If `changes.json` exists → `apply_changes_json(name)` patches only modified fields in batch CSVs
+2. Else if `review.xlsx` exists → `apply_review_xlsx(name)` overwrites batch i18n CSVs from the spreadsheet
+3. Else → error
 
 ## Validate
 

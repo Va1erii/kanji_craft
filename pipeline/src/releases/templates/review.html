@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Review</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --card: #0f3460;
+  --accent: #e94560;
+  --text: #eee;
+  --muted: #999;
+  --border: #2a2a4a;
+  --input-bg: #1a1a3e;
+  --empty-bg: #3a3520;
+  --changed-bg: #1a3a2e;
+  --tab-active: #e94560;
+  --tab-inactive: #2a2a4a;
+  --success: #4ade80;
+  --error: #f87171;
+  --lang-en: #3b82f6;
+  --lang-es: #f59e0b;
+  --lang-ru: #8b5cf6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+header h1 { font-size: 18px; font-weight: 600; }
+.badge {
+  background: var(--accent);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+.badge.zero { background: var(--tab-inactive); }
+.spacer { flex: 1; }
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+button:hover { opacity: 0.9; }
+button:disabled { opacity: 0.5; cursor: default; }
+button.secondary {
+  background: var(--tab-inactive);
+}
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  gap: 4px;
+}
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  font-size: 14px;
+  color: var(--muted);
+  transition: all 0.15s;
+  user-select: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--tab-active);
+}
+.tab .count {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.search-bar {
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.search-bar input {
+  width: 100%;
+  max-width: 500px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+.search-bar input:focus { border-color: var(--accent); }
+.cards {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+}
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.card.hidden { display: none; }
+.card-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.card-header .symbol {
+  font-size: 28px;
+  font-weight: 700;
+}
+.card-header .meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+.card-header .readings {
+  font-size: 14px;
+}
+.card-header .readings .on { color: #f87171; }
+.card-header .readings .kun { color: #4ade80; }
+.card-header .components {
+  font-size: 13px;
+  color: var(--muted);
+}
+.lang-section {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.lang-section:last-child { border-bottom: none; }
+.lang-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.lang-label.en { background: var(--lang-en); }
+.lang-label.es { background: var(--lang-es); color: #000; }
+.lang-label.ru { background: var(--lang-ru); }
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.field-row label {
+  min-width: 120px;
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 6px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.field-row input,
+.field-row textarea {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+.field-row input:focus,
+.field-row textarea:focus { border-color: var(--accent); }
+.field-row input.empty,
+.field-row textarea.empty { background: var(--empty-bg); }
+.field-row input.changed,
+.field-row textarea.changed { background: var(--changed-bg); border-color: var(--success); }
+textarea { min-height: 60px; }
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 200;
+  animation: fadeIn 0.2s;
+  max-width: 400px;
+}
+.toast.success { background: #065f46; color: var(--success); }
+.toast.error { background: #7f1d1d; color: var(--error); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Review changes panel */
+.review-panel {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 500px;
+  height: 100vh;
+  background: var(--surface);
+  border-left: 2px solid var(--accent);
+  z-index: 150;
+  overflow-y: auto;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+}
+.review-panel.open { display: block; }
+.review-panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.review-panel-header h2 { font-size: 16px; }
+.review-panel-body { padding: 16px 20px; }
+.diff-group { margin-bottom: 16px; }
+.diff-group h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.diff-item {
+  background: var(--card);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.diff-item .diff-key { color: var(--muted); margin-bottom: 4px; }
+.diff-item .diff-field { font-weight: 600; color: var(--accent); }
+.diff-item .diff-before { color: #f87171; text-decoration: line-through; }
+.diff-item .diff-after { color: var(--success); }
+.diff-empty { color: var(--muted); font-style: italic; padding: 20px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="batchTitle">Batch Review</h1>
+  <span class="badge zero" id="changeBadge">0</span>
+  <span style="font-size:13px;color:var(--muted)">changes</span>
+  <div class="spacer"></div>
+  <button class="secondary" id="btnReview" onclick="toggleReviewPanel()">Review Changes</button>
+  <button id="btnSave" onclick="saveChanges()" disabled>Save</button>
+</header>
+
+<div class="tabs" id="tabBar">
+  <div class="tab active" data-tab="radicals" onclick="switchTab('radicals')">Radicals <span class="count" id="countRadicals"></span></div>
+  <div class="tab" data-tab="kanji" onclick="switchTab('kanji')">Kanji <span class="count" id="countKanji"></span></div>
+  <div class="tab" data-tab="vocabulary" onclick="switchTab('vocabulary')">Vocabulary <span class="count" id="countVocabulary"></span></div>
+  <div class="tab" data-tab="sentences" onclick="switchTab('sentences')">Sentences <span class="count" id="countSentences"></span></div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search by symbol, word, name, meaning..." oninput="filterCards()">
+</div>
+
+<div id="cardContainer"></div>
+
+<div class="review-panel" id="reviewPanel">
+  <div class="review-panel-header">
+    <h2>Pending Changes</h2>
+    <button class="secondary" onclick="toggleReviewPanel()" style="padding:4px 12px;font-size:13px;">Close</button>
+  </div>
+  <div class="review-panel-body" id="reviewPanelBody"></div>
+</div>
+
+<script>
+const BATCH_DATA = {{ batch_data_json|safe }};
+const LANGS = ["en", "es", "ru"];
+let activeTab = "radicals";
+let pendingChanges = {};  // { "table_name": [ {key: {...}, fields: {...}} ] }
+let originalData = {};    // { "table:keyJson:field" => originalValue }
+
+// ── Init ────────────────────────────────────────────────────────────────────
+
+document.getElementById("batchTitle").textContent = BATCH_DATA.batch_name || "Batch Review";
+document.getElementById("countRadicals").textContent = `(${BATCH_DATA.radicals.length})`;
+document.getElementById("countKanji").textContent = `(${BATCH_DATA.kanji.length})`;
+document.getElementById("countVocabulary").textContent = `(${BATCH_DATA.vocabulary.length})`;
+document.getElementById("countSentences").textContent = `(${BATCH_DATA.sentences.length})`;
+
+renderAllCards();
+showTab("radicals");
+
+// ── Tab switching ───────────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.tab === tab);
+  });
+  showTab(tab);
+  filterCards();
+}
+
+function showTab(tab) {
+  document.querySelectorAll(".cards").forEach(c => {
+    c.style.display = c.dataset.tab === tab ? "flex" : "none";
+  });
+}
+
+// ── Rendering ───────────────────────────────────────────────────────────────
+
+function renderAllCards() {
+  const container = document.getElementById("cardContainer");
+  container.innerHTML = "";
+
+  container.appendChild(renderCardGroup("radicals", BATCH_DATA.radicals, renderRadicalCard));
+  container.appendChild(renderCardGroup("kanji", BATCH_DATA.kanji, renderKanjiCard));
+  container.appendChild(renderCardGroup("vocabulary", BATCH_DATA.vocabulary, renderVocabCard));
+  container.appendChild(renderCardGroup("sentences", BATCH_DATA.sentences, renderSentenceCard));
+}
+
+function renderCardGroup(tab, items, renderFn) {
+  const wrap = document.createElement("div");
+  wrap.className = "cards";
+  wrap.dataset.tab = tab;
+  items.forEach((item, idx) => wrap.appendChild(renderFn(item, idx)));
+  return wrap;
+}
+
+function renderRadicalCard(item) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.search = [
+    item.master_symbol, item.family_symbol,
+    ...LANGS.flatMap(l => [item.i18n[l]?.name || "", item.i18n[l]?.system_mnemonic || ""])
+  ].join(" ").toLowerCase();
+
+  let posDisplay = item.positions;
+  try { posDisplay = JSON.parse(item.positions).join(", "); } catch {}
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="symbol">${esc(item.master_symbol)}</span>
+      <span class="meta">strokes: ${esc(item.stroke_count)}</span>
+      <span class="meta">official: ${item.is_official === "True" ? "Yes" : "No"}</span>
+      <span class="meta">positions: ${esc(posDisplay)}</span>
+      ${item.family_symbol ? `<span class="meta">family: ${esc(item.family_symbol)}</span>` : ""}
+    </div>
+  `;
+
+  LANGS.forEach(lang => {
+    const i = item.i18n[lang] || {};
+    card.appendChild(langSection(lang, [
+      fieldRow("Name", "radical_i18n", {master_symbol: item.master_symbol, lang_code: lang}, "name", i.name, "input"),
+      fieldRow("Mnemonic", "radical_i18n", {master_symbol: item.master_symbol, lang_code: lang}, "system_mnemonic", i.system_mnemonic, "textarea"),
+      fieldRow("Tags", "radical_i18n", {master_symbol: item.master_symbol, lang_code: lang}, "search_tags", i.search_tags, "input"),
+      fieldRow("Disambiguation", "radical_i18n", {master_symbol: item.master_symbol, lang_code: lang}, "disambiguation_note", i.disambiguation_note, "input"),
+    ]));
+  });
+  return card;
+}
+
+function renderKanjiCard(item) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.search = [
+    item.character,
+    ...item.readings.map(r => r.reading),
+    ...(item.components || []).map(c => c.master_symbol),
+    ...LANGS.flatMap(l => [item.i18n[l]?.meanings || "", item.i18n[l]?.system_mnemonic || ""])
+  ].join(" ").toLowerCase();
+
+  const onReadings = item.readings.filter(r => r.reading_type === "onyomi").map(r => r.reading);
+  const kunReadings = item.readings.filter(r => r.reading_type === "kunyomi").map(r => r.reading);
+  const compStr = (item.components || []).map(c =>
+    `${c.master_symbol}(${[c.position, c.logic_hint].filter(Boolean).join(",")})`
+  ).join(" + ");
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="symbol">${esc(item.character)}</span>
+      <span class="meta">strokes: ${esc(item.stroke_count)}</span>
+      <span class="meta">rank: #${esc(item.frequency_rank)}</span>
+      ${onReadings.length ? `<span class="readings">ON: <span class="on">${esc(onReadings.join(", "))}</span></span>` : ""}
+      ${kunReadings.length ? `<span class="readings">KUN: <span class="kun">${esc(kunReadings.join(", "))}</span></span>` : ""}
+      ${compStr ? `<span class="components">${esc(compStr)}</span>` : ""}
+    </div>
+  `;
+
+  LANGS.forEach(lang => {
+    const i = item.i18n[lang] || {};
+    card.appendChild(langSection(lang, [
+      fieldRow("Meanings", "kanji_i18n", {character: item.character, lang_code: lang}, "meanings", i.meanings, "input"),
+      fieldRow("Mnemonic", "kanji_i18n", {character: item.character, lang_code: lang}, "system_mnemonic", i.system_mnemonic, "textarea"),
+      fieldRow("Tags", "kanji_i18n", {character: item.character, lang_code: lang}, "search_tags", i.search_tags, "input"),
+    ]));
+  });
+  return card;
+}
+
+function renderVocabCard(item) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.search = [
+    item.word, item.furigana, item.id,
+    ...LANGS.flatMap(l => [item.i18n[l]?.meanings || "", item.i18n[l]?.system_mnemonic || ""])
+  ].join(" ").toLowerCase();
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="symbol">${esc(item.word)}</span>
+      <span class="meta">${esc(item.furigana)}</span>
+      <span class="meta">rank: #${esc(item.frequency_rank)}</span>
+      <span class="meta" style="color:var(--muted);font-size:12px">id: ${esc(item.id)}</span>
+    </div>
+  `;
+
+  LANGS.forEach(lang => {
+    const i = item.i18n[lang] || {};
+    card.appendChild(langSection(lang, [
+      fieldRow("Meanings", "vocabulary_i18n", {vocabulary_id: item.id, lang_code: lang}, "meanings", i.meanings, "input"),
+      fieldRow("Mnemonic", "vocabulary_i18n", {vocabulary_id: item.id, lang_code: lang}, "system_mnemonic", i.system_mnemonic, "textarea"),
+      fieldRow("Tags", "vocabulary_i18n", {vocabulary_id: item.id, lang_code: lang}, "search_tags", i.search_tags, "input"),
+    ]));
+  });
+  return card;
+}
+
+function renderSentenceCard(item) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.search = [
+    item.word, item.vocabulary_id, item.original_text,
+    ...LANGS.map(l => item.i18n[l]?.sentence_translated || "")
+  ].join(" ").toLowerCase();
+
+  card.innerHTML = `
+    <div class="card-header">
+      <span class="symbol">${esc(item.word)}</span>
+      <span class="meta" style="color:var(--muted);font-size:12px">vocab_id: ${esc(item.vocabulary_id)}</span>
+    </div>
+  `;
+
+  // original_text is editable on vocabulary_sentences table
+  const otSection = document.createElement("div");
+  otSection.className = "lang-section";
+  otSection.appendChild(
+    fieldRow("Original text", "vocabulary_sentences", {vocabulary_id: item.vocabulary_id}, "original_text", item.original_text, "input")
+  );
+  card.appendChild(otSection);
+
+  LANGS.forEach(lang => {
+    const i = item.i18n[lang] || {};
+    card.appendChild(langSection(lang, [
+      fieldRow("Translation", "vocabulary_sentence_i18n", {vocabulary_id: item.vocabulary_id, lang_code: lang}, "sentence_translated", i.sentence_translated, "textarea"),
+    ]));
+  });
+  return card;
+}
+
+// ── UI Helpers ──────────────────────────────────────────────────────────────
+
+function langSection(lang, fieldElements) {
+  const div = document.createElement("div");
+  div.className = "lang-section";
+  div.innerHTML = `<div class="lang-label ${lang}">${lang.toUpperCase()}</div>`;
+  fieldElements.forEach(el => div.appendChild(el));
+  return div;
+}
+
+function fieldRow(label, table, key, field, value, type) {
+  const row = document.createElement("div");
+  row.className = "field-row";
+
+  const lbl = document.createElement("label");
+  lbl.textContent = label;
+  row.appendChild(lbl);
+
+  const origKey = `${table}:${JSON.stringify(key)}:${field}`;
+  originalData[origKey] = value || "";
+
+  let input;
+  if (type === "textarea") {
+    input = document.createElement("textarea");
+    input.rows = 2;
+  } else {
+    input = document.createElement("input");
+    input.type = "text";
+  }
+  input.value = value || "";
+  input.dataset.table = table;
+  input.dataset.key = JSON.stringify(key);
+  input.dataset.field = field;
+  input.dataset.origKey = origKey;
+
+  if (!value || value === "" || value === "[]") {
+    input.classList.add("empty");
+  }
+
+  input.addEventListener("input", function() {
+    const orig = originalData[this.dataset.origKey];
+    const current = this.value;
+    const isChanged = current !== orig;
+
+    this.classList.toggle("changed", isChanged);
+    this.classList.toggle("empty", !current || current === "[]");
+
+    trackChange(this.dataset.table, JSON.parse(this.dataset.key), this.dataset.field, orig, current);
+  });
+
+  row.appendChild(input);
+  return row;
+}
+
+function esc(str) {
+  const div = document.createElement("div");
+  div.textContent = str || "";
+  return div.innerHTML;
+}
+
+// ── Change tracking ─────────────────────────────────────────────────────────
+
+function trackChange(table, key, field, original, current) {
+  if (!pendingChanges[table]) pendingChanges[table] = {};
+
+  const keyStr = JSON.stringify(key);
+  if (!pendingChanges[table][keyStr]) {
+    pendingChanges[table][keyStr] = { key, fields: {}, originals: {} };
+  }
+
+  const entry = pendingChanges[table][keyStr];
+  if (current !== original) {
+    entry.fields[field] = current;
+    entry.originals[field] = original;
+  } else {
+    delete entry.fields[field];
+    delete entry.originals[field];
+  }
+
+  // Clean up empty entries
+  if (Object.keys(entry.fields).length === 0) {
+    delete pendingChanges[table][keyStr];
+    if (Object.keys(pendingChanges[table]).length === 0) {
+      delete pendingChanges[table];
+    }
+  }
+
+  updateBadge();
+}
+
+function updateBadge() {
+  let count = 0;
+  for (const table of Object.values(pendingChanges)) {
+    for (const entry of Object.values(table)) {
+      count += Object.keys(entry.fields).length;
+    }
+  }
+  const badge = document.getElementById("changeBadge");
+  badge.textContent = count;
+  badge.classList.toggle("zero", count === 0);
+  document.getElementById("btnSave").disabled = count === 0;
+}
+
+// ── Search / filter ─────────────────────────────────────────────────────────
+
+function filterCards() {
+  const q = document.getElementById("searchInput").value.toLowerCase().trim();
+  const container = document.querySelector(`.cards[data-tab="${activeTab}"]`);
+  if (!container) return;
+
+  container.querySelectorAll(".card").forEach(card => {
+    if (!q) {
+      card.classList.remove("hidden");
+    } else {
+      const match = (card.dataset.search || "").includes(q);
+      card.classList.toggle("hidden", !match);
+    }
+  });
+}
+
+// ── Review panel ────────────────────────────────────────────────────────────
+
+function toggleReviewPanel() {
+  const panel = document.getElementById("reviewPanel");
+  const isOpen = panel.classList.toggle("open");
+  if (isOpen) renderReviewPanel();
+}
+
+function renderReviewPanel() {
+  const body = document.getElementById("reviewPanelBody");
+  const tables = Object.keys(pendingChanges);
+
+  if (tables.length === 0) {
+    body.innerHTML = '<div class="diff-empty">No changes yet</div>';
+    return;
+  }
+
+  let html = "";
+  for (const table of tables) {
+    html += `<div class="diff-group"><h3>${esc(table)}</h3>`;
+    for (const entry of Object.values(pendingChanges[table])) {
+      const keyDisplay = Object.entries(entry.key).map(([k, v]) => `${k}=${v}`).join(", ");
+      for (const [field, newVal] of Object.entries(entry.fields)) {
+        const oldVal = entry.originals[field] || "";
+        html += `
+          <div class="diff-item">
+            <div class="diff-key">${esc(keyDisplay)}</div>
+            <div class="diff-field">${esc(field)}</div>
+            <div class="diff-before">${esc(truncate(oldVal, 100)) || "(empty)"}</div>
+            <div class="diff-after">${esc(truncate(newVal, 100)) || "(empty)"}</div>
+          </div>
+        `;
+      }
+    }
+    html += "</div>";
+  }
+  body.innerHTML = html;
+}
+
+function truncate(str, max) {
+  return str && str.length > max ? str.slice(0, max) + "..." : str;
+}
+
+// ── Save ────────────────────────────────────────────────────────────────────
+
+async function saveChanges() {
+  const btn = document.getElementById("btnSave");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+
+  // Build changeset in the expected format
+  const changes = {};
+  for (const [table, entries] of Object.entries(pendingChanges)) {
+    changes[table] = Object.values(entries).map(e => ({
+      key: e.key,
+      fields: e.fields,
+    }));
+  }
+
+  try {
+    const resp = await fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ changes }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      showToast("Saved changes.json successfully", "success");
+    } else {
+      showToast("Error: " + (data.error || "Unknown error"), "error");
+    }
+  } catch (err) {
+    showToast("Network error: " + err.message, "error");
+  } finally {
+    btn.disabled = Object.keys(pendingChanges).length === 0;
+    btn.textContent = "Save";
+  }
+}
+
+function showToast(msg, type) {
+  const existing = document.querySelector(".toast");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+</script>
+</body>
+</html>

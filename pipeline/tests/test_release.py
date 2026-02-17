@@ -1,4 +1,4 @@
-"""Tests for the release bundle system (slicer, validator, uploader)."""
+"""Tests for the release bundle system (slicer, validator, uploader, web_reviewer)."""
 
 import json
 from pathlib import Path
@@ -1001,3 +1001,212 @@ class TestReviewer:
 
         with pytest.raises(FileNotFoundError):
             apply_review_xlsx("test_batch")
+
+
+# ── Web Reviewer tests ──────────────────────────────────────────────────────
+
+
+class TestWebReviewer:
+    """Tests for src.releases.web_reviewer — HTML review data loading and changeset apply."""
+
+    def _make_batch(self, tmp_path: Path) -> Path:
+        """Create a minimal valid batch and return batch_dir."""
+        batch_dir = tmp_path / "releases" / "test_batch"
+        batch_dir.mkdir(parents=True)
+
+        kanji_chars = ["日", "一"]
+        radical_symbols = ["丿"]
+        vocab_ids = [100, 200]
+        langs = ["en", "es", "ru"]
+
+        _make_radicals(radical_symbols).to_csv(batch_dir / "radicals.csv", index=False)
+        _make_radical_i18n(radical_symbols, langs).to_csv(
+            batch_dir / "radical_i18n.csv", index=False,
+        )
+        _make_kanji(kanji_chars).to_csv(batch_dir / "kanji.csv", index=False)
+        _make_kanji_readings(kanji_chars).to_csv(batch_dir / "kanji_readings.csv", index=False)
+        _make_kanji_i18n(kanji_chars, langs).to_csv(
+            batch_dir / "kanji_i18n.csv", index=False,
+        )
+        _make_kanji_components({"日": ["丿"]}).to_csv(
+            batch_dir / "kanji_components.csv", index=False,
+        )
+        _make_vocabulary(vocab_ids).to_csv(batch_dir / "vocabulary.csv", index=False)
+        _make_vocabulary_readings(vocab_ids).to_csv(
+            batch_dir / "vocabulary_readings.csv", index=False,
+        )
+        _make_vocabulary_i18n(vocab_ids, langs).to_csv(
+            batch_dir / "vocabulary_i18n.csv", index=False,
+        )
+        _make_vocabulary_kanji({100: ["日"]}).to_csv(
+            batch_dir / "vocabulary_kanji.csv", index=False,
+        )
+        _make_vocabulary_sentences(vocab_ids).to_csv(
+            batch_dir / "vocabulary_sentences.csv", index=False,
+        )
+        _make_vocabulary_sentence_i18n(vocab_ids, langs).to_csv(
+            batch_dir / "vocabulary_sentence_i18n.csv", index=False,
+        )
+        return batch_dir
+
+    def test_load_batch_data_structure(self, tmp_path, monkeypatch):
+        from src.releases.web_reviewer import _load_batch_data
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        data = _load_batch_data(batch_dir, "test_batch")
+
+        assert data["batch_name"] == "test_batch"
+        assert "radicals" in data
+        assert "kanji" in data
+        assert "vocabulary" in data
+        assert "sentences" in data
+        assert len(data["radicals"]) == 1
+        assert len(data["kanji"]) == 2
+        assert len(data["vocabulary"]) == 2
+        assert len(data["sentences"]) == 2
+
+    def test_load_batch_data_i18n_grouping(self, tmp_path, monkeypatch):
+        from src.releases.web_reviewer import _load_batch_data
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        data = _load_batch_data(batch_dir, "test_batch")
+
+        # Radicals have i18n grouped by lang
+        radical = data["radicals"][0]
+        assert set(radical["i18n"].keys()) == {"en", "es", "ru"}
+        assert "name" in radical["i18n"]["en"]
+        assert "system_mnemonic" in radical["i18n"]["en"]
+
+        # Kanji have i18n grouped by lang
+        kanji = data["kanji"][0]
+        assert set(kanji["i18n"].keys()) == {"en", "es", "ru"}
+        assert "meanings" in kanji["i18n"]["en"]
+
+        # Vocabulary have i18n grouped by lang
+        vocab = data["vocabulary"][0]
+        assert set(vocab["i18n"].keys()) == {"en", "es", "ru"}
+
+        # Sentences have i18n grouped by lang
+        sentence = data["sentences"][0]
+        assert set(sentence["i18n"].keys()) == {"en", "es", "ru"}
+        assert "sentence_translated" in sentence["i18n"]["en"]
+
+    def test_apply_changes_patches_csv(self, tmp_path, monkeypatch):
+        from src.releases.web_reviewer import apply_changes_json
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        # Write a changeset
+        changeset = {
+            "version": 1,
+            "batch_name": "test_batch",
+            "created_at": "2026-02-17T12:00:00Z",
+            "changes": {
+                "radical_i18n": [
+                    {
+                        "key": {"master_symbol": "丿", "lang_code": "en"},
+                        "fields": {"name": "EDITED_NAME"},
+                    }
+                ],
+                "kanji_i18n": [
+                    {
+                        "key": {"character": "日", "lang_code": "en"},
+                        "fields": {"system_mnemonic": "NEW_MNEMONIC"},
+                    }
+                ],
+            },
+        }
+        (batch_dir / "changes.json").write_text(json.dumps(changeset))
+
+        count = apply_changes_json("test_batch")
+
+        assert count == 2
+
+        # Verify radical_i18n was patched
+        ri = pd.read_csv(batch_dir / "radical_i18n.csv", dtype=str, keep_default_na=False)
+        en_row = ri[(ri["master_symbol"] == "丿") & (ri["lang_code"] == "en")]
+        assert en_row.iloc[0]["name"] == "EDITED_NAME"
+
+        # Verify kanji_i18n was patched
+        ki = pd.read_csv(batch_dir / "kanji_i18n.csv", dtype=str, keep_default_na=False)
+        en_row = ki[(ki["character"] == "日") & (ki["lang_code"] == "en")]
+        assert en_row.iloc[0]["system_mnemonic"] == "NEW_MNEMONIC"
+
+    def test_apply_changes_only_affects_targeted_fields(self, tmp_path, monkeypatch):
+        from src.releases.web_reviewer import apply_changes_json
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        # Read original values
+        ri_before = pd.read_csv(batch_dir / "radical_i18n.csv", dtype=str, keep_default_na=False)
+        orig_mnemonic = ri_before[
+            (ri_before["master_symbol"] == "丿") & (ri_before["lang_code"] == "en")
+        ].iloc[0]["system_mnemonic"]
+
+        # Only change name, not mnemonic
+        changeset = {
+            "version": 1,
+            "batch_name": "test_batch",
+            "created_at": "2026-02-17T12:00:00Z",
+            "changes": {
+                "radical_i18n": [
+                    {
+                        "key": {"master_symbol": "丿", "lang_code": "en"},
+                        "fields": {"name": "ONLY_THIS"},
+                    }
+                ],
+            },
+        }
+        (batch_dir / "changes.json").write_text(json.dumps(changeset))
+
+        apply_changes_json("test_batch")
+
+        ri_after = pd.read_csv(batch_dir / "radical_i18n.csv", dtype=str, keep_default_na=False)
+        en_row = ri_after[
+            (ri_after["master_symbol"] == "丿") & (ri_after["lang_code"] == "en")
+        ].iloc[0]
+        assert en_row["name"] == "ONLY_THIS"
+        assert en_row["system_mnemonic"] == orig_mnemonic  # unchanged
+
+    def test_apply_empty_changeset_is_noop(self, tmp_path, monkeypatch):
+        from src.releases.web_reviewer import apply_changes_json
+
+        batch_dir = self._make_batch(tmp_path)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        # Read original CSVs
+        ri_before = pd.read_csv(batch_dir / "radical_i18n.csv", dtype=str, keep_default_na=False)
+
+        changeset = {
+            "version": 1,
+            "batch_name": "test_batch",
+            "created_at": "2026-02-17T12:00:00Z",
+            "changes": {},
+        }
+        (batch_dir / "changes.json").write_text(json.dumps(changeset))
+
+        count = apply_changes_json("test_batch")
+
+        assert count == 0
+
+        # CSV unchanged
+        ri_after = pd.read_csv(batch_dir / "radical_i18n.csv", dtype=str, keep_default_na=False)
+        pd.testing.assert_frame_equal(ri_before, ri_after)
+
+    def test_apply_missing_changes_json_raises(self, tmp_path, monkeypatch):
+        import pytest
+
+        from src.releases.web_reviewer import apply_changes_json
+
+        batch_dir = tmp_path / "releases" / "test_batch"
+        batch_dir.mkdir(parents=True)
+        monkeypatch.setattr("src.releases.web_reviewer.RELEASES_DIR", tmp_path / "releases")
+
+        with pytest.raises(FileNotFoundError):
+            apply_changes_json("test_batch")

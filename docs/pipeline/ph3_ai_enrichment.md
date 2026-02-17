@@ -83,6 +83,7 @@ Radical counts are incremental — many radicals are shared across levels. A rad
 
 | Priority | Classification | Condition |
 |---|---|---|
+| 0 | `keep_manual` | Listed in `data/manual_keep.txt` (phonetic anchors, structural primitives) |
 | 1 | `keep_kangxi` | `is_official == True` (Kangxi radical) |
 | 2 | `keep_radical_only` | `master_symbol` not in `kanji.csv` characters (no kanji form exists) |
 | 3 | `keep_cross_jlpt` | Radical IS a kanji but used in parents with easier JLPT (higher number). Also: null-JLPT component used in any JLPT-assigned parent (play safe) |

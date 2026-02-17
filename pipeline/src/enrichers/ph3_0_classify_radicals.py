@@ -5,11 +5,12 @@ kept (as a radical) or convertible to a kanji component reference.
 Outputs radical_classification.csv for human review.
 
 Classification rules (first match wins):
-  1. keep_kangxi      — is_official == True
-  2. keep_radical_only — master_symbol not in kanji.csv characters
-  3. keep_cross_jlpt   — radical is kanji, used in parents with easier JLPT
-  4. keep_high_freq    — usage_count >= HIGH_FREQ_THRESHOLD
-  5. convert_to_kanji  — everything else
+  0. keep_manual       — listed in manual_keep.txt
+  1. keep_kangxi       — is_official == True
+  2. keep_radical_only  — master_symbol not in kanji.csv characters
+  3. keep_cross_jlpt    — radical is kanji, used in parents with easier JLPT
+  4. keep_high_freq     — usage_count >= HIGH_FREQ_THRESHOLD
+  5. convert_to_kanji   — everything else
 """
 
 import logging
@@ -17,11 +18,14 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.extractors.shared import severity_sort_key, write_csv_atomic
+from src.extractors.shared import load_manual_list, severity_sort_key, write_csv_atomic
 
 log = logging.getLogger(__name__)
 
 HIGH_FREQ_THRESHOLD = 15
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+MANUAL_KEEP = DATA_DIR / "manual_keep.txt"
 
 
 def _build_kanji_jlpt_lookup(csv_dir: Path) -> dict[str, int | None]:
@@ -78,9 +82,14 @@ def _classify_one(
     kanji_jlpt: dict[str, int | None],
     usage_count: int,
     min_parent_jlpt: int | None,
+    manual_keep: set[str],
 ) -> tuple[str, str]:
     """Classify a single radical. Returns (classification, reason)."""
     ms = str(row["master_symbol"])
+
+    # 0. Manual keep list (phonetic anchors, structural primitives)
+    if ms in manual_keep:
+        return "keep_manual", "Listed in manual_keep.txt"
 
     # 1. Kangxi official radicals are always kept
     if row["is_official"]:
@@ -117,6 +126,7 @@ def _classify_one(
 def classify_radicals(
     csv_dir: Path,
     warnings_dir: Path,
+    manual_keep_path: Path = MANUAL_KEEP,
 ) -> dict[str, pd.DataFrame]:
     """Classify all radicals for multi-level decomposition.
 
@@ -130,12 +140,14 @@ def classify_radicals(
     kanji_jlpt = _build_kanji_jlpt_lookup(csv_dir)
     kanji_chars = set(kanji_jlpt.keys())
     usage_stats = _build_usage_stats(csv_dir, kanji_jlpt)
+    manual_keep = load_manual_list(manual_keep_path)
 
     log.info(
-        "Loaded %d radicals, %d kanji, %d symbols with usage stats",
+        "Loaded %d radicals, %d kanji, %d symbols with usage stats, %d manual keep",
         len(radicals_df),
         len(kanji_chars),
         len(usage_stats),
+        len(manual_keep),
     )
 
     # Classify each radical
@@ -145,7 +157,7 @@ def classify_radicals(
         count, min_parent = usage_stats.get(ms, (0, None))
 
         classification, reason = _classify_one(
-            rad_row, kanji_chars, kanji_jlpt, count, min_parent,
+            rad_row, kanji_chars, kanji_jlpt, count, min_parent, manual_keep,
         )
 
         is_kanji = ms in kanji_chars

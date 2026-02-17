@@ -189,8 +189,8 @@ def slice_batch(
     batch_radicals = radicals_df[radicals_df["master_symbol"].isin(resolved_radicals)]
 
     # Family-aware resolution: pull all family members for resolved radicals
-    family_symbols = set(
-        batch_radicals["family_symbol"].dropna()
+    family_symbols = (
+        set(batch_radicals["family_symbol"].dropna()) - {""}
     ) if "family_symbol" in batch_radicals.columns else set()
     if family_symbols:
         family_members = radicals_df[

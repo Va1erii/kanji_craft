@@ -43,6 +43,11 @@ def main() -> None:
 
     WARNINGS_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Clear previous run's warnings so steps only accumulate within this run
+    ph3_warnings_path = WARNINGS_DIR / "ph3_warnings.csv"
+    if ph3_warnings_path.exists():
+        ph3_warnings_path.unlink()
+
     # Step 0: Radical classification (deterministic analysis)
     step_start = time.perf_counter()
     try:

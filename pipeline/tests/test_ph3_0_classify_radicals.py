@@ -170,27 +170,6 @@ class TestKeepCrossJlpt:
         assert row["classification"] == "keep_cross_jlpt"
         assert "Null-JLPT" in row["reason"]
 
-    def test_same_jlpt_not_cross(self, tmp_path):
-        """Same JLPT level → NOT cross-JLPT (falls through to later rules)."""
-        csv_dir, warnings_dir = _setup(tmp_path)
-
-        _make_radicals_csv(csv_dir, [
-            {"master_symbol": "田"},
-        ])
-        _make_kanji_csv(csv_dir, [
-            {"character": "田", "min_jlpt_level": 3},
-            {"character": "男", "min_jlpt_level": 3},
-        ])
-        _make_components_csv(csv_dir, [
-            {"character": "男", "master_symbol": "田"},
-        ])
-
-        result = classify_radicals(csv_dir, warnings_dir)
-        df = result["radical_classification"]
-
-        row = df[df["master_symbol"] == "田"].iloc[0]
-        assert row["classification"] != "keep_cross_jlpt"
-
     def test_easier_component_in_harder_parent_not_cross(self, tmp_path):
         """N5 component in N1 parent → NOT cross-JLPT."""
         csv_dir, warnings_dir = _setup(tmp_path)

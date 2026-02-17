@@ -4,10 +4,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from src.enrichers.ph3_1_logic_hints import refine_logic_hints
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -348,6 +346,44 @@ class TestSameRadicalDifferentKanji:
 
         assert row_sei["logic_hint"] == "phonetic"
         assert row_kan["logic_hint"] == "semantic"
+
+
+class TestWarningsAppended:
+    def test_warnings_appended_to_existing(self, tmp_path):
+        """Warnings are appended to existing ph3_warnings.csv, not overwritten."""
+        parquet_dir = tmp_path / "parquet"
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+        warnings_dir.mkdir(parents=True, exist_ok=True)
+
+        # Pre-existing warning from Step 3.0
+        existing = pd.DataFrame([{
+            "severity": "low",
+            "phase": "3.0",
+            "entity": "⺍",
+            "message": "Radical not used in any kanji component",
+        }])
+        existing.to_csv(warnings_dir / "ph3_warnings.csv", index=False)
+
+        # Set up a case that produces a warning (radical not in KANJIDIC)
+        _make_kanjidic_parquet(parquet_dir, [])
+        _make_radicals_csv(csv_dir, ["⺍"])
+        _make_kanji_readings_csv(csv_dir, [
+            ("清", "セイ", "onyomi", "primary"),
+        ])
+        _make_kanji_components_csv(csv_dir, [
+            {"character": "清", "master_symbol": "⺍", "position": "kanmuri",
+             "logic_hint": "semantic", "radical_type": "general", "is_primary": True},
+        ])
+
+        refine_logic_hints(parquet_dir, csv_dir, warnings_dir)
+
+        w_df = pd.read_csv(warnings_dir / "ph3_warnings.csv")
+        # Should have both the pre-existing (3.0) and new (3.1) warnings
+        assert len(w_df) >= 2
+        phases = set(str(p) for p in w_df["phase"].tolist())
+        assert "3.0" in phases
+        assert "3.1" in phases
 
 
 class TestOutputWrittenToCsv:

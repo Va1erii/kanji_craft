@@ -83,8 +83,23 @@ def _build_radicals_sheet(batch_dir: Path) -> pd.DataFrame:
 def _build_kanji_sheet(batch_dir: Path) -> pd.DataFrame:
     kanji = _read(batch_dir / "kanji.csv")
     i18n = _read(batch_dir / "kanji_i18n.csv")
+    comp = _read(batch_dir / "kanji_components.csv")
+
+    # Build components summary per kanji
+    components = (
+        comp.groupby("character")
+        .apply(_format_components, include_groups=False)
+        .rename("components")
+        .reset_index()
+    )
+
+    entity = kanji[["character", "frequency_rank"]].merge(
+        components, on="character", how="left",
+    )
+    entity["components"] = entity["components"].fillna("")
+
     wide = _pivot_wide(
-        entity_df=kanji[["character", "frequency_rank"]],
+        entity_df=entity,
         i18n_df=i18n,
         entity_key="character",
         i18n_cols=["meanings", "system_mnemonic", "search_tags"],
@@ -120,6 +135,20 @@ def _build_sentences_sheet(batch_dir: Path) -> pd.DataFrame:
         i18n_cols=["sentence_translated"],
     )
     return wide
+
+
+# ── Component formatting ─────────────────────────────────────────────────────
+
+
+def _format_components(group: pd.DataFrame) -> str:
+    """Format component rows as 'symbol(position,hint) + ...'."""
+    parts = []
+    for _, row in group.iterrows():
+        detail = [row["position"]]
+        if row.get("logic_hint", ""):
+            detail.append(row["logic_hint"])
+        parts.append(f"{row['master_symbol']}({','.join(detail)})")
+    return " + ".join(parts)
 
 
 # ── Apply helpers (wide → CSV) ───────────────────────────────────────────────

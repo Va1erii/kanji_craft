@@ -54,7 +54,7 @@ cd pipeline
 uv sync                                # Install dependencies (first time)
 uv run python -m src.ingest            # Phase 1: sources → Parquet
 uv run python -m src.extract           # Phase 2: Parquet → CSV
-uv run python -m src.enrich            # Phase 3: AI enrichment
+uv run python -m src.enrich            # Phase 3: AI enrichment (also generates kanji_decomposition.csv)
 ```
 
 ### Release Bundles (Phase 4)

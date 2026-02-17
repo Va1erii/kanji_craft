@@ -11,6 +11,12 @@ Phase 4 pushes content to Supabase in small, fully-reviewed batches. Each batch 
 # Slice: create a batch from main CSVs
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
 
+# Review: generate review.xlsx for side-by-side editing
+uv run python -m src.release review n5_kanji_1
+
+# Apply: write review.xlsx edits back to batch CSVs
+uv run python -m src.release apply n5_kanji_1
+
 # Validate: check completeness before push
 uv run python -m src.release validate n5_kanji_1
 
@@ -28,7 +34,6 @@ data/releases/n5_kanji_1/
   manifest.json             # Push history (auto-generated after push)
   radicals.csv              # Auto-resolved from kanji components
   radical_i18n.csv          # COMPLETE (all 3 langs)
-  radical_variants.csv
   kanji.csv
   kanji_i18n.csv            # ← review: fill mnemonics, search_tags, add ru
   kanji_readings.csv
@@ -106,6 +111,27 @@ When creating batch 2 at the same JLPT level, the slicer reads `batch.toml` from
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60  # first 30
 uv run python -m src.release slice n5_kanji_2 --jlpt 5 --kanji 30 --vocab 60  # next 30
 ```
+
+## Review
+
+`src/releases/reviewer.py` — `generate_review_xlsx(name) -> Path`
+
+Generates `review.xlsx` in the batch directory with 4 sheets for side-by-side multilingual editing:
+
+| Sheet | Entity key | Columns | i18n columns (per lang) |
+|-------|-----------|---------|------------------------|
+| Radicals | `master_symbol` | — | `name`, `system_mnemonic`, `search_tags`, `disambiguation_note` |
+| Kanji | `character` | `frequency_rank`, `components` | `meanings`, `system_mnemonic`, `search_tags` |
+| Vocabulary | `id` | `word`, `furigana`, `frequency_rank` | `meanings`, `system_mnemonic`, `search_tags` |
+| Sentences | `vocabulary_id` | `word`, `original_text` | `sentence_translated` |
+
+The **Kanji** sheet includes a `components` column showing the kanji's decomposition from the batch's `kanji_components.csv`, formatted as `田(top,semantic) + 力(bottom,semantic)`.
+
+i18n columns are pivoted wide: `name_en`, `name_es`, `name_ru`, etc. — one column per language per field.
+
+### Apply
+
+`apply_review_xlsx(name)` reads the edited `review.xlsx` and writes changes back to the batch i18n CSVs.
 
 ## Validate
 

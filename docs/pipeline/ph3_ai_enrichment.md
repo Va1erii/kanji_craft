@@ -113,6 +113,15 @@ Radical counts are incremental — many radicals are shared across levels. A rad
 
 Output sorted by `classification` then `master_symbol`. Target: 300–400 radicals classified as "keep".
 
+### Derived Data Files
+
+After classification, two derived files are generated automatically:
+
+| File | Purpose |
+|---|---|
+| `radical_classification_review.csv` | Copy of `radical_classification.csv` with added `parent_kanji` column (comma-joined list of kanji that use each radical, from `kanji_components.csv`) |
+| `kanji_decomposition.csv` | Kanji-centric view: `character`, `stroke_count`, `min_jlpt_level`, `frequency_rank`, `components` (formatted as `田(top,semantic) + 力(bottom,semantic)`), `component_count`. Sorted by JLPT level (N5 first → nulls last), then `frequency_rank`. Data source for batch review in Phase 4. |
+
 ### Warnings
 
 | Severity | Condition |
@@ -567,6 +576,8 @@ Before proceeding to Phase 4, the following completeness checks must pass for ea
 | File | Action | Step | Description |
 |---|---|---|---|
 | `radical_classification.csv` | **Created** | Step 0 | Analysis output — radical classification for multi-level decomposition review |
+| `radical_classification_review.csv` | **Created** | Step 0 | Enriched classification with `parent_kanji` column for review context |
+| `kanji_decomposition.csv` | **Created** | Step 0 | Kanji-centric component view — data source for Phase 4 batch review |
 | `kanji_components.csv` | Updated | Step 1 | `logic_hint` refined from default `semantic` to `phonetic` where onyomi match |
 | `radical_i18n.csv` | **Created** | Step 2 | New file — radical names, Layer 1 mnemonics, search tags for EN/ES/RU |
 | `kanji_i18n.csv` | Updated | Step 3 | `system_mnemonic` and `search_tags` populated on existing rows |

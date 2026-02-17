@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.enrichers.ph3_0_classify_radicals import classify_radicals
+from src.enrichers.ph3_0_review import generate_review
 from src.enrichers.ph3_1_logic_hints import refine_logic_hints
 from src.enrichers.ph3_2_radical_i18n import create_radical_i18n
 from src.extractors.shared import validate_all_manual_files
@@ -64,6 +65,9 @@ def main() -> None:
     except Exception:
         log.exception("Failed during Step 3.0 radical classification")
         raise
+
+    # Step 0b: Enriched classification review with parent kanji context
+    generate_review(CSV_DIR)
 
     # Step 1: Logic hint refinement (deterministic onyomi comparison)
     step_start = time.perf_counter()

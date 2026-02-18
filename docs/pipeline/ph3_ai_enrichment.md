@@ -8,14 +8,14 @@ AI Enrichment adds human-quality learning content to the structured CSVs produce
 
 The phase has two distinct modes:
 
-- **Deterministic** (Steps 0–1): Radical classification (analysis pass for multi-level decomposition) and logic hint refinement (onyomi comparison). No AI needed — runs as scripts, no review needed.
-- **AI-generated** (Steps 2–6): Mnemonics, translations, furigana annotation, search tags. Generated via AI (chat, batch API, or scripts), then reviewed by the admin before proceeding to Phase 4.
+- **Deterministic** (Steps 0–1): Radical classification (analysis pass for multi-level decomposition) and logic hint refinement (onyomi comparison). No AI needed — runs as scripts via `uv run python -m src.enrich`.
+- **AI-generated** (Steps 2–6): Mnemonics, translations, furigana annotation, search tags. Now handled **per-batch** via the release workflow: `release enrich` scaffolds template CSVs, user fills them (with AI assistance), then `release merge` validates and applies the content.
 
 **Key properties:**
 
 - **Human-in-the-loop:** Every AI-generated field is reviewed by the admin before upload. The pipeline does not auto-promote AI output to Phase 4.
 - **Layer ordering:** Radical names (Step 2) must be finalized before kanji mnemonics (Step 3), because kanji stories reference radical names.
-- **Batch by JLPT level:** N5 first (beginner content = highest priority), then N4, N3, N2, N1.
+- **Batch-based enrichment:** AI content is generated per release batch, not globally. This enables level-appropriate content (N5 sentences use N5 grammar) and manageable review units.
 
 ## Source Data
 
@@ -43,6 +43,53 @@ All conditions must hold before this phase runs:
 
 ## Batching Strategy
 
+AI enrichment is now integrated into the release batch workflow:
+
+```
+slice → enrich → [user fills CSVs with AI] → merge → review → validate → push
+```
+
+### Commands
+
+```bash
+# Scaffold template CSVs with context columns + empty fill columns
+uv run python -m src.release enrich <name> [--entity radical|kanji|vocab|sentence|all]
+
+# Validate AI-filled CSVs and merge into batch CSVs
+uv run python -m src.release merge <name> [--entity radical|kanji|vocab|sentence|all] [--dry-run]
+```
+
+### Enrichment dependency order (within a batch)
+
+1. **Radical i18n** — enrich + fill + merge first (names needed in kanji context)
+2. **Kanji i18n** — depends on radical names being finalized
+3. **Vocabulary i18n** — independent, logically follows kanji
+4. **Sentences** — independent, can run in parallel with 2-3
+
+### Template structure
+
+After `release enrich`, templates appear in `<batch_dir>/ai/templates/`:
+
+| Template | Context columns (read-only) | Fill columns |
+|---|---|---|
+| `radical_i18n_ai.csv` | master_symbol, en_name_seed, lang_code | name, system_mnemonic, search_tags |
+| `kanji_i18n_ai.csv` | character, meanings_en, components, readings, lang_code | system_mnemonic, search_tags |
+| `vocab_i18n_ai.csv` | vocabulary_id, word, furigana, meanings_en, lang_code | system_mnemonic, search_tags |
+| `sentence_ai.csv` | vocabulary_id, word, lang_code | original_text, sentence_translated |
+
+### Static instruction files
+
+AI instructions are in `pipeline/data/ai/instructions/`:
+
+| File | Describes |
+|---|---|
+| `RADICAL_I18N.md` | Radical naming, Layer 1 mnemonic rules, search tags |
+| `KANJI_I18N.md` | Layer 2 mnemonic rules, sound anchor tables |
+| `VOCAB_I18N.md` | Layer 3 mnemonic rules, when to skip |
+| `SENTENCE.md` | Sentence generation, JLPT grammar constraints, furigana format |
+
+### JLPT batch ordering
+
 Content is processed in JLPT-level batches, ordered from easiest to hardest:
 
 ```
@@ -54,12 +101,6 @@ N5 → N4 → N3 → N2 → N1 → ungraded
 - N5 is beginner content — highest priority for initial release.
 - Each batch is a manageable review unit for the admin.
 - Incremental release is possible: upload N5 content while N4 is still in review.
-
-**Within each JLPT level:**
-
-- Radicals are processed before kanji (Layer 1 names must exist before Layer 2 stories).
-- Kanji are ordered by frequency rank (most common first).
-- Vocabulary follows after kanji mnemonics are stable.
 
 **Batch size considerations:**
 
@@ -181,287 +222,33 @@ Result: 水 stays `semantic`, 青 becomes `phonetic`. Position heuristic agrees 
 - **Kanji with no onyomi:** Rare native-Japanese kanji (e.g., 畑) may lack onyomi entirely. All components stay `semantic`.
 - **Same radical is phonetic in one kanji and semantic in another:** This is expected and correct. 亡 is phonetic in 忙 (BOU matches) but semantic in 死 (no onyomi match).
 
-## Step 2: Radical I18n Creation (AI + KANJIDIC)
+## Steps 2–6: AI-Generated Content (Batch-Based)
 
-**Target:** `radical_i18n.csv` — **created entirely in Phase 3**
+Steps 2–6 are now handled per release batch via `release enrich` and `release merge`. See [ph4_release_bundles.md](ph4_release_bundles.md) for the full batch workflow.
 
-Phase 2 does not produce `radical_i18n.csv` content (radical extraction registers the radical identity but not its localized name or mnemonic). This step creates all rows.
+### Step 2: Radical I18n
 
-### Fields
+**Template:** `radical_i18n_ai.csv` | **Target:** batch `radical_i18n.csv`
 
-| Field | Source | Description |
-|---|---|---|
-| `radical_id` | `radicals.csv` | FK to the radical |
-| `lang_code` | Pipeline config | `en`, `es`, `ru` |
-| `name` | KANJIDIC + AI | Localized name — a single concrete noun (see §Naming Rules) |
-| `system_mnemonic` | AI | Layer 1 mnemonic — visual keyword + physical shape description |
-| `search_tags` | AI | Synonyms and alternative terms per language |
+Creates localized names, Layer 1 mnemonics, and search tags for radicals. EN name seeds come from KANJIDIC. See `pipeline/data/ai/instructions/RADICAL_I18N.md` for full rules.
 
-### Naming Rules
+### Step 3: Kanji I18n
 
-1. **English seed:** Look up the radical's `master_symbol` in `kanjidic.parquet`. Use the first English meaning as the seed name (e.g., 水 → "Water", 木 → "Tree").
-2. **No KANJIDIC entry:** If the radical's `master_symbol` has no KANJIDIC entry (custom radical), the name must be AI-generated based on visual shape resemblance.
-3. **Single concrete noun:** Names must be a single concrete noun — "Water", not "water radical" or "liquid element".
-4. **ES/RU names:** AI-translated or AI-generated from the English name. Must follow the same single-noun rule. ES: "Agua". RU: "Вода".
-5. **Radical-kanji name consistency:** When a radical's `master_symbol` is also a kanji character (dual identity — see [radical.md rule #10](../domain/radical.md)), the radical name **must** match the kanji's primary meaning. If radical 州 = "River" but kanji 州 = "Province", the user's brain breaks when they see 州 in a compound. Verify against `kanji_i18n.csv` meanings.
+**Template:** `kanji_i18n_ai.csv` | **Target:** batch `kanji_i18n.csv`
 
-### Layer 1 Mnemonic Rules
+Layer 2 mnemonics linking radical keywords to kanji meaning via onyomi sound anchors. Depends on radical names being merged first. See `pipeline/data/ai/instructions/KANJI_I18N.md`.
 
-From [mnemonic.md §Layer 1](../domain/mnemonic.md):
+### Step 4: Vocabulary I18n
 
-- **Goal:** Teach the radical's visual shape and meaning keyword.
-- **Formula:** Visual keyword (prefer official meaning > visual shape resemblance).
-- **Story must describe the shape physically** — e.g., "Two legs walking forward" for 人. Do NOT use "See X as Y" phrasing.
-- **A2 level language** — simple, common words. No technical or abstract vocabulary.
-- **Each language independent** — stories may differ across EN/ES/RU to fit natural phrasing.
+**Template:** `vocab_i18n_ai.csv` | **Target:** batch `vocabulary_i18n.csv`
 
-### Search Tags
+Layer 3 mnemonics for word readings. `system_mnemonic` is nullable — skip self-explanatory words. See `pipeline/data/ai/instructions/VOCAB_I18N.md`.
 
-AI generates 3–8 synonyms per language. Examples:
-- 水 (Water) EN: `["liquid", "splash", "ocean", "rain", "flow"]`
-- 水 (Water) ES: `["líquido", "río", "lluvia", "fluir"]`
-- 水 (Water) RU: `["жидкость", "река", "дождь", "поток"]`
+### Step 5–6: Sentences
 
-Tags should include alternative meanings, related concepts, and common associations that a learner might search for.
+**Template:** `sentence_ai.csv` | **Target:** batch `vocabulary_sentences.csv` + `vocabulary_sentence_i18n.csv`
 
-### Output
-
-Creates `radical_i18n.csv` with one row per radical per language (3 rows per radical for EN/ES/RU).
-
-**Expected count:** ~600–700 radicals × 3 languages = ~1,800–2,100 rows.
-
-## Step 3: Kanji I18n Enrichment (AI)
-
-**Target:** `kanji_i18n.csv` → `system_mnemonic` and `search_tags` fields (exist but empty from Phase 2)
-
-Phase 2 creates `kanji_i18n.csv` rows with `meanings` populated from KANJIDIC, but `system_mnemonic` and `search_tags` are left empty. This step fills them.
-
-### Layer 2 Mnemonic Rules
-
-From [mnemonic.md §Layer 2](../domain/mnemonic.md):
-
-- **Goal:** Link radical keywords to kanji meaning via an onyomi sound anchor.
-- **Formula:** `[Radical 1] + [Radical 2] = [Meaning]. [Sound anchor story.]`
-- **Must use radical names from Step 2** (Layer 1 names) — never invent new names for components.
-- **Prioritize onyomi** (90% rule: most compound words use onyomi — learning it here unlocks thousands of words).
-- **Include a sound-alike word** for the onyomi from the language's sound anchor table.
-- **Do NOT mention kunyomi** — that belongs in Layer 3 (vocabulary).
-- **Each language independent** — different sound anchors per language.
-
-### Sound Anchor Tables
-
-Once a sound anchor is chosen for an onyomi in a given language, it must be reused consistently across all kanji with that reading. The tables below are the canonical anchors. Use the "Best Anchor" first; only use the "Alternative" if it fits the story context significantly better.
-
-**English:**
-
-| Onyomi | Best Anchor | Alternative |
-|---|---|---|
-| CHUU | Chew (gum) | Choo-choo (train) |
-| SHUU | Shoes | Shoot (gun/camera) |
-| KOU | Coat | Comb, Cone |
-| KAN | Can (soda) | Khan (Genghis) |
-| SEI | Saber (sword) | Saint (halo) |
-| KAI | Kite | Coyote |
-| SHIN | Shin (leg) | Chin |
-| TOU | Toe | Toast (burnt bread) |
-| KYUU | Cucumber | Cube (ice/Rubik's) |
-| JYUU | Jewel | Juice (spill it) |
-| GYOU | Gyoza (dumpling) | Ghoul (monster) |
-| GYUU | Guitar | Glue (sticky) |
-| GAN | Gun | Gong (loud sound) |
-| JIN | Genie (lamp) | Jeans (clothing) |
-| DOU | Donut | Door, Dough |
-| GOU | Goat | Ghost, Goal |
-
-**Spanish:**
-
-| Onyomi | Best Anchor | Alternative |
-|---|---|---|
-| CHUU | Chupete (pacifier) | Chuleta (chop/steak) |
-| SHUU | Sumo (wrestler) | Sudor (sweat) |
-| KOU | Cola (glue/tail) | Coco (coconut) |
-| KAN | Candado (lock) | Canguro (kangaroo) |
-| SEI | Seis (6) | Sello (stamp) |
-| KAI | Caimán (gator) | Caída (falling) |
-| SHIN | Chinchilla | Chinche (thumbtack) |
-| TOU | Toro (bull) | Torre (tower) |
-| KYUU | Cubo (bucket) | Cuna (crib) |
-| JYUU | Lluvia (rain) | Yudo (judo) |
-| GYOU | Guillotina | Guiñol (puppet) |
-| GYUU | Guitarra | Guinda (cherry) |
-| GAN | Gancho (hook) | Ganso (goose) |
-| JIN | Jinete (rider) | Ginebra (gin bottle) |
-| DOU | Dominó | Dorado (gold object) |
-| GOU | Goma (eraser) | Gorra (cap) |
-
-**Russian:**
-
-| Onyomi | Best Anchor | Alternative |
-|---|---|---|
-| CHUU | Чучело (scarecrow) | Чупа-чупс (lollipop) |
-| SHUU | Шуба (fur coat) | Шут (jester) |
-| KOU | Кот (cat) | Кол (stake) |
-| KAN | Канат (rope) | Кан (jerrycan) |
-| SEI | Сейф (safe) | Сейлор (Sailor Moon) |
-| KAI | Кай (Snow Queen) | Гайка (nut/bolt) |
-| SHIN | Шина (tire) | Шило (awl) |
-| TOU | Торт (cake) | Топор (axe) |
-| KYUU | Кювет (ditch) | Клюв (beak) |
-| JYUU | Жук (beetle) | Журавль (crane) |
-| GYOU | Гёза (gyoza) | Герб (coat of arms) |
-| GYUU | Гюйс (naval jack) | Гюрза (viper) |
-| GAN | Гантель (dumbbell) | Гангстер (gangster) |
-| JIN | Джин (genie) | Джинсы (jeans) |
-| DOU | Дом (house) | Доска (board) |
-| GOU | Гора (mountain) | Гонг (gong) |
-
-These tables grow as new onyomi patterns are encountered. Rules:
-- Never use abstract words as anchors.
-- Once an anchor is chosen for a sound in a given language, reuse it consistently. Exceptions are allowed when the alternative makes a significantly better story, but prefer consistency.
-
-### Worked Example
-
-Kanji 休 (Rest) = 人 (Person) + 木 (Tree). Primary onyomi: KYUU.
-
-**English:** "A Person leans on a Tree to Rest. He uses a Cucumber (KYUU) as a pillow."
-- Uses radical names from Step 2: "Person" (人), "Tree" (木)
-- Sound anchor: Cucumber for KYUU
-- Does not mention kunyomi やす(む)
-
-**Spanish:** "Una Persona se apoya en un Árbol para Descansar. Usa un Cubo (KYUU) como almohada."
-- Radical names: "Persona" (人), "Árbol" (木)
-- Sound anchor: Cubo for KYUU
-
-**Russian:** "Человек прислонился к Дереву, чтобы Отдохнуть. Он упал в Кювет (KYUU) и заснул."
-- Radical names: "Человек" (人), "Дерево" (木)
-- Sound anchor: Кювет for KYUU
-
-### Critical Rule: Radical-Kanji Name Consistency
-
-When a radical is also a kanji (like 木, 力, 山), the radical keyword **must** match the kanji meaning. The kanji mnemonic must use the same name that was assigned in Step 2. If the radical name for 木 is "Tree", then every kanji mnemonic referencing 木 must say "Tree" — never "Wood" or "Timber".
-
-### Search Tags
-
-AI generates 3–8 synonyms per language. Examples:
-- 休 (Rest) EN: `["break", "holiday", "pause", "vacation", "relax"]`
-- 休 (Rest) ES: `["descanso", "pausa", "vacaciones", "relajar"]`
-
-Tags should include alternative meanings, related concepts, and study-relevant associations.
-
-### Output
-
-Updates `kanji_i18n.csv` — fills `system_mnemonic` and `search_tags` on existing rows.
-
-## Step 4: Vocabulary I18n Enrichment (AI)
-
-**Target:** `vocabulary_i18n.csv` → `system_mnemonic` and `search_tags` fields (exist but empty from Phase 2)
-
-### Layer 3 Mnemonic Rules
-
-From [mnemonic.md §Layer 3](../domain/mnemonic.md):
-
-- **Goal:** Teach the actual word reading (often kunyomi) in context.
-- **Formula:** Kanji meaning + context sentence + native reading.
-- **Focus on the word itself** — do NOT mention radicals.
-- **Write a short sentence** where the mnemonic explains the reading.
-- **`system_mnemonic` is nullable** — skip self-explanatory words. Not every vocabulary word benefits from a mnemonic. Words whose meaning is obvious from their kanji composition (e.g., 学校 = "study" + "school" = School) can be left null.
-- **Kunyomi is context-heavy** — it pairs with hiragana (like 食べる). The vocabulary card provides that context naturally.
-
-### Worked Example
-
-休む (yasumu) = to rest.
-- **EN:** "I will Rest. YEA, SUMO wrestlers (Ya-sumu) need rest too."
-- **ES:** "Descansar. YA, los SUMO (Ya-sumu) necesitan descansar también."
-- **RU:** "Отдыхать. Я видел, как СУМО (Я-суму) борцы отдыхали."
-
-### When to Skip
-
-Set `system_mnemonic = null` (or empty string, matching the Phase 2 default) when:
-- The word's meaning is self-explanatory from its kanji (e.g., 学生 = student).
-- The reading is the standard kunyomi with no irregular pattern.
-- Adding a mnemonic would be forced or confusing rather than helpful.
-
-The admin reviews and may add mnemonics to words initially skipped if learner feedback indicates they're needed.
-
-### Search Tags
-
-AI generates 3–8 synonyms per language. Examples:
-- 食べる (to eat) EN: `["consume", "dine", "meal", "eating"]`
-- 食べる (to eat) ES: `["consumir", "cenar", "comida", "alimentar"]`
-
-### Output
-
-Updates `vocabulary_i18n.csv` — fills `system_mnemonic` and `search_tags` on existing rows.
-
-## Step 5: Sentence Furigana Annotation (AI + JmdictFurigana)
-
-**Target:** `vocabulary_sentences.csv` → `original_text` field
-
-Phase 2 stores `original_text` as plain Japanese text (from the Tanaka Corpus). This step adds `{kanji|reading}` pipe-delimited notation so the client can render furigana and Ghost Kanji in sentences.
-
-### Algorithm
-
-For each `vocabulary_sentences.csv` row:
-
-1. **Tokenize** the Japanese sentence into morphemes using a morphological analyzer. Japanese has no word-boundary whitespace, so regex splitting is insufficient — a proper tokenizer is required. **Recommended: SudachiPy** (`sudachi_dict_small`) — handles compound verb conjugations more accurately than MeCab and integrates well with the Python pipeline.
-2. **For each token containing kanji:**
-   - Look up the token's dictionary form in `jmdict_furigana.parquet` for pre-computed per-character readings.
-   - If found: construct `{kanji|reading}` notation using the same rules as vocabulary furigana (see [vocabulary.md §Furigana Notation](../domain/vocabulary.md#furigana-notation)). For conjugated forms, the tokenizer provides the surface reading — use that instead of the dictionary-form reading.
-   - If not found: use AI to determine the reading and construct the notation.
-3. **Kana-only tokens** remain as plain text (no braces).
-4. **Validation:** Stripping all `{`, `|`, `}` and reading portions must reproduce the original plain-text sentence.
-
-### Furigana Rules
-
-Same notation as vocabulary furigana (see [ph2_5 §Step 2](ph2_5_vocabulary_extraction.md)):
-
-- Single kanji: `{食|た}べる`
-- Compound per-character: `{学生|がく|せい}`
-- Jukujikun: `{大人|おとな}` (1 reading, multiple kanji → single ruby span)
-- Each `{...}` group must have at least one reading
-- Reading count must equal kanji character count (per-character) or be exactly 1 (jukujikun)
-
-### Why AI is Needed
-
-Sentence furigana is harder than word furigana because:
-- **Context-dependent readings:** 今日 reads きょう in most contexts but こんにち in こんにちは. The correct reading depends on the sentence.
-- **Verb conjugations:** 食べました has the root 食 reading た, but the conjugated form changes the surrounding kana.
-- **Proper nouns:** Names in sentences may have unusual readings not in JmdictFurigana.
-
-`jmdict_furigana.parquet` provides readings for dictionary forms. AI fills the gaps for conjugated forms, context-dependent readings, and words not in the dataset.
-
-### Output
-
-Updates `vocabulary_sentences.csv` — replaces plain-text `original_text` with furigana-annotated text.
-
-## Step 6: Sentence Translation (AI)
-
-**Target:** `vocabulary_sentence_i18n.csv` → new ES and RU rows
-
-Phase 2 creates English sentence translations from the Tanaka Corpus. This step adds Spanish and Russian translations via AI.
-
-### Algorithm
-
-For each `vocabulary_sentences.csv` row that has an English translation in `vocabulary_sentence_i18n.csv`:
-
-1. **Input:** The English `sentence_translated` text.
-2. **Generate:** AI translates English → Spanish and English → Russian.
-3. **Write:** Two new `vocabulary_sentence_i18n.csv` rows:
-   - `(vocabulary_sentence_id, 'es', spanish_translation)`
-   - `(vocabulary_sentence_id, 'ru', russian_translation)`
-
-### Translation Rules
-
-- Translate from English (not from Japanese) — the English translation is already verified from the Tanaka Corpus.
-- Maintain the same register and tone as the English sentence.
-- Use standard neutral Spanish (Latin American generic) and standard literary Russian — no regional slang or colloquialisms.
-- Preserve sentence structure where natural in the target language; restructure for fluency when needed.
-
-### Output
-
-Appends new rows to `vocabulary_sentence_i18n.csv` — one ES and one RU row per sentence.
-
-**Unique key:** `(vocabulary_sentence_id, lang_code)` — prevents duplicate translations.
+AI-generated level-appropriate sentences with furigana notation and translations for all 3 languages. Grammar complexity matches JLPT level. See `pipeline/data/ai/instructions/SENTENCE.md`.
 
 ## Mnemonic Rules Summary
 
@@ -496,29 +283,27 @@ Each language has its own sound anchors and mnemonics. "KYUU-cumber" works in En
 
 ## Admin Review Workflow
 
-Phase 3 is the human-in-the-loop checkpoint. The admin reviews AI output before it proceeds to Phase 4 (Verification & Upload).
+The admin reviews AI output at two stages:
+
+### 1. Template review (before merge)
+
+After filling templates with AI, the admin reviews the AI-generated content in the template CSVs (`ai/templates/`) before running `release merge`. This catches quality issues early.
+
+### 2. Batch review (before push)
+
+After merging, use `release review <name>` for a comprehensive review of the full batch. This catches cross-entity consistency issues (e.g. radical names matching kanji mnemonics).
 
 ### Review process
 
-1. **Step 0 output (radical classification):** Deterministic — review `radical_classification.csv` for correct keep/convert decisions. Adjust `HIGH_FREQ_THRESHOLD` if the total "kept" count is outside the 300–400 target range.
-2. **Step 1 output (logic hints):** Deterministic — run the script, spot-check a sample of `phonetic` assignments against known phono-semantic compounds. No full review needed.
-3. **Step 2 output (radical i18n):** Review all radical names for accuracy and consistency. This is the foundation — errors here cascade into kanji mnemonics.
-4. **Step 3 output (kanji i18n):** Review mnemonics for correct radical name usage, sound anchor consistency, and story quality.
-5. **Step 4 output (vocabulary i18n):** Review mnemonics where present. Verify that skipped words (null mnemonic) are genuinely self-explanatory.
-6. **Step 5 output (sentence furigana):** Validate a sample of annotated sentences. Check that context-dependent readings are correct.
-7. **Step 6 output (sentence translations):** Review ES/RU translations for accuracy and natural phrasing.
-
-### Review tools
-
-The review can happen in any tool the admin prefers:
-- Direct CSV editing (spreadsheet or text editor)
-- Script-based validator that flags common issues
-- Local Supabase UI for browsing and editing
-- Custom review dashboard
+1. **Steps 0-1 (deterministic):** Spot-check `radical_classification.csv` and `logic_hint` assignments.
+2. **Radical i18n:** Review all radical names for accuracy. This is the foundation — errors cascade into kanji mnemonics.
+3. **Kanji i18n:** Check radical name usage, sound anchor consistency, story quality.
+4. **Vocabulary i18n:** Review mnemonics where present. Verify skipped words are self-explanatory.
+5. **Sentences:** Validate furigana notation, grammar level, translation accuracy.
 
 ### Iteration
 
-If the admin rejects content, the AI regeneration step is re-run for the affected rows only. The pipeline supports partial re-enrichment — unchanged rows are not reprocessed.
+If the admin rejects content, edit the template CSV in `ai/templates/` and re-run `release merge`. The merge is idempotent — non-empty fill values always overwrite.
 
 ## Warnings
 
@@ -573,19 +358,25 @@ Before proceeding to Phase 4, the following completeness checks must pass for ea
 
 ## Output Summary
 
+### Global outputs (`uv run python -m src.enrich`)
+
 | File | Action | Step | Description |
 |---|---|---|---|
 | `radical_classification.csv` | **Created** | Step 0 | Analysis output — radical classification for multi-level decomposition review |
 | `radical_classification_review.csv` | **Created** | Step 0 | Enriched classification with `parent_kanji` column for review context |
-| `kanji_decomposition.csv` | **Created** | Step 0 | Kanji-centric component view — data source for Phase 4 batch review |
+| `kanji_decomposition.csv` | **Created** | Step 0 | Kanji-centric component view — data source for batch review |
 | `kanji_components.csv` | Updated | Step 1 | `logic_hint` refined from default `semantic` to `phonetic` where onyomi match |
-| `radical_i18n.csv` | **Created** | Step 2 | New file — radical names, Layer 1 mnemonics, search tags for EN/ES/RU |
-| `kanji_i18n.csv` | Updated | Step 3 | `system_mnemonic` and `search_tags` populated on existing rows |
-| `vocabulary_i18n.csv` | Updated | Step 4 | `system_mnemonic` (nullable) and `search_tags` populated on existing rows |
-| `vocabulary_sentences.csv` | Updated | Step 5 | `original_text` annotated with `{kanji\|reading}` furigana notation |
-| `vocabulary_sentence_i18n.csv` | Updated | Step 6 | New ES and RU rows appended for each sentence |
 
 **Warning file:** `data/csv/warnings/ph3_warnings.csv`
+
+### Per-batch outputs (`release enrich` + `release merge`)
+
+| File | Action | Steps | Description |
+|---|---|---|---|
+| `ai/templates/radical_i18n_ai.csv` | **Created** | Step 2 | Template → merged into `radical_i18n.csv` |
+| `ai/templates/kanji_i18n_ai.csv` | **Created** | Step 3 | Template → merged into `kanji_i18n.csv` |
+| `ai/templates/vocab_i18n_ai.csv` | **Created** | Step 4 | Template → merged into `vocabulary_i18n.csv` |
+| `ai/templates/sentence_ai.csv` | **Created** | Steps 5-6 | Template → merged into `vocabulary_sentences.csv` + `vocabulary_sentence_i18n.csv` |
 
 ## Ordering Constraints
 
@@ -595,34 +386,43 @@ Phase 3 sits between Phase 2 (extraction) and Phase 4 (verification & upload). W
 Phase 2 (all sub-phases complete)
     |
     v
-Step 0: Radical Classification (deterministic — analysis pass, no table mutations)
+Step 0: Radical Classification (deterministic — `uv run python -m src.enrich`)
     |
     v
-Step 1: Logic Hint Refinement (deterministic — can run immediately)
+Step 1: Logic Hint Refinement (deterministic — `uv run python -m src.enrich`)
     |
     v
-Step 2: Radical I18n Creation (Layer 1 names — foundation for Steps 3-4)
+release slice <name> --jlpt <N> --kanji <N> --vocab <N>
     |
     v
-Step 3: Kanji I18n Enrichment (Layer 2 — depends on radical names from Step 2)
+release enrich <name> --entity radical  →  [fill radical_i18n_ai.csv]
     |
     v
-Step 4: Vocabulary I18n Enrichment (Layer 3 — independent of Steps 2-3 but ordered for review flow)
-    |
-Step 5: Sentence Furigana Annotation (independent of Steps 2-4 — can run in parallel)
-    |
-Step 6: Sentence Translation (independent of Steps 2-4 — can run in parallel)
+release merge <name> --entity radical
     |
     v
-Admin Review (all steps)
+release enrich <name> --entity kanji  →  [fill kanji_i18n_ai.csv]
     |
     v
-Phase 4: Verification & Upload
+release merge <name> --entity kanji
+    |                                    (parallel)
+    v                                        |
+release enrich <name> --entity vocab     release enrich <name> --entity sentence
+    |                                        |
+    v                                        v
+release merge <name> --entity vocab      release merge <name> --entity sentence
+    |                                        |
+    v────────────────────────────────────────v
+release review <name>
+    |
+    v
+release validate <name>
+    |
+    v
+release push <name>
 ```
 
-**Parallelizable:** Steps 5 and 6 have no dependency on Steps 2–4 and can run in parallel with them. Step 1 has no dependency on any other step and can run first.
-
-**Sequential:** Step 2 → Step 3 is strictly ordered (kanji mnemonics reference radical names). Step 3 → Step 4 is recommended for review flow but not technically required (vocabulary mnemonics don't reference kanji mnemonics).
+**Sequential:** Radical → kanji is strictly ordered (kanji mnemonics reference radical names). Kanji → vocab is recommended but not required. Sentences are independent of all other entities.
 
 ## Related Docs
 

@@ -1,7 +1,9 @@
-"""Phase 3: AI Enrichment — add mnemonics, translations, furigana to CSVs.
+"""Phase 3: AI Enrichment — deterministic analysis steps.
 
 Reads and updates CSVs in pipeline/data/csv/.
-Steps 0-1 are deterministic; Steps 2-6 use AI generation.
+Steps 0-1 are deterministic (radical classification, logic hint refinement).
+AI-generated content (mnemonics, translations, search tags) is now handled
+per-batch via ``release enrich`` and ``release merge``.
 
 Usage:
     uv run python -m src.enrich
@@ -16,7 +18,6 @@ from dotenv import load_dotenv
 from src.enrichers.ph3_0_classify_radicals import classify_radicals
 from src.enrichers.ph3_0_review import generate_review
 from src.enrichers.ph3_1_logic_hints import refine_logic_hints
-from src.enrichers.ph3_2_radical_i18n import create_radical_i18n
 from src.extractors.shared import validate_all_manual_files
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,6 @@ log = logging.getLogger(__name__)
 PARQUET_DIR = Path(__file__).resolve().parent.parent / "data" / "parquet"
 CSV_DIR = Path(__file__).resolve().parent.parent / "data" / "csv"
 WARNINGS_DIR = CSV_DIR / "warnings"
-AI_DIR = Path(__file__).resolve().parent.parent / "data" / "ai"
 
 
 def main() -> None:
@@ -86,27 +86,9 @@ def main() -> None:
         log.exception("Failed during Step 3.1 logic hint refinement")
         raise
 
-    # Step 2: Radical i18n creation (scaffold + AI merge)
-    step_start = time.perf_counter()
-    try:
-        result = create_radical_i18n(PARQUET_DIR, CSV_DIR, WARNINGS_DIR, AI_DIR)
-        elapsed = time.perf_counter() - step_start
-        total = len(result["radical_i18n"])
-        named = (result["radical_i18n"]["name"].str.strip() != "").sum()
-        log.info(
-            "  3.2 Radical i18n: done in %.1fs (%d rows, %d with names)",
-            elapsed,
-            total,
-            named,
-        )
-    except Exception:
-        log.exception("Failed during Step 3.2 radical i18n creation")
-        raise
-
-    # TODO: Step 3 — Kanji i18n enrichment (Layer 2 mnemonics)
-    # TODO: Step 4 — Vocabulary i18n enrichment (Layer 3 mnemonics)
-    # TODO: Step 5 — Sentence furigana annotation (SudachiPy + AI)
-    # TODO: Step 6 — Sentence translation (EN → ES/RU)
+    # Steps 2-6 (AI-generated content) are now handled per-batch via:
+    #   uv run python -m src.release enrich <name>
+    #   uv run python -m src.release merge <name>
 
     elapsed = time.perf_counter() - start
     log.info("Phase 3 complete in %.1fs", elapsed)

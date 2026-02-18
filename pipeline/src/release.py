@@ -1,7 +1,9 @@
-"""Release bundle CLI — slice, validate, push, review, and apply content batches.
+"""Release bundle CLI — slice, enrich, merge, validate, push, review, and apply content batches.
 
 Usage:
     uv run python -m src.release slice <name> --jlpt <level> --kanji <N> --vocab <N>
+    uv run python -m src.release enrich <name> [--entity radical|kanji|vocab|sentence|all]
+    uv run python -m src.release merge <name> [--entity ...] [--dry-run]
     uv run python -m src.release validate <name>
     uv run python -m src.release push <name>
     uv run python -m src.release review <name>              # HTML review (default)
@@ -40,6 +42,31 @@ def main() -> None:
     slice_p.add_argument("--kanji", type=int, required=True, help="Kanji count")
     slice_p.add_argument("--vocab", type=int, required=True, help="Vocab count")
 
+    # ── enrich ─────────────────────────────────────────────────────────────
+
+    enrich_p = subparsers.add_parser("enrich", help="Generate AI template CSVs for a batch")
+    enrich_p.add_argument("name", help="Batch name (e.g. n5_kanji_1)")
+    enrich_p.add_argument(
+        "--entity",
+        choices=["radical", "kanji", "vocab", "sentence", "all"],
+        default="all",
+        help="Entity type to scaffold (default: all)",
+    )
+
+    # ── merge ──────────────────────────────────────────────────────────────
+
+    merge_p = subparsers.add_parser("merge", help="Validate and merge AI-filled CSVs into batch")
+    merge_p.add_argument("name", help="Batch name (e.g. n5_kanji_1)")
+    merge_p.add_argument(
+        "--entity",
+        choices=["radical", "kanji", "vocab", "sentence", "all"],
+        default="all",
+        help="Entity type to merge (default: all)",
+    )
+    merge_p.add_argument(
+        "--dry-run", action="store_true", help="Validate only, don't write",
+    )
+
     # ── validate ──────────────────────────────────────────────────────────
 
     validate_p = subparsers.add_parser("validate", help="Check batch completeness before push")
@@ -68,6 +95,19 @@ def main() -> None:
         from src.releases.slicer import slice_batch
 
         slice_batch(args.name, args.jlpt, args.kanji, args.vocab)
+
+    elif args.command == "enrich":
+        from src.releases.enricher import enrich_batch
+
+        templates = enrich_batch(args.name, entity=args.entity)
+        print(f"Templates written to {templates}")
+
+    elif args.command == "merge":
+        from src.releases.merger import merge_batch
+
+        count = merge_batch(args.name, entity=args.entity, dry_run=args.dry_run)
+        mode = "would change" if args.dry_run else "changed"
+        print(f"{count} field(s) {mode}.")
 
     elif args.command == "validate":
         from src.releases.validator import validate_batch

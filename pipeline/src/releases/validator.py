@@ -189,9 +189,44 @@ def validate_batch(name: str) -> list[ValidationError]:
                     f"family_symbol='{fs}' has no other family member in batch",
                 ))
 
-    # ── radical_i18n: name, system_mnemonic, search_tags required ────────
+    # ── radical_srs_delegates: referential integrity ────────────────────
 
     radical_symbols = set(radicals["master_symbol"]) if not radicals.empty else set()
+    radical_srs_delegates = _read_csv(batch_dir / "radical_srs_delegates.csv")
+
+    if not radical_srs_delegates.empty:
+        _check_all_columns_nonempty(
+            radical_srs_delegates, "radical_srs_delegates", "master_symbol", errors,
+        )
+        delegating_set: set[str] = set()
+        for _, row in radical_srs_delegates.iterrows():
+            ms = row.get("master_symbol", "")
+            ds = row.get("delegate_symbol", "")
+            if _is_empty(ms) or _is_empty(ds):
+                continue
+            delegating_set.add(ms)
+            if ms not in radical_symbols:
+                errors.append(ValidationError(
+                    "radical_srs_delegates", f"master_symbol={ms}",
+                    "master_symbol not found in batch radicals",
+                ))
+            if ds not in radical_symbols:
+                errors.append(ValidationError(
+                    "radical_srs_delegates", f"master_symbol={ms}",
+                    f"delegate_symbol='{ds}' not found in batch radicals",
+                ))
+        # No chains: delegate must not itself be a delegating radical
+        for _, row in radical_srs_delegates.iterrows():
+            ms = row.get("master_symbol", "")
+            ds = row.get("delegate_symbol", "")
+            if ds in delegating_set:
+                errors.append(ValidationError(
+                    "radical_srs_delegates", f"master_symbol={ms}",
+                    f"chain: {ms} → {ds} which itself delegates",
+                ))
+
+    # ── radical_i18n: name, system_mnemonic, search_tags required ────────
+
     _check_i18n_coverage(radical_i18n, "radical_i18n", "master_symbol", radical_symbols, errors)
 
     for _, row in radical_i18n.iterrows():

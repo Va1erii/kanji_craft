@@ -20,6 +20,7 @@ import pandas as pd
 from src.extractors.shared import (
     flatten_empty_elements,
     load_manual_list,
+    load_manual_srs_delegates,
     load_manual_strokes,
     load_visual_rules,
     map_position,
@@ -37,6 +38,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 MANUAL_KEEP = DATA_DIR / "manual_keep.txt"
 MANUAL_FLATTEN = DATA_DIR / "manual_flatten.txt"
 MANUAL_STROKES = DATA_DIR / "manual_strokes.txt"
+MANUAL_SRS_DELEGATES = DATA_DIR / "manual_srs_delegates.csv"
 VISUAL_RULES = DATA_DIR / "visual_rules.json"
 
 
@@ -179,6 +181,7 @@ def scan_and_register(
     visual_rules: dict[str, dict] | None = None,
     manual_flatten: set[str] | None = None,
     freq_threshold: int = 5,
+    srs_delegates: dict[str, str] | None = None,
 ) -> tuple[pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
 
@@ -338,6 +341,30 @@ def scan_and_register(
             "min_jlpt_level": None,
         })
 
+    # --- Build SRS delegates table ---
+    delegate_rows: list[dict] = []
+    if srs_delegates:
+        for ms, delegate in sorted(srs_delegates.items()):
+            if ms not in registered_masters:
+                continue  # source radical not in set — skip silently
+            if delegate in registered_masters:
+                delegate_rows.append({
+                    "master_symbol": ms,
+                    "delegate_symbol": delegate,
+                })
+            else:
+                warnings.append({
+                    "severity": "high",
+                    "phase": "2.1",
+                    "entity": ms,
+                    "message": (
+                        f"srs_delegate target '{delegate}' not found in radical set"
+                    ),
+                })
+    srs_delegates_df = pd.DataFrame(
+        delegate_rows, columns=["master_symbol", "delegate_symbol"]
+    )
+
     radicals_df = pd.DataFrame(radical_rows)
     if not radicals_df.empty:
         radicals_df["stroke_count"] = radicals_df["stroke_count"].astype("int64")
@@ -375,11 +402,12 @@ def scan_and_register(
             })
 
     log.info(
-        "Pass 2: registered %d radicals",
+        "Pass 2: registered %d radicals, %d SRS delegates",
         len(radicals_df),
+        len(srs_delegates_df),
     )
 
-    return radicals_df, warnings
+    return radicals_df, srs_delegates_df, warnings
 
 
 def extract_radicals(
@@ -424,11 +452,12 @@ def extract_radicals(
     manual_strokes = load_manual_strokes(MANUAL_STROKES)
     manual_flatten = load_manual_list(MANUAL_FLATTEN)
     visual_rules = load_visual_rules(VISUAL_RULES)
+    srs_delegates = load_manual_srs_delegates(MANUAL_SRS_DELEGATES)
 
     # Pass 1d + Pass 2: Scan and register
-    radicals_df, scan_warnings = scan_and_register(
+    radicals_df, srs_delegates_df, scan_warnings = scan_and_register(
         kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes,
-        visual_rules, manual_flatten,
+        visual_rules, manual_flatten, srs_delegates=srs_delegates,
     )
 
     # Deduplicate warnings by (severity, entity, message)
@@ -445,6 +474,7 @@ def extract_radicals(
     # Write outputs
     csv_dir.mkdir(parents=True, exist_ok=True)
     write_csv_atomic(radicals_df, csv_dir / "radicals.csv")
+    write_csv_atomic(srs_delegates_df, csv_dir / "radical_srs_delegates.csv")
 
     # Write warnings (sorted for deterministic output)
     if all_warnings:
@@ -457,12 +487,14 @@ def extract_radicals(
         log.info("Phase 2.1: no warnings")
 
     log.info(
-        "Phase 2.1 complete: %d radicals",
+        "Phase 2.1 complete: %d radicals, %d SRS delegates",
         len(radicals_df),
+        len(srs_delegates_df),
     )
 
     return {
         "radicals": radicals_df,
+        "radical_srs_delegates": srs_delegates_df,
         "scope_set": scope_set,
         "keep_set": keep_set,
     }

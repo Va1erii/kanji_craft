@@ -11,6 +11,7 @@ from src.extractors.shared import (
     flatten_empty_elements,
     load_manual_components,
     load_manual_list,
+    load_manual_srs_delegates,
     map_position,
     merge_split_parts,
     resolve_effective_children,
@@ -22,6 +23,7 @@ from src.extractors.shared import (
     validate_manual_furigana,
     validate_manual_keep,
     validate_manual_localization,
+    validate_manual_srs_delegates,
     validate_manual_strokes,
     validate_visual_rules,
     write_csv_atomic,
@@ -547,6 +549,80 @@ class TestValidateManualLocalization:
         f.write_text("a,b,c\nfoo,bar,baz\n")
         with pytest.raises(ManualFileError, match="header columns"):
             validate_manual_localization(f)
+
+
+# --- load_manual_srs_delegates ---
+
+
+class TestLoadManualSrsDelegates:
+    def test_nonexistent_file(self):
+        assert load_manual_srs_delegates(Path("/nonexistent/file.csv")) == {}
+
+    def test_empty_file(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\n")
+        assert load_manual_srs_delegates(f) == {}
+
+    def test_loads_entries(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\n囗,口\n")
+        result = load_manual_srs_delegates(f)
+        assert result == {"囗": "口"}
+
+
+# --- validate_manual_srs_delegates ---
+
+
+class TestValidateManualSrsDelegates:
+    def test_nonexistent_passes(self):
+        validate_manual_srs_delegates(Path("/nonexistent/file.csv"))
+
+    def test_valid_passes(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\n囗,口\n")
+        validate_manual_srs_delegates(f)
+
+    def test_bad_header_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("a,b\nfoo,bar\n")
+        with pytest.raises(ManualFileError, match="header columns"):
+            validate_manual_srs_delegates(f)
+
+    def test_self_delegation_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\n口,口\n")
+        with pytest.raises(ManualFileError, match="self-delegation"):
+            validate_manual_srs_delegates(f)
+
+    def test_chain_detection_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\nA,B\nB,C\n")
+        with pytest.raises(ManualFileError, match="chain detected"):
+            validate_manual_srs_delegates(f)
+
+    def test_multi_char_master_symbol_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\nAB,C\n")
+        with pytest.raises(ManualFileError, match="single char"):
+            validate_manual_srs_delegates(f)
+
+    def test_multi_char_delegate_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\nA,BC\n")
+        with pytest.raises(ManualFileError, match="single char"):
+            validate_manual_srs_delegates(f)
+
+    def test_duplicate_master_symbol_fails(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\nA,B\nA,C\n")
+        with pytest.raises(ManualFileError, match="duplicate master_symbol"):
+            validate_manual_srs_delegates(f)
+
+    def test_empty_fields_fail(self, tmp_path):
+        f = tmp_path / "manual_srs_delegates.csv"
+        f.write_text("master_symbol,srs_delegate\n,口\n")
+        with pytest.raises(ManualFileError, match="empty master_symbol"):
+            validate_manual_srs_delegates(f)
 
 
 # --- validate_visual_rules ---

@@ -100,6 +100,17 @@ Localized name, system mnemonic, and search data for a radical. One row per radi
 
 The master symbol and shape never change across languages. Only the human-readable text grows as languages are added. This keeps the content pipeline clean — translators work in `RadicalI18n` without touching core data.
 
+### RadicalSrsDelegate (Mapping)
+
+Maps radicals that share an SRS card with another radical. Some radicals are visually identical but are separate Unicode codepoints (e.g. 口 U+53E3 "mouth" and 囗 U+56D7 "enclosure"). The learner gains nothing from studying them separately — they should share one SRS card. When the delegate is learned, the delegating radical is considered learned too and never appears as a separate SRS card.
+
+| Field | Type | Description |
+|---|---|---|
+| `master_symbol` | `String` | The radical that delegates its SRS card. FK to `radicals.master_symbol`. Unique (PK) |
+| `delegate_symbol` | `String` | The radical whose SRS card is shared. FK to `radicals.master_symbol` |
+
+Many-to-one: multiple radicals can delegate to the same target. The delegate itself must not have a delegation (no chains).
+
 ### Position (Enum)
 
 The spatial position a radical occupies within a kanji character. Uses traditional Japanese naming conventions. Each value carries a human-readable `description`.
@@ -125,8 +136,9 @@ The spatial position a radical occupies within a kanji character. Uses tradition
 ## Relationships
 
 ```
-Radical ──1:N──→ RadicalI18n       (one radical, one row per language)
-Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_component.md)
+Radical ──1:N──→ RadicalI18n          (one radical, one row per language)
+Radical ──1:0..1→ RadicalSrsDelegate  (a radical may delegate its SRS card)
+Radical ──N:M──→ Kanji                (via KanjiComponent; see kanji_component.md)
 ```
 
 `Position` is a property of `Radical` itself — the `positions` list stores all the positions where this shape is used across kanji.
@@ -144,12 +156,14 @@ Radical ──N:M──→ Kanji             (via KanjiComponent; see kanji_comp
 9. When `visual_group` is set on a radical, at least one other radical must share the same `visual_group` value.
 10. Radicals in a visual group may have overlapping positions. The `disambiguation_note` clarifies meaning by position tendency, not a strict rule.
 11. When `family_symbol` is set on a radical, at least one other radical in the same batch must share the same `family_symbol` value.
+12. When a `RadicalSrsDelegate` row exists for a radical, it does not get its own SRS card. Its learned state mirrors the delegate's card. The delegate must exist in the same batch and must not itself be a delegating radical (no chains).
 
 ## Edge Cases
 
 - **Missing translations:** If a user's language has no `RadicalI18n` row, fall back to "en". Never show a blank name or system mnemonic.
 - **SVG asset missing:** If the bundled asset for `svg_file_name` is not found, the app falls back to downloading from `svg_file_url` and caching locally. If both fail (network error, broken URL), the app renders the unicode character (`master_symbol`) as a text fallback.
 - **Visually identical radicals:** Some distinct radicals render as the same shape inside kanji (e.g. 肉 "flesh" and 月 "moon" both appear as 月). The `visual_group` field groups them, and `disambiguation_note` in RadicalI18n provides the per-language teaching logic (e.g. "left/bottom = flesh, right/top = moon"). Both fields are sourced from the curated `pipeline/data/visual_rules.json` — not AI-generated — because positional disambiguation requires human-verified accuracy. The app should surface this note whenever a kanji contains a radical from a multi-member visual group.
-- **Family groups:** Radicals in the same family (same `family_symbol`) represent different visual forms of the same concept — e.g. 人 (standalone) and 亻 (person-hen). Each is a first-class radical with its own i18n, mnemonics, and SRS card.
+- **Family groups:** Radicals in the same family (same `family_symbol`) represent different visual forms of the same concept — e.g. 人 (standalone) and 亻 (person-hen). Each is a first-class radical with its own i18n, mnemonics, and SRS card. Note: `family_symbol` is conceptual grouping only — it does not control SRS behavior. Use `RadicalSrsDelegate` to share SRS cards between radicals.
+- **SRS delegation:** Some radicals are visually identical but are separate Unicode codepoints (e.g. 口 U+53E3 "mouth" and 囗 U+56D7 "enclosure"). A `RadicalSrsDelegate` row maps the delegating radical to the delegate — learning the delegate counts as learning the delegating radical too. A delegating radical still appears in `kanji_components` normally — it remains a valid component, only SRS card creation is affected. Multiple radicals can delegate to the same target (many-to-one).
 - **Dual-identity radicals:** Some radicals are also standalone kanji (e.g., 木 is both Kangxi radical #75 and a kanji meaning "Tree"). Both rows exist independently — the radical row in `radicals` serves as a building block in `kanji_components`, the kanji row in `kanji` serves as a learnable item with readings and an SRS card. The SRS progression: learn 木 as radical (meaning only, quick) → unlocks kanji containing 木 → later learn 木 as kanji (adds readings). This dual identity is natural for many Kangxi radicals and for cross-JLPT protectors (see "What Qualifies as a Radical" above).
 - **Kanji-only components:** Characters that appear inside kanji but don't qualify as radicals are referenced via `component_type=kanji` in `kanji_components`. For example, 語 (language) = 言 (kanji component) + 吾 (kanji component). See [kanji_component.md](kanji_component.md).

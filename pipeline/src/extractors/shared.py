@@ -555,6 +555,71 @@ def validate_manual_localization(path: Path) -> None:
         raise ManualFileError("\n".join(errors))
 
 
+def load_manual_srs_delegates(path: Path) -> dict[str, str]:
+    """Load manual SRS delegate mappings from CSV.
+
+    Format: ``master_symbol,srs_delegate`` (header row required).
+    Returns ``{master_symbol: delegate}`` mapping.
+    """
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    result: dict[str, str] = {}
+    for _, row in df.iterrows():
+        ms = row.get("master_symbol", "").strip()
+        delegate = row.get("srs_delegate", "").strip()
+        if ms and delegate:
+            result[ms] = delegate
+    log.info("Loaded %d manual SRS delegate entries from %s", len(result), path.name)
+    return result
+
+
+def validate_manual_srs_delegates(path: Path) -> None:
+    """Validate manual_srs_delegates.csv: header, single-char fields,
+    no self-delegation, no chains (A→B→C), no duplicates."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    expected_cols = {"master_symbol", "srs_delegate"}
+    if not expected_cols.issubset(set(df.columns)):
+        raise ManualFileError(
+            f"{path.name}: expected header columns {expected_cols}, got {set(df.columns)}"
+        )
+    seen: set[str] = set()
+    delegates: dict[str, str] = {}
+    for i, row in df.iterrows():
+        line_num = i + 2  # 1-indexed + header
+        ms = row["master_symbol"].strip()
+        delegate = row["srs_delegate"].strip()
+        if not ms:
+            errors.append(f"{path.name}:{line_num}: empty master_symbol")
+            continue
+        if not delegate:
+            errors.append(f"{path.name}:{line_num}: empty srs_delegate")
+            continue
+        if len(ms) != 1:
+            errors.append(f"{path.name}:{line_num}: master_symbol must be single char, got '{ms}'")
+        if len(delegate) != 1:
+            errors.append(
+                f"{path.name}:{line_num}: srs_delegate must be single char, got '{delegate}'"
+            )
+        if ms == delegate:
+            errors.append(f"{path.name}:{line_num}: self-delegation ({ms} → {delegate})")
+        if ms in seen:
+            errors.append(f"{path.name}:{line_num}: duplicate master_symbol '{ms}'")
+        seen.add(ms)
+        delegates[ms] = delegate
+    # Check for chains: if a delegate is itself a delegating radical
+    for ms, delegate in delegates.items():
+        if delegate in delegates:
+            errors.append(
+                f"{path.name}: chain detected: {ms} → {delegate} → {delegates[delegate]}"
+            )
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
 def validate_visual_rules(path: Path) -> None:
     """Validate visual_rules.json: valid JSON; each entry has visual_group (str)
     and disambiguation_note (dict)."""
@@ -592,6 +657,7 @@ def validate_all_manual_files(data_dir: Path) -> None:
         ("manual_furigana.csv", validate_manual_furigana),
         ("manual_localization.csv", validate_manual_localization),
         ("manual_components.csv", validate_manual_components),
+        ("manual_srs_delegates.csv", validate_manual_srs_delegates),
         ("visual_rules.json", validate_visual_rules),
     ]
     all_errors: list[str] = []

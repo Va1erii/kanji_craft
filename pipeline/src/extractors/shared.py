@@ -336,6 +336,100 @@ def parse_component_tree(json_str: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
+_VALID_POSITIONS = {
+    "hen", "tsukuri", "kanmuri", "ashi", "kamae",
+    "tare", "nyo", "tarec", "nyoc", "kamaec", "unknown",
+}
+
+_VALID_LOGIC_HINTS = {"semantic", "phonetic"}
+
+_VALID_RADICAL_TYPES = {"general", "tradit", "nelson", "jis", "component"}
+
+
+def load_manual_components(path: Path) -> dict[str, list[dict]]:
+    """Load manual component overrides from CSV.
+
+    Format: ``character,master_symbol,position,logic_hint,radical_type`` (header row required).
+    Returns ``{character: [row_dict, ...]}`` keyed by character.
+    When a kanji appears here, its entire auto-detected component list is replaced.
+    """
+    if not path.exists():
+        return {}
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    if df.empty:
+        return {}
+    result: dict[str, list[dict]] = {}
+    for _, row in df.iterrows():
+        char = row["character"].strip()
+        if not char:
+            continue
+        entry = {
+            "master_symbol": row["master_symbol"].strip(),
+            "position": row["position"].strip(),
+            "logic_hint": row["logic_hint"].strip(),
+            "radical_type": row["radical_type"].strip(),
+        }
+        result.setdefault(char, []).append(entry)
+    log.info("Loaded %d manual component entries for %d kanji from %s",
+             sum(len(v) for v in result.values()), len(result), path.name)
+    return result
+
+
+def validate_manual_components(path: Path) -> None:
+    """Validate manual_components.csv: header, single-char character,
+    single-char master_symbol, valid enum values, no duplicate rows."""
+    if not path.exists():
+        return
+    errors: list[str] = []
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    expected_cols = {"character", "master_symbol", "position", "logic_hint", "radical_type"}
+    if not expected_cols.issubset(set(df.columns)):
+        raise ManualFileError(
+            f"{path.name}: expected header columns {expected_cols}, got {set(df.columns)}"
+        )
+    seen: set[tuple[str, str, str]] = set()
+    for i, row in df.iterrows():
+        line_num = i + 2  # 1-indexed + header
+        char = row["character"].strip()
+        ms = row["master_symbol"].strip()
+        pos = row["position"].strip()
+        lh = row["logic_hint"].strip()
+        rt = row["radical_type"].strip()
+        if not char:
+            errors.append(f"{path.name}:{line_num}: empty character")
+            continue
+        if len(char) != 1:
+            errors.append(f"{path.name}:{line_num}: character must be single char, got '{char}'")
+        if not ms:
+            errors.append(f"{path.name}:{line_num}: empty master_symbol")
+            continue
+        if len(ms) != 1:
+            errors.append(f"{path.name}:{line_num}: master_symbol must be single char, got '{ms}'")
+        if pos not in _VALID_POSITIONS:
+            errors.append(
+                f"{path.name}:{line_num}: invalid position '{pos}', "
+                f"expected one of {sorted(_VALID_POSITIONS)}"
+            )
+        if lh not in _VALID_LOGIC_HINTS:
+            errors.append(
+                f"{path.name}:{line_num}: invalid logic_hint '{lh}', "
+                f"expected one of {sorted(_VALID_LOGIC_HINTS)}"
+            )
+        if rt not in _VALID_RADICAL_TYPES:
+            errors.append(
+                f"{path.name}:{line_num}: invalid radical_type '{rt}', "
+                f"expected one of {sorted(_VALID_RADICAL_TYPES)}"
+            )
+        key = (char, ms, pos)
+        if key in seen:
+            errors.append(
+                f"{path.name}:{line_num}: duplicate row ({char}, {ms}, {pos})"
+            )
+        seen.add(key)
+    if errors:
+        raise ManualFileError("\n".join(errors))
+
+
 def validate_manual_keep(path: Path) -> None:
     """Validate manual_keep.txt: each non-comment line must be a single character."""
     if not path.exists():
@@ -497,6 +591,7 @@ def validate_all_manual_files(data_dir: Path) -> None:
         ("manual_strokes.txt", validate_manual_strokes),
         ("manual_furigana.csv", validate_manual_furigana),
         ("manual_localization.csv", validate_manual_localization),
+        ("manual_components.csv", validate_manual_components),
         ("visual_rules.json", validate_visual_rules),
     ]
     all_errors: list[str] = []

@@ -843,6 +843,147 @@ class TestIntegration:
         assert len(used) == 6
 
 
+class TestManualComponentOverride:
+    def test_manual_override_replaces_auto(self, tmp_path, monkeypatch):
+        """Manual components replace auto-detected ones entirely."""
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        # Auto-detection would produce 亻@hen + 木@tsukuri for 休
+        kvg_df = _make_kanjivg_df([
+            _kvg_row("休", _tree("休", stroke_count=6, children=[
+                _tree("亻", position="left", radical="general", variant=True,
+                      original="人", stroke_count=2),
+                _tree("木", position="right", stroke_count=4),
+            ])),
+            _kvg_row("人", _tree("人", stroke_count=2)),
+            _kvg_row("木", _tree("木", stroke_count=4)),
+        ])
+        kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
+
+        # Register radicals: 亻, 木, and also 火 for manual override
+        _make_radicals_csv(csv_dir, [("亻", 2), ("木", 4), ("火", 4)])
+        _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
+
+        # Write manual override: replace 休's components with just 火@hen
+        manual_csv = tmp_path / "manual_components.csv"
+        manual_csv.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "休,火,hen,phonetic,component\n"
+        )
+        monkeypatch.setattr(
+            "src.extractors.ph2_3_components.MANUAL_COMPONENTS", manual_csv
+        )
+
+        scope_set = {"休"}
+        keep_set = {"亻", "木", "休"}
+
+        result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
+        comp_df = result["kanji_components"]
+
+        # Should have only the manual entry, not the auto-detected ones
+        assert len(comp_df) == 1
+        row = comp_df.iloc[0]
+        assert row["character"] == "休"
+        assert row["master_symbol"] == "火"
+        assert row["position"] == "hen"
+        assert row["logic_hint"] == "phonetic"
+        assert row["radical_type"] == "component"
+        assert row["is_primary"] == False  # noqa: E712
+
+    def test_manual_override_only_affects_specified_kanji(self, tmp_path, monkeypatch):
+        """Kanji not in manual_components still use auto-detection."""
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        kvg_df = _make_kanjivg_df([
+            _kvg_row("休", _tree("休", stroke_count=6, children=[
+                _tree("亻", position="left", radical="general", variant=True,
+                      original="人", stroke_count=2),
+                _tree("木", position="right", stroke_count=4),
+            ])),
+            _kvg_row("本", _tree("本", stroke_count=5, children=[
+                _tree("木", position=None, stroke_count=4),
+            ])),
+            _kvg_row("人", _tree("人", stroke_count=2)),
+            _kvg_row("木", _tree("木", stroke_count=4)),
+        ])
+        kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
+
+        _make_radicals_csv(csv_dir, [("亻", 2), ("木", 4), ("火", 4)])
+        _make_kanji_csv(csv_dir, [("休", 6, 2, 4), ("本", 5, 1, 5)])
+
+        # Manual override only for 休
+        manual_csv = tmp_path / "manual_components.csv"
+        manual_csv.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "休,火,hen,phonetic,component\n"
+        )
+        monkeypatch.setattr(
+            "src.extractors.ph2_3_components.MANUAL_COMPONENTS", manual_csv
+        )
+
+        scope_set = {"休", "本"}
+        keep_set = {"亻", "木", "休", "本"}
+
+        result = extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
+        comp_df = result["kanji_components"]
+
+        # 休 → manual (火), 本 → auto (木)
+        rest_rows = comp_df[comp_df["character"] == "休"]
+        assert len(rest_rows) == 1
+        assert rest_rows.iloc[0]["master_symbol"] == "火"
+
+        hon_rows = comp_df[comp_df["character"] == "本"]
+        assert len(hon_rows) == 1
+        assert hon_rows.iloc[0]["master_symbol"] == "木"
+
+    def test_manual_missing_radical_warns(self, tmp_path, monkeypatch):
+        """Manual component referencing unregistered radical produces warning."""
+        parquet_dir = tmp_path / "parquet"
+        parquet_dir.mkdir()
+        csv_dir = tmp_path / "csv"
+        warnings_dir = csv_dir / "warnings"
+
+        kvg_df = _make_kanjivg_df([
+            _kvg_row("休", _tree("休", stroke_count=6, children=[
+                _tree("亻", position="left", stroke_count=2),
+                _tree("木", position="right", stroke_count=4),
+            ])),
+        ])
+        kvg_df.to_parquet(parquet_dir / "kanjivg.parquet", index=False)
+
+        _make_radicals_csv(csv_dir, [("亻", 2), ("木", 4)])
+        _make_kanji_csv(csv_dir, [("休", 6, 2, 4)])
+
+        # Manual override references 'Z' which is not a registered radical
+        manual_csv = tmp_path / "manual_components.csv"
+        manual_csv.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "休,Z,hen,semantic,component\n"
+        )
+        monkeypatch.setattr(
+            "src.extractors.ph2_3_components.MANUAL_COMPONENTS", manual_csv
+        )
+
+        scope_set = {"休"}
+        keep_set = {"亻", "木", "休"}
+
+        extract_components(parquet_dir, csv_dir, warnings_dir, scope_set, keep_set)
+
+        w_df = pd.read_csv(warnings_dir / "ph2_3_warnings.csv")
+        missing = w_df[
+            (w_df["entity"] == "Z")
+            & (w_df["message"].str.contains("Manual component not resolved"))
+        ]
+        assert len(missing) == 1
+        assert missing.iloc[0]["severity"] == "high"
+
+
 class TestDeterministicOutput:
     def test_deterministic_output(self, basic_setup):
         """Running twice produces identical output."""

@@ -21,6 +21,7 @@ This phase corresponds to:
 | `kanji.csv` `min_grade` | Step 3 | Aggregate to compute `radicals.min_grade` |
 | `kanji.csv` `min_jlpt_level` | Step 3 | Aggregate to compute `radicals.min_jlpt_level` |
 | `kanji_components.csv` | Step 3 | Count kanji per radical for `impact_score` |
+| `manual_components.csv` | Step 1–2 | Override auto-detected components for specific kanji |
 
 ## Prerequisites
 
@@ -31,6 +32,34 @@ All four conditions must hold before this phase runs:
 3. **Radical extraction Passes 1–2 complete** — `radicals.csv` and `radical_variants.csv` are written. Every element that will appear as an **effective child** (after ghost flattening) of any in-scope kanji has a corresponding radical row with a known `master_symbol`.
 4. **Kanji composition Steps 1–3 complete** — `kanji.csv`, `kanji_readings.csv`, and `kanji_i18n.csv` are written. Every in-scope KanjiVG character has a corresponding kanji row so that `kanji_components.kanji_id` can resolve.
 
+## Manual Component Overrides
+
+`pipeline/data/manual_components.csv` allows overriding the auto-detected component list for specific kanji. When a kanji appears in this file, its **entire** auto-detected component list is replaced — ghost flattening is skipped entirely for that kanji.
+
+**Format:**
+
+```csv
+character,master_symbol,position,logic_hint,radical_type
+国,玉,kamaec,semantic,component
+国,囗,kamae,semantic,general
+```
+
+**Semantics:** Full replacement, not merge. If 国 appears in the file, only the rows listed are used — all auto-detected components are discarded.
+
+**Field validation:**
+
+| Field | Constraint |
+|---|---|
+| `character` | Single character |
+| `master_symbol` | Single character, must exist in `radicals.csv` at runtime |
+| `position` | One of: `hen`, `tsukuri`, `kanmuri`, `ashi`, `kamae`, `tare`, `nyo`, `tarec`, `nyoc`, `kamaec`, `unknown` |
+| `logic_hint` | One of: `semantic`, `phonetic` |
+| `radical_type` | One of: `general`, `tradit`, `nelson`, `jis`, `component` |
+
+**Duplicate check:** `(character, master_symbol, position)` must be unique within the file.
+
+**When to use:** When ghost flattening produces wrong components (wrong radicals, missing radicals, unwanted flattening depth). The override persists across pipeline runs.
+
 ## Algorithm
 
 The phase runs in three steps over the KanjiVG Parquet data. Each step is idempotent — re-running with the same data produces the same output.
@@ -39,6 +68,7 @@ The phase runs in three steps over the KanjiVG Parquet data. Each step is idempo
 
 For each KanjiVG entry **whose character is in the JLPT/grade scope set**:
 
+0. **Check manual override:** If the character appears in `manual_components.csv`, skip steps 1–4 entirely. Build component rows directly from the manual entries (already validated). This short-circuits the entire ghost flattening pipeline for that kanji.
 1. Get the root node's `children` array.
 2. **Flatten structural groups:** If a direct child has an empty `element` (a structural `<g>` used only for stroke grouping), skip it and promote its children to direct children of the root. Repeat until all direct children have a non-empty `element`.
 3. **Merge split parts:** If multiple children share the same `element` with different `part` values (e.g. 辶 part=1 and 辶 part=2 in 道), treat them as a **single component**. Merge their `stroke_indices` and use the `position` from the first part (or the part that carries the `position` attribute).
@@ -431,6 +461,7 @@ Warnings are written to `data/csv/warnings/ph2_3_warnings.csv` with columns: `se
 |---|---|---|
 | Kanji in KanjiVG not found in `kanji.csv` | high | Prerequisite violation — kanji composition should have created this row; indicates a pipeline ordering bug |
 | Child element not resolved to a radical | high | Prerequisite violation — radical extraction Passes 1–2 should have registered this element |
+| Manual component not resolved to a radical | high | `master_symbol` in `manual_components.csv` not found in `radicals.csv` — check for typos or missing radical registration |
 | Variant without `original` (`variant == true` but `original` is null) | low | Data quality issue — element treated as its own master symbol (same handling as radical extraction) |
 
 The first two conditions are non-blocking per row (the affected kanji/component is skipped) but indicate a pipeline correctness issue that the admin should investigate.

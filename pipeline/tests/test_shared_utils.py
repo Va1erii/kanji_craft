@@ -9,6 +9,7 @@ import pytest
 from src.extractors.shared import (
     ManualFileError,
     flatten_empty_elements,
+    load_manual_components,
     load_manual_list,
     map_position,
     merge_split_parts,
@@ -16,6 +17,7 @@ from src.extractors.shared import (
     resolve_master_symbol,
     severity_sort_key,
     validate_all_manual_files,
+    validate_manual_components,
     validate_manual_flatten,
     validate_manual_furigana,
     validate_manual_keep,
@@ -574,6 +576,131 @@ class TestValidateVisualRules:
         f.write_text("{bad json")
         with pytest.raises(ManualFileError, match="invalid JSON"):
             validate_visual_rules(f)
+
+
+# --- load_manual_components ---
+
+
+class TestLoadManualComponents:
+    def test_nonexistent_file(self):
+        assert load_manual_components(Path("/nonexistent/file.csv")) == {}
+
+    def test_empty_file(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text("character,master_symbol,position,logic_hint,radical_type\n")
+        assert load_manual_components(f) == {}
+
+    def test_loads_entries(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,semantic,component\n"
+            "国,囗,kamae,semantic,general\n"
+        )
+        result = load_manual_components(f)
+        assert "国" in result
+        assert len(result["国"]) == 2
+        assert result["国"][0]["master_symbol"] == "玉"
+        assert result["国"][1]["master_symbol"] == "囗"
+
+    def test_multiple_kanji(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,semantic,component\n"
+            "休,亻,hen,semantic,general\n"
+        )
+        result = load_manual_components(f)
+        assert len(result) == 2
+        assert "国" in result
+        assert "休" in result
+
+
+# --- validate_manual_components ---
+
+
+class TestValidateManualComponents:
+    def test_nonexistent_passes(self):
+        validate_manual_components(Path("/nonexistent/file.csv"))
+
+    def test_valid_passes(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,semantic,component\n"
+            "国,囗,kamae,semantic,general\n"
+        )
+        validate_manual_components(f)
+
+    def test_bad_header_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text("a,b,c,d,e\nfoo,bar,baz,qux,quux\n")
+        with pytest.raises(ManualFileError, match="header columns"):
+            validate_manual_components(f)
+
+    def test_multi_char_character_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国国,玉,kamaec,semantic,component\n"
+        )
+        with pytest.raises(ManualFileError, match="single char"):
+            validate_manual_components(f)
+
+    def test_multi_char_master_symbol_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉玉,kamaec,semantic,component\n"
+        )
+        with pytest.raises(ManualFileError, match="single char"):
+            validate_manual_components(f)
+
+    def test_invalid_position_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,invalid_pos,semantic,component\n"
+        )
+        with pytest.raises(ManualFileError, match="invalid position"):
+            validate_manual_components(f)
+
+    def test_invalid_logic_hint_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,bad_hint,component\n"
+        )
+        with pytest.raises(ManualFileError, match="invalid logic_hint"):
+            validate_manual_components(f)
+
+    def test_invalid_radical_type_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,semantic,bad_type\n"
+        )
+        with pytest.raises(ManualFileError, match="invalid radical_type"):
+            validate_manual_components(f)
+
+    def test_duplicate_row_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            "国,玉,kamaec,semantic,component\n"
+            "国,玉,kamaec,phonetic,general\n"
+        )
+        with pytest.raises(ManualFileError, match="duplicate row"):
+            validate_manual_components(f)
+
+    def test_empty_character_fails(self, tmp_path):
+        f = tmp_path / "manual_components.csv"
+        f.write_text(
+            "character,master_symbol,position,logic_hint,radical_type\n"
+            ",玉,kamaec,semantic,component\n"
+        )
+        with pytest.raises(ManualFileError, match="empty character"):
+            validate_manual_components(f)
 
 
 # --- validate_all_manual_files ---

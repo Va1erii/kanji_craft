@@ -16,6 +16,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.extractors.shared import (
+    load_manual_components,
     load_manual_list,
     map_position,
     map_radical_type,
@@ -29,6 +30,7 @@ log = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 MANUAL_FLATTEN = DATA_DIR / "manual_flatten.txt"
+MANUAL_COMPONENTS = DATA_DIR / "manual_components.csv"
 
 # impact_score frequency buckets: (upper_bound_inclusive, base_score)
 _IMPACT_BUCKETS: list[tuple[int, int]] = [
@@ -94,6 +96,7 @@ def extract_components(
     kanji_df = pd.read_csv(csv_dir / "kanji.csv")
 
     manual_flatten = load_manual_list(MANUAL_FLATTEN)
+    manual_components = load_manual_components(MANUAL_COMPONENTS)
 
     # Build lookups
     registered_masters: set[str] = set(radicals_df["master_symbol"])
@@ -138,6 +141,41 @@ def extract_components(
                     "phase": "2.3",
                     "entity": char,
                     "message": "Kanji in scope set not found in kanji.csv",
+                })
+            continue
+
+        # Manual override — replace entire component list for this kanji
+        if char in manual_components:
+            for comp in manual_components[char]:
+                ms = comp["master_symbol"]
+                if ms not in registered_masters:
+                    wkey = (ms, "missing_radical")
+                    if wkey not in warned:
+                        warned.add(wkey)
+                        warnings.append({
+                            "severity": "high",
+                            "phase": "2.3",
+                            "entity": ms,
+                            "message": "Manual component not resolved to a radical",
+                        })
+                    continue
+
+                position = comp["position"]
+                radical_type = comp["radical_type"]
+                is_primary = radical_type == "general"
+
+                key = (char, ms, position)
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+
+                component_rows.append({
+                    "character": char,
+                    "master_symbol": ms,
+                    "position": position,
+                    "logic_hint": comp["logic_hint"],
+                    "radical_type": radical_type,
+                    "is_primary": is_primary,
                 })
             continue
 

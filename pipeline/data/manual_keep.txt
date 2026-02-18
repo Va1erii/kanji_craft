@@ -5,61 +5,61 @@
 # --- Phonetic anchors ---
 # Format: char  # READING: example kanji
 
-袁  # EN: 遠 園 猿
-侖  # RON: 論 輪 倫
-咼  # KA: 過 渦 禍
-吾  # GO: 語 悟
-禺  # GU: 偶 隅 愚
-扁  # HEN: 編 偏 遍
-兪  # YU: 輸 愉 癒
-亢  # KOU: 航 抗
-兹  # JI: 慈 磁
-辟  # HEKI: 壁 避 癖
-冓  # KOU: 講 構 購
-甬  # YOU: 通 勇 痛
-爰  # EN: 援 暖 緩
-氐  # TEI: 低 底 抵
-复  # FUKU: 復 腹 複
-壬  # NIN: 任 賃
-㕣  # EN: 沿 鉛 船
-夹  # KYOU: 狭 挟
-畐  # FUKU: 副 幅 福
-冋  # KEI/KYOU: 同 洞
-乍  # SA: 作 昨 酢
-夭  # YOU: 笑 妖
-茲  # JI: 慈 磁
-并  # HEI: 併 塀 餅
-攸  # YUU: 修 条
-敝  # HEI: 幣 弊
-夗  # EN: 怨 苑
-开  # KEI: 形 研 刑
-戠  # SHIKI: 識 織
-戌  # JUTSU: 滅 威
-喿  # SOU: 操 燥 繰
-丰  # HOU: 邦 峰 俸
-䍃  # YOU: 揺 謡
-蒦  # KAKU: 護 獲
-賁  # FUN: 噴 墳 憤
-丂  # KOU: 巧 号 朽
-𠦝  # KAN: 朝 乾 幹 韓
+# 袁  # EN: 遠 園 猿
+# 侖  # RON: 論 輪 倫
+# 咼  # KA: 過 渦 禍
+# 吾  # GO: 語 悟
+# 禺  # GU: 偶 隅 愚
+# 扁  # HEN: 編 偏 遍
+# 兪  # YU: 輸 愉 癒
+# 亢  # KOU: 航 抗
+# 兹  # JI: 慈 磁
+# 辟  # HEKI: 壁 避 癖
+# 冓  # KOU: 講 構 購
+# 甬  # YOU: 通 勇 痛
+# 爰  # EN: 援 暖 緩
+# 氐  # TEI: 低 底 抵
+# 复  # FUKU: 復 腹 複
+# 壬  # NIN: 任 賃
+# 㕣  # EN: 沿 鉛 船
+# 夹  # KYOU: 狭 挟
+# 畐  # FUKU: 副 幅 福
+# 冋  # KEI/KYOU: 同 洞
+# 乍  # SA: 作 昨 酢
+# 夭  # YOU: 笑 妖
+# 茲  # JI: 慈 磁
+# 并  # HEI: 併 塀 餅
+# 攸  # YUU: 修 条
+# 敝  # HEI: 幣 弊
+# 夗  # EN: 怨 苑
+# 开  # KEI: 形 研 刑
+# 戠  # SHIKI: 識 織
+# 戌  # JUTSU: 滅 威
+# 喿  # SOU: 操 燥 繰
+# 丰  # HOU: 邦 峰 俸
+# 䍃  # YOU: 揺 謡
+# 蒦  # KAKU: 護 獲
+# 賁  # FUN: 噴 墳 憤
+# 丂  # KOU: 巧 号 朽
+# 𠦝  # KAN: 朝 乾 幹 韓
 
 # --- Visual / structural ---
 
-帚  # Broom: 帰 婦 掃
-卆  # Soldier: 卒 酔 粋
-マ  # Katakana Ma: primitive shape
-从  # Follow (two people): 坐 座
-㐬  # River/child: 流 育 充
-夾  # KYOU: 狭 挟
-关  # KAN: 関 送 咲
-劦  # Three powers: 協 脅
+# 帚  # Broom: 帰 婦 掃
+# 卆  # Soldier: 卒 酔 粋
+# マ  # Katakana Ma: primitive shape
+# 从  # Follow (two people): 坐 座
+# 㐬  # River/child: 流 育 充
+# 夾  # KYOU: 狭 挟
+# 关  # KAN: 関 送 咲
+# 劦  # Three powers: 協 脅
 
 # --- WaniKani cross-reference ---
 
-兀  # Pi/legs: 光 焼 輝 耀 微 暁
-勿  # Wing/not: 物 場 湯 陽 易 傷 腸
-苟  # Carelessly: 敬 警 驚
-弗  # Dollar/not: 仏 沸 費
-丬  # Icicle (爿 variant): 壮 将 状
-离  # Leave: 璃 離
-禹  # Yu the Great: 嘱 属
+# 兀  # Pi/legs: 光 焼 輝 耀 微 暁
+# 勿  # Wing/not: 物 場 湯 陽 易 傷 腸
+# 苟  # Carelessly: 敬 警 驚
+# 弗  # Dollar/not: 仏 沸 費
+# 丬  # Icicle (爿 variant): 壮 将 状
+# 离  # Leave: 璃 離
+# 禹  # Yu the Great: 嘱 属

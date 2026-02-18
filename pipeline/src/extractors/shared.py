@@ -24,9 +24,9 @@ _POSITION_MAP: dict[str, str] = {
     "kamae": "kamae",
     "tare": "tare",
     "nyo": "nyo",
+    "tarec": "tarec",
+    "nyoc": "nyoc",
 }
-
-_UNKNOWN_POSITIONS = frozenset({"tarec", "nyoc"})
 
 _SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
 
@@ -140,15 +140,13 @@ def map_position(kvg_position: str | None) -> str:
     """Map KanjiVG position string to Position enum value.
 
     left→hen, right→tsukuri, top→kanmuri, bottom→ashi,
-    kamae→kamae, tare→tare, nyo→nyo, tarec/nyoc/None→unknown.
+    kamae→kamae, tare→tare, nyo→nyo, tarec→tarec, nyoc→nyoc, None→unknown.
     """
     if kvg_position is None:
         return "unknown"
     mapped = _POSITION_MAP.get(kvg_position)
     if mapped:
         return mapped
-    if kvg_position in _UNKNOWN_POSITIONS:
-        return "unknown"
     log.warning("Unknown KanjiVG position '%s', mapping to 'unknown'", kvg_position)
     return "unknown"
 

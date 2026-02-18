@@ -121,9 +121,9 @@ This encodes:
 | `bottom` | `ashi` |
 | `kamae` | `kamae` |
 | `tare` | `tare` |
-| `tarec` | `unknown` |
+| `tarec` | `tarec` |
 | `nyo` | `nyo` |
-| `nyoc` | `unknown` |
+| `nyoc` | `nyoc` |
 | (absent) | `unknown` |
 
 ### Radical Values

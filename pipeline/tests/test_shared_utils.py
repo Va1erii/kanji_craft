@@ -41,9 +41,9 @@ class TestMapPosition:
     def test_none_maps_to_unknown(self):
         assert map_position(None) == "unknown"
 
-    def test_tarec_nyoc_map_to_unknown(self):
-        assert map_position("tarec") == "unknown"
-        assert map_position("nyoc") == "unknown"
+    def test_tarec_nyoc_map_to_themselves(self):
+        assert map_position("tarec") == "tarec"
+        assert map_position("nyoc") == "nyoc"
 
     def test_unknown_value_maps_to_unknown(self):
         assert map_position("something_weird") == "unknown"

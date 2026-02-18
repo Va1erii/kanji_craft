@@ -10,6 +10,8 @@ enum Position {
   kamae("Enclosure"),
   tare("Hanging Top-Left"),
   nyo("Wrapping Bottom-Left"),
+  tarec("Complement of Tare"),
+  nyoc("Complement of Nyo"),
   unknown("Unknown Position");
 
   final String description;

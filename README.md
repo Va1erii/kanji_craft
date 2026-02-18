@@ -54,19 +54,21 @@ cd pipeline
 uv sync                                # Install dependencies (first time)
 uv run python -m src.ingest            # Phase 1: sources → Parquet
 uv run python -m src.extract           # Phase 2: Parquet → CSV
-uv run python -m src.enrich            # Phase 3: AI enrichment (also generates kanji_decomposition.csv)
+uv run python -m src.enrich            # Phase 3: deterministic analysis (classification + logic hints)
 ```
 
 ### Release Bundles (Phase 4)
 
-Slice enriched CSVs into reviewable batches, validate completeness, then push to Supabase:
+Slice enriched CSVs into reviewable batches, enrich with AI content, validate, then push to Supabase:
 
 ```bash
 cd pipeline
 uv run python -m src.release slice n5_kanji_1 --jlpt 5 --kanji 30 --vocab 60
-uv run python -m src.release review n5_kanji_1          # HTML card-based review (opens browser)
-uv run python -m src.release review n5_kanji_1 --xlsx   # Legacy xlsx review
-uv run python -m src.release apply n5_kanji_1           # Auto-detects changes.json or review.xlsx
+uv run python -m src.release enrich n5_kanji_1             # Generate AI template CSVs
+# → fill templates in data/releases/n5_kanji_1/ai/templates/ with AI
+uv run python -m src.release merge n5_kanji_1              # Validate + merge AI content
+uv run python -m src.release review n5_kanji_1             # HTML card-based review
+uv run python -m src.release apply n5_kanji_1              # Apply review edits
 uv run python -m src.release validate n5_kanji_1
 uv run python -m src.release push n5_kanji_1
 ```

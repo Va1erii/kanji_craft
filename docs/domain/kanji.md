@@ -16,7 +16,7 @@ The core identity of a single kanji character. Holds language-independent data: 
 | `character` | `String` | The kanji character, e.g. "日", "人", "大". Unique across all kanji |
 | `stroke_count` | `int` | Number of strokes to write the character |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this kanji appears in (5 = N5, 1 = N1). Null for kanji outside the JLPT set |
-| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null for jinmeiyou and unofficial kanji |
+| `min_grade` | `int?` | The earliest Japanese school grade this kanji is taught. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou), 9 = jinmeiyou (name kanji), 10 = jinmeiyou variants. KANJIDIC skips 7. Null for unofficial/ungraded kanji |
 | `frequency_rank` | `int` | Frequency rank based on newspaper corpus (1 = most common). Used for ordering within a level |
 | `svg_file_name` | `String?` | Local asset filename for the kanji SVG, e.g. "065e5.svg". Null if no SVG exists — client should render `character` as text fallback |
 | `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
@@ -26,7 +26,7 @@ The core identity of a single kanji character. Holds language-independent data: 
 
 **Why `min_jlpt_level` and `min_grade` are nullable here but not on Radical?**
 
-Every radical in our dataset is tied to at least one JLPT level and grade because it appears inside graded kanji. But some valid kanji exist outside both the JLPT test set and the jouyou (school) set — rare or literary characters that users on either path would never encounter unless explicitly searching.
+Every radical in our dataset is tied to at least one JLPT level and grade because it appears inside graded kanji. But some valid kanji exist outside both the JLPT test set and the graded set — rare or literary characters that users on either path would never encounter unless explicitly searching.
 
 **Why `frequency_rank` in addition to level/grade?**
 
@@ -90,7 +90,7 @@ Kanji  ──N:M──→ Kanji             (via KanjiComponent where component_
 6. A kanji cannot enter the lesson queue until all its components — both radicals and simpler kanji (via `KanjiComponent`) — have `stability >= 7.0` days on their SrsCard (see srs.md rule #7).
 7. Kanji are reviewed on both meaning and reading — unlike radicals, which are meaning-only.
 8. `frequency_rank` must be a positive integer (1 = most common).
-9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8.
+9. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–10 (7 is skipped by KANJIDIC).
 10. SVG fields (`svg_file_name`, `svg_file_url`, `svg_hash`) are all-or-nothing: all three populated or all three null.
 11. `kanji_id` + `reading` + `reading_type` must be unique in `KanjiReading` — no duplicate readings.
 

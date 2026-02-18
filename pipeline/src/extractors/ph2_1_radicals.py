@@ -45,10 +45,10 @@ VISUAL_RULES = DATA_DIR / "visual_rules.json"
 def build_scope_set(kanjidic_df: pd.DataFrame, jlpt_kanji_df: pd.DataFrame) -> set[str]:
     """Pass 0: Build scope set of educationally relevant kanji.
 
-    Jōyō grades 1-6 (elementary) + 8 (secondary). Excludes grade 9 (Jinmeiyō)
-    and 10 (variants). Union with all JLPT kanji.
+    All graded kanji: grades 1-6 (elementary), 8 (secondary jouyou),
+    9 (jinmeiyou), 10 (jinmeiyou variants). Union with all JLPT kanji.
     """
-    graded = kanjidic_df[kanjidic_df["grade"].notna() & (kanjidic_df["grade"] <= 8)]
+    graded = kanjidic_df[kanjidic_df["grade"].notna()]
     scope = set(graded["literal"]) | set(jlpt_kanji_df["character"])
     log.info("Pass 0: scope set = %d characters", len(scope))
     return scope

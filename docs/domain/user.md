@@ -13,7 +13,7 @@ The curriculum path the user follows. Determines which content appears in the le
 | Value | Description |
 |---|---|
 | `jlpt` | Study by JLPT level (N5 → N1). Content filtered by `min_jlpt_level` |
-| `grade` | Study by Japanese school grade (1 → 6). Content filtered by `min_grade` |
+| `grade` | Study by Japanese school grade (1 → 10). Content filtered by `min_grade` |
 
 ### AuthProvider (Enum)
 
@@ -57,7 +57,7 @@ Per-user preferences that control the learning experience. Separated from User t
 | `id` | `int` | Unique identifier |
 | `user_id` | `UUID` | FK to the parent User. Unique — one settings row per user |
 | `study_path` | `StudyPath` | `jlpt` or `grade` — which curriculum path to follow |
-| `current_level` | `int` | The level the user is currently studying. For JLPT: 1–5 (starts at 5). For grade: 1–6 and 8 (starts at 1). KANJIDIC skips 7 |
+| `current_level` | `int` | The level the user is currently studying. For JLPT: 1–5 (starts at 5). For grade: 1–6, 8, 9, 10 (starts at 1). KANJIDIC skips 7 |
 | `daily_lesson_limit` | `int` | Max new items per day. Default: 10 |
 | `daily_review_limit` | `int` | Max reviews per session. Default: 100 |
 
@@ -83,7 +83,7 @@ User          ──1:N──→ ReviewLog        (one user, many review events 
 1. `auth_provider` + `auth_provider_id` must be unique — no duplicate accounts for the same provider identity.
 2. Every user must have exactly one `UserSettings` row, created on account creation with defaults.
 3. `lang_code` must be a valid ISO 639-1 code. Default: "en".
-4. `current_level` must be in the range 1–5 when `study_path` is `jlpt`, or 1–8 when `study_path` is `grade`.
+4. `current_level` must be in the range 1–5 when `study_path` is `jlpt`, or 1–10 (7 skipped) when `study_path` is `grade`.
 5. `daily_lesson_limit` must be a positive integer (minimum 1).
 6. `daily_review_limit` must be a positive integer (minimum 1).
 7. Deleting a User must cascade-delete UserSettings, all SrsCard/ReviewLog rows, and all UserMnemonic rows.

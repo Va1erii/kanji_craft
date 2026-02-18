@@ -115,7 +115,7 @@ def kanjivg_df():
 
 @pytest.fixture
 def kanjidic_df():
-    """Minimal KANJIDIC DataFrame. Grade ≤ 8 = in scope."""
+    """Minimal KANJIDIC DataFrame. All graded characters are in scope."""
     return pd.DataFrame({
         "literal": ["休", "一", "語", "燐", "人", "木", "言", "吾", "五", "口", "火", "米", "罕"],
         "grade": pd.array([3, 1, 2, None, 1, 1, 2, None, 1, 1, 1, 2, 9], dtype="Int32"),
@@ -159,11 +159,11 @@ class TestBuildScopeSet:
         scope = build_scope_set(kanjidic_df, jlpt_kanji_df)
         assert "燐" in scope  # no grade, but in JLPT list
 
-    def test_excludes_grade_9(self, kanjidic_df, jlpt_kanji_df):
-        """Grade 9 (Jinmeiyō) excluded unless also in JLPT."""
-        # 罕 has grade 9 and is NOT in jlpt_kanji_df
+    def test_includes_grade_9(self, kanjidic_df, jlpt_kanji_df):
+        """Grade 9 (Jinmeiyō) included in scope."""
+        # 罕 has grade 9
         scope = build_scope_set(kanjidic_df, jlpt_kanji_df)
-        assert "罕" not in scope
+        assert "罕" in scope
 
     def test_union_of_graded_and_jlpt(self, kanjidic_df, jlpt_kanji_df):
         scope = build_scope_set(kanjidic_df, jlpt_kanji_df)
@@ -214,13 +214,11 @@ class TestCountFrequencies:
         # 粦 is a direct child of 燐 → counted
         assert freq.get("粦", 0) >= 1
 
-    def test_excludes_out_of_scope(self, kanjivg_df, scope_set, tree_map):
+    def test_includes_grade_9_children(self, kanjivg_df, scope_set, tree_map):
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        # 干 and 冂 are children of out-of-scope 罕
-        # They're only children of 罕 which is not in scope
-        # So they only count if they're also children of in-scope entries
-        # 冂 is not a child of any in-scope entry
-        assert freq.get("冂", 0) == 0
+        # 冂 and 干 are children of 罕 (grade 9, now in scope)
+        assert freq.get("冂", 0) >= 1
+        assert freq.get("干", 0) >= 1
 
     def test_leaf_kanji_no_children(self, kanjivg_df, scope_set, tree_map):
         count_frequencies(kanjivg_df, scope_set, tree_map)
@@ -717,7 +715,7 @@ class TestExtractRadicalsIntegration:
         # Scope set should be correct
         scope = result["scope_set"]
         assert "休" in scope
-        assert "罕" not in scope  # grade 9
+        assert "罕" in scope  # grade 9 (jinmeiyou) included
 
 
 # ---------------------------------------------------------------------------

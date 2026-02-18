@@ -50,7 +50,7 @@ The source of truth for a radical's core identity. Each distinct visual form (e.
 | `positions` | `List<Position>` | All positions where this shape appears, e.g. `["hen"]` for 氵 |
 | `impact_score` | `int` | 1–10 rating of how many kanji use this radical. 10 = appears everywhere |
 | `min_jlpt_level` | `int?` | The easiest JLPT level this radical appears in (5 = N5, 1 = N1). Null if all containing kanji are outside JLPT |
-| `min_grade` | `int?` | The earliest Japanese school grade this appears in. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou). KANJIDIC skips 7. Null if all containing kanji are ungraded |
+| `min_grade` | `int?` | The earliest Japanese school grade this appears in. 1–6 = elementary (kyouiku), 8 = secondary/junior high (remaining jouyou), 9 = jinmeiyou (name kanji), 10 = jinmeiyou variants. KANJIDIC skips 7. Null if all containing kanji are ungraded |
 | `svg_file_name` | `String?` | Local asset filename for the SVG, e.g. "06c34.svg". Null if no SVG exists — client should render `master_symbol` as text fallback |
 | `svg_file_url` | `String?` | Remote URL to download the SVG if not bundled locally. Null when svg_file_name is null |
 | `svg_hash` | `String?` | Hash of the SVG file contents. Used to detect when a cached SVG is outdated. Null when svg_file_name is null |
@@ -157,7 +157,7 @@ Radical ──N:M──→ Kanji                 (via KanjiComponent; see kanji_
 3. Radicals are reviewed on meaning only (not reading), since radicals don't have independent pronunciations.
 4. A radical's SrsCard must reach `stability >= 7.0` days (see srs.md rule #7) before the kanji that contain it are unlocked for lessons.
 5. `impact_score` must be in the range 1–10.
-6. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–8. Null if all containing kanji lack the corresponding field.
+6. `min_jlpt_level`, when present, must be in the range 1–5; `min_grade`, when present, must be in the range 1–10 (7 is skipped by KANJIDIC). Null if all containing kanji lack the corresponding field.
 7. Every `Radical` must have both `svg_file_name` and `svg_file_url` populated.
 8. A radical's `master_symbol` may duplicate a kanji's `character`. Both rows must exist independently — the radical serves as a building block in `kanji_components`, the kanji serves as a learnable item with its own readings and SRS card.
 9. When a `RadicalVisualGroup` row exists for a radical, at least one other radical must share the same `visual_group` value in the batch.

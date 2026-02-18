@@ -415,6 +415,17 @@ def _process_entity(
         if pd.isna(char) or not char:
             continue
 
+        # Skip non-Unicode identifiers (e.g. CDP-8BB0) that have no SVG
+        if len(char) != 1:
+            missing += 1
+            warnings.append({
+                "severity": "low",
+                "phase": "2.4",
+                "entity": char,
+                "message": f"Non-Unicode {entity_label} '{char}' — no SVG possible",
+            })
+            continue
+
         kvg_name = char_to_kvg_filename(char)
         storage_name = char_to_svg_filename(char)
 

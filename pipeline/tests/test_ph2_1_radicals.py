@@ -282,7 +282,7 @@ class TestScanAndRegister:
     def test_registers_radicals(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, warnings = scan_and_register(
+        rad_df, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
         # Should have radicals rows
@@ -297,7 +297,7 @@ class TestScanAndRegister:
     def test_deduplicates_by_master_symbol(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
         # master_symbol should be unique
         assert rad_df["master_symbol"].is_unique
 
@@ -305,7 +305,7 @@ class TestScanAndRegister:
         """亻 and 人 should share the same family_symbol (人)."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         person_row = rad_df[rad_df["master_symbol"] == "亻"]
         if not person_row.empty:
@@ -315,7 +315,7 @@ class TestScanAndRegister:
         """Standalone radicals (single form, shape==old master) have null family_symbol."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         tree_row = rad_df[rad_df["master_symbol"] == "木"]
         if not tree_row.empty:
@@ -324,7 +324,7 @@ class TestScanAndRegister:
     def test_positions_are_json_arrays(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         for _, row in rad_df.iterrows():
             positions = json.loads(row["positions"])
@@ -334,7 +334,7 @@ class TestScanAndRegister:
     def test_is_official_flag(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # 言 is official (radical='general' and shape==old_master)
         speech = rad_df[rad_df["master_symbol"] == "言"].iloc[0]
@@ -351,7 +351,7 @@ class TestScanAndRegister:
     def test_stroke_count_from_shape_entry(self, kanjivg_df, scope_set, tree_map):
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # 言 has its own KanjiVG entry with stroke_count=7
         speech = rad_df[rad_df["master_symbol"] == "言"].iloc[0]
@@ -362,7 +362,7 @@ class TestScanAndRegister:
         # Build keep set where 粦 is NOT included
         keep = scope_set | {"冂", "舛"}  # 舛 needed since it might not be in scope
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         masters = set(rad_df["master_symbol"])
         # 米 and 舛 should be registered (promoted from 粦 ghost)
@@ -373,13 +373,12 @@ class TestScanAndRegister:
         """SVG fields and Pass 4 metadata should be null."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         # Radical nullable fields
         assert rad_df["svg_file_name"].isna().all()
         assert rad_df["svg_file_url"].isna().all()
         assert rad_df["svg_hash"].isna().all()
-        assert rad_df["visual_group"].isna().all()
         assert rad_df["impact_score"].isna().all()
         assert rad_df["min_grade"].isna().all()
         assert rad_df["min_jlpt_level"].isna().all()
@@ -402,7 +401,7 @@ class TestSrsDelegates:
         """radicals DataFrame should NOT have srs_delegate column."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        rad_df, srs_df, _ = scan_and_register(
+        rad_df, _, srs_df, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
         assert "srs_delegate" not in rad_df.columns
@@ -411,7 +410,7 @@ class TestSrsDelegates:
         """Without srs_delegates, the delegates DataFrame is empty."""
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
-        _, srs_df, _ = scan_and_register(
+        _, _, srs_df, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
         assert srs_df.empty
@@ -422,7 +421,7 @@ class TestSrsDelegates:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         srs_delegates = {"口": "言"}
-        _, srs_df, _ = scan_and_register(
+        _, _, srs_df, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             srs_delegates=srs_delegates,
         )
@@ -435,7 +434,7 @@ class TestSrsDelegates:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         srs_delegates = {"口": "NONEXISTENT"}
-        _, srs_df, warnings = scan_and_register(
+        _, _, srs_df, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             srs_delegates=srs_delegates,
         )
@@ -454,7 +453,7 @@ class TestSrsDelegates:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
         srs_delegates = {"NONEXISTENT": "口"}
-        _, srs_df, warnings = scan_and_register(
+        _, _, srs_df, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             srs_delegates=srs_delegates,
         )
@@ -468,10 +467,10 @@ class TestDeterministicOutput:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
 
-        rad1, _, warn1 = scan_and_register(
+        rad1, _, _, warn1 = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
-        rad2, _, warn2 = scan_and_register(
+        rad2, _, _, warn2 = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
 
@@ -503,7 +502,7 @@ class TestStrokeCountNoComponentFallback:
         keep = scope_set | {"Z", "B"}
         freq = {"Z": 1, "B": 1}
 
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         z_row = rad_df[rad_df["master_symbol"] == "Z"]
         assert len(z_row) == 1
@@ -525,7 +524,7 @@ class TestStrokeCountNoComponentFallback:
         keep = scope_set | {"Z"}
         freq = {"Z": 1}
 
-        rad_df, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
+        rad_df, _, _, _ = scan_and_register(kanjivg_df, scope_set, keep, tree_map, freq, {})
 
         z_row = rad_df[rad_df["master_symbol"] == "Z"]
         assert z_row.iloc[0]["stroke_count"] == 5
@@ -551,7 +550,7 @@ class TestManualStrokeOverrides:
         freq = {"Z": 1}
         manual_strokes = {"Z": 5}  # override to 5
 
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
         )
 
@@ -575,7 +574,7 @@ class TestManualStrokeOverrides:
         freq = {"Z": 1}
         manual_strokes = {"Z": 7}
 
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
         )
 
@@ -601,7 +600,7 @@ class TestMissingStrokeCountWarning:
         keep = scope_set | {"Z"}
         freq = {"Z": 1}
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
 
@@ -627,7 +626,7 @@ class TestMissingStrokeCountWarning:
         freq = {"Z": 1}
         manual_strokes = {"Z": 7}
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, manual_strokes
         )
 
@@ -641,7 +640,7 @@ class TestMissingStrokeCountWarning:
         keep = scope_set | {"冂"}
         freq = count_frequencies(kanjivg_df, scope_set, tree_map)
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
 
@@ -755,7 +754,7 @@ class TestLoadVisualRules:
 
 
 class TestVisualGroup:
-    """Tests for visual_group field population and singleton warnings.
+    """Tests for radical_visual_groups separate DataFrame and warnings.
 
     Fixtures: kanji A uses 肉 directly, kanji B uses 月 directly.
     Both look similar → visual_rules assigns them the same visual_group.
@@ -786,38 +785,62 @@ class TestVisualGroup:
         freq = {"肉": 1, "月": 1, "Z": 1, "W": 1}
         return kanjivg_df, scope_set, keep, tree_map, freq
 
-    def test_visual_group_populated(self):
-        """visual_group set from visual_rules for matching master_symbol."""
+    def test_no_visual_group_column_on_radicals(self):
+        """radicals DataFrame should NOT have visual_group column."""
         kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
         visual_rules = {
             "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
             "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
         }
 
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
+        )
+        assert "visual_group" not in rad_df.columns
+
+    def test_visual_group_populated(self):
+        """visual_groups DataFrame has rows for matching master_symbols."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+        visual_rules = {
+            "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
+            "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
+        }
+
+        _, vg_df, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
         )
 
-        flesh = rad_df[rad_df["master_symbol"] == "肉"].iloc[0]
+        assert len(vg_df) == 2
+        flesh = vg_df[vg_df["master_symbol"] == "肉"].iloc[0]
         assert flesh["visual_group"] == "月"
 
-        moon = rad_df[rad_df["master_symbol"] == "月"].iloc[0]
+        moon = vg_df[vg_df["master_symbol"] == "月"].iloc[0]
         assert moon["visual_group"] == "月"
 
-    def test_visual_group_null_when_not_in_rules(self):
-        """visual_group is null for radicals not in visual_rules."""
+    def test_visual_group_excludes_non_rules(self):
+        """Radicals not in visual_rules have no row in visual_groups DataFrame."""
         kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
         visual_rules = {
             "肉": {"visual_group": "月", "disambiguation_note": {"en": "flesh"}},
             "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
         }
 
-        rad_df, _, _ = scan_and_register(
+        _, vg_df, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
         )
 
-        z_row = rad_df[rad_df["master_symbol"] == "Z"].iloc[0]
-        assert pd.isna(z_row["visual_group"])
+        z_rows = vg_df[vg_df["master_symbol"] == "Z"]
+        assert z_rows.empty
+
+    def test_empty_visual_groups_by_default(self):
+        """Without visual_rules, the visual_groups DataFrame is empty."""
+        kanjivg_df, scope_set, keep, tree_map, freq = self._build_collision_fixtures()
+
+        _, vg_df, _, _ = scan_and_register(
+            kanjivg_df, scope_set, keep, tree_map, freq, {}
+        )
+        assert vg_df.empty
+        assert list(vg_df.columns) == ["master_symbol", "visual_group"]
 
     def test_singleton_visual_group_warns(self):
         """High warning when a visual_group has only 1 member (likely typo)."""
@@ -827,7 +850,7 @@ class TestVisualGroup:
             # 月 is NOT in visual_rules → only 肉 has visual_group "月"
         }
 
-        rad_df, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
         )
 
@@ -847,7 +870,7 @@ class TestVisualGroup:
             "月": {"visual_group": "月", "disambiguation_note": {"en": "moon"}},
         }
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
         )
 
@@ -865,7 +888,7 @@ class TestVisualGroup:
             "FAKE": {"visual_group": "X", "disambiguation_note": {"en": "nope"}},
         }
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, visual_rules
         )
 
@@ -894,7 +917,7 @@ class TestVisualGroup:
         keep = scope_set | {"X", "Y"}
         freq = {"X": 1, "Y": 1}
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}, {}
         )
 
@@ -943,7 +966,7 @@ class TestManualFlattenForceDrop:
             self._build_fixtures_with_unflattenable_ghost()
         )
 
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {}
         )
 
@@ -956,7 +979,7 @@ class TestManualFlattenForceDrop:
             self._build_fixtures_with_unflattenable_ghost()
         )
 
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             visual_rules=None, manual_flatten={"G"},
         )
@@ -971,7 +994,7 @@ class TestManualFlattenForceDrop:
             self._build_fixtures_with_unflattenable_ghost()
         )
 
-        _, _, warnings = scan_and_register(
+        _, _, _, warnings = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             visual_rules=None, manual_flatten={"G"},
         )
@@ -990,7 +1013,7 @@ class TestManualFlattenForceDrop:
 
         # X is in keep set — force_drop is checked before keep_set,
         # but keep_set members pass through the keep_set branch first
-        rad_df, _, _ = scan_and_register(
+        rad_df, _, _, _ = scan_and_register(
             kanjivg_df, scope_set, keep, tree_map, freq, {},
             visual_rules=None, manual_flatten={"X"},
         )

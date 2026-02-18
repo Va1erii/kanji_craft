@@ -182,13 +182,13 @@ def scan_and_register(
     manual_flatten: set[str] | None = None,
     freq_threshold: int = 5,
     srs_delegates: dict[str, str] | None = None,
-) -> tuple[pd.DataFrame, list[dict]]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[dict]]:
     """Pass 1d + Pass 2: Scan with ghost flattening, then register radicals.
 
     Flattened model: each shape becomes its own radical row.
     family_symbol groups related shapes (e.g. 人 ↔ 亻).
 
-    Returns (radicals_df, warnings).
+    Returns (radicals_df, visual_groups_df, srs_delegates_df, warnings).
     """
     warnings: list[dict] = []
     warned: set[tuple[str, str]] = set()  # (entity, message_key) → dedup warnings
@@ -332,7 +332,6 @@ def scan_and_register(
             "positions": json.dumps(sorted(info["positions"])),
             "is_official": is_official_for_shape,
             "stroke_count": info["stroke_count"],
-            "visual_group": vr[shape]["visual_group"] if shape in vr else None,
             "svg_file_name": None,
             "svg_file_url": None,
             "svg_hash": None,
@@ -369,15 +368,22 @@ def scan_and_register(
     if not radicals_df.empty:
         radicals_df["stroke_count"] = radicals_df["stroke_count"].astype("int64")
 
-    # --- Visual group validation ---
-    # Check that every visual_group value has 2+ members (catches typos)
+    # --- Build visual groups table ---
+    visual_group_rows: list[dict] = []
     group_members: dict[str, list[str]] = {}
-    for row in radical_rows:
-        vg = row["visual_group"]
-        if vg is not None:
+    for shape in sorted(registered_masters):
+        if shape in vr:
+            vg = vr[shape]["visual_group"]
+            visual_group_rows.append({
+                "master_symbol": shape,
+                "visual_group": vg,
+            })
             if vg not in group_members:
                 group_members[vg] = []
-            group_members[vg].append(row["master_symbol"])
+            group_members[vg].append(shape)
+    visual_groups_df = pd.DataFrame(
+        visual_group_rows, columns=["master_symbol", "visual_group"],
+    )
 
     for vg, members in sorted(group_members.items()):
         if len(members) < 2:
@@ -402,12 +408,13 @@ def scan_and_register(
             })
 
     log.info(
-        "Pass 2: registered %d radicals, %d SRS delegates",
+        "Pass 2: registered %d radicals, %d visual groups, %d SRS delegates",
         len(radicals_df),
+        len(visual_groups_df),
         len(srs_delegates_df),
     )
 
-    return radicals_df, srs_delegates_df, warnings
+    return radicals_df, visual_groups_df, srs_delegates_df, warnings
 
 
 def extract_radicals(
@@ -455,7 +462,7 @@ def extract_radicals(
     srs_delegates = load_manual_srs_delegates(MANUAL_SRS_DELEGATES)
 
     # Pass 1d + Pass 2: Scan and register
-    radicals_df, srs_delegates_df, scan_warnings = scan_and_register(
+    radicals_df, visual_groups_df, srs_delegates_df, scan_warnings = scan_and_register(
         kanjivg_df, scope_set, keep_set, tree_map, freq, manual_strokes,
         visual_rules, manual_flatten, srs_delegates=srs_delegates,
     )
@@ -474,6 +481,7 @@ def extract_radicals(
     # Write outputs
     csv_dir.mkdir(parents=True, exist_ok=True)
     write_csv_atomic(radicals_df, csv_dir / "radicals.csv")
+    write_csv_atomic(visual_groups_df, csv_dir / "radical_visual_groups.csv")
     write_csv_atomic(srs_delegates_df, csv_dir / "radical_srs_delegates.csv")
 
     # Write warnings (sorted for deterministic output)
@@ -487,13 +495,15 @@ def extract_radicals(
         log.info("Phase 2.1: no warnings")
 
     log.info(
-        "Phase 2.1 complete: %d radicals, %d SRS delegates",
+        "Phase 2.1 complete: %d radicals, %d visual groups, %d SRS delegates",
         len(radicals_df),
+        len(visual_groups_df),
         len(srs_delegates_df),
     )
 
     return {
         "radicals": radicals_df,
+        "radical_visual_groups": visual_groups_df,
         "radical_srs_delegates": srs_delegates_df,
         "scope_set": scope_set,
         "keep_set": keep_set,

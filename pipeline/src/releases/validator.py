@@ -189,9 +189,40 @@ def validate_batch(name: str) -> list[ValidationError]:
                     f"family_symbol='{fs}' has no other family member in batch",
                 ))
 
-    # ── radical_srs_delegates: referential integrity ────────────────────
+    # ── radical_visual_groups: referential integrity ─────────────────────
 
     radical_symbols = set(radicals["master_symbol"]) if not radicals.empty else set()
+    radical_visual_groups = _read_csv(batch_dir / "radical_visual_groups.csv")
+
+    if not radical_visual_groups.empty:
+        _check_all_columns_nonempty(
+            radical_visual_groups, "radical_visual_groups", "master_symbol", errors,
+        )
+        # Every master_symbol must exist in batch radicals
+        for _, row in radical_visual_groups.iterrows():
+            ms = row.get("master_symbol", "")
+            if not _is_empty(ms) and ms not in radical_symbols:
+                errors.append(ValidationError(
+                    "radical_visual_groups", f"master_symbol={ms}",
+                    "master_symbol not found in batch radicals",
+                ))
+        # Every visual_group must have 2+ members
+        vg_counts: dict[str, int] = {}
+        for _, row in radical_visual_groups.iterrows():
+            vg = row.get("visual_group", "")
+            if not _is_empty(vg):
+                vg_counts[vg] = vg_counts.get(vg, 0) + 1
+        for _, row in radical_visual_groups.iterrows():
+            vg = row.get("visual_group", "")
+            ms = row.get("master_symbol", "")
+            if not _is_empty(vg) and vg_counts.get(vg, 0) < 2:
+                errors.append(ValidationError(
+                    "radical_visual_groups", f"master_symbol={ms}",
+                    f"visual_group='{vg}' has only 1 member in batch",
+                ))
+
+    # ── radical_srs_delegates: referential integrity ────────────────────
+
     radical_srs_delegates = _read_csv(batch_dir / "radical_srs_delegates.csv")
 
     if not radical_srs_delegates.empty:

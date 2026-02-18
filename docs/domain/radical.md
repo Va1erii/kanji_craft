@@ -115,6 +115,7 @@ The spatial position a radical occupies within a kanji character. Uses tradition
 | `nyo` | 繞 | Wrapping bottom-left (e.g. 辶 in 道) |
 | `tarec` | — | Complement of tare — the enclosed content under a hanging radical (e.g. the inner part under 广) |
 | `nyoc` | — | Complement of nyo — the enclosed content above a wrapping radical (e.g. the inner part above 辶) |
+| `kamaec` | — | Complement of kamae — the enclosed content inside a surrounding radical (e.g. the inner part inside 囗) |
 | `unknown` | — | Fallback for unclassified positions |
 
 | Field | Type | Description |

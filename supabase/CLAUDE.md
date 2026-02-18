@@ -13,7 +13,7 @@ supabase start / stop             # Local Supabase instance
 ### Enums
 
 ```sql
-position_type:       hen, tsukuri, kanmuri, ashi, kamae, tare, nyo, tarec, nyoc, unknown
+position_type:       hen, tsukuri, kanmuri, ashi, kamae, tare, nyo, tarec, nyoc, kamaec, unknown
 item_type:           radical, kanji, vocabulary
 reading_priority:    primary, secondary
 reading_type:        onyomi, kunyomi

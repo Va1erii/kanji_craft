@@ -110,8 +110,9 @@ This encodes:
 | `tarec` | — | Complement/counterpart of a `tare` part | The enclosed portion under 广 |
 | `nyo` | 繞 (nyo) | Left and under another part | 辶 in 道 |
 | `nyoc` | — | Complement/counterpart of a `nyo` part | The enclosed portion above 辶 |
+| `kamaec` | — | Complement/counterpart of a `kamae` part | The enclosed portion inside 囗 |
 
-**Mapping to our Position enum:** Our schema uses traditional names (`hen`, `tsukuri`, `kanmuri`, `ashi`, `kamae`, `tare`, `nyo`, `unknown`). The parser maps KanjiVG values:
+**Mapping to our Position enum:** Our schema uses traditional names plus complement values. The parser maps KanjiVG values:
 
 | KanjiVG | Our enum |
 |---|---|
@@ -124,6 +125,7 @@ This encodes:
 | `tarec` | `tarec` |
 | `nyo` | `nyo` |
 | `nyoc` | `nyoc` |
+| `kamaec` | `kamaec` |
 | (absent) | `unknown` |
 
 ### Radical Values

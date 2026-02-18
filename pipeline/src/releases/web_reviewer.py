@@ -210,6 +210,8 @@ def _load_batch_data(batch_dir: Path, batch_name: str = "") -> dict:
                 "master_symbol": c["master_symbol"],
                 "position": c.get("position", ""),
                 "logic_hint": c.get("logic_hint", ""),
+                "radical_type": c.get("radical_type", ""),
+                "is_primary": c.get("is_primary", ""),
             })
         # Readings
         read_rows = kanji_readings_df[kanji_readings_df["character"] == char]

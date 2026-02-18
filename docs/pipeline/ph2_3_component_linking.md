@@ -151,9 +151,10 @@ KanjiVG uses string values for the `position` attribute. The pipeline maps them 
 | `nyo` | `nyo` | 繞 | Left and under (wrapping bottom-left) |
 | `tarec` | `tarec` | — | Complement of tare (enclosed portion) |
 | `nyoc` | `nyoc` | — | Complement of nyo (enclosed portion) |
+| `kamaec` | `kamaec` | — | Complement of kamae (enclosed portion) |
 | `null` / absent | `unknown` | — | Fallback for unclassified positions |
 
-`tarec` and `nyoc` mark the "other half" of a tare or nyo structure — the enclosed content rather than the enclosing radical. They are preserved as first-class enum values so the client can decide how to display them.
+`tarec`, `nyoc`, and `kamaec` mark the "other half" of a tare, nyo, or kamae structure — the enclosed content rather than the enclosing radical. They are preserved as first-class enum values so the client can decide how to display them.
 
 ## Radical Type Classification
 

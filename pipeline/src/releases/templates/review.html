@@ -564,8 +564,9 @@ function renderKanjiTable(items) {
     const kunReadings = item.readings.filter(r => r.reading_type === "kunyomi").map(r => r.reading);
 
     const compHtml = (item.components || []).map(c => {
-      const meta = [c.position, c.logic_hint].filter(Boolean).join(",");
-      return `<span class="comp-symbol">${esc(c.master_symbol)}</span><span style="font-size:11px">${meta ? `(${esc(meta)})` : ""}</span>`;
+      const tags = [c.position, c.logic_hint, c.radical_type].filter(Boolean).join(",");
+      const primary = c.is_primary === "True" ? "*" : "";
+      return `<span class="comp-symbol">${esc(c.master_symbol)}${primary}</span><span style="font-size:11px">${tags ? `(${esc(tags)})` : ""}</span>`;
     }).join(" ");
 
     let enMeanings = "";

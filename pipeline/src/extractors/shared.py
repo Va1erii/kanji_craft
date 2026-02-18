@@ -26,6 +26,7 @@ _POSITION_MAP: dict[str, str] = {
     "nyo": "nyo",
     "tarec": "tarec",
     "nyoc": "nyoc",
+    "kamaec": "kamaec",
 }
 
 _SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}

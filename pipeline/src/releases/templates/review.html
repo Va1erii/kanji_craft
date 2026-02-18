@@ -304,6 +304,112 @@ textarea { min-height: 60px; }
   margin-right: 6px;
 }
 .card.has-warnings { border-color: #f59e0b; }
+
+/* ── Kanji list view ───────────────────────────────────────────────────────── */
+.kanji-list {
+  padding: 0 24px 24px;
+  max-width: 1400px;
+}
+.kanji-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.kanji-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  z-index: 10;
+}
+.kanji-table th:first-child { width: 50px; text-align: center; }
+.kanji-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.kanji-row:hover { background: rgba(255,255,255,0.03); }
+.kanji-row td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.kanji-row td:first-child {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  width: 50px;
+  line-height: 1;
+  padding-top: 10px;
+}
+.kanji-row .kr-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+.kanji-row .kr-on { color: #f87171; }
+.kanji-row .kr-kun { color: #4ade80; }
+.kanji-row .kr-comp {
+  font-size: 13px;
+  color: var(--muted);
+}
+.kanji-row .kr-comp .comp-symbol {
+  color: var(--text);
+  font-size: 15px;
+}
+.kanji-row .kr-meanings {
+  color: var(--text);
+  font-size: 13px;
+}
+.kanji-row .kr-warn-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.kanji-row .kr-warn-dot.high { background: #f87171; }
+.kanji-row .kr-warn-dot.medium { background: #fbbf24; }
+.kanji-row .kr-warn-dot.low { background: #64748b; }
+.kanji-row.expanded { background: rgba(233,69,96,0.05); }
+.kanji-row.has-warnings td:first-child {
+  border-left: 3px solid #f59e0b;
+  padding-left: 9px;
+}
+.kanji-detail {
+  display: none;
+}
+.kanji-detail.open {
+  display: table-row;
+}
+.kanji-detail td {
+  padding: 0;
+  border-bottom: 2px solid var(--accent);
+}
+.kanji-detail-inner {
+  padding: 12px 18px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  background: var(--card);
+}
+.kanji-detail-inner .lang-section {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.kanji-detail-inner .lang-section:last-child { border-bottom: 1px solid var(--border); }
+.kanji-detail .warnings {
+  grid-column: 1 / -1;
+  padding: 0;
+  margin-bottom: 4px;
+}
 </style>
 </head>
 <body>
@@ -368,8 +474,8 @@ function switchTab(tab) {
 }
 
 function showTab(tab) {
-  document.querySelectorAll(".cards").forEach(c => {
-    c.style.display = c.dataset.tab === tab ? "flex" : "none";
+  document.querySelectorAll(".cards, .kanji-list").forEach(c => {
+    c.style.display = c.dataset.tab === tab ? (c.classList.contains("kanji-list") ? "block" : "flex") : "none";
   });
 }
 
@@ -380,7 +486,7 @@ function renderAllCards() {
   container.innerHTML = "";
 
   container.appendChild(renderCardGroup("radicals", BATCH_DATA.radicals, renderRadicalCard));
-  container.appendChild(renderCardGroup("kanji", BATCH_DATA.kanji, renderKanjiCard));
+  container.appendChild(renderKanjiTable(BATCH_DATA.kanji));
   container.appendChild(renderCardGroup("vocabulary", BATCH_DATA.vocabulary, renderVocabCard));
   container.appendChild(renderCardGroup("sentences", BATCH_DATA.sentences, renderSentenceCard));
 }
@@ -430,44 +536,115 @@ function renderRadicalCard(item) {
 }
 
 function renderKanjiCard(item) {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.dataset.search = [
-    item.character,
-    ...item.readings.map(r => r.reading),
-    ...(item.components || []).map(c => c.master_symbol),
-    ...LANGS.flatMap(l => [item.i18n[l]?.meanings || "", item.i18n[l]?.system_mnemonic || ""])
-  ].join(" ").toLowerCase();
+  // Not used — kanji uses table layout via renderKanjiTable()
+  return document.createElement("div");
+}
 
-  const onReadings = item.readings.filter(r => r.reading_type === "onyomi").map(r => r.reading);
-  const kunReadings = item.readings.filter(r => r.reading_type === "kunyomi").map(r => r.reading);
-  const compStr = (item.components || []).map(c =>
-    `${c.master_symbol}(${[c.position, c.logic_hint].filter(Boolean).join(",")})`
-  ).join(" + ");
+function renderKanjiTable(items) {
+  const wrap = document.createElement("div");
+  wrap.className = "kanji-list";
+  wrap.dataset.tab = "kanji";
 
-  card.innerHTML = `
-    <div class="card-header">
-      <span class="symbol">${esc(item.character)}</span>
-      <span class="meta">strokes: ${esc(item.stroke_count)}</span>
-      <span class="meta">rank: #${esc(item.frequency_rank)}</span>
-      ${onReadings.length ? `<span class="readings">ON: <span class="on">${esc(onReadings.join(", "))}</span></span>` : ""}
-      ${kunReadings.length ? `<span class="readings">KUN: <span class="kun">${esc(kunReadings.join(", "))}</span></span>` : ""}
-      ${compStr ? `<span class="components">${esc(compStr)}</span>` : ""}
-    </div>
-  `;
+  const table = document.createElement("table");
+  table.className = "kanji-table";
+  table.innerHTML = `<thead><tr>
+    <th>Char</th>
+    <th>Strokes</th>
+    <th>Rank</th>
+    <th>ON</th>
+    <th>KUN</th>
+    <th>Components</th>
+    <th>EN Meanings</th>
+    <th></th>
+  </tr></thead>`;
 
-  const warnEl = renderWarnings(item.warnings);
-  if (warnEl) { card.appendChild(warnEl); card.classList.add("has-warnings"); }
+  const tbody = document.createElement("tbody");
+  items.forEach(item => {
+    const onReadings = item.readings.filter(r => r.reading_type === "onyomi").map(r => r.reading);
+    const kunReadings = item.readings.filter(r => r.reading_type === "kunyomi").map(r => r.reading);
 
-  LANGS.forEach(lang => {
-    const i = item.i18n[lang] || {};
-    card.appendChild(langSection(lang, [
-      fieldRow("Meanings", "kanji_i18n", {character: item.character, lang_code: lang}, "meanings", i.meanings, "input"),
-      fieldRow("Mnemonic", "kanji_i18n", {character: item.character, lang_code: lang}, "system_mnemonic", i.system_mnemonic, "textarea"),
-      fieldRow("Tags", "kanji_i18n", {character: item.character, lang_code: lang}, "search_tags", i.search_tags, "input"),
-    ]));
+    const compHtml = (item.components || []).map(c => {
+      const meta = [c.position, c.logic_hint].filter(Boolean).join(",");
+      return `<span class="comp-symbol">${esc(c.master_symbol)}</span><span style="font-size:11px">${meta ? `(${esc(meta)})` : ""}</span>`;
+    }).join(" ");
+
+    let enMeanings = "";
+    try { enMeanings = JSON.parse(item.i18n.en?.meanings || "[]").join(", "); } catch { enMeanings = item.i18n.en?.meanings || ""; }
+
+    // Warning dot
+    let warnDots = "";
+    if (item.warnings && item.warnings.length > 0) {
+      const highest = item.warnings.reduce((h, w) => {
+        const order = {high: 0, medium: 1, low: 2};
+        return (order[w.severity] ?? 3) < (order[h] ?? 3) ? w.severity : h;
+      }, "low");
+      warnDots = `<span class="kr-warn-dot ${highest}" title="${item.warnings.length} warning(s)"></span>`;
+    }
+
+    const searchStr = [
+      item.character,
+      ...item.readings.map(r => r.reading),
+      ...(item.components || []).map(c => c.master_symbol),
+      ...LANGS.flatMap(l => [item.i18n[l]?.meanings || "", item.i18n[l]?.system_mnemonic || ""])
+    ].join(" ").toLowerCase();
+
+    // Summary row
+    const row = document.createElement("tr");
+    row.className = "kanji-row" + (item.warnings?.length ? " has-warnings" : "");
+    row.dataset.search = searchStr;
+    row.innerHTML = `
+      <td>${esc(item.character)}${warnDots}</td>
+      <td class="kr-meta">${esc(item.stroke_count)}</td>
+      <td class="kr-meta">#${esc(item.frequency_rank)}</td>
+      <td class="kr-on">${esc(onReadings.join(", "))}</td>
+      <td class="kr-kun">${esc(kunReadings.join(", "))}</td>
+      <td class="kr-comp">${compHtml}</td>
+      <td class="kr-meanings">${esc(enMeanings)}</td>
+      <td class="kr-meta" style="font-size:11px;cursor:pointer;user-select:none;">▶</td>
+    `;
+
+    // Detail row (hidden until clicked)
+    const detailRow = document.createElement("tr");
+    detailRow.className = "kanji-detail";
+    const detailTd = document.createElement("td");
+    detailTd.colSpan = 8;
+
+    const inner = document.createElement("div");
+    inner.className = "kanji-detail-inner";
+
+    // Warnings in detail
+    if (item.warnings && item.warnings.length > 0) {
+      const warnEl = renderWarnings(item.warnings);
+      if (warnEl) { warnEl.classList.add("warnings"); inner.appendChild(warnEl); }
+    }
+
+    LANGS.forEach(lang => {
+      const i = item.i18n[lang] || {};
+      inner.appendChild(langSection(lang, [
+        fieldRow("Meanings", "kanji_i18n", {character: item.character, lang_code: lang}, "meanings", i.meanings, "input"),
+        fieldRow("Mnemonic", "kanji_i18n", {character: item.character, lang_code: lang}, "system_mnemonic", i.system_mnemonic, "textarea"),
+        fieldRow("Tags", "kanji_i18n", {character: item.character, lang_code: lang}, "search_tags", i.search_tags, "input"),
+      ]));
+    });
+
+    detailTd.appendChild(inner);
+    detailRow.appendChild(detailTd);
+
+    // Toggle detail on row click
+    row.addEventListener("click", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      const isOpen = detailRow.classList.toggle("open");
+      row.classList.toggle("expanded", isOpen);
+      row.querySelector("td:last-child").textContent = isOpen ? "▼" : "▶";
+    });
+
+    tbody.appendChild(row);
+    tbody.appendChild(detailRow);
   });
-  return card;
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  return wrap;
 }
 
 function renderVocabCard(item) {
@@ -653,17 +830,34 @@ function updateBadge() {
 
 function filterCards() {
   const q = document.getElementById("searchInput").value.toLowerCase().trim();
-  const container = document.querySelector(`.cards[data-tab="${activeTab}"]`);
-  if (!container) return;
 
-  container.querySelectorAll(".card").forEach(card => {
-    if (!q) {
-      card.classList.remove("hidden");
-    } else {
-      const match = (card.dataset.search || "").includes(q);
-      card.classList.toggle("hidden", !match);
-    }
-  });
+  // Card-based tabs (radicals, vocabulary, sentences)
+  const cardContainer = document.querySelector(`.cards[data-tab="${activeTab}"]`);
+  if (cardContainer) {
+    cardContainer.querySelectorAll(".card").forEach(card => {
+      if (!q) {
+        card.classList.remove("hidden");
+      } else {
+        const match = (card.dataset.search || "").includes(q);
+        card.classList.toggle("hidden", !match);
+      }
+    });
+  }
+
+  // Kanji table rows
+  if (activeTab === "kanji") {
+    document.querySelectorAll(".kanji-row").forEach(row => {
+      const detail = row.nextElementSibling;
+      if (!q) {
+        row.style.display = "";
+        if (detail?.classList.contains("kanji-detail")) detail.style.display = "";
+      } else {
+        const match = (row.dataset.search || "").includes(q);
+        row.style.display = match ? "" : "none";
+        if (detail?.classList.contains("kanji-detail")) detail.style.display = match ? "" : "none";
+      }
+    });
+  }
 }
 
 // ── Review panel ────────────────────────────────────────────────────────────

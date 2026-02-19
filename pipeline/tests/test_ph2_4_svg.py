@@ -203,6 +203,26 @@ def test_char_to_kvg_filename(char, expected):
     assert char_to_kvg_filename(char) == expected
 
 
+@pytest.mark.parametrize(
+    "value",
+    ["CDP-8BB0", "CDP-8BD0", "AB", ""],
+    ids=["cdp_8bb0", "cdp_8bd0", "two_char", "empty"],
+)
+def test_char_to_svg_filename_non_unicode(value):
+    """Non-single-character strings return None."""
+    assert char_to_svg_filename(value) is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["CDP-8BB0", "CDP-8BD0", "AB", ""],
+    ids=["cdp_8bb0", "cdp_8bd0", "two_char", "empty"],
+)
+def test_char_to_kvg_filename_non_unicode(value):
+    """Non-single-character strings return None."""
+    assert char_to_kvg_filename(value) is None
+
+
 # ---------------------------------------------------------------------------
 # Tests: SVG field population
 # ---------------------------------------------------------------------------
@@ -335,6 +355,41 @@ def test_all_or_nothing(tmp_path, monkeypatch):
         svg_fields = [row["svg_file_name"], row["svg_hash"], row["svg_file_url"]]
         non_null = [f for f in svg_fields if pd.notna(f)]
         assert len(non_null) in (0, 3), f"Partial SVG fields: {svg_fields}"
+
+
+def test_cdp_coded_radical_skipped(tmp_path, monkeypatch):
+    """Non-Unicode master_symbol (CDP codes) are skipped without crashing."""
+    csv_dir = tmp_path / "csv"
+    warnings_dir = csv_dir / "warnings"
+
+    zip_path = _make_zip({"04e00.svg": MINIMAL_SVG}, tmp_path)
+
+    _make_radicals_csv(csv_dir, [
+        ("一", 1, 5),
+        ("CDP-8BB0", 0, None),
+        ("CDP-8BD0", 0, None),
+    ])
+    _make_kanji_csv(csv_dir, [])
+
+    monkeypatch.setenv("SVG_BASE_URL", SVG_BASE_URL)
+    client, _ = _mock_client()
+
+    result = extract_svg(csv_dir, warnings_dir, supabase_client=client, zip_path=zip_path)
+
+    rad = result["radicals"]
+
+    # Normal radical gets SVG
+    ichi = rad[rad["master_symbol"] == "一"].iloc[0]
+    assert ichi["svg_file_name"] == "4e00.svg"
+
+    # CDP radicals have null SVG fields
+    cdp1 = rad[rad["master_symbol"] == "CDP-8BB0"].iloc[0]
+    assert pd.isna(cdp1["svg_file_name"])
+    assert pd.isna(cdp1["svg_hash"])
+    assert pd.isna(cdp1["svg_file_url"])
+
+    cdp2 = rad[rad["master_symbol"] == "CDP-8BD0"].iloc[0]
+    assert pd.isna(cdp2["svg_file_name"])
 
 
 # ---------------------------------------------------------------------------

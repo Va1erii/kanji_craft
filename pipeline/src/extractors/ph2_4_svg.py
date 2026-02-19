@@ -321,7 +321,8 @@ def _select_best_parent(
     with_svg = [
         (char, depth)
         for char, depth in candidates
-        if char_to_kvg_filename(char) in svg_map
+        if char_to_kvg_filename(char) is not None
+        and char_to_kvg_filename(char) in svg_map
     ]
     if not with_svg:
         return None
@@ -526,6 +527,10 @@ def _extract_component_svgs(
         if pd.isna(char) or not char:
             continue
 
+        # Skip non-Unicode identifiers (e.g. CDP codes)
+        if len(char) != 1:
+            continue
+
         candidates = parent_index.get(char, [])
         if not candidates:
             continue
@@ -535,6 +540,8 @@ def _extract_component_svgs(
             continue
 
         parent_kvg = char_to_kvg_filename(parent_char)
+        if parent_kvg is None:
+            continue
         parent_bytes, _ = svg_map[parent_kvg]
 
         d_values = _parse_svg_extract_paths(parent_bytes, char)
@@ -546,6 +553,8 @@ def _extract_component_svgs(
         sha256 = hashlib.sha256(svg_bytes).hexdigest()
 
         storage_name = char_to_svg_filename(char)
+        if storage_name is None:
+            continue
         radicals_df.at[idx, "svg_file_name"] = storage_name
         radicals_df.at[idx, "svg_hash"] = sha256
         radicals_df.at[idx, "svg_file_url"] = f"{svg_base_url}/radicals/{storage_name}"
@@ -718,13 +727,17 @@ def extract_svg(
         log.info("Pass 2 skipped: %s not found", pq_path)
 
     # Unmatched SVGs in archive
-    matched_kvg = set()
+    matched_kvg: set[str] = set()
     for _, row in radicals_df.iterrows():
         if pd.notna(row.get("svg_file_name")):
-            matched_kvg.add(char_to_kvg_filename(row["master_symbol"]))
+            kvg = char_to_kvg_filename(row["master_symbol"])
+            if kvg is not None:
+                matched_kvg.add(kvg)
     for _, row in kanji_df.iterrows():
         if pd.notna(row.get("svg_file_name")):
-            matched_kvg.add(char_to_kvg_filename(row["character"]))
+            kvg = char_to_kvg_filename(row["character"])
+            if kvg is not None:
+                matched_kvg.add(kvg)
 
     unmatched_count = len(svg_map) - len(matched_kvg)
     if unmatched_count > 0:

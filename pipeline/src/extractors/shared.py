@@ -316,13 +316,23 @@ def resolve_effective_children(
     return result
 
 
-def char_to_svg_filename(char: str) -> str:
-    """Character → unpadded hex filename for storage: 一 → '4e00.svg'."""
+def char_to_svg_filename(char: str) -> str | None:
+    """Character → unpadded hex filename for storage: 一 → '4e00.svg'.
+
+    Returns None for non-single-character strings (e.g. CDP codes).
+    """
+    if len(char) != 1:
+        return None
     return f"{ord(char):x}.svg"
 
 
-def char_to_kvg_filename(char: str) -> str:
-    """Character → KanjiVG ZIP filename (5-digit padded): 一 → '04e00.svg'."""
+def char_to_kvg_filename(char: str) -> str | None:
+    """Character → KanjiVG ZIP filename (5-digit padded): 一 → '04e00.svg'.
+
+    Returns None for non-single-character strings (e.g. CDP codes).
+    """
+    if len(char) != 1:
+        return None
     return f"{ord(char):05x}.svg"
 
 

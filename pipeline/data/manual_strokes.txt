@@ -5,6 +5,18 @@
 电  5  # Lightning: KanjiVG inconsistent (5 in most, 9 in 亀/縄/etc.)
 CDP-8BC4 8
 CDP-8CB8 4
+CDP-8BB0 8
+CDP-8BD0 10
+⺶ 6
+㬎 14
+咠 9
+犮 5
+臽 8
+舀 10
+酋 8
+韱 17
+𣶒 8
+𤇾 10
 ⻞ 8
 㐫 4
 㐭 5
